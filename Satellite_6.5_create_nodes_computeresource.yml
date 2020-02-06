@@ -6,6 +6,6 @@
     - name: "Node name you would like to create"
       prompt: "Enter the hostname name of the node you would like to add"
     - name: "rhn_password"
-      prompt: "Enter Red Hat Networt password"
+      prompt: "Enter Red Hat Network password"
       private: yes
   
