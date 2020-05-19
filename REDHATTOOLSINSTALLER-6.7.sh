@@ -1,6 +1,17 @@
 #!/bin/bash
 #POC/Demo
-#This Script is for setting up a basic Satellite 6.7 on RHEL 7 or Ansible Tower 6.3.1 on RHEL 7
+# This Script is for setting up a basic Satellite 6.7 on RHEL 7 or Ansible Tower 6.3.1 on RHEL 7
+# This installer will work on RHEL 7 and will:
+#1.verify you are root 
+#2.Check you are connected to the internet.
+#3.Provide a breif overview of what the tool is.
+#4.Help the end user register with Red Hat if not already done.
+#5.Take of some prep stuff install shut off firewall and selinux and install pip prior to install.
+#6.Enable required repos for OS and Ansible Tower.
+#7.Upgrades the OS.
+#8.Installs the dependencies from the bundle forces them to requirement levels listed in bundle.
+#9.Installs. (Queries user for password) 
+#10. Gives the end user the option to enable firewall and selinux.
 
 echo -ne "\e[8;40;170t"
 set -x
