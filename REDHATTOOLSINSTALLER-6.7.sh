@@ -1,17 +1,6 @@
 #!/bin/bash
 #POC/Demo
-# This Script is for setting up a basic Satellite 6.7 on RHEL 7 or Ansible Tower 6.3.1 on RHEL 7
-# This installer will work on RHEL 7 and will:
-#1.verify you are root 
-#2.Check you are connected to the internet.
-#3.Provide a breif overview of what the tool is.
-#4.Help the end user register with Red Hat if not already done.
-#5.Take of some prep stuff install shut off firewall and selinux and install pip prior to install.
-#6.Enable required repos for OS and Ansible Tower.
-#7.Upgrades the OS.
-#8.Installs the dependencies from the bundle forces them to requirement levels listed in bundle.
-#9.Installs. (Queries user for password) 
-#10. Gives the end user the option to enable firewall and selinux.
+#This Script is for setting up a basic Satellite 6.7 on RHEL 7 or Ansible Tower 6.3.1 on RHEL 7
 
 echo -ne "\e[8;40;170t"
 set -x
@@ -1140,6 +1129,7 @@ foreman-installer -v \
 
 systemctl start tftp.service
 systemctl enable tftp.service
+sleep 2
 sudo touch RHTI/CONFSATTFTP
 }
 
@@ -2803,7 +2793,7 @@ echo "Setting up and Modifying default template for auto discovery"
 echo "*********************************************************"
 #sed -i 's/SATELLITE_CAPSULE_URL/'$(hostname)'/g' /usr/share/foreman/app/views/unattended/pxe/PXELinux_default.erb
 #hammer template update --id 1
-sudo touch RHTI/MODPXELINUXDEF
+sudo touch RHTI/MODPXELINUXDEF 
 }
 
 #-------------------------------
@@ -2843,8 +2833,9 @@ sudo touch RHTI/SATREENABLEFOIREWALL
 #-------------------------------
 function SATDONE {
 #-------------------------------
+hammer template build-pxe-default
+
 echo 'YOU HAVE NOW COMPLETED INSTALLING SATELLITE!'
-clear}
 sudo touch RHTI/
 }
 
@@ -2963,6 +2954,8 @@ yum clean all
 yum-config-manager --setopt=\*.skip_if_unavailable=1 --save \* 
 foreman-rake foreman_tasks:cleanup TASK_SEARCH='label = Actions::Katello::Repository::Sync' STATES='paused,pending,stopped' VERBOSE=true
 foreman-rake katello:delete_orphaned_content --trace
+foreman-rake db:migrate
+foreman-rake db:seed
 foreman-rake katello:reimport
 katello-selinux-disable
 setenforce 0
@@ -3001,6 +2994,12 @@ rm -rf ~/FILES
 rm -rf /root/FILES
 rm -rf /tmp/*
 mv -f /root/.bashrc.bak /root/.bashrc
+for i in $(hammer --csv config-report list |awk -F ',' '{print $1}' ) ; do hammer config-report delete --organization $ORG --location $LOC --id $i ; done
+foreman-rake foreman_tasks:cleanup TASK_SEARCH='label = Actions::Katello::Repository::Sync' STATES='paused,pending,stopped' VERBOSE=true
+foreman-rake katello:delete_orphaned_content --trace
+foreman-rake db:migrate
+foreman-rake db:seed
+foreman-rake katello:reimport
 sudo touch RHTI/CLEANUP
 }
 

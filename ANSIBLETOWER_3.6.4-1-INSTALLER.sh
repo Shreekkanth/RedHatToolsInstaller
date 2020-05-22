@@ -240,9 +240,7 @@ echo "ENABLE REPOS RHEL7 "
 echo "*******************"
 subscription-manager repos --enable rhel-7-server-extras-rpms --enable rhel-7-server-optional-rpms --enable rhel-7-server-supplementary-rpms --enable rhel-server-rhscl-7-rpms --enable rhel-7-server-rpms --enable rhel-7-server-ansible-2.9-rpms
 yum -q list installed epel &>/dev/null && echo "epel is installed" || yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm --skip-broken
-wget https://releases.ansible.com/ansible-tower/cli/ansible-tower-cli-el7.repo 
-mv ~/Downloads/ansible-tower-cli-el7.repo /etc/yum.repos.d/ansible-tower-cli-el7.repo 
-
+yum-config-manager --add-repo https://releases.ansible.com/ansible-tower/cli/ansible-tower-cli-el7.repo
 yum clean all
 rm -rf /var/cache/yum
 yum-config-manager --setopt=\*.skip_if_unavailable=1 --save \*
@@ -261,6 +259,11 @@ yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || 
 yum -q list installed bash-completion-extras &>/dev/null && echo "bash-completion-extras is installed" || yum install -y bash-completion-extras --skip-broken --noplugins
 yum -q list installed dconf &>/dev/null && echo "dconf is installed" || yum install -y dconf* --skip-broken --noplugins
 yum -q list installed ansible-tower-cli &>/dev/null && echo "ansible-tower-cli is installed" || yum install -y ansible-tower-cli --skip-broken --noplugins
+yum -q list installed git &>/dev/null && echo "git is installed" || yum install -y git --skip-broken --noplugins --best --allowerasing
+mkdir -p ~/Downloads/git 
+cd ~/Downloads/git
+git clone https://github.com/ansible/product-demos.git
+cd ~/Downloads
 yum-config-manager --disable epel
 echo " "
 echo " "
@@ -272,9 +275,9 @@ echo '*******************'
 subscription-manager repos --disable '*'
 subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --enable rhel-8-for-x86_64-appstream-rpms --enable rhel-8-for-x86_64-baseos-rpms --enable rhel-8-for-x86_64-supplementary-rpms 
 yum -q list installed epel &>/dev/null && echo "epel is installed" || dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm --skip-broken
-wget https://releases.ansible.com/ansible-tower/cli/ansible-tower-cli-el8.repo 
-mv ~/Downloads/ansible-tower-cli-el7.repo /etc/yum.repos.d/ansible-tower-cli-el7.repo
+dnf config-manager --add-repo https://releases.ansible.com/ansible-tower/cli/ansible-tower-cli-el8.repo
 yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || dnf install -y yum-utils --skip-broken
+yum -q list installed ansible-tower-cli &>/dev/null && echo "ansible-tower-cli is installed" || dnf install -y ansible-tower-cli --skip-broken --noplugins
 yum-config-manager --setopt=\*.skip_if_unavailable=1 --save \*
 dnf clean all
 rm -rf /var/cache/dnf
@@ -293,7 +296,12 @@ yum -q list installed python3-pip &>/dev/null && echo "python3-pip is installed"
 yum -q list installed platform-python-pip &>/dev/null && echo "platform-python-pip is installed" || dnf install -y platform-python-pip --skip-broken --noplugins --best --allowerasing
 yum -q list installed dconf &>/dev/null && echo "dconf" || dnf install -y dconf* --skip-broken --noplugins --best --allowerasing
 yum -q list installed dnf-utils &>/dev/null && echo "dnf-utils is installed" || dnf install -y dnf-utils --skip-broken --noplugins --best --allowerasing
-yum -q list installed ansible-tower-cli &>/dev/null && echo "ansible-tower-cli is installed" || dnf install -y ansible-tower-cli --skip-broken --noplugins --best --allowerasing
+yum -q list installed git &>/dev/null && echo "git is installed" || dnf install -y git --skip-broken --noplugins --best --allowerasing
+yum -q list installed git &>/dev/null && echo "git is installed" || yum install -y git --skip-broken --noplugins --best --allowerasing
+mkdir -p ~/Downloads/git 
+cd ~/Downloads/git
+git clone https://github.com/ansible/product-demos.git
+cd ~/Downloads
 yum-config-manager --disable epel
 echo " "
 echo " "
