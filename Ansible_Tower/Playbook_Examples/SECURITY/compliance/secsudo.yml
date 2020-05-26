@@ -1,0 +1,7 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+  - name: Disable secadmin scp push/copy
+    lineinfile: dest=/var/spool/cron/tabs/root state=absent regexp="/home/secadmin/sudoers" backrefs=yes 
+    lineinfile: dest=/var/spool/cron/root state=absent regexp="/home/secadmin/sudoers" backrefs=yes 

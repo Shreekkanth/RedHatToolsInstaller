@@ -1,93 +1,276 @@
-REDHATTOOLSINSTALLER
---------------------
+Table Of Contents
+-----------
+* Ansible-CF-Sat6-FeaturesOverlap.pdf
 
-This code is meant to inspire!
+* Provisioning_bare-metal_and_virtual_hosts_via_Ansible_Tower_with_Satellite6.odt
 
-This tool was built to aid in the install Red Hat Satellite 6.5 or the latest Ansible Tower for Proof Of Concept and Education purposes.  
+* README.md
 
-This tool was built and tested by the team of :
+* Red_Hat_Management.png
 
-* Shadd Gallegos of Red Hat 
-* Thomas Murphy schonfeld.com
-* Rodrique Heron of Red Hat 
-* Kevin Holmes of Red Hat
-* Chris Tjon of Red Hat 
 
-**DISCLAIMER**
-----------------------------------------------
+Ansible_Tower
+-----------
 
-*DO NOT RUN THIS SCRIPT ON YOUR PRODUCTION SYSTEM. THIS IS FOR ONLY NEWLY BUILT OR TEST SYSTEM YOU CAN RE-PROVISION!*
+* Ansible_all.png
 
-*THIS SCRIPT IS NOT SUPPORTED AND THERE IS NO IMPLIED WARRANTY - USE AT OWN RISK!*
+* Ansible.png
 
-----------------------------------------------
+* AnsibleCluster.png
 
-## SYSTEM REQUIREMENTS
+* Ansible.png
 
-**System Resources**
+* AnsibleCluster.png
 
-I can set up a full satellite for a P.O.C in 3 to 4 hours with:
 
-* 4 CPU
-* 22 GB ram 
-* 300 GB storage
-* 2 Ethernet  
-    * eth0 internal - provisioning node communication
-    * eth1 external - connection to Red Hat CDN
+  Ansible_Cheet_Sheets
+  -----------
+  * Ansible-cheat-sheet-1-768x432.jpg
 
-**OS:**
-* RHEL 7.6^
+  * Ansible-cheat-sheet-1.webp
 
-**Provides:** 
+  * Ansible_Cheat_Sheet-DevOps_Quickstart_Guide.png
 
-* tftp
-* dhcp
-* dns
-* red hat insights
-* ansible 
-* puppet
-      
-**NOTE:** *You can stop/disable any service you don't want after the install.*
+  * Ansible-Cheat-Sheet_Wall-Skills2.pdf
 
-**Running REDHATTOOLSINSTALLER-XXXsh:** 
 
-* git clone https://github.com/ShaddGallegos/RedHatToolsInstaller.git
-* cd RedHatToolsInstaller
-* sh REDHATTOOLSINSTALLER-XXX.sh
-* Follow prompts to completion 
+  Ansible_PDF
+  -----------
+  * Ansible_Engine_and_Tower_Preferred_Practices.pdf
 
-## Why this installer
+  * AnsibleFest2018.pdf
 
-I believe all products should have an "installer" that guides end users to success. 
+  * AnsibleFest.pdf
 
-What this does is:
+  * Ansible-G2-Case-Study-Percussion.pdf
 
-* reduces TtP (time to productivity)
-* reduction in deployment cost
-* reduction in support costs
-* increase in margin
-* easy to reproduce 
-* easy to deploy 
-      
-Setting up satellite 6.x can be quite difficult, between the documentation and the speed at which the product developed can make it trick to deploy and adopt. I want to make it easier 
+  * Ansible_Tower_RBAC_Recommendations.pdf
 
-This works in a graphical or headless environment to help you install red hat satellite 6.4 and the latest ansible tower.
+  * Ansible_Tower_Review_&_Customer_Use_Cases_.pdf
 
-The script does use the epel to install components needed to run the script and i have provided the xdialog rpm if you want it to run the cool dialog box.
+  * Ansible_Tower_Training.pdf
 
-## Who is this script for?
+  * ansible_tower-vs-awx.pdf
 
-* Anyone who wants to set up a proof of concept system or and admin that wants to deploy satellite quickly    
-* Anyone that wants to make the Red Hat experience an even better one 
+  * Getting-Started-with-RH-Ansible-Tower-eBook.pdf
 
-## Known Issues
-kind of -> what i mean by that is because it does use some of the EPEL components it does step outside of the red hat soe (standard operating environment) but you can remove those after the fact if you want.
+  * Git_Workflow_for_Ansible_Development.pdf
 
-I wanted to get this script out for people to use, so you will need to take a close look at the content-views section of the script. 
 
-* You will need to decide naming convention for your content views. Some end-users do it by product (rhel5, rhel6, rhel7) some users do it by a product (docker, webservers, security, customer name, ect…)
+  Ansible_Cheet_Sheets
+  -----------
+  * Ansible-cheat-sheet-1-768x432.jpg
 
-* You then will need to decide which repos you want to add for the content views
+  * Ansible-cheat-sheet-1.webp
 
-* You will need to define any custom repos i have added a few so you can see how it works (icinga, epel, maven, centos, ect…)
-  
+  * Ansible_Cheat_Sheet-DevOps_Quickstart_Guide.png
+
+  * Ansible-Cheat-Sheet_Wall-Skills2.pdf
+
+
+  Ansible_PDF
+  -----------
+  * Ansible_Engine_and_Tower_Preferred_Practices.pdf
+
+  * AnsibleFest2018.pdf
+
+  * AnsibleFest.pdf
+
+  * Ansible-G2-Case-Study-Percussion.pdf
+
+  * Ansible_Tower_RBAC_Recommendations.pdf
+
+  * Ansible_Tower_Review_&_Customer_Use_Cases_.pdf
+
+  * Ansible_Tower_Training.pdf
+
+  * ansible_tower-vs-awx.pdf
+
+  * Getting-Started-with-RH-Ansible-Tower-eBook.pdf
+
+  * Git_Workflow_for_Ansible_Development.pdf
+
+
+  Ansible_PPT
+  -----------
+  * Ansible_Windows_Automation.pptx
+
+  * ANSIBLETOWER_3.6.4-1-INSTALLER.sh
+
+  * Ansible_Use_Case_List.xlsx
+
+
+  Ansible_PPT
+  -----------
+  * Ansible_Windows_Automation.pptx
+
+  * ANSIBLETOWER_3.6.4-1-INSTALLER.sh
+
+  * Ansible_Use_Case_List.xlsx
+
+
+  CICD
+  -----------
+  * CICD_Ansible_Jenkins_Pipeline_for_Container-Driven_CICD.png
+
+  * CICD-master
+
+  * Joe_Pisciotta-Ansible-CICD-Lab.pptx
+
+  * Tower_CI_CD.png
+
+
+  Playbook_Examples
+  -----------
+  * SECURITY
+
+  * Ansible_Tower.yml
+
+  * audit.yml
+
+  * backup-attic.yml
+
+  * backup-obnam.yml
+
+  * boxen.yml
+
+  * ec2_instance_reaper.yml
+
+  * encrypt-disk.yml
+
+  * filter-dns-any-query.yml
+
+  * ganeti-upgrade.yml
+
+  * install_pip_requirements.yml
+
+  * kill-prelink.yml
+
+  * linux-update-report.yml
+
+  * local.yml
+
+  * package-update.yml
+
+  * pip_n_it.yml
+
+  * README.md
+
+  * site.yml
+
+  * ssh-deploy-key.yml
+
+  * test-issue1815.yml
+
+  * tmbackup.yml
+
+  * virt-guests.yml
+
+
+  Ansible_Video_Demos
+  -----------
+  * DEMO_10_Introduction_to_the_expanded_Red_Hat_Insights.mp4
+
+  * DEMO_1_Ansible_automation_analytics.mp4
+
+  * DEMO_2_Ansible_multivendor_network_automation.mp4
+
+  * DEMO_3_Ansible_provisions_Red_Hat_Enterprise_Linux_on_AWS.mp4
+
+  * DEMO_4_Ansible_automation_security_response.mp4
+
+  * DEMO_5_-Red_Hat_Ansible_Tower_application_deployment.mp4
+
+  * DEMO_6_What_342_200_231s_new_in_Red_Hat_Satellite_and_Red_Hat_Smart_Management.mp4
+
+
+  CICD
+  -----------
+  * CICD_Ansible_Jenkins_Pipeline_for_Container-Driven_CICD.png
+
+  * CICD-master
+
+  * Joe_Pisciotta-Ansible-CICD-Lab.pptx
+
+  * Tower_CI_CD.png
+
+
+  Playbook_Examples
+  -----------
+  * SECURITY
+
+  * Ansible_Tower.yml
+
+  * audit.yml
+
+  * backup-attic.yml
+
+  * backup-obnam.yml
+
+  * boxen.yml
+
+  * ec2_instance_reaper.yml
+
+  * encrypt-disk.yml
+
+  * filter-dns-any-query.yml
+
+  * ganeti-upgrade.yml
+
+  * install_pip_requirements.yml
+
+  * kill-prelink.yml
+
+  * linux-update-report.yml
+
+  * local.yml
+
+  * package-update.yml
+
+  * pip_n_it.yml
+
+  * README.md
+
+  * site.yml
+
+  * ssh-deploy-key.yml
+
+  * test-issue1815.yml
+
+  * tmbackup.yml
+
+  * virt-guests.yml
+
+
+  Ansible_Video_Demos
+  -----------
+  * DEMO_10_Introduction_to_the_expanded_Red_Hat_Insights.mp4
+
+  * DEMO_1_Ansible_automation_analytics.mp4
+
+  * DEMO_2_Ansible_multivendor_network_automation.mp4
+
+  * DEMO_3_Ansible_provisions_Red_Hat_Enterprise_Linux_on_AWS.mp4
+
+  * DEMO_4_Ansible_automation_security_response.mp4
+
+  * DEMO_5_-Red_Hat_Ansible_Tower_application_deployment.mp4
+
+  * DEMO_6_What_342_200_231s_new_in_Red_Hat_Satellite_and_Red_Hat_Smart_Management.mp4
+
+  * DEMO_7_Red_Hat_Ansible_Tower_with_ServiceNow.mp4
+ 
+  * DEMO_8_Red_Hat_Ansible_Tower_workflow.mp4
+
+
+Satellite
+-----------
+* Ansible_Modules-Foreman-Katello.tar.gz
+
+* getting-started-with-satellite-6-command-line.pdf
+
+* REDHATTOOLSINSTALLER-6.7.png
+
+* REDHATTOOLSINSTALLER-6.7.sh
+
+* xdialog-2.3.1-13.el7.centos.x86_64.rpm

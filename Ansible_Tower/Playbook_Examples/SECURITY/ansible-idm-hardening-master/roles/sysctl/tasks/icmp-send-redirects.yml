@@ -1,0 +1,29 @@
+---
+
+- name: "ensure packet redirect sending is disabled"
+  copy:
+    src: 99-icmp-redirects.conf
+    dest: /etc/sysctl.d/99-icmp-redirects.conf
+    owner: root
+    group: root
+    mode: 0755
+    setype: etc_t
+  become: true
+
+- name: "reload sysctl configuration"
+  command: /usr/sbin/sysctl -p /etc/sysctl.d/99-icmp-redirects.conf
+  become: true
+
+- name: "ensure secure icmp redirects are not accepted"
+  copy:
+    src: 99-secure-icmp-redirects.conf
+    dest: /etc/sysctl.d/99-secure-icmp-redirects.conf
+    owner: root
+    group: root
+    mode: 0755
+    setype: etc_t
+  become: true
+
+- name: "reload sysctl configuration"
+  command: /usr/sbin/sysctl -p /etc/sysctl.d/99-secure-icmp-redirects.conf
+  become: true

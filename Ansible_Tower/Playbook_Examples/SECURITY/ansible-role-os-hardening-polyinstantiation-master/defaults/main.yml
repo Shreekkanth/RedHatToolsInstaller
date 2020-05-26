@@ -1,0 +1,36 @@
+---
+# Polyinstantiation
+# SELinux booleans required to activate polyinstantiation
+security_rhel7_poly_sebooleans:
+  - name: polyinstantiation_enabled
+    enabled: 'True'
+# For an explanation the options, please check namespace.conf(5)
+security_rhel7_poly_dirs:
+  - polydir: '/var/tmp'
+    enabled: 'True'
+    instance_prefix: '/var/tmp/.inst/var-tmp-$USER-'
+    method: 'tmpdir'
+    create: 'True'
+    iscript: 'var-tmp'
+    noinit: 'False'
+    shared: 'False'
+    list_of_uids: ['root','maintuser']
+  - polydir: '/tmp'
+    enabled: 'True'
+    instance_prefix: '/tmp/.inst/tmp-$USER-'
+    method: 'tmpdir'
+    create: 'True'
+    iscript: 'tmp'
+    noinit: 'False'
+    shared: 'False'
+    list_of_uids: ['root','maintuser']
+  - polydir: '$HOME'
+    enabled: 'True'
+    instance_prefix: '/home/.inst/home-$USER-'
+    method: 'tmpfs'
+    create: 'True'
+    iscript: 'home'
+    noinit: 'False'
+    shared: 'False'
+    mntopts: 'size=1M'
+    list_of_uids: ['root','maintuser']

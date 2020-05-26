@@ -1,0 +1,13 @@
+---
+
+# Task file for console
+
+  - name: Set Permissions on /etc/securetty
+    file: owner=root group=root mode=0600 selevel=s0 serole=object_r setype=etc_runtime_t seuser=system_u path=/etc/securetty
+
+  - name: Prevent root from logging into virtual consoles
+    lineinfile: dest=/etc/securetty state=absent regexp='^vc*'
+
+  - name: Prevent root from logging into serial consoles
+    lineinfile: dest=/etc/securetty state=absent regexp='^ttyS'
+

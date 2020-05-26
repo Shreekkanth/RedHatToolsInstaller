@@ -1,0 +1,7 @@
+---
+
+- name: Install login banner and update audit rules
+  hosts: all
+  roles:
+    - { role: harden, sudo: yes }
+

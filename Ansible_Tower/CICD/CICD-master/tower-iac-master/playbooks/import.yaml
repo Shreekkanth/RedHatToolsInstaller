@@ -1,0 +1,11 @@
+---
+- name: Import Assets
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - "vars/tower-iac-vars.yml"
+  tasks:
+    - name: Import Assets to Ansible Tower
+      import_role:
+        name: "tower-import-assets"

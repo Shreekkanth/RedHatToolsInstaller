@@ -1,0 +1,9 @@
+---
+
+- name: "ensure telnet client is not installed"
+  yum: 
+    name: telnet
+    state: absent
+  become: true
+  when:
+    - inventory_hostname not in groups['controller']

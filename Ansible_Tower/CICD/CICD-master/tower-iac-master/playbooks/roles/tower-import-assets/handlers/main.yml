@@ -1,0 +1,5 @@
+---
+- name: Remove temporary git directory
+  file:
+    path: "{{ temp_directory.path }}"
+    state: "absent"

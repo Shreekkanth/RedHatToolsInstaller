@@ -1,0 +1,7 @@
+---
+- name: restart clamav
+  systemd:
+    name: "{{ clamav_service }}"
+    state: restarted
+  when:
+    - ansible_virtualization_type != 'docker'

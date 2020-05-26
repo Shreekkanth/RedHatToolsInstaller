@@ -1,0 +1,24 @@
+---
+# tasks file for open_ports
+- name: Get ports to open from the facts
+  set_fact: ports="{{ (hostvars[inventory_hostname].foreman_params.enabled_ports | replace('\n', ',') | replace(' ', '') | replace(';', ',') | replace('.', ',') ).split(',') }}"
+
+- name: Print ports that are going to be opened
+  debug:
+    msg: "{{ item }}"
+  with_items: "{{ ports }}"
+
+- name: Open firewalld ports
+  become: true
+  firewalld:
+    port: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items: "{{ ports }}"
+
+- name: Save facts for new rules
+  become: true
+  copy:
+    dest: "{{ firewall_config_facts_path }}"
+    content: "{ \"custom_firewall_ports_count\": {{ ports | length }}, \"custom_firewall_ports\": {{ ports | join(',') }} }"

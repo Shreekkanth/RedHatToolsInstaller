@@ -1,0 +1,8 @@
+---
+- name: Converge
+  become: 'yes'
+  become_user: 'root'
+  connection: local
+  hosts: all
+  roles:
+    - role: ansible-role-os-hardening-aide

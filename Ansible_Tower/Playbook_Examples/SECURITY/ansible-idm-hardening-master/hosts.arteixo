@@ -1,0 +1,11 @@
+[idm]
+idmserver1 ansible_user=
+idmserver2 ansible_user=
+idmserver3 ansible_user=
+idmserver4 ansible_user=
+
+[jumphosts]
+jumphost1 ansible_user=
+jumphost2 ansible_user=
+jumphost3 ansible_user=
+jumphost4 ansible_user=

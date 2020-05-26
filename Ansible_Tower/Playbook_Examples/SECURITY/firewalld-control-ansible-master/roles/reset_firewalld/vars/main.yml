@@ -1,0 +1,4 @@
+---
+# vars file for reset_firewalld
+firewall_config_tarball: "firewalld.tar.gz"
+firewall_config_facts_path: "/etc/rhsm/facts/firewall_status.facts"

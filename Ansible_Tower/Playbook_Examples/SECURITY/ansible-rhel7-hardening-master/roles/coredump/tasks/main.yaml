@@ -1,0 +1,19 @@
+---
+
+#  Task file for coredump
+
+  - lineinfile: dest=/etc/security/limits.conf regexp='^(.*)soft+\s+core(.*)$' state=absent
+  - lineinfile: dest=/etc/security/limits.conf regexp='^\*+\s+hard+\s+core(.*)$' state=present line='* \t \t hard \t core \t 0'
+  - lineinfile: dest=/etc/sysctl.conf state=present regexp='^fs.suid_dumpable' line='fs.suid_dumpable = 0'
+#    notify: restart_sysctl
+  - template: 
+      src: templates/coredump.conf.j2
+      dest: /etc/systemd/coredump.conf
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u
+    when: (ansible_distribution_major_version == "7")

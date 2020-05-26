@@ -1,0 +1,7 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+  - name: Change password
+    user: name=secadmin update_password=always password=!!

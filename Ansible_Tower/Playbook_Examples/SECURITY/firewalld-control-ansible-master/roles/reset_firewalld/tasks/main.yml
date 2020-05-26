@@ -1,0 +1,39 @@
+---
+# tasks file for reset_firewalld
+- name: Firewalld must be installed and updated
+  package:
+    name: firewalld
+    state: latest
+
+- name: Copy firewalld.conf
+  become: true
+  copy:
+    src: firewalld.conf
+    dest: /etc/firewalld/firewalld.conf
+    force: true
+  register: firewalld_conf
+
+- name: Copy default public.xml
+  become: true
+  copy:
+    src: public.xml
+    dest: /etc/firewalld/public.xml
+    force: true
+  register: firewall_zone_conf
+
+- name: Change facts file so it says that there are no custom ports enabled
+  copy:
+    content: "{ \"custom_firewall_ports_count\": 0 }"
+    dest: "{{ firewall_config_facts_path }}"
+
+- name: Debug firewall zone
+  debug:
+    msg: "{{ firewall_zone_conf }}"
+
+- name: Restart firewalld service
+  become: true
+  service:
+    name: firewalld
+    enabled: true
+    state: restarted
+  when: firewalld_conf.changed == "success" and firewall_zone_conf.changed == "success"

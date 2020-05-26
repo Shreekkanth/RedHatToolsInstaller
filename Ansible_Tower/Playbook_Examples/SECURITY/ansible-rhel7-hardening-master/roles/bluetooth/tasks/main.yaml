@@ -1,0 +1,26 @@
+---
+
+#  Task File for disable bluetooth
+
+  - stat: path=/usr/lib/systemd/system/bluetooth.service
+    register: bt_service
+
+#  - debug: 
+#      var=bt_service
+#      msg={{ bt_service.stat.exists }}
+
+  - name: Disable bluetooth service
+    service: name=bluetooth enabled=no state=stopped
+    when: '{{ bt_service.stat.exists }}'
+
+  - name: Disable loading of bluetooth kernel modules
+    template: 
+      owner: root 
+      group: root 
+      mode: 0644 
+      selevel: s0 
+      serole: object_r 
+      setype: modules_conf_t 
+      seuser: system_u 
+      dest: /etc/modprobe.d/bluetooth.conf
+      src: templates/bluetooth.conf.j2

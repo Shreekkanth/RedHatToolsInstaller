@@ -1,0 +1,10 @@
+- hosts: localhost
+  roles:
+  - azure_storageaccount_create
+
+- hosts: windows
+  gather_facts: False
+  roles:
+    - server_names
+    - {role: azure_vm_create, os_type: windows}
+    # - {role: cloudscript, provider: azure, os_type: windows}

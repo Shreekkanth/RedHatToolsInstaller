@@ -1,6 +1,0 @@
-access_redhat_com_user: <access.redhat.com user_id>
-access_redhat_com_password: <access.redhat.com password>
-sat_pool_id: <pool_id for sat subscription>
-sat_server_user: <satellite admin user_id>
-sat_server_pass: <satellite admin password>
-

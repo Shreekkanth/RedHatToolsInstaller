@@ -1,0 +1,18 @@
+---
+- name: Converge
+  connection: local
+  hosts: all
+  gather_facts: 'True'
+  pre_tasks:
+    - name: Install prerequisites
+      yum:
+        name: "{{ item  }}"
+        state: present
+      with_items:
+        - less
+        - libsemanage-python
+        - libselinux-python
+        - sudo
+        - vim
+  roles:
+    - role: ansible-os-hardening-restricted-shell

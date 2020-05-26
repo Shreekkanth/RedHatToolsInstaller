@@ -1,0 +1,102 @@
+---
+- name: Deploy audit LDIF
+  copy:
+    src: "enable_audit.ldif"
+    dest: "/tmp/enable_audit.ldif"
+
+- name: Enable IPA Audit
+  command: ldapmodify -vx -D 'cn=Directory Manager' -w {{ ipa_server_ds_secret }} -f /tmp/enable_audit.ldif
+
+- name: Ensure deployment directory exists
+  file:
+    path: "/var/lib/dirsrv/scripts-{{ realm_name }}"
+    state: directory
+
+- name: Ensure access feed directories exist
+  file:
+    path: "/var/log/dirsrv/slapd-{{ realm_name }}/{{ audit_prefix }}_access/{{ access_item }}"
+    state: directory
+    owner: dirsrv
+    group: dirsrv
+    mode: 0750
+  with_items:
+    - archive
+    - failed
+    - inbox
+    - locks
+    - working
+  loop_control:
+    loop_var: access_item
+
+- name: Ensure audit feed directories exist
+  file:
+    path: "/var/log/dirsrv/slapd-{{ realm_name }}/{{ audit_prefix }}_audit/{{ audit_item }}"
+    state: directory
+    owner: dirsrv
+    group: dirsrv
+    mode: 0750
+  with_items:
+    - archive
+    - failed
+    - inbox
+    - locks
+    - working
+  loop_control:
+    loop_var: audit_item
+
+- name: Ensure dirsrv group ownership of dirsrv log area
+  file:
+    path: "/var/log/dirsrv/slapd-{{ realm_name }}"
+    owner: dirsrv
+    group: dirsrv
+    mode: 0750
+
+- name: Ensure dirsrv ownership of feed log
+  file:
+    path: "/var/log/audit_ipa_auditing.log"
+    owner: dirsrv
+    group: dirsrv
+    mode: 0644
+    state: touch
+
+- name: Deploy feed script
+  template:
+    src: "audit_ipa_feed.sh.j2"
+    dest: "/var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_feed.sh"
+    owner: dirsrv
+    group: dirsrv
+    mode: 0550
+
+- name: Deploy feed audit configuration
+  template:
+    src: "audit_ipa_audit.conf.j2"
+    dest: "/var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_audit.conf"
+    owner: dirsrv
+    group: dirsrv
+    mode: 0440
+
+- name: Deploy feed access configuration
+  template:
+    src: "audit_ipa_access.conf.j2"
+    dest: "/var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_access.conf"
+    owner: dirsrv
+    group: dirsrv
+    mode: 0440
+
+# dirsrv logrotate
+- name: Deploy dirsrv logrotate configuration
+  copy:
+    src: "dirsrv"
+    dest: "/etc/logrotate.d"
+    mode: 0644
+    owner: root
+    group: root
+
+# dirsrv crontab
+- name: Deploy dirsrv crontab
+  template:
+    src: "dirsrv_cron.j2"
+    dest: "/var/spool/cron/dirsrv"
+    mode: 0600
+    owner: root
+    group: root

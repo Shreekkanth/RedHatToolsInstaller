@@ -1,0 +1,32 @@
+---
+
+# Task file for grub
+
+  - shell: /bin/grep "^GRUB_CMDLINE_LINUX=" /etc/default/grub
+    register: grub_cmd
+    changed_when: false
+
+
+  - name: Configure /etc/default/grub and rebuild grub.cfg
+    replace: dest=/etc/default/grub regexp='^(.*)root(.*)$' replace='\1root {{ kernel_params }}\2'
+    when: "'{{ kernel_params }}' not in '{{ grub_cmd.stdout }}'"
+    notify: rebuild_grub
+
+  - name: Setting Grub root user/pass
+    template: src=templates/01_users.j2 dest=/etc/grub.d/01_users owner=root group=root mode=0755 selevel=s0 serole=object_r setype=etc_t seuser=system_u
+    notify: rebuild_grub
+
+  - name: Setting Grub admin user/pass
+    template: src=templates/40_custom.j2 dest=/etc/grub.d/40_custom owner=root group=root mode=0755 selevel=s0 serole=object_r setype=etc_t seuser=system_u
+    notify: rebuild_grub
+
+  - name: Setting permissions on key grub config files
+    file: 
+      path=/boot/grub2/grub.cfg 
+      mode=0600
+      owner=root
+      group=root
+      selevel=s0
+      serole=object_r
+      setype=boot_t
+      seuser=system_u

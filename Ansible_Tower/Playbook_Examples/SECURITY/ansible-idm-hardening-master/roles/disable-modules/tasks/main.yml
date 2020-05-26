@@ -1,0 +1,4 @@
+---
+
+- include_tasks: merge_vars.yml
+- include_tasks: disable_modules.yml

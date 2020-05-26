@@ -1,0 +1,60 @@
+---
+- hosts: all
+  user: root
+  serial: 1
+
+  vars:
+      age: 30
+      rsync_exclude: /usr/local/etc/rsync.exclude
+
+# Be sure to define in inventory:
+# rsync_dest: rsync target
+# rsync_exclude_patterns (a list): patterns to exclude
+# rsync_sources (a list): what to backup
+
+  tasks:
+
+      - name: create rsync exclude file
+        template: src=templates/rsync.exclude.j2 dest={{rsync_exclude}}
+        delegate_to: tiger.lan
+        when: "'{{inventory_hostname}}' == 'tiger.lan'"
+
+      - name: set facts
+        set_fact: backup_dest="{{rsync_dest}}/{{inventory_hostname}}/{{ansible_date_time.iso8601}}"
+                  backup_current="{{rsync_dest}}/{{inventory_hostname}}/current"
+                  backup_host="{{rsync_dest}}/{{inventory_hostname}}"
+
+      - name: create {{backup_dest}} directory
+        command: mkdir -p {{backup_dest}}
+        delegate_to: tiger.lan
+
+      - name: run rsync to target directory
+        delegate_to: tiger.lan
+        shell: >
+            rsync
+            --archive -P
+            --human-readable
+            --relative
+            --stats
+            --itemize-changes
+            --compress
+            --numeric-ids
+            --one-file-system
+            --delete
+            --delete-excluded
+            --exclude-from={{rsync_exclude}}
+            --link-dest={{backup_current}}
+            --log-file={{backup_dest}}.log
+            {{ rsync_sources|join(' ') }} {{backup_dest}}
+
+      - name: remove symlink current
+        file: path={{backup_current}} state=absent
+        delegate_to: tiger.lan
+
+      - name: symlink to curent backup
+        command: chdir={{backup_host}} ln -sf {{ansible_date_time.iso8601}} current
+        delegate_to: tiger.lan
+
+#      - name: prune old backups
+#        command: find {{backup_host}}
+#                 -maxdepth 1 -type d -mtime +{{age}} -exec rm -rf {} \;

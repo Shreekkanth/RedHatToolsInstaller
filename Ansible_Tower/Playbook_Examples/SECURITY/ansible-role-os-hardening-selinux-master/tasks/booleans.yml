@@ -1,0 +1,18 @@
+---
+- name: Manage booleans according to policy
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ (item.enabled | bool) | ternary('on','off')  }}"
+    persistent: 'yes'
+  with_flattened:
+    - "{{ custom_selinux_booleans }}"
+    - "{{ security_rhel7_selinux_booleans }}"
+  when:
+    - security_rhel7_enable_linux_security_module | bool
+    - ansible_virtualization_type != 'docker'
+    - item.name is defined and item.name
+    - item.enabled is defined
+  tags:
+    - high
+    - V-71989
+    - V-71991

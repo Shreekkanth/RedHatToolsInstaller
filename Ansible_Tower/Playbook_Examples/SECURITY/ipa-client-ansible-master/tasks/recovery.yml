@@ -1,0 +1,17 @@
+---
+
+- set_fact:
+    __recovery_in_effect: True
+
+- name: deploy recovery user
+  user:
+    name: "{{ ipaclient_recovery_user }}"
+    password: "{{ ipaclient_recovery_pass | password_hash('sha512') }}"
+    createhome: no
+    comment: "{{role_name}} recovery user"
+
+- name: deploy recovery sudoers
+  template:
+    src: recovery/sudoers.j2
+    dest: "/etc/sudoers.d/{{ ipaclient_recovery_user }}"
+    mode: 0440

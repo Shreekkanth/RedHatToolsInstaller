@@ -1,0 +1,3 @@
+---
+# vars file for open_ports
+firewall_config_facts_path: "/etc/rhsm/facts/firewall_status.facts"

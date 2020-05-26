@@ -1,0 +1,22 @@
+dn: cn=config
+changetype: modify
+replace: nsslapd-auditlog-logging-enabled
+nsslapd-auditlog-logging-enabled: on
+-
+replace: nsslapd-auditlog-logrotationtime
+nsslapd-auditlog-logrotationtime: 5
+-
+replace: nsslapd-auditlog-logrotationtimeunit
+nsslapd-auditlog-logrotationtimeunit: minute
+-
+replace: nsslapd-auditlog-maxlogsperdir
+nsslapd-auditlog-maxlogsperdir: 10
+-
+replace: nsslapd-accesslog-logrotationtime
+nsslapd-accesslog-logrotationtime: 5
+-
+replace: nsslapd-accesslog-logrotationtimeunit
+nsslapd-accesslog-logrotationtimeunit: minute
+-
+replace: nsslapd-accesslog-maxlogsperdir
+nsslapd-accesslog-maxlogsperdir: 10

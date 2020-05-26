@@ -1,0 +1,32 @@
+---
+
+# Task file for firewalld
+
+  - name: get status of firewalld
+    command: /usr/bin/firewall-offline-cmd --get-default-zone
+    register: df_zone
+    changed_when: false
+
+  - name: Setting default firewalld zone to drop (This drops all packets unless otherwise allowed).
+    command: /usr/bin/firewall-offline-cmd --set-default-zone=drop
+    when: ( '{{ df_zone.stdout }}' != "drop" )
+    notify: restart_firewalld
+
+  - name: get list of services
+    command: /usr/bin/firewall-offline-cmd --list-services
+    register: df_services
+    changed_when: false
+
+  - name: Allowing ssh service in the drop zone
+    command: /usr/bin/firewall-offline-cmd --add-service=ssh
+    with_items:
+      - "{{ df_services.stdout.split(' ') }}"
+    when: ( '{{ item }}' != "ssh" )
+    notify: restart_firewalld
+
+  - name: Removing all services that are not ssh
+    command: /usr/bin/firewall-offline-cmd --remove-service={{ item }}
+    with_items:
+      - "{{ df_services.stdout.split(' ') }}"
+    when: ( '{{ item }}' != "ssh" )
+    notify: restart_firewalld

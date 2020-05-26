@@ -1,0 +1,3 @@
+---
+gitlab_url: "https://{{ gitlab_user | urlencode }}:{{ gitlab_pass | urlencode }}@{{ gitlab_repo }}"
+change_comment: ""

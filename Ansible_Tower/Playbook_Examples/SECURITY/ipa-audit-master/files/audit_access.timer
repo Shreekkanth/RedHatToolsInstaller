@@ -1,0 +1,10 @@
+[Unit]
+Description=Access Shipping Timer
+
+[Timer]
+OnBootSec=15min
+OnCalendar=*:0/15
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

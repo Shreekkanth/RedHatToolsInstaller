@@ -1,0 +1,23 @@
+# ~/.bashrc: executed by bash(1) for interactive shells.
+
+[[ "$-" != *i* ]] && return
+
+set -o notify
+set -o ignoreeof
+shopt -s histappend nocaseglob cdspell extglob
+
+if [ -f /etc/bashrc ]; then
+  . "/etc/bashrc"
+fi
+
+if [ -f "${HOME}/.bash_aliases" ]; then
+  # shellcheck disable=SC1090
+  . "${HOME}/.bash_aliases"
+fi
+
+if [ -f "${HOME}/.bash_functions" ]; then
+  # shellcheck disable=SC1090
+  . "${HOME}/.bash_functions"
+fi
+
+umask 077

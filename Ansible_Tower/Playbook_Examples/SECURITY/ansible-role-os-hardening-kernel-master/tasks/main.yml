@@ -1,0 +1,126 @@
+---
+- name: V-71983 - modules that must be disabled.
+  lineinfile:
+    dest: /etc/modprobe.d/00-ansible-hardening.conf
+    line: install {{ item.name }} /bin/true
+    create: 'yes'
+  when:
+    - item.enabled | bool
+  with_items: "{{ modprobe_settings_rhel7 }}"
+  tags:
+    - kernel
+    - medium
+    - V-71983
+
+- name: Set sysctl configurations
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: "{{ item.enabled | ternary('present', 'absent') }}"
+    reload: 'yes'
+  with_items:
+    - "{{ sysctl_settings_rhel7_ipv4 }}"
+    - "{{ sysctl_settings_rhel7_net }}"
+    - "{{ sysctl_settings_rhel7_kernel }}"
+  tags:
+    - medium
+    - kernel
+    - V-72283
+    - V-72285
+    - V-72287
+    - V-72289
+    - V-73175
+    - V-72291
+    - V-72293
+    - V-72309
+    - V-72319
+    - C-00001
+  when: ansible_virtualization_type != 'docker'
+
+- name: Set sysctl configurations IPv6
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: "{{ item.enabled | ternary('present', 'absent') }}"
+    reload: 'yes'
+  with_items:
+    - "{{ sysctl_settings_rhel7_ipv6 }}"
+  tags:
+    - medium
+    - kernel
+    - V-72283
+    - V-72285
+    - V-72287
+    - V-72289
+    - V-73175
+    - V-72291
+    - V-72293
+    - V-72309
+    - V-72319
+    - C-00001
+  when:
+    - ansible_virtualization_type != 'docker'
+    - not security_disable_ipv6
+
+- name: Ensure sysctl.conf right permissions
+  file:
+    path: '/etc/sysctl.conf'
+    owner: root
+    group: root
+    mode: 0644
+    seuser: system_u
+    serole: object_r
+    setype: system_conf_t
+    selevel: s0
+    backup: 'yes'
+  when: ansible_virtualization_type != 'docker'
+
+- name: Gather service facts
+  service_facts:
+  changed_when: 'False'
+  check_mode: 'no'
+  tags:
+    - kernel
+    - medium
+    - V-72057
+  when: ansible_virtualization_type != 'docker'
+
+- name: V-72057 - Kernel core dumps must be disabled unless needed.
+  systemd:
+    name: kdump
+    state: stopped
+    enabled: 'no'
+  when:
+    - ansible_virtualization_type != 'docker'
+    #- kdump_service_check.rc not in [3,4]
+    - ansible_facts.services['kdump.service'].state == "running"
+    - security_disable_kdump | bool
+  tags:
+    - kernel
+    - medium
+    - V-72057
+
+- name: Check if FIPS is enabled
+  command: cat /proc/sys/crypto/fips_enabled
+  register: fips_check
+  changed_when: 'False'
+  failed_when: 'False'
+  check_mode: 'no'
+  when:
+    - ansible_os_family | lower == 'redhat'
+  tags:
+    - always
+
+- name: Print a warning if FIPS isn't enabled
+  debug:
+    msg: >
+      FIPS is not enabled at boot time on this server.
+      The STIG requires FIPS to be enabled at boot time.
+  when:
+    - ansible_os_family | lower == 'redhat'
+    - fips_check is defined
+    - fips_check.stdout != '1'
+  tags:
+    - high
+    - misc
+    - V-72067

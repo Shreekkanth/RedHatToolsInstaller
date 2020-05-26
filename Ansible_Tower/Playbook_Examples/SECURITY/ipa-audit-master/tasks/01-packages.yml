@@ -1,0 +1,7 @@
+---
+
+- name: Install ldap-access-parser package
+  yum:
+    name: "{{ audit_repo_url }}"
+    state: present
+    validate_certs: no

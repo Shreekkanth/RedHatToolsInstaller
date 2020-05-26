@@ -1,0 +1,14 @@
+---
+# Set the package install state for distribution packages
+# Options are 'present' and 'latest'
+security_package_state: present
+# SELinux booleans required to allow ClamAV scan the system and use the JIT
+security_rhel7_selinux_booleans_clamav:
+  - name: antivirus_can_scan_system
+    enabled: 'True'
+  - name: antivirus_use_jit
+    enabled: 'True'
+# Enable virus scanning with clamav
+security_enable_virus_scanner: 'yes'                            # V-72213
+# Run the virus scanner update during the deployment (if scanner is deployed)
+security_run_virus_scanner_update: 'yes'

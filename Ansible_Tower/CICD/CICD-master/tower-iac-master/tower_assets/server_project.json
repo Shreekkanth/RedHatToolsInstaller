@@ -1,0 +1,134 @@
+[
+  {
+    "credential": "SR SCM Credential", 
+    "name": "SR Project", 
+    "scm_url": "ssh://git@gitlab.consulting.redhat.com:2222/jowestco/tower-iac.git", 
+    "asset_relation": {
+      "notification_templates_error": [], 
+      "notification_templates_success": [], 
+      "roles": [
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Update", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }
+      ], 
+      "schedules": []
+    }, 
+    "scm_type": "git", 
+    "scm_update_on_launch": true, 
+    "organization": "SR Org", 
+    "asset_type": "project"
+  }, 
+  {
+    "credential": "SR Machine Credential", 
+    "asset_relation": {
+      "extra_credentials": [
+        "SR GitLab Credential", 
+        "SR Prod Tower Credential"
+      ], 
+      "notification_templates_error": [], 
+      "notification_templates_success": [], 
+      "roles": [
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Execute", 
+          "user": []
+        }
+      ], 
+      "schedules": [], 
+      "survey_spec": {}
+    }, 
+    "description": "Import the assets onto the prod servers", 
+    "extra_vars": "---\ngitlab_repo: gitlab.consulting.redhat.com/jowestco/tower-iac-target.git", 
+    "name": "SR Import Assets", 
+    "project": "SR Project", 
+    "inventory": "SR Inventory", 
+    "asset_type": "job_template", 
+    "playbook": "playbooks/import.yaml"
+  }, 
+  {
+    "credential": "SR Machine Credential", 
+    "asset_relation": {
+      "extra_credentials": [
+        "SR Dev Tower Credential", 
+        "SR GitLab Credential"
+      ], 
+      "notification_templates_error": [], 
+      "notification_templates_success": [], 
+      "roles": [
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Execute", 
+          "user": []
+        }
+      ], 
+      "schedules": [], 
+      "survey_spec": {
+        "description": "", 
+        "spec": [
+          {
+            "required": true, 
+            "min": 0, 
+            "default": "", 
+            "max": 4096, 
+            "question_description": "", 
+            "choices": "", 
+            "new_question": true, 
+            "variable": "change_comment", 
+            "question_name": "Change Comment", 
+            "type": "textarea"
+          }
+        ], 
+        "name": ""
+      }
+    }, 
+    "description": "Export Tower assets to GitLab", 
+    "extra_vars": "---\ngitlab_repo: gitlab.consulting.redhat.com/jowestco/tower-iac-target.git", 
+    "name": "SR Export Assets", 
+    "project": "SR Project", 
+    "inventory": "SR Inventory", 
+    "asset_type": "job_template", 
+    "survey_enabled": true, 
+    "playbook": "playbooks/export.yaml"
+  } 
+]

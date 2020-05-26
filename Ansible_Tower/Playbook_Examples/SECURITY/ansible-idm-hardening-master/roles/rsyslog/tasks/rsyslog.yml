@@ -1,0 +1,17 @@
+---
+
+- name: "ensure rsyslog default file permissions configured"
+  lineinfile: 
+    path: /etc/rsyslog.conf
+    state: present
+    line: '$FileCreateMode 0640'
+    backup: yes
+  become: true
+
+- name: "reload rsyslog configuration"
+  systemd:
+    name: rsyslog
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
+  become: true

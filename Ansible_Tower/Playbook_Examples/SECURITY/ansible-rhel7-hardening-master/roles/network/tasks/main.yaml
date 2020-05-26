@@ -1,0 +1,69 @@
+---
+
+# Task file for network
+
+  - name: Limit Network-Transmitted Configuration
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv6.conf.default.{{ item }}*=*' state=present line='net.ipv6.conf.default.{{ item }} = 0'
+    with_items: 
+      - router_solicitations
+      - accept_ra_rtr_pref
+      - accept_ra_rtr_pinfo
+      - accept_ra_pinfo
+      - accept_ra_defrtr
+      - dad_transmits
+
+# The code below will set the parameters for each interface, security looks for just "default"
+#  - name: Limit Network-Transmitted Configuration
+#    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv6.conf.{{ item.0 }}.{{ item.1 }}*=*' state=present line='net.ipv6.conf.{{ item.0 }}.{{ item.1 }} = 0'
+#    with_nested: 
+#      - '{{ ansible_interfaces }}'
+#      - [ 'router_solicitations', 'accept_ra_rtr_pref', 'accept_ra_rtr_pinfo', 'accept_ra_pinfo', 'accept_ra_defrtr', 'dad_transmits' ]
+#    when: ( '{{ item.0 }}' != "lo")
+
+  - name: Set IPv6 max addresses to 1
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv6.conf.default.max_addresses*=*' state=present line='net.ipv6.conf.default.max_addresses = 1'
+
+# The code below will set the parameters for each interface, security looks for just "default"
+#  - name: Set IPv6 max addresses to 1
+#    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv6.conf.{{ item }}.max_addresses *=*' state=present line='net.ipv6.conf.{{ item }}.max_addresses = 1' 
+#    with_items:
+#      - '{{ ansible_interfaces }}'
+#    when: ( '{{ item }}' != "lo")
+   
+  - name: Disable Accepting IPv6 Router Advertisements
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv6.conf.default.accept_ra =*' state=present line='net.ipv6.conf.default.accept_ra = 0'
+
+  - name: Disable Accepting IPv6 Redirects
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv6.conf.default.accept_redirects *=*' state=present line='net.ipv6.conf.default.accept_redirects = 0'
+
+  - name: Disable kernel parameter for sending ICMP redirects for all interfaces
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.all.send_redirects *=*' state=present line='net.ipv4.conf.all.send_redirects = 0'
+
+  - name: Disable kernel parameter for accepting ICMP redirects for all interfaces
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.all.accept_redirects *=*' state=present line='net.ipv4.conf.all.accept_redirects = 0'
+
+  - name: Disable kernel parameter for accepting secure redirects for all interfaces
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.all.secure_redirects *=*' state=present line='net.ipv4.conf.all.secure_redirects = 0'
+
+  - name: Enable kernel parameter to log Martian packets
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.all.log_martians *=*' state=present line='net.ipv4.conf.all.log_martians = 1'
+
+  - name: Disable Accepting IPv4 Redirects
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.default.accept_redirects *=*' state=present line='net.ipv4.conf.default.accept_redirects = 0'
+
+  - name: Disable kernel parameter for accepting secure redirects by default
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.default.secure_redirects *=*' state=present line='net.ipv4.conf.default.secure_redirects = 0'
+
+  - name: Disable kernel parameter for sending ICMP redirects by default
+    lineinfile: dest=/etc/sysctl.conf regexp='^net.ipv4.conf.default.send_redirects *=*' state=present line='net.ipv4.conf.default.send_redirects = 0'
+
+  - name: Disable NOZEROCONF networking
+    lineinfile: dest=/etc/sysconfig/network regexp='^\s*NOZEROCONF.*' state=present line='NOZEROCONF=yes'
+
+  - name: Manually assign global IPv6 Address to each interface
+    lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-{{ item.0 }} regexp='^\s*{{ item.1 }}.*' state=present line='{{ item.1 }}='
+    with_nested:
+      - '{{ ansible_interfaces }}'
+      - [ 'IPV6ADDR', 'IPV6_PRIVACY', 'IPV6_DEFAULTGW' ]
+    when: ( '{{ item.0 }}' != "lo")
+    

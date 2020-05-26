@@ -1,0 +1,148 @@
+---
+
+- name: "ensure SSH Protocol is set to 2"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^Protocol.*'
+    state: present
+    line: 'Protocol 2'
+    backup: yes
+  become: true
+
+- name: "ensure SSH LogLevel is set to INFO"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^LogLevel.*'
+    state: present
+    line: 'LogLevel INFO'
+    backup: yes
+  become: true
+
+- name: "ensure SSH X11 forwarding is disabled"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^X11Forwarding.*'
+    state: present
+    line: 'X11Forwarding no'
+    backup: yes
+  become: true
+
+- name: "ensure SSH MaxAuthTries is set to 4 or less"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^MaxAuthTries.*'
+    state: present
+    line: 'MaxAuthTries 4'
+    backup: yes
+  become: true
+
+- name: "ensure SSH IgnoreRhosts is enabled"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^IgnoreRhosts.*'
+    state: present
+    line: 'IgnoreRhosts yes'
+    backup: yes
+  become: true
+
+- name: "ensure SSH HostbasedAuthentication is disabled"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^HostbasedAuthentication.*'
+    state: present
+    line: 'HostbasedAuthentication no'
+    backup: yes
+  become: true
+
+- name: "ensure SSH root login is disabled"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin.*'
+    state: present
+    line: 'PermitRootLogin no'
+    backup: yes
+  become: true
+
+- name: "ensure SSH PermitEmptyPasswords is disabled"
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitEmptyPasswords.*'
+    state: present
+    line: 'PermitEmptyPasswords no'
+    backup: yes
+  become: true
+
+- name: "ensure SSH PermitUserEnvironment is disabled"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitUserEnvironment.*'
+    state: present
+    line: 'PermitUserEnvironment no'
+    backup: yes
+  become: true
+
+- name: "ensure only approved ciphers are used"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Ciphers.*'
+    state: present
+    line: 'Ciphers aes256-ctr,aes192-ctr,aes128-ctr'
+    backup: yes
+  become: true
+
+- name: "ensure only approved MAC algorithms are used"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^MACs.*'
+    state: present
+    line: 'MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com'
+    backup: yes
+  become: true
+
+- name: "ensure SSH Idle Timeout Interval is configured"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    state: present
+    line: "{{ item.line }}"
+    backup: yes
+  become: true
+  with_items:
+    - { line: 'ClientAliveInterval 300', regexp: '^ClientAliveInterval.*' }
+    - { line: 'ClientAliveCountMax 0', regexp: '^ClientAliveCountMax.*' }
+
+- name: "ensure SSH LoginGraceTime is set to one minute or less"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^LoginGraceTime.*'
+    state: present
+    line: 'LoginGraceTime 60'
+    backup: yes
+  become: true
+
+- name: "ensure SSH warning banner is configured (banner file)"
+  copy:
+    src: issue.net
+    dest: /etc/issue.net
+    owner: root
+    group: root
+    mode: 0644
+    setype: etc_t
+    backup: yes
+  become: true
+
+- name: "ensure SSH warning banner is configured (sshd_config)"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Banner.*'
+    state: present
+    line: 'Banner /etc/issue.net'
+    backup: yes
+  become: true
+
+- name: "restarting sshd to load new configuration"
+  systemd:
+    name: sshd
+    enabled: yes
+    state: restarted
+  become: true

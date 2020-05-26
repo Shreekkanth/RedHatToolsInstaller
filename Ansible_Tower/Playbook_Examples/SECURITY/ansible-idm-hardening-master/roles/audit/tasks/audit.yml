@@ -1,0 +1,10 @@
+---
+
+- name: "ensure the audit configuration is immutable"
+  lineinfile:
+    path: /etc/audit/audit.rules
+    insertafter: EOF
+    line: '-e 2'
+    state: present
+    backup: yes
+  become: true

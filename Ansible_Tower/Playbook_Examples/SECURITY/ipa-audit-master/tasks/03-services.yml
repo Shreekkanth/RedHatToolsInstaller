@@ -1,0 +1,35 @@
+---
+
+- name: install systemd service for feeds
+  template:
+    src: '{{ service_item }}.j2'
+    dest: '/usr/lib/systemd/system/{{ service_item }}'
+  with_items:
+    - 'audit_access.service'
+    - 'audit_audit.service'
+  loop_control:
+    loop_var: service_item
+  notify:
+    - restart_audit
+
+- name: install systemd timers for feeds
+  copy:
+    src: '{{ timer_item }}'
+    dest: '/usr/lib/systemd/system/{{ timer_item }}'
+  with_items:
+    - 'audit_access.timer'
+    - 'audit_audit.timer'
+  loop_control:
+    loop_var: timer_item
+  notify:
+    - restart_audit
+
+- name: enable timers
+  systemd:
+    name: '{{ timer_item }}'
+    enabled: yes
+  with_items:
+    - 'audit_access.timer'
+    - 'audit_audit.timer'
+  loop_control:
+    loop_var: timer_item

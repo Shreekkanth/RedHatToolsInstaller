@@ -1,0 +1,7 @@
+---
+security_enable_gpgcheck_packages: yes                       # V-71977
+security_enable_gpgcheck_packages_local: yes                 # V-71979
+security_enable_gpgcheck_repo: yes                           # V-71981
+security_check_package_checksums: yes                        # V-71855
+security_package_clean_on_remove: no                         # V-71987
+security_reset_perm_ownership: no                            # V-71849

@@ -1,0 +1,5 @@
+---
+
+- include_tasks: icmp-send-redirects.yml
+- include_tasks: suspicious-packets.yml
+- include_tasks: ipv6.yml

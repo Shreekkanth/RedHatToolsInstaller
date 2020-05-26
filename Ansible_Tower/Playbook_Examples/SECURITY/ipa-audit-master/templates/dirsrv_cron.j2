@@ -1,0 +1,2 @@
+*/5 * * * * /bin/bash /var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_feed.sh -c /var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_audit.conf >> /var/log/audit_ipa_auditing.log 2>&1
+*/5 * * * * /bin/bash /var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_feed.sh -c /var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_access.conf >> /var/log/audit_ipa_auditing.log 2>&1

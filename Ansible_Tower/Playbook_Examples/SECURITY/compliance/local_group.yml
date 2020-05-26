@@ -1,0 +1,33 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+
+  - name: enable protocol 2
+    lineinfile: dest=/etc/ssh/sshd_config line="Protocol 2" state=present 
+    notify:
+     - restart sshd
+    tags: sshproto
+
+  - name: disable protocol 1
+    lineinfile: dest=/etc/ssh/sshd_config line="Protocol 1" state=absent
+    notify:
+     - restart sshd
+    tags: sshproto
+
+  - name: Remove protocol 2,1
+    lineinfile: dest=/etc/ssh/sshd_config line="Protocol 2,1" state=absent
+    notify:
+     - restart sshd
+    tags: sshproto
+
+  - name: Set root login to no
+    replace: dest=/etc/ssh/sshd_config regexp='PermitRootLogin yes' replace='PermitRootLogin no' backup=yes
+    notify:
+     - restart sshd
+    tags: sshrootno
+
+  handlers:
+  - name: restart sshd
+    service: name=sshd enabled=yes state=restarted

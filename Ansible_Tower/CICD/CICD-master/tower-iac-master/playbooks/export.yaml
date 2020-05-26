@@ -1,0 +1,11 @@
+---
+- name: Export Assets
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - "vars/tower-iac-vars.yml"
+  tasks:
+    - name: Export Assets from Ansible Tower
+      import_role:
+        name: "tower-export-assets"

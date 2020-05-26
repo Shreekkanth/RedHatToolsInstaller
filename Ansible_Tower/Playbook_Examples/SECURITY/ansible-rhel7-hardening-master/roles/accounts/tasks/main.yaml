@@ -1,0 +1,26 @@
+---
+
+# Task file for account security role
+
+  - name: Configure /etc/login.defs
+    template: 
+      src: templates/login.defs.j2
+      dest: /etc/login.defs
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u
+  - name: Configure /etc/default/useradd
+    template:
+      src: templates/useradd.j2
+      dest: /etc/default/useradd
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u

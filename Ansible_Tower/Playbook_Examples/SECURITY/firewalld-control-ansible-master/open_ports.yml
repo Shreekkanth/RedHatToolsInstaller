@@ -1,0 +1,10 @@
+---
+- name: Reset Firewalld settings
+  hosts: all
+  vars:
+    - ports: 
+      - 80/tcp
+      - 8080/tcp
+  roles:
+    - reset_firewalld
+    - open_ports

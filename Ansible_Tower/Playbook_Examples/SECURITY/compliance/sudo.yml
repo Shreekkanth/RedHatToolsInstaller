@@ -1,0 +1,16 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+    - name: Copy the sudoers file
+      copy: src=/home/linans/files/sudoers dest=/etc/sudoers validate='/usr/sbin/visudo -cf %s'
+      tags: sudo
+
+    - name: Copy the DMZ sudoers file
+      copy: src=/home/linans/files/DMZ_sudoers dest=/etc/sudoers validate='/usr/sbin/visudo -cf %s'
+      tags: dmzsudo
+
+    - name: Copy the Hadoop sudoers file
+      copy: src=/home/linans/files/Hadoop-sudoers dest=/etc/sudoers validate='/usr/sbin/visudo -cf %s'
+      tags: hadoopsudo

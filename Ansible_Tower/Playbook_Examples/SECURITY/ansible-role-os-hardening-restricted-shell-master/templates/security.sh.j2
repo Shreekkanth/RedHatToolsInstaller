@@ -1,0 +1,24 @@
+# {{ ansible_managed }}
+# WARN: Assumes primary group is created for users
+# This is the default behaviour on local accounts
+# and IdM, but can be deactivated.
+# Be careful to keep this in sync, as otherwise
+# these security measures won't be applied
+if [ $UID -gt {{ security_rhel7_min_uid }} ] && [ "`id -gn`" = "`id -un`" ]; then
+  HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
+  HISTIGNORE=$'&:[fb]g:exit'
+  HISTTIMEFORMAT='%FT%T%z '
+  LESSSECURE=1
+  PATH="$HOME/bin"
+  PROMPT_COMMAND="history -a"
+  PS1='\[\e]0;\w\a\]\n\[\e[32m\]\u@\h \[\e[33m\]\w\[\e[0m\]\n\$ '
+  TMOUT=300
+  SUDO_EDITOR=/usr/bin/rvi
+  TERM=xterm-256color
+  readonly HISTCONTROL HISTFILE HISTIGNORE HISTSIZE HISTTIMEFORMAT IFS LESSSECURE PATH PROMPT_COMMAND PS1 TMOUT SHELL SUDO_EDITOR TERM
+  export HISTCONTROL HISTFILE HISTIGNORE HISTSIZE HISTTIMEFORMAT IFS LESSSECURE PATH PROMPT_COMMAND PS1 TMOUT SHELL SUDO_EDITOR TERM
+  umask 077
+else
+  TERM=xterm-256color
+  export TERM
+fi

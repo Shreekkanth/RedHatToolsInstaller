@@ -1,0 +1,36 @@
+---
+
+- name: "ensure password expiration is 90 days or less (login.defs)"
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MAX_DAYS'
+    line: 'PASS_MAX_DAYS 90'
+    backup: yes
+  become: true
+
+- name: "ensure password expiration is 90 days or less (chage users)"
+  shell: while IFS= read -r var ; do  age=$(/usr/bin/echo "$var" | /usr/bin/awk -F':' '{print $5}'); pass=$(/usr/bin/echo "$var" | /usr/bin/awk -F':' '{print $2}'); login=$(/usr/bin/echo "$var" | /usr/bin/awk -F':' '{print $1}'); if [ -z $age ]; then continue; fi; if [ $(/usr/bin/echo $pass | /usr/bin/grep "^\\$") ]; then if [ $(/usr/bin/expr $age - 90) -gt 0 ]; then /usr/bin/chage --maxdays 90 $login; fi; fi done < /etc/shadow
+  become: true
+
+- name: "ensure minimum days between password changes is 7 or more (login.defs)"
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MIN_DAYS'
+    line: 'PASS_MIN_DAYS 7'
+    backup: yes
+  become: true
+
+- name: "ensure minimum days between password changes is 7 or more (chage users)"
+  shell: while IFS= read -r var ; do  age=$(/usr/bin/echo "$var" | /usr/bin/awk -F':' '{print $4}'); pass=$(/usr/bin/echo "$var" | /usr/bin/awk -F':' '{print $2}'); login=$(/usr/bin/echo "$var" | /usr/bin/awk -F':' '{print $1}'); if [ -z $age ]; then continue; fi; if [ $(/usr/bin/echo $pass | /usr/bin/grep "^\\$") ]; then if [ $(/usr/bin/expr $age - 7) -lt 0 ]; then /usr/bin/chage --mindays 7 $login; fi; fi done < /etc/shadow
+  become: true
+
+- name: "ensure default user umask is 027 or more restrictive (login.defs)"
+  replace: 
+    dest: "{{ item }}"
+    regexp: 'umask 0.2'
+    replace: 'umask 027'
+    backup: yes
+  become: true
+  with_items:
+    - /etc/profile
+    - /etc/bashrc

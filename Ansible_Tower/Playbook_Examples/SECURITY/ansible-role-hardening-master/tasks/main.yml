@@ -1,0 +1,328 @@
+---
+# tasks file for hardening
+
+- name: Include distro-specific vars
+  include_vars:
+    file: "{{ ansible_distribution|lower }}.yml"
+
+- name: Set bash profile
+  copy:
+    src: bashrc
+    dest: /root/.bashrc
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Set Issue banner
+  template:
+    src: issue.j2
+    dest: /etc/issue
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Kernel parameters
+  template:
+    src: 10-hardening.conf.j2
+    dest: /etc/sysctl.d/10-hardening.conf
+    mode: 0644
+    owner: root
+    group: root
+  notify: reload sysctl
+
+- name: Remove local users
+  user:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - ftp
+    - operator
+    - games
+  ignore_errors: true
+
+- block:
+  # Install haveged - requires EPEL
+  - name: Install Virtual RNG (pre RHEL 7.5)
+    package:
+      name: haveged
+      state: present
+
+  - name: Enable Virtual RNG
+    service:
+      name: haveged
+      state: started
+      enabled: true
+  when:
+    - ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
+    - ansible_virtualization_role != 'host'
+    - ansible_distribution_version <= '7.5'
+
+- block:
+  - name: Install RNG
+    package:
+      name: rng-tools
+      state: present
+
+  - name: Enable RNG
+    service:
+      name: "{{ rngd_service }}"
+      state: started
+      enabled: true
+  when: ansible_virtualization_role == 'host' or ansible_distribution_version >= '7.6' or ansible_distribution == 'Debian'
+
+- name: SSH Server hardening
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: 0600
+    owner: root
+    group: root
+  notify: restart sshd
+
+- name: SSH Client hardening
+  template:
+    src: ssh_config.j2
+    dest: /etc/ssh/ssh_config
+    mode: 0600
+    owner: root
+    group: root
+
+- name: Disable Storage
+  template:
+    src: disable_removable_media.conf.j2
+    dest: /etc/modprobe.d/disable_removable_media.conf
+
+- name: Disable Protocols
+  copy:
+    src: disable_uncommon_protocol_types.conf
+    dest: /etc/modprobe.d/disable_uncommon_protocol_types.conf
+
+- name: Disable Filesystems
+  copy:
+    src: disable_uncommon_filesystem_types.conf
+    dest: /etc/modprobe.d/disable_uncommon_filesystem_types.conf
+
+- name: Disable Devices
+  copy:
+    src: disable_external_interfaces_dma.conf
+    dest: /etc/modprobe.d/disable_external_interfaces_dma.conf
+
+- name: Disable wheel group sudo access
+  lineinfile:
+    path: /etc/sudoers
+    state: absent
+    regexp: '^%wheel'
+
+- name: Core Hard limits
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: '* hard core 0'
+    state: present
+
+- name: Core Soft limits
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: '* soft core 0'
+    state: present
+
+- name: Max Login limits
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: '* hard maxlogins 30'
+    state: present
+
+- name: Remove vc terminals
+  lineinfile:
+    path: /etc/securetty
+    state: absent
+    regexp: '^vc/'
+
+- name: Login defaults - Max Days
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MAX_DAYS\s+'
+    line: 'PASS_MAX_DAYS\t90'
+    state: present
+    backrefs: yes
+
+- name: Login defaults - Min Days
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MIN_DAYS\s+'
+    line: 'PASS_MIN_DAYS\t1'
+    state: present
+    backrefs: yes
+
+# TODO: Fix to work with '#PASS_MIN_LEN' in RPi
+- name: Login defaults - Min Length
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_MIN_LEN\s+'
+    line: 'PASS_MIN_LEN\t11'
+    state: present
+    backrefs: yes
+
+- name: Login defaults - Warn Days
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^PASS_WARN_AGE\s+'
+    line: 'PASS_WARN_AGE\t14'
+    state: present
+    backrefs: yes
+
+# TODO: Fix to work with '# INACTIVE=-1' in RPi
+- name: Login defaults - Inactive Account Expiry
+  lineinfile:
+    path: /etc/default/useradd
+    regexp: '^INACTIVE'
+    line: 'INACTIVE=35'
+    state: present
+    backrefs: yes
+
+- name: Check if firewalld is being used
+  shell: systemctl is-enabled firewalld
+  register: fwalld
+  failed_when: false
+  changed_when: false
+
+# Firewalld logging
+- block:
+  - name: Configure default DROP logging in firewalld
+    lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      regexp: '^LogDenied'
+      line: 'LogDenied=unicast'
+      state: present
+      backrefs: yes
+    notify: restart_firewalld
+
+  - name: Redirect firewall logs
+    copy:
+      content: |
+        :msg,contains,"_DROP" /var/log/iptables.log
+        :msg,contains,"_REJECT" /var/log/iptables.log
+        :msg,contains,"ACCEPT: " /var/log/iptables.log
+        & stop
+      dest: /etc/rsyslog.d/iptables.conf
+    notify: restart_rsyslog
+
+  - name: Add firewall logrotate
+    copy:
+      content: |
+        /var/log/iptables.log {
+          nocreate
+          daily
+          missingok
+          rotate 7
+          compress
+        }
+      dest: /etc/logrotate.d/iptables
+
+  - name: Add logging SSH to firewall
+    firewalld:
+      immediate: true
+      permanent: true
+      state: enabled
+      rich_rule: 'rule service name="ssh" log prefix="ACCEPT: " accept'
+
+  - name: Remove default ssh service from firewall
+    firewalld:
+      immediate: true
+      permanent: true
+      state: disabled
+      service: ssh
+  when: fwalld.rc == 0
+
+# IPv6 disable
+- block:
+  - name: Disable ipv6 kernel parameters
+    lineinfile:
+      path: /etc/sysctl.d/20-ipv6.conf
+      line: "{{ item }}"
+      create: yes
+      mode: 0644
+      owner: root
+      group: root
+    with_items:
+      - "net.ipv6.conf.all.disable_ipv6 = 1"
+      - "net.ipv6.conf.default.disable_ipv6 = 1"
+      - "net.ipv6.conf.lo.disable_ipv6 = 1"
+
+  - name: Disable ipv6 per interface
+    lineinfile:
+      path: /etc/sysctl.d/20-ipv6.conf
+      line: "net.ipv6.conf.{{ item }}.disable_ipv6 = 1"
+      state: present
+    with_items: "{{ ansible_interfaces }}"
+
+  - name: Check if netconfig is present
+    stat:
+      path: /etc/netconfig
+    register: netconf
+
+  - name: Disable ipv6 messages
+    lineinfile:
+      path: /etc/netconfig
+      regexp: "^{{ item }} (.*)$"
+      line: '# {{ item }} \1'
+      state: present
+      backrefs: yes
+    with_items:
+      - tcp6
+      - udp6
+    when: netconf.stat.exists
+
+  - name: Disable ipv6 host entry
+    replace:
+      path: /etc/hosts
+      regexp: "^{{ item }} (.*)$"
+      replace: '#{{ item }} \1'
+    with_items:
+      - "::1"
+
+  - name: Check if chrony is installed
+    stat:
+      path: /etc/sysconfig/chronyd
+    register: chrony_installed
+
+  - name: Disable chrony ipv6
+    lineinfile:
+      path: /etc/sysconfig/chronyd
+      regexp: '^OPTIONS'
+      line: 'OPTIONS="-4"'
+      state: present
+      create: yes
+      backrefs: yes
+    notify:
+      - restart chronyd
+    when: chrony_installed.stat.exists
+
+  - name: check if firewalld is being used
+    shell: systemctl is-enabled firewalld
+    register: fwalld
+    failed_when: false
+    changed_when: false
+
+  - name: Remove dhcpv6 service from firewall
+    firewalld:
+      service: dhcpv6-client
+      state: disabled
+      permanent: true
+      immediate: true
+    when: fwalld.rc == 0
+
+
+  - name: Check if postfix is installed
+    stat:
+      path: /etc/postfix/main.cf
+    register: postfix_config
+
+  - name: Remove ipv6 from postfix
+    lineinfile:
+      path: /etc/postfix/main.cf
+      regexp: '^inet_protocols\s+'
+      line: 'inet_protocols = ipv4'
+      state: present
+      backrefs: yes
+    when: postfix_config.stat.exists
+  when: disable_ipv6

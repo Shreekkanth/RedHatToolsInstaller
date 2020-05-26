@@ -1,0 +1,39 @@
+---
+
+#  Task File to enable cronie-noanacron
+
+  - shell: /usr/bin/yum repolist | /bin/grep repolist
+    register: yum_repo
+    changed_when: false
+
+  - name: Install the cronie-noanacron package
+    yum: name=cronie-noanacron state=latest
+    when: ( " 0" not in '{{ yum_repo.stdout }}' )
+
+  - name: Remove the cronie-anacron package
+    yum: name=cronie-anacron state=latest
+    when: ( " 0" not in '{{ yum_repo.stdout }}' )
+
+  - name: Limiting who can run cron jobs
+    copy:
+      dest: /etc/cron.allow
+      mode: 0600
+      owner: root
+      group: root
+      selevel: s0
+      seuser: system_u
+      serole: object_r
+      setype: etc_t
+      content: "root"
+
+  - name: Limiting who can run at jobs
+    copy:
+      dest: /etc/at.allow
+      mode: 0600
+      owner: root
+      group: root
+      selevel: s0
+      seuser: system_u
+      serole: object_r
+      setype: etc_t
+      content: "root"

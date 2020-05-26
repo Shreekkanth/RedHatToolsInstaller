@@ -1,0 +1,39 @@
+---
+
+#  Task file for auditd
+
+  - shell: /usr/bin/yum repolist | /bin/grep repolist
+    register: yum_repo
+    changed_when: false
+
+#  - debug: msg={{ yum_repo.stdout }}
+#
+  - name: Install auditd
+    yum: name=audit state=latest
+    when: ( " 0" not in '{{ yum_repo.stdout }}' )
+
+  - name: Configure auditd.conf
+    template: 
+      src: templates/auditd.conf.j2
+      dest: /etc/audit/auditd.conf
+      owner: root
+      group: root
+      mode: 0640
+      selevel: s0
+      serole: object_r
+      setype: auditd_etc_t
+      seuser: system_u
+    when: (ansible_distribution_major_version == "7")
+
+  - name: Configure audit.rules
+    template:
+      src: templates/audit.rules.j2
+      dest: /etc/audit/rules.d/audit.rules
+      owner: root
+      group: root
+      mode: 0640
+      selevel: s0
+      serole: object_r
+      setype: auditd_etc_t
+      seuser: system_u
+    when: (ansible_distribution_major_version == "7")

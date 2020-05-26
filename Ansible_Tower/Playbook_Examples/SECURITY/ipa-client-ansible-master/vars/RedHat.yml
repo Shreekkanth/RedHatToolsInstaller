@@ -1,0 +1,38 @@
+---
+
+ipaclient_install_command: /usr/sbin/ipa-client-install
+ipaclient_automount_command: /usr/sbin/ipa-client-automount
+ipa_client_host_default: /etc/ipa/default.conf
+
+ipaclient_source_package_command: /usr/bin/yumdownloader
+ipaclient_auth_config: /usr/sbin/authconfig
+
+ipaclient_packages:
+  ipa-client:
+    state: installed
+  libselinux-python:
+    state: installed
+
+# rollback packages
+ipaclient_test_packages:
+  - package: sssd-common
+    commands: []
+    files:
+      - /etc/sssd/sssd.conf
+  - package: openldap
+    commands: []
+    files:
+      - /etc/openldap/ldap.conf
+  - package: autofs
+    commands: []
+    files:
+      - /etc/auto.master
+  - package: pam
+    commands: []
+    files:
+      - /etc/security/access.conf
+  - package: ipa-client
+    commands:
+      - "{{ ipaclient_install_command }} --uninstall --unattended"
+    files:
+      - /etc/ipa/default.conf

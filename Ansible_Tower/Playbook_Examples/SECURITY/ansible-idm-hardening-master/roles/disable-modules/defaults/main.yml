@@ -1,0 +1,12 @@
+---
+
+defaults:
+  modules2disable:
+    - cramfs-cis.conf
+    - freevxfs-cis.conf
+    - jffs2-cis.conf
+    - hfs-cis.conf
+    - hfsplus-cis.conf
+    - squashfs-cis.conf
+    - udf-cis.conf
+    - fat-cis.conf

@@ -1,0 +1,25 @@
+# {{ ansible_managed  }}
+CompressLocalDatabase yes
+ConnectTimeout 30
+DatabaseDirectory /var/lib/clamav
+DatabaseMirror db.uk.clamav.net
+DatabaseMirror db.local.clamav.net
+DatabaseOwner clamupdate
+DNSDatabaseInfo current.cvd.clamav.net
+{{ clamav_proxy }}
+{{ clamav_proxy_port }}
+{{ clamav_proxy_user }}
+{{ clamav_proxy_password }}
+LogFileMaxSize 5M
+LogTime yes
+LogVerbose no
+LogSyslog yes
+LogFacility LOG_LOCAL6
+MaxAttempts 5
+NotifyClamd /etc/clamd.conf
+PidFile /var/run/freshclam.pid
+ReceiveTimeout 60
+ScriptedUpdates yes
+TestDatabases yes
+SafeBrowsing yes
+UpdateLogFile /var/log/clamupdate/freshclam.log

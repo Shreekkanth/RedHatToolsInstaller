@@ -1,0 +1,15 @@
+[Unit]
+Description=Access Shipping Service
+After=local-fs.target network.target
+Requires=network.target
+Wants=local-fs.target
+
+[Service]
+Type=oneshot
+User=dirsrv
+ExecStart=/bin/bash /var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_feed.sh -c /var/lib/dirsrv/scripts-{{ realm_name }}/audit_ipa_access.conf
+RemainAfterExit=no
+TimeoutSec=0
+
+[Install]
+WantedBy=multi-user.target

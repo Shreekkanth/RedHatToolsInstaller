@@ -1,0 +1,8 @@
+---
+
+# Task file for maxlogins
+  
+    - replace: dest=/etc/security/limits.conf regexp='^(.*)hard+\s+maxlogins(.*)$' replace='\1hard \t maxlogins \t 2'
+    - lineinfile: dest=/etc/security/limits.conf regexp='^(.*)soft+\s+maxlogins(.*)$' state=absent
+    - lineinfile: dest=/etc/security/limits.conf regexp='^\*+\s+hard+\s+maxlogins(.*)$' state=present line='* \t \t hard \t maxlogins \t 2'
+    - lineinfile: dest=/etc/security/limits.conf regexp='^# End of file' state=absent

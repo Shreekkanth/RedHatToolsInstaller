@@ -1,0 +1,14 @@
+---
+
+- name: "ensure noexec and nosuid option set on /dev/shm partition"
+  lineinfile: 
+    path: /etc/fstab
+    regexp: '^tmpfs.*'
+    state: present
+    line: 'tmpfs      /dev/shm        tmpfs   defaults,noexec,nosuid        0 0'
+    backup: yes
+  become: true
+
+- name: "remounting tmpfs"
+  command: /usr/bin/mount tmpfs -o remount
+  become: true

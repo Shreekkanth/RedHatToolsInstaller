@@ -1,0 +1,15 @@
+- hosts: all
+  roles:
+   - disable-modules
+   - shm-mount
+   - bootloader-config-perms
+   - cores
+   - telnet
+   - sysctl
+   - audit
+   - rsyslog
+   - cron
+   - ssh
+   - shadowpass
+   - shadowpasssuite
+   - systemfileperms

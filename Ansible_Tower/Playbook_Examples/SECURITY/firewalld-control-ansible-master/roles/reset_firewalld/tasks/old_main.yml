@@ -1,0 +1,37 @@
+---
+# tasks file for reset_firewalld
+- name: Firewalld must be installed and updated
+  package:
+    name: firewalld
+    state: latest
+
+- name: Delete remote firewall rules
+  become: true
+  file:
+    state: absent
+    path: /etc/firewalld
+
+- name: Upload default rules
+  become: true
+  unarchive:
+    src: "{{ firewall_config_tarball }}"
+    remote_src: no
+    dest: /etc/
+    owner: root
+    group: root
+
+- name: Change facts file so it says that there are no custom ports enabled
+  copy:
+    content: "{ \"custom_firewall_ports_count\": 0 }"
+    dest: "{{ firewall_config_facts_path }}"
+
+- name: Restore selinux contexts at /etc/firewalld
+  become: true
+  shell: "restorecon -RFvv /etc/firewalld"
+
+- name: Restart firewalld service
+  become: true
+  service:
+    name: firewalld
+    enabled: true
+    state: restarted

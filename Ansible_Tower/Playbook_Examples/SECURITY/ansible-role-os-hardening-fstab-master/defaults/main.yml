@@ -1,0 +1,70 @@
+---
+# SELinux booleans related to mount capabilities and FUSE
+security_rhel7_selinux_booleans_fstab:
+  - name: mount_anyfile
+    enabled: 'False'
+  - name: xguest_mount_media
+    enabled: 'False'
+  - name: ftpd_use_fusefs
+    enabled: 'False'
+  - name: glance_use_fusefs
+    enabled: 'False'
+  - name: httpd_use_fusefs
+    enabled: 'False'
+  - name: mailman_use_fusefs
+    enabled: 'False'
+  - name: rpcd_use_fusefs
+    enabled: 'False'
+  - name: samba_share_fusefs
+    enabled: 'False'
+  - name: sanlock_use_fusefs
+    enabled: 'False'
+  - name: use_fusefs_home_dirs
+    enabled: 'False'
+  - name: virt_sandbox_use_fusefs
+    enabled: 'False'
+  - name: virt_use_fusefs
+    enabled: 'False'
+
+# Set defaults per mountpoint
+security_rhel7_selinux_fstab_mountopts:
+  - mount: /dev/shm
+    options: 'rw,seclabel,nodev,nosuid,noexec'
+  - mount: /
+    options: 'defaults'
+  - mount: /boot
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /boot/efi
+    options: 'umask=0077'
+  - mount: /home
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /opt
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /srv
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /tmp
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /usr
+    options: 'rw,seclabel,relatime,noquota,nodev'
+  - mount: /var
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /var/crash
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /var/lib
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /var/lib/containers
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /var/lib/docker
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /var/lib/flatpak
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /var/lib/libvirt
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /var/lib/origin
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'
+  - mount: /var/log
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /var/log/audit
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid,noexec'
+  - mount: /var/www
+    options: 'rw,seclabel,relatime,noquota,nodev,nosuid'

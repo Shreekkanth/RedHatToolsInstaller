@@ -1,0 +1,17 @@
+---
+
+# Task file for packages
+
+  - shell: /usr/bin/yum repolist | /bin/grep repolist
+    register: yum_repo
+    changed_when: false
+
+#  - debug: msg={{ yum_repo.stdout }}
+
+  - name: Install restorecond policycoreutils_restorecond policycoreutils_python
+    yum: name={{ item }} state=latest
+    with_items:
+      - restorecond
+      - policycoreutils_restorecond
+      - policycoreutils_python
+    when: ( " 0" not in '{{ yum_repo.stdout }}' )

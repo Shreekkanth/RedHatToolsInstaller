@@ -1,0 +1,8 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+  - name: Change password
+    ### CHANGE THE NAME TO THE USERNAME YOU NEED AND PASSWORD TO A GOOD HASH SHADOW ENTRY
+    user: name=NAME update_password=always password=HASH

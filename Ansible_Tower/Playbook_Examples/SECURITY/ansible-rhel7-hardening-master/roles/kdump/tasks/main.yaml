@@ -1,0 +1,14 @@
+---
+
+#  Task File for disable kdump
+
+  - stat: path=/usr/lib/systemd/system/kdump.service
+    register: kdump_service
+
+#  - debug: 
+#      var=kdump_service
+#      msg={{ kdump_service.stat.exists }}
+
+  - name: Disable Kdump service
+    service: name=kdump enabled=no state=stopped
+    when: '{{ kdump_service.stat.exists }}'

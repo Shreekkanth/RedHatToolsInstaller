@@ -1,0 +1,100 @@
+---
+
+- name: ensure absent recovery user
+  user:
+    name: "{{ ipaclient_recovery_user }}"
+    state: absent
+
+- name: ensure absent recovery sudoers
+  file:
+    dest: "/etc/sudoers.d/{{ ipaclient_recovery_user }}"
+    state: absent
+
+- name: ensure rollback root
+  file:
+    path: "{{ ipaclient_rollback_path }}"
+    state: directory
+
+- name: ensure recovery path
+  file:
+    path: "{{ ipaclient_recovery_path }}/{{ item.1 | dirname }}"
+    state: directory
+  with_subelements:
+    - "{{ ipaclient_test_packages }}"
+    - files
+
+- name: download packages
+  command: >
+    {{ ipaclient_source_package_command }} {{ item }}
+    --archlist={{ ansible_architecture }}
+  args:
+    chdir: "{{ ipaclient_rollback_path }}"
+    creates: "{{ ipaclient_rollback_path }}/{{ item }}*.rpm"
+  with_items:
+    - "{{ ipaclient_test_packages | map(attribute='package') | list }}"
+
+- name: extract rpm contents
+  shell: >
+    for i in $(find . -type f -name "*.rpm"); do
+      ( rpm2cpio $i | cpio -idmv );
+    done
+  args:
+    chdir: "{{ ipaclient_rollback_path }}"
+  changed_when: False
+
+- name: copy existing configuration
+  failed_when: False
+  changed_when: False
+  copy:
+    remote_src: True
+    directory_mode: True
+    src: "{{ item.1 }}"
+    dest: "{{ ipaclient_recovery_path }}/{{ item.1 }}"
+  with_subelements:
+    - "{{ ipaclient_test_packages }}"
+    - files
+
+- name: delete existing configuration
+  failed_when: False
+  changed_when: False
+  file:
+    state: absent
+    path: "{{ item.1 }}"
+  with_subelements:
+    - "{{ ipaclient_test_packages }}"
+    - files
+
+- name: restore rpm default configuration files
+  failed_when: False
+  changed_when: False
+  copy:
+    remote_src: True
+    src: "{{ ipaclient_rollback_path }}/{{ item.1 }}"
+    dest: "{{ item.1 }}"
+  with_subelements:
+    - "{{ ipaclient_test_packages }}"
+    - files
+
+- name: rollback commands
+  failed_when: False
+  changed_when: False
+  command: "{{ item.1 }}"
+  with_subelements:
+    - "{{ ipaclient_test_packages }}"
+    - commands
+
+- name: rollback local auth only
+  command: >
+    {{ ipaclient_auth_config }} --update
+    --disablewins
+    --disablesssd
+    --disablepamaccess
+    --disablesysnetauth
+    --disablekrb5
+    --disableldapauth
+    --disablenis
+  notify:
+    - clean rollback root
+
+- set_fact:
+    __recovery_in_effect: False

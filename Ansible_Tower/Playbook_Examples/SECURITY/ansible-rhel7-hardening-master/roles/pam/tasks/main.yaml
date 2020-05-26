@@ -1,0 +1,39 @@
+---
+
+# Task file for pam
+
+  - name: Configure /etc/security/pwquality.conf
+    template: 
+      src: templates/pwquality.conf.j2
+      dest: /etc/security/pwquality.conf
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u
+
+  - name: Configure /etc/pam.d/system-auth-ac
+    template:
+      src: templates/system-auth-ac.j2
+      dest: /etc/pam.d/system-auth-ac
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u
+
+  - name: Configure /etc/pam.d/password-auth-ac
+    template:
+      src: templates/password-auth-ac.j2
+      dest: /etc/pam.d/password-auth-ac
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u

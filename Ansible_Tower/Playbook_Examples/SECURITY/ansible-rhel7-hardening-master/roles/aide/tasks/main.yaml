@@ -1,0 +1,12 @@
+---
+
+#  Task File to install and configure aide
+
+  - shell: /usr/bin/yum repolist | /bin/grep repolist
+    register: yum_repo
+    changed_when: false
+
+  - name: Install the aide package
+    yum: name=aide state=latest
+    when: ( " 0" not in '{{ yum_repo.stdout }}' )
+

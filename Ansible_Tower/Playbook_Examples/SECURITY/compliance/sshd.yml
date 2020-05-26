@@ -1,0 +1,7 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+  - name: Set root login to no
+    replace: dest=/etc/group regexp='dsur::45152:jiangxx9,dba,zhengzx' replace='dsur::45152:jiangxx9,dba,zhengzx,bandisx' backup=yes

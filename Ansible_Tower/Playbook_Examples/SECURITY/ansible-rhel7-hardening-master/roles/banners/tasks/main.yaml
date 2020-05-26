@@ -1,0 +1,19 @@
+---
+
+#  Task file for banners
+
+  - template: 
+      src: templates/banners.j2
+      dest: "{{ item }}"
+      owner: root
+      group: root
+      mode: 0644
+      selevel: s0
+      serole: object_r
+      setype: etc_t
+      seuser: system_u
+    with_items:
+      - /etc/issue
+      - /etc/issue.net
+      - /etc/motd
+    when: (ansible_distribution_major_version == "7")

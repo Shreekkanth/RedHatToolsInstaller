@@ -1,0 +1,19 @@
+---
+
+- name: "ensure  permissions on /etc/passwd- are configured"
+  file: 
+    path: /etc/passwd-
+    owner: root
+    group: root
+    mode: 0600
+    setype: passwd_file_t
+  become: true
+
+- name: "ensure  permissions on /etc/group- are configured"
+  file:
+    path: /etc/group-
+    owner: root
+    group: root
+    mode: 0600
+    setype: passwd_file_t
+  become: true

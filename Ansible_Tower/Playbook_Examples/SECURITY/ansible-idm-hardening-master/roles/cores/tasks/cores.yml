@@ -1,0 +1,9 @@
+---
+
+- name: "[1.5.1] - ensure core dumps are restricted"
+  lineinfile: 
+    path: /etc/security/limits.conf
+    state: present
+    line: '* hard core 0'
+    backup: yes
+  become: true

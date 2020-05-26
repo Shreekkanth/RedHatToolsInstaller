@@ -1,0 +1,10 @@
+---
+
+# Task file for umask
+
+  - name: Set umask to 077 in all the places
+    replace: dest={{ item }} regexp='^(.*)umask 0(.*)$' replace='\1umask 077'
+    with_items:
+      - /etc/profile
+      - /etc/bashrc
+      - /etc/csh.cshrc

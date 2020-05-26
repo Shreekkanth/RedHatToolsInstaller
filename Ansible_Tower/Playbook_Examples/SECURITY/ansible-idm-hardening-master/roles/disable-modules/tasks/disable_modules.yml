@@ -1,0 +1,13 @@
+---
+
+- name: "disabling kernel modules"
+  copy: 
+    src: "{{ item }}"
+    dest: /etc/modprobe.d/
+    owner: root
+    group: root
+    mode: 0644
+    setype: modules_conf_t
+  with_items:  "{{ modules2disable }}"
+  become: true
+

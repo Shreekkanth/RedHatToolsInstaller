@@ -1,0 +1,53 @@
+---
+
+#  Task file for files
+
+  - name: Set Permissions on /etc/passwd
+    file: owner=root 
+          group=root 
+          mode=0644 
+          selevel=s0
+          serole=object_r
+          setype=passwd_file_t
+          seuser=system_u
+          path=/etc/passwd
+
+  - name: Set Permissions on /etc/shadow and /etc/gshadow 
+    file: owner=root
+          group=root
+          mode=0000
+          selevel=s0
+          serole=object_r
+          setype=shadow_t
+          seuser=system_u
+          path={{ item }}
+    with_items:
+      - /etc/shadow
+      - /etc/gshadow
+  - name: Set Permissions on /etc/group
+    file: owner=root
+          group=root
+          mode=0644
+          selevel=s0
+          serole=object_r
+          setype=passwd_file_t
+          seuser=system_u
+          path=/etc/group
+
+  - name: Set Owner of /usr/lib and /usr/lib64
+    file: path={{ item }} owner=root recurse=yes
+    with_items:
+      - /usr/lib
+      - /usr/lib64
+    changed_when: false
+
+  - name: Remove group and other write permissions from /usr/lib and /usr/lib64
+    command: chmod -R go-w {{ item }}
+    with_items:
+      - /usr/lib
+      - /usr/lib64
+    changed_when: false
+
+  - name: Remove broken links from /usr/lib and /usr/lib64
+    command: /bin/find -L /usr/lib -type l -delete
+    changed_when: false

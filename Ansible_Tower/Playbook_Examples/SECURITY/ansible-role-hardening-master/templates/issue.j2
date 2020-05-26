@@ -1,0 +1,14 @@
+###############################################################
+#  All connections to this system are monitored and recorded  #
+#  Disconnect IMMEDIATELY if you are not an authorized user!  #
+###############################################################
+
+{% if auth_source == 'AD' %}
+---------------------------------------------------------------------------------
+                      Please use your AD credentials
+
+{% elif auth_source == 'LDAP' %}
+---------------------------------------------------------------------------------
+                      Please use your LDAP credentials
+
+{% endif %}

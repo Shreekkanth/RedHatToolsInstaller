@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: RHEL7
+      copy: src=/net/nfs/ifs/EGV/nfs/enterprise/unix_utility/build_config/abbvie-rhel7.repo dest=/etc/yum.repos.d/
+      when: ansible_os_family == 'RedHat' and ansible_lsb.major_release|int >= 7
+      tags: RHEL7
+    - name: RHEL6
+      copy: src=/net/nfs/ifs/EGV/nfs/enterprise/unix_utility/build_config/abbvie-rhel6.repo dest=/etc/yum.repos.d/
+      when: ansible_os_family == 'RedHat' and ansible_lsb.major_release|int == 6
+      tags: RHEL6

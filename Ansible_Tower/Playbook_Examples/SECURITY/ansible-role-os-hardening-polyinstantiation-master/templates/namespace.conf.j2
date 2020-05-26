@@ -1,0 +1,37 @@
+# {{ ansible_managed }}
+#
+# The following three lines will polyinstantiate /tmp,
+# /var/tmp and user's home directories. /tmp and /var/tmp
+# will be polyinstantiated based on the security level
+# as well as user name, whereas home directory will be
+# polyinstantiated based on the full security context and user name.
+# Polyinstantiation will not be performed for user root
+# and adm for directories /tmp and /var/tmp, whereas home
+# directories will be polyinstantiated for all users.
+#
+# Note that instance directories do not have to reside inside
+# the polyinstantiated directory. In the examples below,
+# instances of /tmp will be created in /tmp-inst directory,
+# where as instances of /var/tmp and users home directories
+# will reside within the directories that are being
+# polyinstantiated.
+#
+# /tmp       /tmp/.inst/tmp.inst-$USER-     tmpdir:create   root
+# /var/tmp   /tmp/.inst/var-tmp.inst-$USER- tmpdir:create   root
+# $HOME      $HOME/$USER.inst/              tmpdir:create   root
+#
+{# TODO add the ability to add custom poly dirs without overriding the defaut #}
+{# dictionary. Relies on fixing the merge_list_of_dicts filter, currently not #}
+{# working. #}
+{# set list = security_rhel7_poly_dirs | merge_lists_of_dicts(custom_poly_dirs) #}
+{% set list = security_rhel7_poly_dirs %}
+{% for item in list %}
+{%   if item.enabled | bool %}
+{{ item.polydir }}   {{ item.instance_prefix }}   {{ item.method }}{%
+   if item.create | bool %}:create{% endif %}{%
+     if item.iscript is defined %}:iscript={{ item.iscript }}{% endif %}{%
+       if item.noinit | bool %}:noinit{% endif %}{%
+         if item.shared | bool %}:shared{% endif %}{%
+           if item.mntopts is defined and 'tmpfs' in item.method %}:mntopts={{ item.mntopts }}{% endif %}    {{ item.list_of_uids | join(',') }}
+{%   endif %}
+{% endfor %}

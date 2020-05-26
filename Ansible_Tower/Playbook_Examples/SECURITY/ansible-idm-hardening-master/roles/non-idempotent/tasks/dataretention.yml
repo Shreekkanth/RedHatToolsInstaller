@@ -1,0 +1,15 @@
+---
+
+- name: "ensure auditing for processes that start prior to auditd is enabled"
+  lineinfile: 
+    path: /etc/default/grub
+    backrefs: yes
+    state: present
+    regexp: '(^.+crashkernel.+(?!audit=1).*)"$'
+    line: '\1 audit=1"'
+    backup: yes
+  become: true
+
+- name: "update grub2 configuration"
+  command: /usr/sbin/grub2-mkconfig > /boot/grub2/grub.cfg
+  become: true

@@ -1,0 +1,57 @@
+---
+#  Task file for fstab
+
+  - name: Set Permissions on /etc/fstab
+    file: owner=root 
+          group=root 
+          mode=0644 
+          selevel=s0
+          serole=object_r
+          setype=etc_t
+          seuser=system_u
+          path=/etc/fstab
+
+  - name: Set /dev/shm tmpfs options
+    mount:
+      name: /dev/shm
+      src: tmpfs
+      fstype: tmpfs
+      opts: rw,nosuid,nodev,seclabel,nodev,noexec,nosuid
+      state: mounted
+
+  - name: Set nodev option on all mounts except /, /tmp, and /var/tmp
+    mount: 
+      name: "{{ item.mount }}"
+      src: "{{ item.device }}"
+      fstype: "{{ item.fstype }}"
+      opts: "{%- if item.fstype == 'xfs' -%}
+                rw,relatime,seclabel,attr2,inode64,noquota,nodev
+             {%- elif item.fstype == 'ext2' -%}
+                rw,relatime,seclabel,nodev
+             {%- elif item.fstype == 'ext3' or item.fstype == 'ext4' -%}
+                rw,relatime,seclabel,data=ordered,nodev
+             {%- endif %}"
+      state: mounted
+    with_items: '{{ ansible_mounts }}'
+    when: (item.mount != "/" and item.mount != "/tmp" and item.mount != "/var/tmp")
+
+  - name: Set noexec nosuid nodev option on /tmp
+    mount:
+      name: "{{ item.mount }}"
+      src: "{{ item.device }}"
+      fstype: "{{ item.fstype }}"
+      opts: rw,relatime,seclabel,attr2,inode64,noquota,nodev,noexec,nosuid
+      state: mounted
+    with_items: '{{ ansible_mounts }}'
+    when: (item.mount == "/tmp")
+   
+  - name: Bind mount /var/tmp to /tmp
+    mount:
+      name: /var/tmp
+      src: /tmp
+      fstype: none
+      opts: bind
+      state: mounted
+    with_items: '{{ ansible_mounts }}'
+    when: (item.mount == "/tmp")
+      

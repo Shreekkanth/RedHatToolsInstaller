@@ -1,0 +1,28 @@
+---
+- name: example audit playbook
+  hosts: all
+  user: root
+  gather_facts: no
+
+  vars:
+      ignore_pkgs: jre
+
+  tasks:
+
+      - name: verify auditd configuration
+        action: audit_auditd
+
+      - name: verify installed packages are gpg signed
+        signed_pkgs: exclude={{ignore_pkgs}}
+
+      - name: verify iptables/firewall is configured
+        action: audit_iptables
+
+      - name: verify selinux configuration
+        action: selinux_status
+
+      - name: examine filesystem
+        action: audit_filesystem
+
+      - name: examine network services
+        action: audit_net_service

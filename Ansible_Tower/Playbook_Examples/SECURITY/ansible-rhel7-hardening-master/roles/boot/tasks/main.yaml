@@ -1,0 +1,42 @@
+---
+
+#  Task file for boot role
+
+  - name: Disable Interactive Boot
+    lineinfile: dest=/etc/sysconfig/init regexp='^PROMPT=' state=present line='PROMPT=no'
+
+  - name: Disable CTRL+ALT+DEL 
+    file:
+      src=/dev/null
+      dest=/etc/systemd/system/crtl-alt-del.target
+      state=link
+      owner=root
+      group=root
+      selevel=s0
+      serole=object_r
+      setype=systemd_unit_file_t
+      seuser=system_u
+
+  - name: Linking /etc/systemd/system/default.target to multi-user.target
+    file:
+      src=/lib/systemd/system/multi-user.target
+      dest=/etc/systemd/system/default.target
+      state=link
+      owner=root
+      group=root
+      selevel=s0
+      serole=object_r
+      setype=systemd_unit_file_t
+      seuser=system_u
+  
+  - name: Linking /usr/lib/systemd/system/default.target to multi-user.target
+    file:
+      src=/usr/lib/systemd/system/multi-user.target
+      dest=/usr/lib/systemd/system/default.target
+      state=link
+      owner=root
+      group=root
+      selevel=s0
+      serole=object_r
+      setype=systemd_unit_file_t
+      seuser=system_u

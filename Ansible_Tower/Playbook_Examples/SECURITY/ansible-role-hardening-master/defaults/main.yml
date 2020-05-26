@@ -1,0 +1,43 @@
+---
+# defaults for SSH
+ssh_listen_address: 0.0.0.0
+ssh_port: 22
+ssh_AddressFamily: inet
+ssh_PermitRootLogin: 'no'
+ssh_MaxAuthTries: 3
+ssh_ClientAlive_Interval: 172800
+ssh_ClientAliveCountMax: 0
+ssh_LoginGraceTime: 60
+ssh_Banner: /etc/issue
+ssh_HostKeyAlgorithms: ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-rsa
+ssh_KexAlgorithms: ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group14-sha1
+ssh_Ciphers: aes256-ctr
+ssh_MACs: hmac-sha2-512,hmac-sha2-256
+ssh_AllowTcpForwarding: 'yes'
+ssh_X11Forwarding: 'no'
+
+# Defaults for kernel parameters
+kernel_exec_shield: 1
+kernel_randomize_va_space: 2
+fs_suid_dumpable: 0
+net_ipv4_conf_all_forwarding: 0
+net_ipv4_ip_forward: 0
+net_ipv4_conf_default_send_redirects: 0
+net_ipv4_conf_all_send_redirects: 0
+net_ipv4_conf_all_accept_source_route: 0
+net_ipv4_conf_all_accept_redirects: 0
+net_ipv4_conf_all_secure_redirects: 0
+net_ipv4_conf_all_log_martians: 0
+net_ipv4_conf_default_accept_source_route: 0
+net_ipv4_conf_default_accept_redirects: 0
+net_ipv4_conf_default_secure_redirects: 0
+net_ipv4_icmp_echo_ignore_broadcasts: 1
+net_ipv4_icmp_ignore_bogus_error_responses: 1
+net_ipv4_tcp_syncookies: 1
+net_ipv4_conf_all_rp_filter: 1
+net_ipv4_conf_default_rp_filter: 1
+
+# Default authentication source - used in /etc/issue rendering
+auth_source: local
+
+disable_ipv6: true

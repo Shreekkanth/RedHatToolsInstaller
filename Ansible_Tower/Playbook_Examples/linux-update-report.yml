@@ -1,0 +1,23 @@
+---
+- name: Update Report
+  hosts: all
+  become: true
+
+  tasks:
+  - name: check for missing updates
+    yum:
+      list: updates
+    become: yes
+    register: available_updates
+
+  - debug:
+      msg: |
+        {{ inventory_hostname }} has {{ available_updates.results|length }} updates available.
+        {% for update in available_updates.results %}
+          - {{ update.name }}-{{ update.version }}
+        {% endfor %}
+    when: available_updates.results is defined
+
+#-------
+#It would run with
+#ansible-playbook report.yml | grep -v TASKS |grep -v PLAY |tee -a errata_report.txt

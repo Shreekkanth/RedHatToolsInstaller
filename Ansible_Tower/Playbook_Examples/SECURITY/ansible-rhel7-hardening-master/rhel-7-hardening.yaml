@@ -1,0 +1,32 @@
+---
+- name: Red Hat server 7 hardening script
+  hosts: all
+  user: root
+  become: true
+
+  roles:
+    - packages
+    - chrony
+    - accounts 
+    - bluetooth 
+    - boot 
+    - console 
+    - coredump
+    - files
+    - firewalld
+    - fstab
+    - grub
+    - maxlogins
+    - modules
+    - network
+    - pam
+    - umask
+    - uncommon_fs
+    - banners
+    - audit
+    #- sshd
+    - syslog
+    - kdump
+    - psacct
+    - cronie-noanacron
+    - aide

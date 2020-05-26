@@ -1,0 +1,251 @@
+---
+## module blacklisting settings
+#
+# Each dictionary has this structure:
+#
+#   name: the module name
+#   enabled: whether the variable should be set or not
+#
+modprobe_settings_rhel7:
+  - name: usb-storage
+    enabled: "{{ security_rhel7_disable_usb_storage }}"
+  - name: cramfs
+    enabled: "{{ security_rhel7_disable_cramfs }}"
+  - name: freevfxs
+    enabled: "{{ security_rhel7_disable_freevfxs }}"
+  - name: jffs2
+    enabled: "{{ security_rhel7_disable_jffs2 }}"
+  - name: hfs
+    enabled: "{{ security_rhel7_disable_hfs }}"
+  - name: hfsplus
+    enabled: "{{ security_rhel7_disable_hfsplus }}"
+  - name: udf
+    enabled: "{{ security_rhel7_disable_udf }}"
+  - name: bluetooth
+    enabled: "{{ security_rhel7_disable_bluetooth }}"
+  - name: net-pf-31
+    enabled: "{{ security_rhel7_disable_net_pf_31 }}"
+  - name: dccp
+    enabled: "{{ security_rhel7_disable_dccp }}"
+  - name: sctp
+    enabled: "{{ security_rhel7_disable_sctp }}"
+  - name: rds
+    enabled: "{{ security_rhel7_disable_rds }}"
+  - name: tipc
+    enabled: "{{ security_rhel7_disable_tipc }}"
+
+## sysctl settings
+# This variable is used in main.yml to set sysctl
+# configurations on hosts.
+#
+# Each dictionary has this structure:
+#
+#   name: the sysctl configuration name
+#   value: the value to set for the sysctl configuration
+#   enabled: whether the variable should be set or not
+#
+sysctl_settings_rhel7_ipv4:
+  - name: net.ipv4.conf.all.accept_source_route
+    value: 0
+    enabled: "{{ security_disallow_source_routed_packet_forward_ipv4 | bool }}"
+  - name: net.ipv4.conf.default.accept_source_route
+    value: 0
+    enabled: "{{ security_disallow_source_routed_packet_forward_ipv4 | bool}}"
+  - name: net.ipv4.icmp_echo_ignore_broadcasts
+    value: 1
+    enabled: "{{ security_disallow_echoes_broadcast_address | bool }}"
+  - name: net.ipv4.conf.all.send_redirects
+    value: 0
+    enabled: "{{ security_disallow_icmp_redirects | bool }}"
+  - name: net.ipv4.conf.default.send_redirects
+    value: 0
+    enabled: "{{ security_disallow_icmp_redirects | bool }}"
+  - name: net.ipv4.ip_forward
+    value: 0
+    enabled: "{{ security_disallow_ip_forwarding | bool }}"
+  - name: net.ipv4.conf.default.accept_redirects
+    value: 0
+    enabled: "{{ security_disallow_icmp_redirects | bool }}"
+  - name: net.ipv4.icmp_echo_ignore_all
+    value: '1'
+    enabled: "{{ security_icmp_echo_ignore_all | bool }}"
+  - name: net.ipv4.tcp_max_syn_backlog
+    value: '2048'
+    enabled: "{{ security_tcp_max_syn_backlog | bool }}"
+  - name: net.ipv4.tcp_synack_retries
+    value: '2'
+    enabled: "{{ security_tcp_synack_retries | bool }}"
+  - name: net.ipv4.tcp_syn_retries
+    value: '5'
+    enabled: "{{ security_tcp_syn_retries | bool }}"
+  - name: net.ipv4.conf.all.log_martians
+    value: '1'
+    enabled: "{{ security_log_martians | bool }}"
+  - name: net.ipv4.conf.default.log_martians
+    value: '1'
+    enabled: "{{ security_log_martians | bool }}"
+  - name: net.ipv4.conf.all.accept_source_route
+    value: '0'
+    enabled: "{{ security_accept_source_route | bool }}"
+  - name: net.ipv4.conf.default.accept_source_route
+    value: '0'
+    enabled: "{{ security_accept_source_route | bool }}"
+  - name: net.ipv4.conf.all.accept_redirects
+    value: '1'
+    enabled: "{{ security_accept_redirects | bool }}"
+  - name: net.ipv4.conf.default.accept_redirects
+    value: '0'
+    enabled: "{{ security_accept_redirects | bool }}"
+  - name: net.ipv4.conf.all.secure_redirects
+    value: '0'
+    enabled: "{{ security_secure_redirects | bool }}"
+  - name: net.ipv4.conf.default.secure_redirects
+    value: '0'
+    enabled: "{{ security_secure_redirects | bool }}"
+  - name: net.ipv4.conf.all.send_redirects
+    value: '0'
+    enabled: "{{ security_send_redirects | bool }}"
+  - name: net.ipv4.conf.default.send_redirects
+    value: '0'
+    enabled: "{{ security_send_redirects | bool }}"
+  - name: net.ipv4.ip_local_port_range
+    value: '2000 65000'
+    enabled: "{{ security_ip_local_port_range | bool }}"
+  - name: net.ipv4.tcp_rmem
+    value: '4096 87380 8388608'
+    enabled: "{{ security_tcp_rmem | bool }}"
+  - name: net.ipv4.tcp_wmem
+    value: '4096 87380 8388608'
+    enabled: "{{ security_tcp_wmem | bool }}"
+  - name: net.ipv4.tcp_window_scaling
+    value: '1'
+    enabled: "{{ security_tcp_window_scaling | bool }}"
+  - name: net.ipv4.ip_forward
+    value: 0
+    enabled: "{{ security_ip_forward | bool }}"
+  - name: net.ipv4.conf.all.rp_filter
+    value: 1
+    enabled: "{{ security_rp_filter | bool }}"
+  - name: net.ipv4.conf.default.rp_filter
+    value: 1
+    enabled: "{{ security_rp_filter | bool }}"
+  - name: net.ipv4.icmp_echo_ignore_broadcasts
+    value: 1
+    enabled: "{{ security_icmp_echo_ignore_broadcasts | bool }}"
+  - name: net.ipv4.icmp_ignore_bogus_error_responses
+    value: 1
+    enabled: "{{ security_icmp_ignore_bogus_error_responses | bool }}"
+  - name: net.ipv4.icmp_ratelimit
+    value: 100
+    enabled: "{{ security_icmp_ratelimit | bool }}"
+  - name: net.ipv4.icmp_ratemask
+    value: 88089
+    enabled: "{{ security_icmp_ratemask | bool }}"
+  - name: net.ipv4.tcp_timestamps
+    value: 0
+    enabled: "{{ security_tcp_timestamps | bool }}"
+  - name: net.ipv4.conf.all.arp_ignore
+    value: 1
+    enabled: "{{ security_arp_ignore | bool }}"
+  - name: net.ipv4.conf.all.arp_announce
+    value: 2
+    enabled: "{{ security_arp_announce | bool }}"
+  - name: net.ipv4.tcp_rfc1337
+    value: 1
+    enabled: "{{ security_tcp_rfc1337 | bool }}"
+  - name: net.ipv4.tcp_syncookies
+    value: 1
+    enabled: "{{ security_tcp_syncookies | bool }}"
+
+sysctl_settings_rhel7_kernel:
+  - name: kernel.dmesg_restrict
+    value: '1'
+    enabled: "{{ security_dmesg_restrict | bool }}"
+  - name: kernel.kptr_restrict
+    value: '2'
+    enabled: "{{ security_kptr_restrict | bool }}"
+  - name: kernel.kexec_load_disabled
+    value: '1'
+    enabled: "{{ security_kexec_load_disabled | bool }}"
+  - name: kernel.pid_max
+    value: '65536'
+    enabled: "{{ security_pid_max | bool }}"
+  - name: kernel.randomize_va_space
+    value: '2'
+    enabled: "{{ security_randomize_va_space | bool }}"
+  - name: kernel.sysrq
+    value: '0'
+    enabled: "{{ security_sysrq | bool }}"
+  - name: kernel.yama.ptrace_scope
+    value: '1'
+    enabled: "{{ security_yama_ptrace_scope | bool }}"
+
+sysctl_settings_rhel7_net:
+  - name: net.core.bpf_jit_enable
+    value: '1'
+    enabled: "{{ security_bpf_jit | bool }}"
+  - name: net.core.bpf_jit_harden
+    value: '2'
+    enabled: "{{ security_bpf_jit | bool }}"
+  - name: net.core.rmem_max
+    value: '8388608'
+    enabled: "{{ security_rmem_max | bool }}"
+  - name: net.core.wmem_max
+    value: '8388608'
+    enabled: "{{ security_wmem_max | bool }}"
+  - name: net.core.netdev_max_backlog
+    value: '5000'
+    enabled: "{{ security_netdev_max_backlog | bool }}"
+
+sysctl_settings_rhel7_ipv6:
+  - name: net.ipv6.conf.all.accept_source_route
+    value: 0
+    enabled: "{{ security_disallow_source_routed_packet_forward_ipv6 | bool }}"
+  - name: net.ipv6.conf.all.disable_ipv6
+    value: 1
+    enabled: "{{ security_disable_ipv6 | bool }}"
+  - name: net.ipv6.conf.all.forwarding
+    value: 0
+    enabled: "{{ security_ipv6_all_forwarding | bool }}"
+  - name: net.ipv6.conf.all.accept_ra
+    value: 0
+    enabled: "{{ security_accept_ra | bool }}"
+  - name: net.ipv6.conf.default.accept_ra
+    value: 0
+    enabled: "{{ security_accept_ra | bool }}"
+  - name: net.ipv6.conf.all.rp_filter
+    value: '1'
+    enabled: "{{ security_rp_filter | bool }}"
+  - name: net.ipv6.conf.all.accept_source_route
+    value: '0'
+    enabled: "{{ security_accept_source_route | bool }}"
+  - name: net.ipv6.conf.default.accept_source_route
+    value: '0'
+    enabled: "{{ security_accept_source_route | bool }}"
+  - name: net.ipv6.conf.all.accept_redirects
+    value: '0'
+    enabled: "{{ security_accept_redirects | bool }}"
+  - name: net.ipv6.conf.default.accept_redirects
+    value: '0'
+    enabled: "{{ security_accept_redirects | bool }}"
+  - name: net.ipv6.conf.default.router_solicitations
+    value: '0'
+    enabled: "{{ security_router_solicitations | bool }}"
+  - name: net.ipv6.conf.default.accept_ra_rtr_pref
+    value: '0'
+    enabled: "{{ security_accept_ra_rtr_pref | bool }}"
+  - name: net.ipv6.conf.default.accept_ra_pinfo
+    value: '0'
+    enabled: "{{ security_accept_ra_pinfo | bool }}"
+  - name: net.ipv6.conf.default.accept_ra_defrtr
+    value: '0'
+    enabled: "{{ security_accept_ra_defrtr | bool }}"
+  - name: net.ipv6.conf.default.autoconf
+    value: '0'
+    enabled: "{{ security_autoconf | bool }}"
+  - name: net.ipv6.conf.default.dad_transmits
+    value: '0'
+    enabled: "{{ security_dad_transmits | bool }}"
+  - name: net.ipv6.conf.default.max_addresses
+    value: '1'
+    enabled: "{{ security_max_addresses | bool }}"

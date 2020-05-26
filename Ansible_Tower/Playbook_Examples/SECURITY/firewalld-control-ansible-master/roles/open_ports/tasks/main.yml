@@ -1,0 +1,16 @@
+---
+# tasks file for open_ports
+- name: Open firewalld ports
+  become: true
+  firewalld:
+    port: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  with_items: "{{ ports }}"
+
+- name: Save facts for new rules
+  become: true
+  copy:
+    dest: "{{ firewall_config_facts_path }}"
+    content: "{ \"custom_firewall_ports_count\": {{ ports | length }}, \"custom_firewall_ports\": {{ ports | to_json }} }"

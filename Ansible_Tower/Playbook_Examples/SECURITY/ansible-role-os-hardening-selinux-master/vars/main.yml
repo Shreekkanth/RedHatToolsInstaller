@@ -1,0 +1,42 @@
+---
+# RHEL 7 STIG: Packages to add/remove
+stig_packages_rhel7:
+  - packages:
+      - libselinux-python
+      - policycoreutils-python
+      - policycoreutils-restorecond
+      - selinux-policy
+      - selinux-policy-targeted
+    state: "{{ security_package_state }}"
+    enabled: "{{ security_rhel7_enable_linux_security_module }}"
+  - packages:
+      - setroubleshoot
+      - setroubleshoot-server
+      - setroubleshoot-plugins
+    state: absent
+    enabled: "{{ security_rhel7_remove_setroubleshoot }}"
+# Custom SELinux booleans.
+# Dictionary with the following structure:
+#
+# custom_selinux_booleans:
+#   - name: auditadm_exec_content
+#     enabled: 'True'
+#   - name: dbadm_exec_content
+#     enabled: 'True'
+#   - name: logadm_exec_content
+#     enabled: 'True'
+#   - name: secadm_exec_content
+#     enabled: 'True'
+#   - name: sysadm_exec_content
+#     enabled: 'True'
+#   - name: xguest_exec_content
+#     enabled: 'False'
+custom_selinux_booleans: {}
+#
+# Custom SELinux services.
+# Dictionary with the following structure:
+#
+# custom_selinux_services:
+#   - name: foo
+#     enabled: 'True'
+custom_selinux_services: {}

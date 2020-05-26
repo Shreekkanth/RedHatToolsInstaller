@@ -1,0 +1,48 @@
+---
+
+# Task file fore syslog
+#
+  
+  - shell: /bin/awk '($1 !~ /^#/ && $2 ~ "(.*/var/log|^*.*)") { print $2 }' /etc/rsyslog.conf | /bin/cut -f 2 -d -
+    register: syslog_files
+    changed_when: false
+
+#  - debug: var=syslog_files
+
+  - name: Set permissions on log files
+    file: owner=root
+          group=root
+          mode=0600
+          path={{ item }}
+    with_items:
+      - '{{ syslog_files.stdout_lines }}'
+
+  - file: selevel=s0
+          serole=object_r
+          setype=var_log_t
+          seuser=system_u
+          path={{ item }}
+    with_items:
+      - /var/log/messages
+      - /var/log/secure
+      - /var/log/maillog
+      - /var/log/spooler
+
+  - file: selevel=s0
+          serole=object_r
+          setype=cron_log_t
+          seuser=system_u
+          path=/var/log/cron
+
+  - file: selevel=s0
+          serole=object_r
+          setype=plymouthd_var_log_t
+          seuser=system_u
+          path=/var/log/boot.log
+
+  - name: Make sure logfiles are setup in logrotate
+    lineinfile: dest=/etc/logrotate.d/syslog regexp='^{{ item }}' state=present line='{{ item }}'
+    with_items: 
+      - '{{ syslog_files.stdout_lines }}'
+    when: ( '/var/log/boot.log' not in '{{ item }}')
+

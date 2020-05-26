@@ -1,0 +1,4 @@
+---
+- name: provision windows hosts
+  import_tasks: windows.yaml
+  when: "os_type == 'windows'"

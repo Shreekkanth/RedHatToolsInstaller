@@ -1,0 +1,27 @@
+/var/log/dirsrv/access {
+    missingok
+    notifempty
+    daily
+    rotate 9
+}
+
+/var/log/dirsrv/audit {
+    missingok
+    notifempty
+    daily
+    rotate 9
+}
+
+/var/log/dirsrv/errors{
+    missingok
+    notifempty
+    daily
+    rotate 9
+}
+
+/var/log/audit_ipa_auditing.log {
+    missingok
+    notifempty
+    size 30k
+    rotate 5
+}

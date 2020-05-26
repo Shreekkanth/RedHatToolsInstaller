@@ -1,0 +1,10 @@
+---
+# Sensible defaults for mandatory parameters
+lap_bin_path: "/usr/local/bin/lap"
+audit_server_url: "https://audit.example.com/datafeed"
+audit_prefix: "AUDIT"
+audit_system: "IPA"
+audit_environment: "Quality"
+audit_audit_feed_name: "IPA-LDAP-AUDIT-EVENTS"
+audit_access_feed_name: "IPA-LDAP-ACCESS-EVENTS"
+audit_feed_package_name: "my_auditd_agent"

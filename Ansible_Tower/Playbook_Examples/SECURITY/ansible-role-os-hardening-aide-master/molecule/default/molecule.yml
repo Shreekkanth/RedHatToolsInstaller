@@ -1,0 +1,62 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: delegated
+  options:
+    login_cmd_template: 'bash'
+    ansible_connection_options:
+      connection: local
+platforms:
+  - name: localhost
+lint:
+  name: yamllint
+provisioner:
+  name: ansible
+  env:
+    MOLECULE_DEBUG: 'False'
+    #  options:
+    #    vvv: 'True'
+  playbooks:
+    create: create.yml
+    converge: playbook.yml
+  config_options:
+    defaults:
+      ansible_connection: local
+      force-color: 'True'
+      retry_files_enabled: 'False'
+      # yamllint disable-line rule:line-length
+      # strategy_plugins: '/opt/ansible-os-hardening-aide/mitogen/ansible_mitogen/plugins/strategy/'
+      # strategy: 'mitogen'
+  inventory:
+    host_vars:
+      localhost:
+        security_rhel7_initialize_aide: 'yes'
+  lint:
+    name: ansible-lint
+scenario:
+  name: default
+  check_sequence:
+    - prepare
+    - converge
+    - check
+  converge_sequence:
+    - prepare
+    - converge
+  test_sequence:
+    - lint
+    - dependency
+    - syntax
+    - prepare
+    - converge
+    - idempotence
+    - side_effect
+    - verify
+verifier:
+  name: testinfra
+  options:
+    verbose: true
+    connection: local
+    color: 'yes'
+  lint:
+    name: flake8

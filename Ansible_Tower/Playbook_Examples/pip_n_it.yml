@@ -1,0 +1,95 @@
+---
+- name: TOWER PIP COMPONENT CONFIGURATION FOR CLOUD REQUIREMENTS RHEL7
+  hosts: localhost
+  connection: local
+  gather_facts: false
+ 
+  tasks:
+    - yum:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+        - python3-pip
+        - rh-python36-python-pip
+      become: true
+
+    - pip:
+        name: pip
+        state: latest
+      become: true
+      
+#AWS
+    - pip:
+        name: boto3 
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user 
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: requests
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: requests-credssp
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: pywinrm
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: boto
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: botocore
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: awscli
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+    - pip:
+        name: ansible-tower-cli
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+
+# Vcenter
+    - pip:
+        name: PyVmomi
+        umask: "0022"
+        virtualenv: "/var/lib/awx/venv/ansible"
+        extra_args: --user
+        state: forcereinstall
+      become: true
+

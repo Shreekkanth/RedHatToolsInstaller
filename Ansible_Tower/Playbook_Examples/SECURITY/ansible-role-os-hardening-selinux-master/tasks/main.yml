@@ -1,0 +1,185 @@
+---
+- name: Add or remove SELinux packages based on STIG requirements
+  yum:
+    name: "{{ stig_packages_rhel7 | selectattr('enabled') | selectattr('state', 'equalto', item) | sum(attribute='packages', start=[]) }}"
+    state: "{{ item }}"
+  with_items:
+    - "{{ stig_packages_rhel7 | selectattr('enabled') | map(attribute='state') | unique | list }}"
+  when:
+    - security_rhel7_enable_linux_security_module | bool
+  tags:
+    - cat1
+    - auth
+    - high
+    - packages
+    - services
+    - V-71897
+    - V-71967
+    - V-71969
+    - V-71989
+    - V-71991
+    - V-72067
+    - V-72077
+    - V-72213
+    - V-72233
+    - V-72301
+    - V-72307
+
+- name: SELinux configuration file
+  file:
+    path: /etc/selinux/config
+    owner: root
+    group: root
+    mode: 0644
+    seuser: system_u
+    serole: object_r
+    setype: selinux_config_t
+    selevel: s0
+    state: file
+  when:
+    - security_rhel7_enable_linux_security_module | bool
+  tags:
+    - high
+    - V-71989
+    - V-71991
+
+# NOTE: The "changed_when" is required here because this task will
+# always show as changed when SELinux is completely disabled. It's not possible
+# to switch to permissive/enforcing in an online way when SELinux is completely
+# disabled at boot time.
+- name: Ensure SELinux is in enforcing mode on the next reboot
+  selinux:
+    state: enforcing
+    policy: "{{ security_rhel7_selinux_policy }}"
+  register: selinux_status_change
+  changed_when: selinux_status_change is changed and ansible_selinux.status != 'disabled'
+  when:
+    - security_rhel7_enable_linux_security_module | bool
+  tags:
+    - high
+    - V-71989
+    - V-71991
+    - selinux_state
+    - selinux_policytype
+    - high_severity
+    - restrict_strategy
+    - low_complexity
+    - low_disruption
+    - CCE-27334-2
+    - CCE-27279-9
+    - NIST-800-53-AC-3
+    - NIST-800-53-AC-3(3)
+    - NIST-800-53-AC-3(4)
+    - NIST-800-53-AC-4
+    - NIST-800-53-AC-6
+    - NIST-800-53-AU-9
+    - NIST-800-53-SI-6(a)
+    - NIST-800-171-3.1.2
+    - NIST-800-171-3.7.2
+
+- name: Relabel files on next boot if SELinux mode changed
+  file:
+    path: /.autorelabel
+    state: touch
+  when:
+    - security_rhel7_enable_linux_security_module | bool
+    - selinux_status_change is changed
+  tags:
+    - high
+    - V-71989
+    - V-71991
+
+# FIXME: command
+# - name: Ensure no daemons are unconfined by SELinux
+#   shell: >
+#     ps -eZ | awk '$0~/init/ && $0!/ps|bash|awk/{gsub(":"," ");print $NF}'
+#   register: unconfined_daemons
+#   tags:
+#     - medium_severity
+#     - CCE-27288-0
+#     - NIST-800-53-AC-6
+#     - NIST-800-53-AU-9
+#     - NIST-800-53-CM-7
+#     - CIS-1.6.1.6
+#     - NIST-800-171-3.1.2
+#     - NIST-800-171-3.1.5
+#     - NIST-800-171-3.7.2
+#
+#- name: V-72039 - All daemons must be correctly confined
+#  debug:
+#    msg:
+#      - "*************** WARNING ***************"
+#      - "Daemons were found without SELinux labels:"
+#      - "{%- for daemon in unlabeled_daemons.stdout_lines -%}
+#         {{ daemon }}
+#         {% endfor- %}"
+#  when:
+#    - unlabeled_devices.stdout is defined
+#    - unlabeled_devices.stdout | length > 0
+#  tags:
+#    - lsm
+#    - medium
+#    - V-72039
+
+# NOTE(mhayden): Ansible's find module doesn't support searching for files
+# based on SELinux contexts yet.
+- name: Check for unlabeled device files
+  command: "find /dev -context '*unlabeled_t*'"
+  register: unlabeled_devices
+  changed_when: False
+  check_mode: no
+  when:
+    - ansible_selinux.status is defined
+    - ansible_selinux.status != 'disabled'
+  tags:
+    - lsm
+    - medium
+    - V-72039
+    - medium_severity
+    - NIST-800-53-AC-6
+    - NIST-800-53-AU-9
+    - NIST-800-53-CM-3(f)
+    - NIST-800-53-CM-7
+    - NIST-800-171-3.1.2
+    - NIST-800-171-3.1.5
+    - NIST-800-171-3.7.2
+
+- name: V-72039 - All system device files must be correctly labeled to prevent unauthorized modification.
+  debug:
+    msg:
+      - "*************** WARNING ***************"
+      - "Devices were found without SELinux labels:"
+      - "{%- for device in unlabeled_devices.stdout_lines -%}
+         {{ device }}
+         {% endfor- %}"
+  when:
+    - unlabeled_devices.stdout is defined
+    - unlabeled_devices.stdout | length > 0
+  tags:
+    - lsm
+    - medium
+    - V-72039
+
+# TODO: manage services
+- name: SELinux related services
+  service_facts:
+- name: SELinux related services
+  systemd:
+    name: "{{ item.name }}"
+    enabled: "{{ (item.enabled) | ternary('on','off')  }}"
+  with_flattened:
+    - "{{ custom_selinux_services }}"
+    - "{{ security_rhel7_selinux_services }}"
+  when:
+    - security_rhel7_enable_linux_security_module | bool
+    - ansible_virtualization_type != 'docker'
+    - item.name is defined and item.name
+    - item.enabled is defined
+    - ansible_facts.services[item.name + '.service'] is defined
+  tags:
+    - high
+    - V-71989
+    - V-71991
+
+- name: SELinux booleans
+  include: booleans.yml

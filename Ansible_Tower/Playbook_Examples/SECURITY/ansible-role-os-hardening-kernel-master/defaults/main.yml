@@ -1,0 +1,105 @@
+---
+## Kernel settings (kernel)
+# Disable USB storage support.
+security_rhel7_disable_usb_storage: 'yes'                      # V-71983
+# Disable uncommon file systems
+security_rhel7_disable_cramfs: 'yes'                           # V-71983
+security_rhel7_disable_freevfxs: 'yes'                         # V-71983
+security_rhel7_disable_jffs2: 'yes'                            # V-71983
+security_rhel7_disable_hfs: 'yes'                              # V-71983
+security_rhel7_disable_hfsplus: 'yes'                          # V-71983
+security_rhel7_disable_udf: 'yes'                              # V-71983
+# Disable BlueTooth
+security_rhel7_disable_bluetooth: 'yes'                        # V-71983
+# Disable uncommon network protocols
+security_rhel7_disable_net_pf_31: 'yes'                        # V-71983
+security_rhel7_disable_dccp: 'yes'                             # V-71983
+security_rhel7_disable_sctp: 'yes'                             # V-71983
+security_rhel7_disable_rds: 'yes'                              # V-71983
+security_rhel7_disable_tipc: 'yes'                             # V-71983
+
+# Disable kdump.
+security_disable_kdump: 'yes'                                  # V-72057
+
+# Disallow forwarding IPv4/IPv6 source routed packets on all interfaces
+# immediately and by default on new interfaces.
+# yamllint disable-line
+security_disallow_source_routed_packet_forward_ipv4: 'yes'     # V-72283 / V-72285
+security_disallow_source_routed_packet_forward_ipv6: 'yes'     # V-72319
+# Disallow responses to IPv4 ICMP echoes sent to broadcast address.
+security_disallow_echoes_broadcast_address: 'yes'              # V-72287
+# Disallow IPV4 ICMP redirects on all interfaces immediately and by default on
+# new interfaces.
+# yamllint disable-line
+security_disallow_icmp_redirects: 'yes'                        # V-73175 / V-72289 / V-72291 / V-72293
+# Disallow IP forwarding.
+security_disallow_ip_forwarding: 'yes'                         # V-72309
+
+security_icmp_echo_ignore_all: 'yes'
+security_tcp_max_syn_backlog: 'yes'
+security_tcp_synack_retries: 'yes'
+security_tcp_syn_retries: 'yes'
+security_log_martians: 'yes'
+security_accept_redirects: 'yes'
+security_secure_redirects: 'yes'
+security_send_redirects: 'yes'
+security_ip_local_port_range: 'yes'
+security_tcp_rmem: 'yes'
+security_tcp_wmem: 'yes'
+security_tcp_window_scaling: 'yes'
+security_rmem_max: 'yes'
+security_wmem_max: 'yes'
+security_netdev_max_backlog: 'yes'
+# Disable IPv4 traffic forwarding.
+security_ip_forward: 'yes'
+# Enable RFC-recommended source validation feature.
+security_rp_filter: 'yes'
+# Reduce the surface on SMURF attacks.
+# yamllint disable-line
+# Make sure to ignore ECHO broadcasts, which are only required in broad network analysis.
+security_icmp_echo_ignore_broadcasts: 'yes'
+# yamllint disable-line
+# There is no reason to accept bogus error responses from ICMP, so ignore them instead.
+security_icmp_ignore_bogus_error_responses: 'yes'
+# Limit the amount of traffic the system uses for ICMP.
+security_icmp_ratelimit: 'yes'
+# Adjust the ICMP ratelimit to include ping, dst unreachable,
+# source quench, ime exceed, param problem, timestamp reply, information reply
+security_icmp_ratemask: 'yes'
+# Protect against wrapping sequence numbers at gigabit speeds
+security_tcp_timestamps: 'yes'
+# Define restriction level for announcing the local source IP
+security_arp_ignore: 'yes'
+# Define mode for sending replies in response to
+# received ARP requests that resolve local target IP addresses
+security_arp_announce: 'yes'
+# RFC 1337 fix F1
+security_tcp_rfc1337: 'yes'
+# Syncookies is used to prevent SYN-flooding attacks.
+security_tcp_syncookies: 'yes'
+# Disable IPv6 traffic forwarding.
+security_ipv6_all_forwarding: 'yes'
+# Ignore RAs on Ipv6.
+security_accept_ra: 'yes'
+# Disable IPv6
+security_disable_ipv6: 'yes'
+security_accept_source_route: 'yes'
+security_router_solicitations: 'yes'
+security_accept_ra_rtr_pref: 'yes'
+security_accept_ra_pinfo: 'yes'
+security_accept_ra_defrtr: 'yes'
+security_autoconf: 'yes'
+security_dad_transmits: 'yes'
+security_max_addresses: 'yes'
+# ExecShield protection against buffer overflows
+security_exec_shield: 'yes'
+# Enable Address Space Layout Randomization (ASLR).
+security_randomize_va_space: 'yes'
+security_pid_max: 'yes'
+security_dmesg_restrict: 'yes'
+security_kptr_restrict: 'yes'
+security_kexec_load_disabled: 'yes'
+security_sysrq: 'yes'
+security_yama_ptrace_scope: 'yes'
+# fs.suid_dumpable = 0
+security_bpf_jit: 'yes'

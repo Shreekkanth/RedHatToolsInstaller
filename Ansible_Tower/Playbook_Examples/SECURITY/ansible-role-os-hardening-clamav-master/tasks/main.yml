@@ -1,0 +1,164 @@
+---
+# Requires EPEL
+# https://access.redhat.com/solutions/22007
+- name: Add or remove packages based on STIG requirements
+  yum:
+    # yamllint disable-line
+    name: "{{ stig_packages_rhel7 | selectattr('enabled') | selectattr('state', 'equalto', item) | sum(attribute='packages', start=[]) }}"
+    state: "{{ item }}"
+    enablerepo: rhel-7-server-optional-rpms,epel
+  with_items:
+    # yamllint disable-line
+    - "{{ stig_packages_rhel7 | selectattr('enabled') | map(attribute='state') | unique | list }}"
+  notify: yum-clean-metadata
+  tags:
+    - cat1
+    - auth
+    - packages
+    - services
+    - V-71897
+    - V-71967
+    - V-71969
+    - V-72067
+    - V-72077
+    - V-72213
+    - V-72233
+    - V-72301
+    - V-72307
+
+- name: Manage booleans for ClamAV
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ (item.enabled) | ternary('on','off')  }}"
+    persistent: 'yes'
+  with_flattened:
+    - "{{ security_rhel7_selinux_booleans_clamav }}"
+  when:
+    - ansible_virtualization_type != 'docker'
+    - item.name is defined
+    - item.enabled is defined
+
+- name: Check if ClamAV is installed
+  stat:
+    path: /usr/bin/clamdscan
+  register: clamav_install_check
+  changed_when: 'False'
+  tags:
+    - always
+
+- name: Create log directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: 0755
+    seuser: system_u
+    serole: object_r
+    setype: var_log_t
+    selevel: s0
+  with_items:
+    - { path: '/var/log/clamd', owner: 'clamscan'}
+    - { path: '/var/log/clamupdate', owner: 'clamupdate'}
+
+- name: Manage clamd configuration
+  template:
+    src: "{{ item.src }}.j2"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0640
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+    backup: 'yes'
+  with_items:
+    - {src: 'freshclam.conf', dest: '/etc/freshclam.conf'}
+    - {src: 'clamd.conf', dest: '/etc/clamd.d/scan.conf'}
+  when:
+    - clamav_install_check.stat.exists
+    - security_enable_virus_scanner | bool
+    - ansible_os_family | lower == 'redhat'
+  notify:
+    - restart clamav
+  tags:
+    - misc
+    - V-72213
+
+#- name: Remove 'Example' line from ClamAV configuration files
+#  lineinfile:
+#    dest: "{{ item }}"
+#    regexp: "^Example"
+#    state: absent
+#  with_items:
+#    - /etc/freshclam.conf
+#    - /etc/clamd.d/scan.conf
+#  when:
+#    - clamav_install_check.stat.exists
+#    - security_enable_virus_scanner | bool
+#    - ansible_os_family | lower == 'redhat'
+#  notify:
+#    - restart clamav
+#  tags:
+#    - misc
+#    - V-72213
+#
+#- name: Set ClamAV server type as socket
+#  lineinfile:
+#    dest: /etc/clamd.d/scan.conf
+#    regexp: "^(#)?LocalSocket (.*)$"
+#    line: 'LocalSocket \2'
+#    backrefs: 'yes'
+#  when:
+#    - clamav_install_check.stat.exists
+#    - security_enable_virus_scanner | bool
+#    - ansible_os_family | lower == 'redhat'
+#  notify:
+#    - restart clamav
+#  tags:
+#    - misc
+#    - V-72213
+
+- name: Allow automatic freshclam updates
+  lineinfile:
+    dest: /etc/sysconfig/freshclam
+    regexp: "^FRESHCLAM_DELAY"
+    state: absent
+  when:
+    - clamav_install_check.stat.exists
+    - security_enable_virus_scanner | bool
+    - ansible_os_family | lower == 'redhat'
+  notify:
+    - restart clamav
+  tags:
+    - misc
+    - V-72213
+
+- name: Update ClamAV database
+  command: freshclam
+  changed_when: 'False'
+  when:
+    - clamav_install_check.stat.exists
+    - security_enable_virus_scanner | bool
+    - security_run_virus_scanner_update | bool
+  async: 300
+  poll: 5
+  register: job
+  failed_when: job.rc not in [0,1]
+  tags:
+    - misc
+    - V-72213
+
+- name: Ensure ClamAV is running
+  systemd:
+    name: "{{ clamav_service }}"
+    state: started
+    enabled: 'yes'
+  when:
+    - ansible_virtualization_type != 'docker'
+    - clamav_install_check.stat.exists
+    - security_enable_virus_scanner | bool
+  tags:
+    - misc
+    - V-72213

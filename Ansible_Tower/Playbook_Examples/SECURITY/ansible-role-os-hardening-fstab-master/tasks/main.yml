@@ -1,0 +1,25 @@
+---
+- name: Manage booleans related to mount capabilities
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{{ (item.enabled) | ternary('on','off')  }}"
+    persistent: 'yes'
+  loop: "{{ security_rhel7_selinux_booleans_fstab | flatten }}"
+  when:
+    - ansible_virtualization_type != 'docker'
+    - item.name is defined
+    - item.enabled is defined
+
+- name: Ensure FSTAB uses strict options
+  mount:
+    #path: "UUID={{ item.0.uuid }}"
+    path: "{{ item.0.mount }}"
+    src: "{{ item.0.device }}"
+    fstype: "{{ item.0.fstype }}"
+    opts: "{{ item.0.options.split(',') | union(item.1.options.split(',')) | join(',') }}"
+    state: present
+  loop: "{{ ansible_mounts | product(security_rhel7_selinux_fstab_mountopts) | list }}"
+  when:
+    - item.0.options.find(",") >= 0
+    - item.0.mount == item.1.mount
+  tags: devel

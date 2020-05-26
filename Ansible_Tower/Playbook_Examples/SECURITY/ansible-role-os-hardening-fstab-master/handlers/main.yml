@@ -1,0 +1,8 @@
+---
+- name: Remount filesystem
+  #shell: "mount -o remount {{ item }}"
+  shell: "echo mount -o remount {{ item }}"
+  loop: mountpoints.results
+  when:
+    - item.changed
+    - ansible_virtualization_type != 'docker'

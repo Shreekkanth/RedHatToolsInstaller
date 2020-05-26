@@ -1,0 +1,7 @@
+---
+# Force python3 to be the interpreter
+ansible_python_interpreter: /usr/bin/python3
+
+rngd_service: rngd
+sftp_server: /usr/libexec/openssh/sftp-server
+ssh_service: sshd

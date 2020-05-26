@@ -1,0 +1,14 @@
+---
+
+# Task file for modules  
+
+  - template: 
+      owner: root 
+      group: root 
+      mode: 0644 
+      selevel: s0 
+      serole: object_r 
+      setype: modules_conf_t 
+      seuser: system_u 
+      dest: /etc/modprobe.d/disabled.conf
+      src: templates/disabled.conf.j2

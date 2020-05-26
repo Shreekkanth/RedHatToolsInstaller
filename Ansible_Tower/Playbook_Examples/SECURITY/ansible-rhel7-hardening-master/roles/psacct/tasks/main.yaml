@@ -1,0 +1,22 @@
+---
+
+#  Task File to enable process accounting
+
+  - shell: /usr/bin/yum repolist | /bin/grep repolist
+    register: yum_repo
+    changed_when: false
+
+  - name: Install the process accounting package
+    yum: name=psacct state=latest
+    when: ( " 0" not in '{{ yum_repo.stdout }}' )
+
+  - stat: path=/usr/lib/systemd/system/psacct.service
+    register: psacct_service
+
+#  - debug: 
+#      var=psacct_service
+#      msg={{ psacct_service.stat.exists }}
+
+  - name: Enable the psacct service
+    service: name=psacct enabled=yes state=started
+    when: '{{ psacct_service.stat.exists }}'

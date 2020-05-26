@@ -1,0 +1,4 @@
+---
+rngd_service: rngd
+sftp_server: /usr/libexec/openssh/sftp-server
+ssh_service: sshd

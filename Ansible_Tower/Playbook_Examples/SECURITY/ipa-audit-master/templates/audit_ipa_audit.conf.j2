@@ -1,0 +1,187 @@
+# {{ audit_prefix }}_CLIENT CONFIGURATION FILE
+
+# TZ    - Keep times in UTC
+export TZ="UTC"
+
+REALM_NAME="slapd-{{ realm_name }}"
+
+#
+# FEED_NAME     - Name of {{ audit_prefix }} feed (asssigned by Audit Authority)
+#
+# This name is used to identify the source and type of logs transmitted
+# and is assigned by Audit Authority
+FEED_NAME="{{ audit_audit_feed_name }}"
+
+# SYSTEM        - Server System type
+#
+# For Linux can be LinuxServer, LinuxWorkstation
+# Testing RHEL 5, 6 and 7 RHEL, Fedora and Centos systems demonstrated that /usr/bin/X11 is on all
+# Desktop/Workstation deployments
+#if [ -e /usr/bin/X11 ]; then
+#	SYSTEM="LinuxWorkstation"
+#else
+#	SYSTEM="LinuxServer"
+#fi
+SYSTEM="{{ audit_system }}"
+
+# ENVIRONMENT   - Application environment
+#
+# Can be  Production, QualityAssurance or Development
+ENVIRONMENT="{{ audit_environment }}"
+
+#
+# URL   - URL for posting gzip'd audit log files
+#
+# This should NOT change without consultation with Audit Authority
+URL={{ audit_server_url }}
+
+
+
+#
+# VERSION - The version of the log source
+#
+# This is to allow one to distinguish between different versions of the capability
+# generating logs. If you have strong version control on the logging element of
+# your application, you can use your releasee of the installed utility version.
+# TODO: Make work with Debian based Linux
+# Samples are
+#       export VERSION=`rpm -q audit`
+#
+# In the case of Apache Black Box we are defining the version of the LogFormat we use
+export VERSION=`rpm -q audit {{ audit_feed_package_name }} | tr [:space:] /`
+
+#
+# ARCHIVE_RETENTION     - Retention period to hold successfully transmitted logs
+#
+# This period, in days, is to allow a log soure to temporarily maintain local copies
+# of logs if required
+ARCHIVE_RETENTION=11
+
+#
+# ARCHIVE_MAX   - Specify a storage limit on locally archived log files
+#
+# As well as a retention period for locally archived log files that have been
+# successfully transmitted, we limit the size of this archive in terms bytes
+# The value is in 512-byte blocks rather than bytes
+# For example, 256Mb is
+#       256 Mb = 256 * 2048 = 524288
+ARCHIVE_MAX=524288
+
+#
+# FAILED_RETENTION      - Retention period to hold logs that failed to transmit
+#
+# This period, in days, is to allow a log soure to temporarily maintain local copies
+# of failed to transmit logs.
+FAILED_RETENTION=30
+
+#
+# FAILED_MAX    - Specify a storage limit on logs that failed to transmit
+#
+# As well as a retention period for logs that failed to transmit, we also
+# limit the size of this archive in terms byte.
+# The value is in 512-byte blocks rather than bytes
+# For example, 1GB is
+#       1 Gb = 1 * 1024 * 2048 = 2097152
+FAILED_MAX=2097152
+
+#
+# MAX_SLEEP     - Time to delay the processing and transmission of logs
+#
+# To avoid audit logs being transmitted from the estate at the same time, we will
+# delay a random number of seconds up to this maximum before processing and
+#
+# This value should NOT be changed with permission from Audit Authority. It should
+# also be the periodicity of the calling of the feeding script. That is, cron
+# should call the feeding script every MAX_SLEEP seconds
+MAX_SLEEP=300
+
+#
+# AUDIT_ROOT - The base or working directory for log collection and processing
+#
+# Note: If you are managing multi log sources, then ensure this directory is
+# unique for each source of log as files that fail to transmit are placed
+# in a holding directory in this base directory (${AUDIT_ROOT}/failed) and each
+# source of logs has it's own unique feed names
+AUDIT_ROOT=/var/log/dirsrv/${REALM_NAME}
+
+# Working and Archive directories for successful or failed transmissions
+AUDIT_ARCHIVE_SUCCESS=${AUDIT_ROOT}/{{ audit_prefix }}_audit/archive
+AUDIT_ARCHIVE_FAIL=${AUDIT_ROOT}/{{ audit_prefix }}_audit/failed
+AUDIT_CLIENT_INBOX=${AUDIT_ROOT}/{{ audit_prefix }}_audit/inbox
+AUDIT_CLIENT_LOCKS=${AUDIT_ROOT}/{{ audit_prefix }}_audit/locks
+
+#
+# AUDIT_LOG_DIR - Location to collect logs from once rotation has occurred
+#
+AUDIT_LOG_DIR=/var/log/dirsrv/${REALM_NAME}/{{ audit_prefix }}_audit/working
+
+#
+# AUDIT_LOG_NAME_START - Prefix of log file name to process
+#
+# There may be different logs in AUDIT_LOG_DIR, this variable holds the
+# file name prefix for this source of logs
+AUDIT_LOG_NAME_START=audit.
+
+#
+# AUDIT_PROC_SUFFIX - Suffix to put on processed log files if necessary
+#
+# In some instances, we need to indicate that a raw log file has been processed
+# This suffix is inserted between the raw log filename and a time based unique
+# value when calling the process_audit() routine - ie
+#  TRANSLATED_AUDIT_LOG=${FILENAME}.${AUDIT_PROC_SUFFIX}.$(date +%s)
+AUDIT_PROC_SUFFIX="edispatch"
+
+#
+# ROUTINES:
+#
+
+# rotate_logs()
+#
+# Args:
+#   none
+#
+# Most log sources either use a manual or automated means of rotating log files
+# This routine will be called by the audit log processing script to 'rotate' current
+# logs, such that the can be processed.
+#
+#
+export GREP_COLORS=never
+export LS_COLORS=never
+rotate_logs()
+{
+   HEADER_END=3
+   lcwd=`pwd`
+   cd ${AUDIT_ROOT}
+   fx=`ls ${AUDIT_LOG_NAME_START}[0-9]* 2>/dev/null`
+   if [ -n "$fx" ]; then
+
+        # Make a local copy for IPA maintainers
+        echo "$fx" | while read LOG; do
+            HEADER_END=`grep -m 1 -n ^$ $LOG | cut -d ':' -f 1`
+            tail $LOG -n +`expr $HEADER_END + 1` >> /var/log/dirsrv/audit
+
+        # Now move the files to the ingest directory
+	    UNIQUE=$(date +%s)
+            tail $LOG -n +`expr $HEADER_END + 1` > ${AUDIT_LOG_DIR}/$LOG
+            rm -f $LOG
+        done
+   fi
+   # Return to where we started from
+   cd ${lcwd}
+}
+
+# process_audit():
+#
+# Should audit be locally processed before transmission, then this routine should
+# perform the processing.
+#
+# The routine has one argument
+#   $1 - Destination, post processed, log file name
+#
+process_audit() {
+
+#   mv  "$1"
+#	chmod 600 "$1"
+:
+
+}

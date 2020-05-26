@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+
+kernel.exec-shield = {{ kernel_exec_shield }}
+kernel.randomize_va_space = {{ kernel_randomize_va_space }}
+fs.suid_dumpable = {{ fs_suid_dumpable }}
+
+net.ipv4.conf.all.forwarding = {{ net_ipv4_conf_all_forwarding }}
+net.ipv4.ip_forward = {{ net_ipv4_ip_forward }}
+net.ipv4.conf.default.send_redirects = {{ net_ipv4_conf_default_send_redirects }}
+net.ipv4.conf.all.send_redirects = {{ net_ipv4_conf_all_send_redirects }}
+net.ipv4.conf.all.accept_source_route = {{ net_ipv4_conf_all_accept_source_route }}
+net.ipv4.conf.all.accept_redirects = {{ net_ipv4_conf_all_accept_redirects }}
+net.ipv4.conf.all.secure_redirects = {{ net_ipv4_conf_all_secure_redirects }}
+net.ipv4.conf.all.log_martians = {{ net_ipv4_conf_all_log_martians }}
+net.ipv4.conf.default.accept_source_route = {{ net_ipv4_conf_default_accept_source_route }}
+net.ipv4.conf.default.accept_redirects = {{ net_ipv4_conf_default_accept_redirects }}
+net.ipv4.conf.default.secure_redirects = {{ net_ipv4_conf_default_secure_redirects }}
+
+net.ipv4.icmp_echo_ignore_broadcasts = {{ net_ipv4_icmp_echo_ignore_broadcasts }}
+net.ipv4.icmp_ignore_bogus_error_responses = {{ net_ipv4_icmp_ignore_bogus_error_responses }}
+net.ipv4.tcp_syncookies = {{ net_ipv4_tcp_syncookies }}
+net.ipv4.conf.all.rp_filter = {{ net_ipv4_conf_all_rp_filter }}
+net.ipv4.conf.default.rp_filter = {{ net_ipv4_conf_default_rp_filter }}

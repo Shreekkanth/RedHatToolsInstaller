@@ -1,0 +1,293 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+#    - name: Grub Menu
+#      file: path=/boot/grub/menu.lst owner=root group=root mode=0600
+#      file: path=/boot/grub/grub.conf owner=root group=root mode=0600
+#      tags: grub_menu
+
+    - name: Aliases
+      file: path=/etc/aliases owner=root group=root mode=0644
+      tags: aliases
+
+    - name: at.deny
+      file: path=/etc/at.deny state=absent
+      tags: at.deny
+
+    - name: at.allow
+      file: path=/etc/at.allow state=touch owner=root group=root mode=0600
+      tags: at.allow
+
+    - name: cron.deny
+      file: path=/etc/at.deny state=absent
+      tags: cron.deny
+
+    - name: cron.allow
+      file: path=/etc/cron.allow state=touch owner=root group=root mode=0600
+      tags: cron.allow
+
+    - name: crontab
+      file: path=/etc/crontab owner=root group=root mode=0600
+      tags: crontab
+
+    - name: exports
+      file: path=/etc/exports state=absent
+      tags: exports
+
+    - name: ftpusers
+      file: path=/etc/ftpusers owner=root group=root mode=0400
+      tags: ftpusers
+
+    - name: group
+      file: path=/etc/group owner=root group=root mode=0644
+      tags: group
+
+    - name: hosts
+      file: path=/etc/hosts owner=root group=root mode=0644
+      tags: hosts
+
+    - name: passwd
+      file: path=/etc/passwd owner=root group=root mode=0444
+      tags: passwd
+
+    - name: nsswitch.conf
+      file: path=/etc/nsswitch.conf owner=root group=root mode=0644
+      tags: nsswitch
+
+    - name: ntp.conf
+      file: path=/etc/ntp.conf owner=root group=root mode=0644
+      tags: ntp
+
+    - name: ntp.keys
+      file: path=/etc/ntp.keys owner=root group=root mode=0600
+      tags: ntp
+
+    - name: resolv.conf
+      file: path=/etc/resolv.conf owner=root group=root mode=0644
+      tags: resolv
+
+    - name: securetty empty
+      file: path=/etc/securetty state=absent
+      tags: securetty
+
+    - name: securetty create
+      file: path=/etc/securetty state=touch owner=root group=root mode=0644
+      tags: securetty
+
+    - name: securetty console
+      lineinfile: dest=/etc/securetty regexp="^console" line="console" state=present
+      tags: securetty
+
+    - name: securetty tty1
+      lineinfile: dest=/etc/securetty regexp="^tty1" line="tty1" state=present
+      tags: securetty
+
+    - name: services
+      file: path=/etc/services owner=root group=root mode=0444
+      tags: services
+
+    - name: shadow
+      file: path=/etc/shadow owner=root group=root mode=0400
+      tags: shadow
+
+    - name: cron.d
+      file: path=/etc/cron.d state=directory owner=root group=root mode=0750
+      tags: cron.d
+
+    - name: cron.hourly
+      file: path=/etc/cron.hourly state=directory owner=root group=root mode=0750
+      tags: cron.hourly
+
+    - name: cron.daily
+      file: path=/etc/cron.daily state=directory owner=root group=root mode=0750
+      tags: cron.daily
+
+    - name: cron.weekly
+      file: path=/etc/cron.weekly state=directory owner=root group=root mode=0750
+      tags: cron.weekly
+
+    - name: cron.monthly
+      file: path=/etc/cron.monthly state=directory owner=root group=root mode=0750
+      tags: cron.monthly
+
+#    - name: smb.conf
+#      file: path=/etc/samba/smb.conf owner=root group=root mode=0644
+#      tags: smb.conf
+
+#    - name: smbpasswd
+#      file: path=/etc/samba/smbpasswd owner=root group=root mode=0600
+#      tags: smbpasswd
+
+    - name: access.conf
+      file: path=/etc/security/access.conf owner=root group=root mode=0640
+      tags: access.conf
+
+    - name: snmpd.conf
+      file: path=/etc/snmp/snmpd.conf owner=root group=root mode=0600
+      tags: snmpd.conf
+
+    - name: sshd_config
+      file: path=/etc/ssh/sshd_config owner=root group=root mode=0600
+      notify:
+      - restart sshd
+      tags: sshd
+
+    - name: Remove ssh protocol 2,1
+      lineinfile: dest=/etc/ssh/sshd_config regexp="Protocol 2,1" state=absent
+      notify:
+      - restart sshd
+      tags: sshd
+
+    - name: enable ssh protocol 2
+      lineinfile: dest=/etc/ssh/sshd_config regexp="^Protocol 2" line="Protocol 2" state=present
+      notify:
+       - restart sshd
+      tags: sshd
+
+    - name: disable ssh protocol 1
+      lineinfile: dest=/etc/ssh/sshd_config regexp="Protocol 1" state=absent
+      notify:
+      - restart sshd
+      tags: sshd
+
+    - name: Set root login to no
+      replace: dest=/etc/ssh/sshd_config regexp='PermitRootLogin yes' replace='PermitRootLogin no' backup=yes
+      notify:
+      - restart sshd
+      tags: sshd
+
+    - name: syslog-ng.conf
+      file: path=/etc/syslog-ng/syslog-ng.conf owner=root group=root mode=0640
+      notify:
+      - restart syslog
+      tags: syslog-ng
+
+    - name: syslog splunk1
+      lineinfile: dest=/etc/syslog-ng/syslog-ng.conf regexp="^filter f_splunkfwd" line="filter f_splunkfwd { ( not facility(mail) and level(err..emerg) ) or ( facility(daemon, kern, local5, lpr) and level(notice..emerg) ) or ( facility(auth, authpriv) and level(info..emerg) ); };" state=present
+      notify:
+      - restart syslog
+      tags: syslog-ng
+
+    - name: syslog splunk2
+      lineinfile: dest=/etc/syslog-ng/syslog-ng.conf regexp="^destination loghost { tcp(splunkfwd); };" line="destination loghost { tcp(splunkfwd); };" state=present
+      notify:
+      - restart syslog
+      tags: syslog-ng
+
+    - name: syslog splunk3
+      lineinfile: dest=/etc/syslog-ng/syslog-ng.conf regexp="^log { source(src); filter(f_splunkfwd); destination(loghost); };" line="log { source(src); filter(f_splunkfwd); destination(loghost); };" state=present
+      notify:
+      - restart syslog
+      tags: syslog-ng
+
+    #- name: btmp
+    #  file: path=/var/log/btmp owner=root group=root mode=0600
+    #  tags: btmp
+
+    - name: atjobs
+      file: path=/var/spool/atjobs owner=root group=root mode=0700
+      tags: atjobs
+
+    - name: Teradata Core
+      file: path=/var/opt/teradata/core state=directory owner=root group=root mode=1777
+      tags: tdcore
+
+    - name: Teradata Crash
+      file: path=/var/opt/teradata/crash state=directory owner=root group=root mode=0700
+      tags: tdcrash
+
+    - name: ldd
+      file: path=/usr/bin/ldd owner=root group=root mode=0700
+      tags: ldd
+
+    - name: traceroute
+      file: path=/usr/sbin/traceroute owner=root group=root mode=0700
+      tags: traceroute
+
+    - name: log
+      file: path=/var/log state=directory owner=root group=root mode=0750
+      tags: tlogdcrash
+
+    - name: shells
+      file: path=/etc/shells owner=root group=root mode=0640
+      tags: shells
+
+    - name: tmp
+      file: path=/tmp state=directory owner=root group=root mode=1777
+      tags: tmp
+
+    #- name: pam.d password
+    #  lineinfile: dest=/etc/pam.d/password regexp="^password        requisite       pam_cracklib.so try_first_pass" line="password        requisite       pam_cracklib.so try_first_pass retry=6 minlen=8 dcredit=-1 ucredit=-1 lcredit=-1" state=present
+    #  tags: pam.d_pw
+
+    #- name: pam.d common-auth
+    #  lineinfile: dest=/etc/pam.d/common-auth regexp="^auth        required        pam_tally.so" line="auth        required        pam_tally.so onerr=fail deny=6 unlock_time=300" state=present
+    #  tags: pam.d_common_auth
+
+    #- name: pam.d common-account
+    #  lineinfile: dest=/etc/pam.d/common-account regexp="^account required   pam_tally.so" line="account required   pam_tally.so" state=present
+    #  tags: pam.d_common_account
+
+    - name: login.defs1
+      lineinfile: dest=/etc/login.defs regexp="^PASS_MAX_DAYS" line="PASS_MAX_DAYS   91" state=present
+      tags: logindefs
+
+    - name: login.defs2
+      lineinfile: dest=/etc/login.defs regexp="^PASS_MIN_DAYS" line="PASS_MIN_DAYS   1" state=present
+      tags: logindefs
+
+    - name: login.defs3
+      lineinfile: dest=/etc/login.defs regexp="^PASS_MIN_LEN" line="PASS_MIN_LEN    8" state=present
+      tags: logindefs
+
+    - name: login.defs4
+      lineinfile: dest=/etc/login.defs regexp="^PASS_WARN_AGE   15" line="PASS_WARN_AGE   15" state=present
+      tags: logindefs
+
+    - name: login.defs5
+      lineinfile: dest=/etc/login.defs regexp="^UID_MIN" line="UID_MIN                   500" state=present
+      tags: logindefs
+
+    - name: login.defs6
+      lineinfile: dest=/etc/login.defs regexp="^UID_MAX" line="UID_MAX                 60000" state=present
+      tags: logindefs
+
+    - name: login.defs7
+      lineinfile: dest=/etc/login.defs regexp="^GID_MIN" line="GID_MIN                   500" state=present
+      tags: logindefs
+
+    - name: login.defs8
+      lineinfile: dest=/etc/login.defs regexp="^GID_MAX" line="GID_MAX                 60000" state=present
+      tags: logindefs
+
+    - name: login.defs9
+      lineinfile: dest=/etc/login.defs regexp="^CREATE_HOME" line="CREATE_HOME     yes" state=present
+      tags: logindefs
+
+    - name: login.defs10
+      lineinfile: dest=/etc/login.defs regexp="^UMASK" line="UMASK           077" state=present
+      tags: logindefs
+
+    - name: login.defs11
+      lineinfile: dest=/etc/login.defs regexp="^USERGROUPS_ENAB" line="USERGROUPS_ENAB yes" state=present
+      tags: logindefs
+
+    - name: login.defs12
+      lineinfile: dest=/etc/login.defs regexp="^ENCRYPT_METHOD" line="ENCRYPT_METHOD MD5" state=present
+      tags: logindefs
+
+    - name: login.defs13
+      lineinfile: dest=/etc/login.defs regexp="^MD5_CRYPT_ENAB" line="MD5_CRYPT_ENAB yes" state=present
+      tags: logindefs
+
+    - name: ctrl-alt-del
+      lineinfile: dest=/etc/inittab regexp="^ca::ctrlaltdel" line="ca::ctrlaltdel:" state=present
+      tags: ctrl-alt-del
+
+  handlers:
+  - name: restart syslog
+    service: name=syslog enabled=yes state=restarted
+  - name: restart sshd
+    service: name=sshd enabled=yes state=restarted

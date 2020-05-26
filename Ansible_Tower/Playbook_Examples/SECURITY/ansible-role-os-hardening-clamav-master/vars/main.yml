@@ -1,0 +1,21 @@
+---
+clamav_proxy: ""
+clamav_proxy_port: ""
+clamav_proxy_user: ""
+clamav_proxy_password: ""
+clamav_service: 'clamd@scan'
+
+# RHEL 7 STIG: Packages to add/remove
+stig_packages_rhel7:
+  - packages:
+      - clamav
+      - clamav-data
+      - clamav-devel
+      - clamav-filesystem
+      - clamav-lib
+      - clamav-scanner-systemd
+      - clamav-server-systemd
+      - clamav-server
+      - clamav-update
+    state: "{{ security_package_state }}"
+    enabled: "{{ security_enable_virus_scanner }}"

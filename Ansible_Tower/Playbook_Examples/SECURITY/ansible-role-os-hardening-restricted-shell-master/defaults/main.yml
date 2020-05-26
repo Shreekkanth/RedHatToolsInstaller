@@ -1,0 +1,53 @@
+---
+# Restricted shell
+# Activate/deactivate restricted shell.
+security_rhel7_rbash_enabled: 'True'
+# SELinux booleans required to prevent user_t and staff_t types from executing
+# content in their homes, for the purposes of protecting the restricted shell.
+security_rhel7_rbash_sebooleans:
+  - name: user_exec_content
+    enabled: 'False'
+  - name: staff_exec_content
+    enabled: 'False'
+# FIXME: enforce only 'present' links
+security_rhel7_rbash_binaries:
+  - name: clear
+    state: 'present'
+  - name: less
+    state: 'present'
+  - name: passwd
+    state: 'present'
+  - name: rview
+    state: 'present'
+  - name: scp
+    state: 'present'
+  - name: ssh
+    state: 'present'
+  - name: sudo
+    state: 'present'
+  - name: sudoedit
+    state: 'present'
+  - name: awk
+    state: 'absent'
+  - name: elinks
+    state: 'absent'
+  - name: ftp
+    state: 'absent'
+  - name: python
+    state: 'absent'
+  - name: perl
+    state: 'absent'
+  - name: rvim
+    state: 'absent'
+  - name: ruby
+    state: 'absent'
+  - name: tcpdump
+    state: 'absent'
+#TODO: if adding more commands, be careful with evident shell escapes
+# ftp, gdb, more, less (but see LESSSECURE), man, rvim, scp, find
+# any scripting language: ruby, perl, python, lua, awk, ...
+# Provide the restricted shell with all the coreutils
+security_rhel7_rbash_coreutils: 'False'
+# Minimum UID numeric value to apply security constraints to. By default,
+# all non system accounts.
+security_rhel7_min_uid: 1000

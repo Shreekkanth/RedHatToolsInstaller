@@ -1,0 +1,382 @@
+#!/bin/bash
+
+# USAGE:
+#   audit_ipa_feed.sh -c config [-n]
+#   -c config  configuration file with definitions sourced by this script
+#   -n         prevents the random sleep prior to processing
+#
+Usage="Usage: `basename $0` -c config [-n]"
+
+
+Arg0=`basename $0`
+
+# We should normally sleep before processing data
+NoSleep=0
+ConfigFile=""
+
+# Check args
+while getopts "c:n" opt; do
+   case $opt in
+      c)
+        ConfigFile=$OPTARG
+        ;;
+      n)
+	NoSleep=1
+	;;
+      \?)
+	echo "$0: Invalid option -$OPTARG"
+	echo $Usage
+	exit 1
+	;;
+   esac
+done
+
+# Check that a config file was passed and if so source it
+if [ -z "${ConfigFile}" ]; then
+   echo "Missing config argument"
+   echo $Usage
+   exit 1
+fi
+
+# Load definitions, exit on failure
+# TODO - check that the config file defines all the required variables
+source "${ConfigFile}"
+if [ $? != 0 ]; then
+   echo "Error while sourcing ${ConfigFile}"
+   exit 1
+fi
+ConfigBase=`basename ${ConfigFile}`
+
+if [ -z $FEED_NAME ] ; then
+   echo "$Arg0: Missing feed name var in config file ${ConfigFile}"
+   exit 1;
+fi
+if [ -z "${SYSTEM}" ] ; then
+   echo "$Arg0: Missing System type var in config file ${ConfigFile}"
+   exit 1;
+fi
+if [ -z $ENVIRONMENT ] ; then
+   echo "$Arg0: Missing Application environment var in config file ${ConfigFile}"
+   exit 1;
+fi
+if [ -z $URL ] ; then
+   echo "$Arg0: Missing destination URL var in config file ${ConfigFile}"
+   exit 1;
+fi
+if [ -z $VERSION ] ; then
+   echo "$Arg0: Missing Version var in config file ${ConfigFile}"
+   exit 1;
+fi
+
+if [ -z $ARCHIVE_RETENTION ] ; then
+   echo "$Arg0: Missing archive retention period in config file ${ConfigFile}. Using default of 9"
+   ARCHIVE_RETENTION=9
+fi
+if [ -z $ARCHIVE_MAX ] ; then
+   echo "$Arg0: Missing archive retention size in config file ${ConfigFile}. Using default of 1GB"
+   ARCHIVE_MAX=2097152
+fi
+if [ -z $FAILED_RETENTION ] ; then
+   echo "$Arg0: Missing failed transfer retention period in config file ${ConfigFile}. Using default of 30"
+   FAILED_RETENTION=30
+fi
+if [ -z $FAILED_MAX ] ; then
+   echo "$Arg0: Missing failed transfer retention size in config file ${ConfigFile}. Using default of 2GB"
+   FAILED_MAX=4194304
+fi
+if [ -z $MAX_SLEEP ] ; then
+   echo "$Arg0: Missing Max Sleep  var in config file ${ConfigFile}"
+   exit 1;
+fi
+
+if [ -z $AUDIT_ROOT ] ; then
+   echo "$Arg0: Missing AUDIT_ROOT var in config file ${ConfigFile}"
+   exit 1;
+fi
+if [ ! -d $AUDIT_ROOT ] ; then
+   echo "$Arg0: AUDIT_ROOT directory ${AUDIT_ROOT} does not exist"
+   exit 1;
+fi
+if [ -z $AUDIT_ARCHIVE_SUCCESS ] ; then
+   echo "$Arg0: Missing archive directory var in config file ${ConfigFile}. Using default of ${AUDIT_ROOT}/archive"
+   AUDIT_ARCHIVE_SUCCESS=${AUDIT_ROOT}/archive
+fi
+if [ -z $AUDIT_ARCHIVE_FAIL ] ; then
+   echo "$Arg0: Missing archive failure directory var in config file ${ConfigFile}. Using default of ${AUDIT_ROOT}/failed"
+   AUDIT_ARCHIVE_FAIL=${AUDIT_ROOT}/failed
+fi
+if [ -z $AUDIT_CLIENT_INBOX ] ; then
+   echo "$Arg0: Missing Audit processing directory var in config file ${ConfigFile}. Using default of ${AUDIT_ROOT}/inbox"
+   AUDIT_CLIENT_INBOX=${AUDIT_ROOT}/inbox
+fi
+if [ -z $AUDIT_CLIENT_LOCKS ] ; then
+   echo "$Arg0: Missing Audit processing directory var in config file ${ConfigFile}. Using default of ${AUDIT_ROOT}/locks"
+   AUDIT_CLIENT_LOCKS=${AUDIT_ROOT}/locks
+fi
+
+if [ -z $AUDIT_LOG_DIR ] ; then
+   echo "$Arg0: Missing audit source log var in config file ${ConfigFile}"
+   exit 1;
+fi
+if [ -z $AUDIT_LOG_NAME_START ] ; then
+   echo "$Arg0: Missing audit log file prefix var in config file ${ConfigFile}"
+   exit 1;
+fi
+
+# Apply default CURL timeouts if not already set
+#
+# C_TMO - Maximum time in seconds to allow the connection to the server to take
+#   The default of 43 seconds is to allow for 30 second timeouts
+#   that may exist in various
+# M_TMO - Maximum time in seconds to allow the whole operation to take
+#   The default of 20 minutes (1200 second) is to ensure we actually terminate
+#   curl should there be a network outage such that curl is left running
+if [ -z $C_TMO ] ; then
+  C_TMO=37
+fi
+if [ -z $M_TMO ] ; then
+  M_TMO=1200
+fi
+
+# ROUTINES:
+
+# clean_store()
+#
+# Args:
+#  $1 - root      - the root of the archive directory to clean
+#  $2 - retention - the retention period in days before archiving
+#  $3 - maxsize   - the maximum size in (512-byte) blocks allowed in archive
+#
+# Ensure any local archives of logs are limited in size and retention period
+
+clean_store()
+{
+	if [ $# -ne 3 ] ; then
+		echo "$Arg0: ${ConfigBase} Not enough args calling clean_archive()"
+		return
+	fi
+	root=$1
+	retention=$2
+	maxsize=$3
+
+	# We first delete files older than the retention period
+	find ${root} -type f -mtime +${retention} -exec rm -f {} \;
+
+	# First cd to ${root} so we don't need shell expansion on
+	# the ls command below.
+	myloc=`pwd`
+	cd ${root}
+	# We next delete based on the max size for this store
+	s=`du -s --block-size=512 . | cut -f1`
+	while [ ${s} -gt ${maxsize} ]; do
+		ls -t | tail -5 | xargs rm -f
+		s=`du -s --block-size=512 . | cut -f1`
+	done
+	cd ${myloc}
+	return
+}
+
+# logmsg()
+#
+# Args:
+#   $* - arguements to echo
+#
+# Print a message prefixed with a date and the program name
+
+logmsg() {
+	NOW=`TZ=UTC date +"%FT%T.000Z"`
+	echo "${NOW} ${Arg0}: ${ConfigBase} $*"
+}
+
+# send_to_audit()
+#
+# Args:
+#  $1 - the log file
+#
+# Send the given log file to the Audit Web Service. If the transmission fails, the log
+# file is saved to a FAILURE location, otherwise it is deleted
+
+send_to_audit() {
+	logFile=$1
+	logSz=`ls -sh ${logFile} | cut -d' ' -f1`
+
+	# Create a string of local metadata for transmission
+	hostArgs=""
+	myHost=`hostname -f | cut -d' ' -f1`
+	if [ -n "${myHost}" ]; then
+		hostArgs="${hostArgs} -H MyHost:\"${myHost}\""
+	fi
+        # Note we can have multiple addresses
+	myIPaddress=`hostname -i | cut -d' ' -f1`
+	if [ -n "${myIPaddress}" ]; then
+		hostArgs="${hostArgs} -H MyIPaddress:\"${myIPaddress}\""
+	fi
+	myDomain=`hostname -d`
+	if [ -n "${myDomain}" ]; then
+		myNameserver=`dig ${myDomain} SOA +noall +answer +short | head -1 | cut -d' ' -f1`
+		if [ -n "$myNameserver" ]; then
+			hostArgs="${hostArgs} -H MyNameServer:\"${myNameserver}\""
+		fi
+	fi
+
+	# Do the transfer
+
+	# For two-way SSL authentication
+	# RESPONSE_HTTP=`curl --cert /path/to/server.pem --cacert /path/to/root_ca.crt --data-binary @${logFile} ${URL} -H "Feed:${FEED_NAME}" -H "System:${SYSTEM}" -H "Environment:${ENVIRONMENT}" -H "Version:${VERSION}" ${hostArgs} -H "Compression:GZIP" --write-out "RESPONSE_CODE=%{http_code}" 2>&1`
+
+	# If not two-way SSL authentication, use the -k option to curl
+	RESPONSE_HTTP=`curl -k --connect-timeout ${C_TMO} --max-time ${M_TMO} --data-binary @${logFile} ${URL} -H "Feed:${FEED_NAME}" -H "System:${SYSTEM}" -H "Environment:${ENVIRONMENT}" -H "Version:${VERSION}" ${hostArgs} -H "Compression:GZIP" --write-out "RESPONSE_CODE=%{http_code}" 2>&1`
+
+	# We first look for a positive response (ie 200)
+	RESPONSE_CODE=`echo ${RESPONSE_HTTP} | sed -e 's/.*RESPONSE_CODE=\(200\).*/\1/'`
+	if [ "${RESPONSE_CODE}" = "200" ] ;then
+		logmsg "Send status: [${RESPONSE_CODE}] SUCCESS  Audit Log: ${logFile} Size: ${logSz} ProcessTime: ${ProcessTime}"
+                rm -f ${logFile}
+		return 0
+	fi
+
+	# If we can't find it in the output, look for the last response code
+	# We do this in the unlikely event that a corrupted arguement is passed to curl
+	RESPONSE_CODE=`echo ${RESPONSE_HTTP} | sed -e 's/.*RESPONSE_CODE=\([0-9]\+\)$/\1/'`
+	if [ "${RESPONSE_CODE}" = "200" ] ;then
+		logmsg "Send status: [${RESPONSE_CODE}] SUCCESS  Audit Log: ${logFile} Size: ${logSz} ProcessTime: ${ProcessTime}"
+                rm -f ${logFile}
+		return 0
+	fi
+
+	# Fall through ...
+
+	# We failed to tranfer the processed log file, so emit a message and move the file to
+	# the failed directory
+	msg="Send status: [${RESPONSE_CODE}] FAILED  Audit Log: ${logFile} Reason: curl returned http_code (${RESPONSE_CODE})"
+	logmsg "$msg"
+
+	# Move the translated file to the failure directory
+	mv ${logFile} ${AUDIT_ARCHIVE_FAIL}/
+
+	# We also send an event into the security syslog destination
+	logger -p "authpriv.info" -t $Arg0 "${ConfigBase} $msg"
+
+	return 9
+}
+
+
+# MAIN:
+
+# Rotate the logs using the function defined in the config file
+
+rotate_logs
+
+# Set up a delay of between 7 - $MAX_SLEEP seconds
+# The additional 7 seconds is to allow for log rotations
+
+RANDOM=`echo ${RANDOM}`
+MOD=`expr ${MAX_SLEEP} - 7`
+SLEEP=`expr \( ${RANDOM} % ${MOD} \) + 7`
+
+
+# Check if we are already running
+THIS_PID=`echo $$`
+MyInvocationName=${Arg0}.`basename ${ConfigFile}`
+LCK_FILE=${AUDIT_CLIENT_LOCKS}/${MyInvocationName}.lck
+if [ -f "${LCK_FILE}" ]; then
+   MYPID=`head -n 1 "${LCK_FILE}"`
+   TEST_RUNNING=`ps -p ${MYPID} | grep ${MYPID}`
+   if [ -z "${TEST_RUNNING}" ]; then
+      logmsg "Obtained lock for ${THIS_PID}"
+      echo "${THIS_PID}" > "${LCK_FILE}"
+   else
+      logmsg "Sorry ${MyInvocationName} is already running[${MYPID}]"
+      # If the lock file is over thee hours old remove it
+      find ${LCK_FILE} -mmin +180 -exec rm -f {} \;
+      exit 2
+   fi
+else
+   logmsg "Obtained lock for ${THIS_PID}"
+   echo "${THIS_PID}" > "${LCK_FILE}"
+fi
+
+# We may need to sleep
+if [ ${NoSleep} -eq 0 ]; then
+	logmsg "Will sleep for ${SLEEP}s to help balance network traffic"
+	sleep ${SLEEP}
+	#sleep 2
+fi
+
+# Reprocess previously failed events first
+for RPT_AUDIT_LOG in ${AUDIT_ARCHIVE_FAIL}/${AUDIT_LOG_NAME_START}*
+do
+   # If we have files
+   if [ -f ${RPT_AUDIT_LOG} ]; then
+
+      # Move the processed compressed failed log to the AUDIT_CLIENT_INBOX.
+      FILENAME=`basename ${RPT_AUDIT_LOG}`
+      mv ${RPT_AUDIT_LOG} ${AUDIT_CLIENT_INBOX}/${FILENAME}
+
+      # Call send_to_audit. If it fails, it will move the file back to the failure directory
+      export ProcessTime=0
+      send_to_audit ${AUDIT_CLIENT_INBOX}/${FILENAME}
+
+   fi
+done
+
+
+
+FILENAME=${AUDIT_LOG_NAME_START}
+
+for AUDIT_LOG in `ls ${AUDIT_LOG_DIR}`
+do
+UNIQUE=$(date +%s)
+
+# Note, that ${AUDIT_PROC_SUFFIX} could be null. We use this in instances
+# to differentiate between a raw log and a locally processed log
+   TRANSLATED_AUDIT_LOG=${AUDIT_LOG}.${AUDIT_PROC_SUFFIX}.${UNIQUE}
+   mv ${AUDIT_LOG_DIR}/${AUDIT_LOG} ${AUDIT_CLIENT_INBOX}/${TRANSLATED_AUDIT_LOG}
+done
+
+# We may need to pre-process the raw audit before sending to Audit, so we pass
+# the resultant processed filename which we have ensured is unique
+t_s=`date +%s`
+process_audit ${AUDIT_CLIENT_INBOX}/${TRANSLATED_AUDIT_LOG}
+t_e=`date +%s`
+export ProcessTime=`expr $t_e - $t_s`
+
+# Compress the resultant gzip'd processed file and call send_to_audit.  This submits the
+# translated log file to the Audit Web service.
+# If it fails to send, then the gzip'd file will be in ${AUDIT_ARCHIVE_FAIL}, otherwise
+# it is deleted by send_to_audit()
+if [ -f ${AUDIT_CLIENT_INBOX}/${TRANSLATED_AUDIT_LOG} ]
+then
+   gzip --force ${AUDIT_CLIENT_INBOX}/${TRANSLATED_AUDIT_LOG}
+   send_to_audit ${AUDIT_CLIENT_INBOX}/${TRANSLATED_AUDIT_LOG}.gz
+fi
+
+# Check the inbox for files that may have been left as a result of an rpm
+# upgrade leaving a file in this stage of processing, given that the upgrade
+# process currently kills any running scripts
+for RPT_AUDIT_LOG in ${AUDIT_CLIENT_INBOX}/${AUDIT_LOG_NAME_START}*
+do
+   # If we have files
+   if [ -f ${RPT_AUDIT_LOG} ]; then
+
+      # Move the processed compressed failed log to the AUDIT_CLIENT_INBOX.
+      FILENAME=`basename ${RPT_AUDIT_LOG}`
+      FILENAMEexGZ=`basename ${RPT_AUDIT_LOG} .gz`
+
+      export ProcessTime=0
+      if [ ${FILENAME} = ${FILENAMEexGZ} ]; then
+        gzip --force ${RPT_AUDIT_LOG}
+        send_to_audit ${RPT_AUDIT_LOG}.gz
+      else
+        send_to_audit ${RPT_AUDIT_LOG}
+      fi
+
+   fi
+done
+
+# The following should be depricated at the next release (from 1.3.0-0)
+# Remove old archived audit log files. This is controlled by the ARCHIVE_RETENTION environment
+# variable i.e. ARCHIVE_RETENTION=n where n=no of days to keep processed audit logs.
+
+clean_store ${AUDIT_ARCHIVE_SUCCESS} ${ARCHIVE_RETENTION} ${ARCHIVE_MAX}
+clean_store ${AUDIT_ARCHIVE_FAIL} ${FAILED_RETENTION} ${FAILED_MAX}

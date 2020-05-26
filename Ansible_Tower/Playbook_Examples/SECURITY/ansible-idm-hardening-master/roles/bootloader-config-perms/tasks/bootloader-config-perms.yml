@@ -1,0 +1,11 @@
+---
+
+- name: "ensure permissions on bootloader config are configured"
+  file: 
+    path: /boot/grub2/grub.cfg
+    state: file
+    mode: 0600
+    owner: root
+    group: root
+    setype: boot_t
+  become: true

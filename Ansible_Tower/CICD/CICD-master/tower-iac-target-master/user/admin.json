@@ -1,0 +1,8 @@
+{
+    "asset_type": "user", 
+    "email": "admin@example.com", 
+    "first_name": "", 
+    "is_superuser": true, 
+    "last_name": "", 
+    "username": "admin"
+}

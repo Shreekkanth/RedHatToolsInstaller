@@ -1,0 +1,141 @@
+---
+- name: Define special SELinux type enforcement for files for container builds
+  set_fact:
+    virtualization_setype: container_file_t
+  when: ansible_virtualization_type == 'docker'
+
+- name: Define SELinux MLS for files only for VM based builds
+  set_fact:
+    virtualization_selevel: s0
+  when: ansible_virtualization_type != 'docker'
+
+- name: Add or remove AIDE packages based on STIG requirements
+  yum:
+    # yamllint disable-line
+    name: "{{ stig_packages_rhel7 | selectattr('enabled') | selectattr('state', 'equalto', item) | sum(attribute='packages', start=[]) }}"
+    state: "{{ item }}"
+  with_items:
+    # yamllint disable-line
+    - "{{ stig_packages_rhel7 | selectattr('enabled') | map(attribute='state') | unique | list }}"
+  tags:
+    - cat1
+    - auth
+    - packages
+    - services
+    - V-71897
+    - V-71967
+    - V-71969
+    - V-72067
+    - V-72077
+    - V-72213
+    - V-72233
+    - V-72301
+    - V-72307
+
+- name: Verify that AIDE configuration file exists
+  stat:
+    path: /etc/aide.conf
+  register: aide_conf
+  check_mode: 'no'
+  tags:
+    - always
+  failed_when: aide_conf.stat.exists == False
+
+- name: Verify that AIDE configuration directory exists
+  file:
+    path: /etc/aide/aide.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0750
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  when: aide_conf.stat.exists | bool
+  tags:
+    - always
+
+- name: Exclude certain directories from AIDE
+  template:
+    src: ZZ_aide_exclusions.j2
+    dest: /etc/aide/aide.conf.d/ZZ_aide_exclusions
+    owner: root
+    group: root
+    mode: 0640
+    seuser: system_u
+    serole: object_r
+    setype: "{{ virtualization_setype | default('etc_t') }}"
+    selevel: "{{ virtualization_selevel | default(omit) }}"
+    backup: 'no'
+  when: aide_conf.stat.exists | bool
+  tags:
+    - medium
+    - aide
+    - V-71973
+
+- name: Check to see if AIDE database is already in place
+  stat:
+    path: "{{ aide_database_file }}"
+  register: aide_database
+  check_mode: 'no'
+  tags:
+    - always
+
+- name: Initialize AIDE (this will take a few minutes)
+  command: >
+    aide --init
+  register: aide_init
+  when:
+    - aide_conf.stat.exists | bool
+    - not aide_database.stat.exists | bool
+    - security_rhel7_initialize_aide | bool
+  tags:
+    - medium
+    - aide
+    - V-71973
+
+- name: Move AIDE database into place
+  command: "mv {{ aide_database_out_file }} {{ aide_database_file }}"
+  changed_when: false
+  when:
+    - aide_init is changed
+    - ansible_os_family | lower == 'redhat'
+  tags:
+    - medium
+    - aide
+    - V-71973
+
+- name: Verify that cron.d directory exists (containers)
+  file:
+    path: /etc/cron.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0750
+    seuser: system_u
+    serole: object_r
+    setype: system_cron_spool_t
+    selevel: s0
+  when:
+    - aide_conf.stat.exists | bool
+    - ansible_virtualization_type == 'docker'
+  tags:
+    - always
+    - medium
+    - aide
+    - V-71975
+
+- name: Create AIDE cron job
+  cron:
+    name: aide
+    cron_file: aide
+    user: root
+    special_time: daily
+    job: "/usr/sbin/aide --check | /bin/mail -s \"$HOSTNAME - Daily AIDE check run\" root"
+  when:
+    - ansible_os_family | lower == 'redhat'
+  tags:
+    - medium
+    - aide
+    - V-71975

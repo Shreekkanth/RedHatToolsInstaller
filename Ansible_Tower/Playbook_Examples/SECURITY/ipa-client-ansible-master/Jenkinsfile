@@ -1,0 +1,14 @@
+pipeline {
+    agent any
+
+   stages {
+
+        stage('Test') {
+            steps {
+                sh 'ansible --version'
+                sh 'ansible-playbook --inventory-file tests/inventory --syntax-check tests/test.yml'
+            }
+        }
+
+    }
+}

@@ -1,0 +1,8 @@
+---
+- hosts: all
+  strategy: free
+  gather_facts: false
+  tasks:
+    - name: Copy the group file to Hadoop
+      copy: src=/home/linans/files/hadoop-group dest=/etc/group
+      tags: group

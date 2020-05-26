@@ -1,0 +1,25 @@
+---
+# handlers file for hardening
+- name: restart sshd
+  service:
+    name: "{{ ssh_service }}"
+    state: restarted
+
+- name: restart chronyd
+  service:
+    name: chronyd
+    state: restarted
+
+- name: reload sysctl
+  shell: sysctl --system
+  
+- name: restart_firewalld
+  service:
+    name: firewalld
+    state: restarted
+    
+- name: restart_rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+    

@@ -1,0 +1,71 @@
+---
+- name: Manage booleans for polyinstatiation and restricted shell
+  seboolean:
+    name: "{{ item.name }}"
+    # yamllint disable-line rule:line-length
+    state: "{% if item.enabled | bool %}on{% elif not item.enabled | bool %}off{% endif %}"
+    persistent: 'yes'
+  with_items: '{{ security_rhel7_poly_sebooleans }}'
+  when:
+    - ansible_virtualization_type != 'docker'
+    - item.name is defined and item.name
+    - item.enabled is defined
+
+# Not idempotent, 'changed_when' forced to 'False'
+- name: Adjust PAM configuration for polyinstantiation
+  pamd:
+    name: "{{ item }}"
+    type: session
+    control: required
+    module_path: pam_namespace.so
+    module_arguments: 'unmount_on_close unmnt_remnt require_selinux'
+    state: updated
+  with_items:
+    - login
+    - remote
+    - sshd
+  changed_when: 'False'
+
+- name: Polyinstantiation namespace configuration
+  template:
+    src: 'namespace.conf.j2'
+    dest: '/etc/security/namespace.conf'
+    owner: 'root'
+    group: 'root'
+    mode: 0644
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+
+- name: Polyinstantiation instance directory init scripts
+  template:
+    src: "{{ item.iscript }}.j2"
+    dest: "/etc/security/namespace.d/{{ item.iscript }}"
+    owner: 'root'
+    group: 'root'
+    mode: 0755
+    seuser: system_u
+    serole: object_r
+    setype: namespace_init_exec_t
+    selevel: s0
+  with_items:
+    - "{{ security_rhel7_poly_dirs }}"
+  when:
+    - item.iscript is defined and item.iscript
+
+#- name: Polyinstantiation directories
+#  file:
+#    state: 'directory'
+#    path: "{{ item.path }}"
+#    owner: 'root'
+#    group: 'root'
+#    mode: 0000
+#    seuser: system_u
+#    serole: object_r
+#    setype: "{{ item.setype }}"
+#    selevel: s0
+#  loop:
+#    - { path: '/home/.inst', setype: 'user_home_dir_t' }
+#    - { path: '/tmp/.inst', setype: 'tmp_t' }
+#    - { path: '/var/tmp/.inst', setype: 'tmp_t' }

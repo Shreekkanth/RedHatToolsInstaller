@@ -1,0 +1,14 @@
+---
+
+- name: All machines get OpenSCAP scanner installed
+  hosts: all
+  sudo: true
+  roles:
+    - openscap
+#   - harden  -- Commented out for demo purposes only
+
+- name: Install SCAP Security Content (SSG) and GovReady on 'dashboard'
+  hosts: dashboard
+  roles:
+    - scap-security-guide
+    - govready

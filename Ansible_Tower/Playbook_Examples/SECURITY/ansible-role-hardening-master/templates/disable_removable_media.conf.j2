@@ -1,0 +1,11 @@
+# Disable Floppy devices
+install floppy /bin/true
+
+{% if ansible_virtualization_role != 'host' %}
+# Disable USB Storage (but not USB input devices)
+install usb-storage /bin/true
+
+# Disable CDROM devices
+install sr_mod /bin/true
+install cdrom /bin/true
+{% endif %}

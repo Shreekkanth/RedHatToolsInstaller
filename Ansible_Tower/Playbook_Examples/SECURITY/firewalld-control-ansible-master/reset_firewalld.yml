@@ -1,0 +1,5 @@
+---
+- name: Reset Firewalld settings
+  hosts: all
+  roles:
+    - reset_firewalld

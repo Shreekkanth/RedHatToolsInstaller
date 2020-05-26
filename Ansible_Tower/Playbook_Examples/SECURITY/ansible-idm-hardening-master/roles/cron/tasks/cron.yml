@@ -1,0 +1,12 @@
+---
+
+- name: "ensure permissions on /etc/cron files are configured"
+  command: /usr/bin/chmod og-rwx "{{ item }}"
+  become: true
+  with_items:
+    - /etc/crontab
+    - /etc/cron.hourly
+    - /etc/cron.daily
+    - /etc/cron.weekly
+    - /etc/cron.monthly
+    - /etc/cron.d

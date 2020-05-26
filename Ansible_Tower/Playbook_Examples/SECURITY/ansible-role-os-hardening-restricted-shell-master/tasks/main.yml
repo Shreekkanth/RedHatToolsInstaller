@@ -1,0 +1,123 @@
+---
+- name: Manage booleans for polyinstatiation and restricted shell
+  seboolean:
+    name: "{{ item.name }}"
+    state: "{% if item.enabled | bool %}on{% else %}off{% endif %}"
+    persistent: 'yes'
+  with_items: '{{ security_rhel7_rbash_sebooleans }}'
+  when:
+    - ansible_virtualization_type != 'docker'
+    - item.name is defined and item.name
+    - item.enabled is defined
+
+- name: Configuration of security profile
+  template:
+    src: 'security.sh.j2'
+    dest: '/etc/profile.d/security.sh'
+    owner: 'root'
+    group: 'root'
+    mode: 0644
+    seuser: system_u
+    serole: object_r
+    setype: 'bin_t'
+    selevel: s0
+
+- name: Activate restricted bash shell when requested
+  file:
+    src: '/usr/bin/bash'
+    dest: '/usr/bin/rbash'
+    # yamllint disable-line rule:line-length
+    state: "{% if security_rhel7_rbash_enabled | bool %}link{% else %}absent{% endif %}"
+    owner: root
+    group: root
+    mode: 0777
+    seuser: system_u
+    serole: object_r
+    setype: bin_t
+    selevel: s0
+
+- name: Required skel directories
+  file:
+    dest: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+    seuser: system_u
+    serole: object_r
+    setype: bin_t
+    selevel: s0
+  with_items:
+    - '/etc/skel/.local/bin'
+    - '/etc/skel/.config'
+
+- name: Configure basic skel files for bash
+  copy:
+    src: "{{ item.src }}"
+    dest: "/etc/skel/.{{ item.dest | default(item.src) }}"
+    owner: 'root'
+    group: 'root'
+    mode: 0755
+    seuser: 'system_u'
+    serole: 'object_r'
+    setype: 'etc_t'
+    selevel: 's0'
+  with_items:
+    - {src: 'bash_aliases'}
+    - {src: 'bash_completion', dest: 'config/bash_completion'}
+    - {src: 'bash_logout'}
+    - {src: 'bash_profile'}
+    - {src: 'bashrc'}
+    - {src: 'exrc'}
+
+- name: Configure binaries in skel for restricted shell
+  file:
+    src: "/usr/bin/{{ item.name }}"
+    dest: "/etc/skel/.local/bin/{{ item.name }}"
+    # yamllint disable-line rule:line-length
+    state: "{% if 'present' in item.state %}link{% elif 'absent' in item.state %}absent{% endif %}"
+    owner: 'root'
+    group: 'root'
+    #mode: 0777
+    #seuser: system_u
+    #serole: object_r
+    #setype: bin_t
+    #selevel: s0
+  with_flattened:
+    - "{{ rbash_custom_binaries }}"
+    - "{{ security_rhel7_rbash_binaries }}"
+  when:
+    - item.name is defined
+    - item.state is defined
+
+# Not idempotent, 'changed_when' forced to 'False'
+# Direct use of rpm in shell triggers a warning, deactivating
+- name: Gather list of coreutils binaries
+  shell: rpm -ql coreutils | grep /usr/bin
+  args:
+    warn: no
+  register: list
+  changed_when: 'False'
+  tags:
+    - skip_ansible_lint
+  when:
+    - security_rhel7_rbash_coreutils is defined
+    - security_rhel7_rbash_coreutils | bool
+
+- name: Manage skel coreutils binaries when requested
+  file:
+    src: "/usr/bin/{{ item | basename }}"
+    dest: "/etc/skel/.local/bin/{{ item | basename }}"
+    # yamllint disable-line rule:line-length
+    state: "{% if security_rhel7_rbash_coreutils is defined and security_rhel7_rbash_coreutils | bool %}link{% else %}absent{% endif %}"
+    owner: root
+    group: root
+    #mode: 0777
+    #seuser: system_u
+    #serole: object_r
+    #setype: bin_t
+    #selevel: s0
+  with_items: "{{ list.stdout_lines }}"
+  when:
+    - security_rhel7_rbash_coreutils is defined
+    - security_rhel7_rbash_coreutils | bool
