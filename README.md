@@ -1,3 +1,5 @@
+The content below is open source, is OPC (Other Peoples Code) in a lot of cases and is provided " no warranty implied or otherwise”.  Use it as reference only.  If you have questions please ping me at shadd.gallegos@gmail.com 
+
 Table Of Contents
 -----------
 * Ansible-CF-Sat6-FeaturesOverlap.pdf
