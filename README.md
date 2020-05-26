@@ -12,6 +12,7 @@ Table Of Contents
 
 
 ===========
+
 Ansible_Tower
 -----------
 
@@ -224,6 +225,7 @@ Ansible_Tower
   * DEMO_8_Red_Hat_Ansible_Tower_workflow.mp4
 
 ===========
+
 Satellite
 -----------
 * Ansible_Modules-Foreman-Katello.tar.gz
