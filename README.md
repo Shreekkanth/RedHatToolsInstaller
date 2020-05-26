@@ -11,6 +11,7 @@ Table Of Contents
 * Red_Hat_Management.png
 
 
+===========
 Ansible_Tower
 -----------
 
@@ -124,49 +125,7 @@ Ansible_Tower
 
   Playbook_Examples
   -----------
-  * SECURITY
-
-  * Ansible_Tower.yml
-
-  * audit.yml
-
-  * backup-attic.yml
-
-  * backup-obnam.yml
-
-  * boxen.yml
-
-  * ec2_instance_reaper.yml
-
-  * encrypt-disk.yml
-
-  * filter-dns-any-query.yml
-
-  * ganeti-upgrade.yml
-
-  * install_pip_requirements.yml
-
-  * kill-prelink.yml
-
-  * linux-update-report.yml
-
-  * local.yml
-
-  * package-update.yml
-
-  * pip_n_it.yml
-
-  * README.md
-
-  * site.yml
-
-  * ssh-deploy-key.yml
-
-  * test-issue1815.yml
-
-  * tmbackup.yml
-
-  * virt-guests.yml
+  * To Many To List
 
 
   Ansible_Video_Demos
@@ -264,7 +223,7 @@ Ansible_Tower
  
   * DEMO_8_Red_Hat_Ansible_Tower_workflow.mp4
 
-
+===========
 Satellite
 -----------
 * Ansible_Modules-Foreman-Katello.tar.gz
