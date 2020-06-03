@@ -1,0 +1,6 @@
+---
+java_pkg: java-1.7.0-openjdk 
+es_file: elasticsearch-${es_version}.tar.gz
+es_url: https://github.com/downloads/elasticsearch/elasticsearch/${es_file}
+es_servicewrapper_version: d47d048
+es_servicewrapper_url: git://github.com/elasticsearch/elasticsearch-servicewrapper.git

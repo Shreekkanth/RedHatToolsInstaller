@@ -1,0 +1,9 @@
+---
+- name: create storage account
+  azure_rm_storageaccount:
+    state: present
+    account_type: "{{ storage_account_type }}"
+    name: "{{ storage_account_name }}"
+    resource_group_name: "{{ resource_group }}"
+  delegate_to: localhost
+  run_once: True

@@ -1,0 +1,10 @@
+---
+- name: install fedora-chromium yum repo
+  command: yum-config-manager --add-repo {{chromium_repo}}
+           creates=/etc/yum.repos.d/fedora-chromium-stable.repo
+
+- name: install rpm gpg key
+  rpm_key: key={{chromium_key}} state=present
+
+- name: install chromium
+  yum: name=chromium state=installed

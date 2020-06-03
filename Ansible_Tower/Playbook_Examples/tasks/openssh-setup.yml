@@ -1,0 +1,29 @@
+- name: Install package $item
+  action: yum pkg=$item state=installed
+  with_items:
+    - openssh
+    - openssh-clients
+    - openssh-server
+  notify:
+    - restart sshd
+
+- name: Manage ssh_config
+  action: copy src=$file dest=/etc/ssh/ssh_config
+          owner=root group=root mode=0644 backup=yes
+  first_available_file:
+    - ../files/openssh/ssh_config.$ansible_distribution
+    - ../files/openssh/ssh_config
+  notify:
+    - restart sshd
+
+- name: Manage sshd_config
+  action: copy src=$file dest=/etc/ssh/sshd_config
+          owner=root group=root mode=0600 backup=yes
+  first_available_file:
+    - ../files/openssh/sshd_config.$ansible_distribution
+    - ../files/openssh/sshd_config
+  notify:
+    - restart sshd
+
+- name: Ensure sshd is running
+  action: service name=sshd state=running

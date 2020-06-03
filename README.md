@@ -1,4 +1,4 @@
-The content below is open source, is OPC (Other Peoples Code) in a lot of cases and is provided " no warranty implied or otherwise‚Äù.  Use it as reference only.  If you have questions please ping me at shadd.gallegos@gmail.com 
+The content below is open source, is OPC (Other Peoples Code) in a lot of cases and is provided " no warranty implied or otherwiseî.  Use it as reference only.  If you have questions please ping me at shadd.gallegos@gmail.com 
 
 Table Of Contents
 -----------

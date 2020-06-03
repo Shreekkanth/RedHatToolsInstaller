@@ -1,0 +1,165 @@
+- name: create public ip address
+  azure_rm_publicipaddress:
+    resource_group: "{{ resource_group }}"
+    location: "{{ location }}"
+    name: "{{ ansible_hostname }}"
+    allocation_method: static
+    domain_name: "{{ ansible_hostname | lower }}"
+  delegate_to: localhost
+  register: public_nic
+
+- name: set public ip address
+  set_fact:
+    public_ip_address: "{{ public_nic.state.ip_address }}"
+  delegate_to: localhost
+
+- name: create certificate key vault
+  azure_rm_keyvault:
+    resource_group: "{{ resource_group }}"
+    location: "{{ location }}"
+    vault_name: "{{ ansible_hostname }}"
+    vault_tenant: "{{ sp_tenant }} "
+    enabled_for_deployment: yes
+    sku:
+      name: standard
+      family: A
+    access_policies:
+    - secrets:
+      - get
+      - list
+      - set
+      - delete
+      - backup
+      - restore
+      - recover
+      - purge
+      keys:
+      - encrypt
+      - decrypt
+      - wrapkey
+      - unwrapkey
+      - sign
+      - verify
+      - get
+      - list
+      - create
+      - update
+      - import
+      - delete
+      - backup
+      - restore
+      - recover
+      - purge
+      tenant_id: "{{ sp_tenant }}"
+      object_id: "{{ sp_object_id }}"
+  register: cert_keyvault
+  delegate_to: localhost
+
+- name: copy WinRM ssl configuration
+  template:
+    src: ssl.cnf
+    dest: /tmp/ssl.cnf
+  delegate_to: localhost
+
+- name: generate WinRM private key
+  command: openssl genrsa -out Priv.key 2048
+  delegate_to: localhost
+
+- name: generate WinRM csr
+  command: openssl req -new -key Priv.key -out Request.csr -config /tmp/ssl.cnf
+  delegate_to: localhost
+
+- name: generate WinRM ssl certificate
+  command: "openssl x509 -req -days 365 -signkey Priv.key -in Request.csr -out {{ public_ip_address }}.crt -extensions v3_req -extfile /tmp/ssl.cnf"
+  delegate_to: localhost
+
+- name: generate WinRM pfx file
+  command: "openssl pkcs12 -export -inkey Priv.key -in {{ public_ip_address }}.crt -out {{ public_ip_address }}.pfx -passout pass:{{ admin_password }}"
+  delegate_to: localhost
+
+- name: create WinRM certificate secret
+  set_fact:
+    winrm_cert_secret:
+      data: "{{ lookup('file', public_ip_address + '.pfx') | b64encode }}"
+      dataType: pfx
+      password: "{{ admin_password }}"
+
+- name: push WinRM certificate to keyvault
+  azure_rm_keyvaultsecret:
+    secret_name: winrm-ssl
+    secret_value: "{{ winrm_cert_secret | to_json | b64encode }}"
+    keyvault_uri: "https://{{ ansible_hostname | lower }}.vault.azure.net"
+  delegate_to: localhost
+  register: winrm_ssl
+
+- name: create network interface
+  azure_rm_networkinterface:
+    name: "{{ ansible_hostname }}01"
+    os_type: Windows
+    resource_group: "{{ resource_group }}"
+    location: "{{ location }}"
+    virtual_network: "{{ network_name }}"
+    subnet_name: "{{ subnet_name }}"
+    ip_configurations:
+    - name: publicip
+      public_ip_address_name: "{{ ansible_hostname }}"
+      primary: True
+  delegate_to: localhost
+
+- name: parse data disks
+  set_fact: 
+    add_disks: "{{ add_disks | default([]) + [{'lun': idx, 'disk_size_gb': item.size, 'managed_disk_type': item.type}] }}" 
+  loop: "{{ data_disks }}"
+  loop_control:
+    index_var: idx
+
+- name: create virtual machine
+  azure_rm_virtualmachine:
+    resource_group: "{{ resource_group }}"
+    location: "{{ location }}"
+    name: "{{ ansible_hostname }}"
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    managed_disk_type: "{{ os_disk_type }}"
+    os_disk_size_gb: "{{ os_disk_size }}"
+    os_type: Windows
+    image:
+      offer: "{{ image_offer }}"
+      publisher: "{{ image_publisher }}"
+      sku: "{{ image_sku }}"
+      version: latest
+    vm_size: "{{ size }}"
+    network_interface_names:
+    - "{{ ansible_hostname }}01"
+    data_disks: "{{ add_disks }}"
+    winrm: 
+    - protocol: https
+      source_vault: "{{ cert_keyvault.id }}"
+      certificate_store: My
+      certificate_url: "{{ winrm_ssl.state.secret_id }}"
+  delegate_to: localhost
+  register: new_vm
+
+- name: set vm facts
+  set_fact:
+    ansible_host: "{{ public_ip_address }}"
+    ansible_user: "{{ admin_username }}"
+    ansible_password: "{{ admin_password }}"
+
+- name: test winrm connection
+  win_ping:
+
+- name: set winrm service start mode to delay
+  win_service:
+    name: WinRM
+    start_mode: delayed
+
+- name: Get windows host disks
+  win_disk_facts:
+
+- name: parition data disks
+  win_partition:
+    drive_letter: "{{ drive_letters[item.number] }}"
+    partition_size: -1 
+    disk_number: "{{ item.number }}"
+  loop: "{{ ansible_disks|selectattr('bus_type', 'equalto', 'SAS')|list }}"

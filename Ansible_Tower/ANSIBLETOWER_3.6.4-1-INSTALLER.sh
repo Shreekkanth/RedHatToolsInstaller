@@ -339,10 +339,11 @@ function CloudRequirements {
 echo '*********************************************'
 echo 'Installing Cloud Requirements (Ignore Errors)'
 echo '*********************************************'
+yum install -y python3-pip ansible ansible-doc
 source /var/lib/awx/venv/ansible/bin/activate
 umask "0022"
-yum install python3-pip 
-pip3 install --user --upgrade --force-reinstall pip boto3 boto botocore requests requests-credssp cryptography pywinrm PyVmomi azure-mgmt-compute azure-mgmt-resource azure-keyvault-secrets six
+pip3 install --user --upgrade pip boto3 ansible-tower-cli boto botocore requests requests-credssp cryptography pywinrm PyVmomi azure-mgmt-compute azure-mgmt-resource azure-keyvault-secrets six
+deactivate
 }
 
 #-----------------------------
@@ -484,8 +485,8 @@ ANSIBLESECURITY
 #ADMINUSERS
 ANSIBLESYSTEMREPOS
 ANSIBLELINUXUPGRADE
-CloudRequirements
 ANSIBLEINSTALLTOWER
+#CloudRequirements
 ANSIBLESELINUX
 ANSIBLEFIREWALL
 

@@ -1,0 +1,120 @@
+---
+workstation_repos:
+    - rpm: http://rpm.livna.org/livna-release.rpm
+      filename: livna.repo
+    - rpm: http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
+      filename: rpmfusion-free.repo
+    - rpm: http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-stable.noarch.rpm
+      filename: rpmfusion-nonfree.repo
+workstation_packages:
+# general utilities
+    - ansible
+    - antiword
+    - aspell
+    - atop
+    - colordiff
+    - cowsay
+    - dstat
+    - git
+    - gitk
+    - hddtemp
+    - htop
+    - iotop
+    - irssi
+    - kernel-tools
+    - lsof
+    - minicom
+    - mpc
+    - mpd
+    - mutt
+    - powertop
+    - screen
+    - smartmontools
+    - strace
+    - sysfsutils
+    - tcpdump
+    - tcptraceroute
+    - telnet
+    - tmux
+    - tuned
+    - urlview
+    - usbutils
+    - yum-utils
+# devel-related
+    - python-alembic
+    - python-dateutil
+    - python-nose
+    - python-peewee
+    - python-sqlalchemy
+    - python-inotify
+# fonts
+    - bitstream-vera-sans-fonts
+    - bitstream-vera-sans-mono-fonts
+    - bitstream-vera-serif-fonts
+    - levien-inconsolata-fonts
+    - terminus-fonts
+    - texlive-tex-gyre
+    - texlive-titlesec
+# desktop env
+    - cpanspec
+    - ctags
+    - dconf-editor
+    - gconf-editor
+    - empathy
+    - epiphany
+    - firefox
+    - fuse
+    - fuse-sshfs
+    - gconf-editor
+    - gnome-power-manager
+    - gnome-tweak-tool
+    - keepassx
+    - libreoffice-base
+    - libreoffice-calc
+    - libreoffice-emailmerge
+    - libreoffice-impress
+    - libreoffice-writer
+    - mbrowse
+    - mtr-gtk
+    - nautilus-open-terminal
+    - nmap
+    - openssh-askpass
+    - pandoc
+    - pandoc-pdf
+    - perltidy
+    - perl-ExtUtils-MakeMaker
+    - perl-Perl-Critic
+    - rpmdevtools
+    - seahorse
+    - synapse
+    - thunderbird
+    - vim-X11
+    - vim-enhanced
+    - wget
+    - whatmask
+    - whois
+    - wireshark-gnome
+    - zenity
+# openbox related packages
+    - conky
+    - obconf
+    - openbox
+    - nitrogen
+    - pnmixer
+    - tint2
+    - xcompmgr
+# general x11 utilities
+    - wmctrl
+    - xdotool
+# the following depend on 3rd party repos
+    - ffmpeg
+    - gstreamer-ffmpeg
+    - gstreamer-plugins-bad
+    - gstreamer-plugins-ugly
+    - gstreamer1-libav
+    - gstreamer1-plugins-good
+    - gstreamer1-plugins-good-extras
+    - gstreamer1-plugins-bad-free
+    - gstreamer1-plugins-bad-free-extras
+    - gstreamer1-plugins-bad-freeworld
+    - gstreamer1-plugins-ugly

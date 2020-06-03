@@ -1,0 +1,19 @@
+# Set up AIDE
+---
+- name: Install aide
+  action: yum pkg=aide state=installed
+
+- name: Copy aide.conf
+  action: copy src=$file dest=/etc/aide.conf owner=root group=root mode=0644
+  first_available_file:
+    - ../files/aide/aide.conf.$inventory_hostname
+    - ../files/aide/aide.conf.$ansible_distribution
+    - ../files/aide/aide.conf
+  notify:
+    - init aide database
+
+- name: Add cron job to run aide --check
+  action: copy 
+          src=../files/aide/aide-check.sh
+          dest=/etc/cron.daily/aide-check.cron
+          owner=root group=root mode=0755
