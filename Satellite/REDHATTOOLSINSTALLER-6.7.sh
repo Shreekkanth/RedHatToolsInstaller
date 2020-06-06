@@ -1129,7 +1129,6 @@ foreman-installer -v \
 
 systemctl start tftp.service
 systemctl enable tftp.service
-sleep 2
 sudo touch RHTI/CONFSATTFTP
 }
 
@@ -2793,7 +2792,7 @@ echo "Setting up and Modifying default template for auto discovery"
 echo "*********************************************************"
 #sed -i 's/SATELLITE_CAPSULE_URL/'$(hostname)'/g' /usr/share/foreman/app/views/unattended/pxe/PXELinux_default.erb
 #hammer template update --id 1
-sudo touch RHTI/MODPXELINUXDEF 
+sudo touch RHTI/MODPXELINUXDEF
 }
 
 #-------------------------------
@@ -2833,9 +2832,8 @@ sudo touch RHTI/SATREENABLEFOIREWALL
 #-------------------------------
 function SATDONE {
 #-------------------------------
-hammer template build-pxe-default
-
 echo 'YOU HAVE NOW COMPLETED INSTALLING SATELLITE!'
+clear}
 sudo touch RHTI/
 }
 
@@ -2954,8 +2952,6 @@ yum clean all
 yum-config-manager --setopt=\*.skip_if_unavailable=1 --save \* 
 foreman-rake foreman_tasks:cleanup TASK_SEARCH='label = Actions::Katello::Repository::Sync' STATES='paused,pending,stopped' VERBOSE=true
 foreman-rake katello:delete_orphaned_content --trace
-foreman-rake db:migrate
-foreman-rake db:seed
 foreman-rake katello:reimport
 katello-selinux-disable
 setenforce 0
@@ -2994,12 +2990,6 @@ rm -rf ~/FILES
 rm -rf /root/FILES
 rm -rf /tmp/*
 mv -f /root/.bashrc.bak /root/.bashrc
-for i in $(hammer --csv config-report list |awk -F ',' '{print $1}' ) ; do hammer config-report delete --organization $ORG --location $LOC --id $i ; done
-foreman-rake foreman_tasks:cleanup TASK_SEARCH='label = Actions::Katello::Repository::Sync' STATES='paused,pending,stopped' VERBOSE=true
-foreman-rake katello:delete_orphaned_content --trace
-foreman-rake db:migrate
-foreman-rake db:seed
-foreman-rake katello:reimport
 sudo touch RHTI/CLEANUP
 }
 
