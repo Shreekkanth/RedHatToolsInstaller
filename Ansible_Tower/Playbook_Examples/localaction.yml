@@ -1,11 +1,10 @@
---- # LOCALACTION DEMO
+--- # Master Playbook demonstrating the delegateto command
 - hosts: apacheweb
   user: test
   sudo: yes
   connection: ssh
-  gather_facts: no
-  tasks:
-  - name: Ping application server before we run our install
-    local_action: command ping -c 4 tcox5 
-  - name: Install Lynx on remote server
-    yum: pkg=lynx state=latest
+  pre_tasks:
+  - name: Ping the application server 
+    local_action: raw ping -c 4 tcox5 > /home/test/Playbooks/Roles/roles/ping.out
+  roles:
+  - webservers

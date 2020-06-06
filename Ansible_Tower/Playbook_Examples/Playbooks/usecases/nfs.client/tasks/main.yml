@@ -1,6 +1,0 @@
-- name: Copy the export file to the remote server
-  copy: src=exports.template dest=/etc/exports owner=root group=root mode=644
-  notify:
-  - InstallClientPackages
-  - CreateClientMount
-  - ClientMountServerResource

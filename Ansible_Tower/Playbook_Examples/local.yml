@@ -1,3 +1,6 @@
----
-# This is meant to demonstrate ansible local usage.
-- include: openssh/setup.yml
+--- # LOCAL ACTION PLAYBOOK
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Install Telnet Client
+      yum: pkg=telnet state=latest

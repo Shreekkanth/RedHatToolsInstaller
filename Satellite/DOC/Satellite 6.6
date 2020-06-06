@@ -1,0 +1,660 @@
+Hands On with Satellite 6.6 Lab guide
+
+Table of Contents
+
+- troduction and Lab Environment
+Introduction
+Lab Environment
+Accessing your Lab Environment
+Getting Familiar with Satellite
+Main Stories
+Check All Services are Running Using satellite-maintain
+Red Hat Enterprise Linux 8 Provisioning
+Manage a Red Hat Enterprise Linux 8 Machine with System Roles and Insights
+Red Hat Enterprise Linux 8 Modularity With Applicable Errata Reporting
+Create a Disk Image with Image Builder
+Import Report Templates from Community Repository
+Red Hat Enterprise Linux 8 Compliance Reporting
+Create Sync Plan with Custom Cron Syntax
+Container Registry Credential Management
+Registering the Provisioned Red Hat Enterprise Linux 8 Host and Enabling Repositories Through System Purpose
+Audit the Actions Taken During the Lab
+View Sync Tasks
+Optional Stories
+Deploying a Tomcat Application on Red Hat Enterprise Linux 8
+Export and Import a Content View
+Additional Information
+Conclusion
+Additional Red Hat Enterprise Linux 8 Resources
+Community Resources
+Glossary
+Introduction
+Red Hat Satellite is an infrastructure management product specifically designed to keep Red Hat Enterprise Linux environments and other Red Hat infrastructure running efficiently, with security, and compliant with various standards.
+
+In this lab, we will explore the Satellite 6.6 Beta by performing operations on the Satellite Server to demonstrate functionality and experience new features found in the 6.6 version.
+
+Lab Environment
+In this lab, there is a Satellite, a Capsule, and two Red Hat Enterprise Linux 8 hosts. These are all virtual machines that are provided for your individual use. The following table gives more information about these systems and the next section will explain how to access these systems.
+
+System	SSH Nickname	Hostname	Notes
+Satellite 6.6 Server	satellite	satellite.example.com	A Satellite 6.6 server that we will be using in this lab
+Satellite 6.6 Capsule	capsule	capsule.example.com	An external Capsule that has content synced
+Host 1	skylab	skylab.example.com	A Red Hat Enterprise Linux 8 host named 'skylab' that is registered directly to the Satellite
+Host 2	aqua	aqua.example.com	A Red Hat Enterprise Linux 8 host named 'aqua' that is registered to the external Capsule.
+Accessing your Lab Environment
+Every attendee gets their own lab environment. The labs have already been deployed, to access your lab you need a unique Identifier (GUID) that will be part of the hostnames and URLs you need to access.
+
+Get GUID and Access Information
+Your instructor will provide you a URL to the GUID Grabber.
+Choose the lab Hands On With Satellite 6.6 and enter spaceship for the activation key
+After submitting your input by clicking Next you will see the attendee welcome screen with all the information you need:
+The most important part: Your unique lab GUID, which will look something like a1b2
+A link to the lab guide
+The hostnames / URLs with your GUID for accessing your lab
+Access the Satellite UI
+Open a browser to access the Satellite User Interface at:
+https://satellite-<GUID>.rhpds.opentlc.com
+Replace with the GUID assigned to your seat!
+Satellite uses a self-signed certificate, which means you will need to confirm a security exception in the browser to view the UI security security
+The username to login in the UI is admin
+The password is satellite
+Access a host via SSH
+The lab instructions will ask you to access the terminal on a certain system.
+To do this, you will have to access it through the host called the bastion host, which is the entrypoint to the lab environment.
+Make sure you know your GUID
+Open a terminal session to log in to your bastion host as the lab-user:
+ssh lab-user@host-<GUID>.rhpds.opentlc.com
+An ssh key will be set up on your laptop to allow passwordless login
+if this is not a lab environment use r3dh4t1!
+From this host, known as the bastion host, you can access any of the virtual machines in the environment.
+You need to go through this host first to get to the Satellite, Capsule, and Hosts. None of the other VMs have their ssh port exposed externally.
+The bastion host has ssh configs and ssh keys copied over for ease of use
+All of these commands can be run from the bastion host to access the machines in the lab environment:
+To access the Satellite: ssh satellite
+To access the Capsule: ssh capsule
+To access the Skylab host registered to Satellite: ssh skylab
+To access the Aqua host registered to the Capsule: ssh aqua
+Example
+For example, If your GUID is 83d4, run this to get to your bastion host:
+ssh lab-user@host-83d4.rhpds.opentlc.com
+From there, you can get to the satellite command line:
+ssh satellite
+As well as accessing other system's terminal, such as the skylab host:
+ssh skylab
+And you can open up the Satellite UI in your web browser
+https://satellite-83d4.rhpds.opentlc.com
+Log in with username admin and password satellite
+If you have questions about accessing your lab environment, please reach out to a lab administrator to help
+
+Getting Familiar with Satellite
+In this introductory section we will briefly familiarize ourselves with the user interface of Red Hat Satellite 6.6. The goal is to navigate to the major components and also view the pre-populated data for the lab. This section is optional for users with prior experience with Red Hat Satellite, feel free to continue to the next section.
+
+When you log in, you are presented with a monitoring dashboard and a navigation system:
+
+summit-dashboard
+
+The main bar at the top of the page contains information on the currently managed Organization and Location. The bar also includes a notification drawer informing on recent system events and the user control on the right. Satellite 6 has a robust Role Based Access Control (RBAC) system which controls what actions users can take, and the resources (e.g. organizations) which they can access. For the sake of simplicity in this lab, we will use the Admin User account.
+
+The vertical menu navigation on the left provides access to core functions of Red Hat Satellite including system provisioning, configuration and content management. Let's look closer at selected components:
+
+Content Related components
+Navigate to Content > Subscriptions to view the list of subscriptions imported to the Satellite. These subscriptions enable synchronizing content from the Red Hat CDN. Click on Red Hat Beta Access to see the details of the subscription, including the provided products.
+
+You may see SSL errors on this page as some communications are blocked to prevent modifying the manifest, these errors will not be present in normal Satellite installs, please ignore them for the duration of the lab
+
+Subscriptions
+
+Navigate to Content > Products to observe the Products (collections of repositories) enabled by current subscriptions. Clicking on Red Hat Enterprise Linux for x86_64 in the table that gives an overview of the associated repositories that you can explore further.
+
+Products and repositories
+
+Navigate to Content > Content Views to see the currently existing Content Views (snapshots of content). Content Views can be promoted across Lifecycle Environments to provide a controlled deployment model where different machines are updated based on different schedules. For customers who do not wish to use content views, the Library contains a default content view with the latest version of all content. Click on RHEL8 to explore the Content View details.
+
+Content Views
+
+Provisioning Related components
+Navigate to Configure > Host Groups to list the existing Host Groups that act as recipes for systems, describing how the system should be provisioned. When deploying the host into a location either on bare metal or in your hybrid cloud, the provisioning parameters are inherited from the Host Group. Click on RHEL8 to view the associated provisioning parameters for example the operating system (then click Cancel to leave the Host Group unchanged).
+
+Host Groups
+
+The provisioning parameters can be viewed under Hosts (e.g. Operating Systems) and Infrastructure (e.g. Domains or Subnets) menu items.
+
+Navigate to Infrastructure > Compute Resources to view the Compute Resources available for provisioning. Satellite 6 supports the Hybrid Cloud model by allowing users to provision machines onto both bare metal machines and onto cloud fabrics such as EC2, OpenStack, RHEV-M, VMWare, etc. Compute Resources model the connection between Satellite 6 and the fabric. Click libvirt-satellite to view the existing Libvirt Compute Resource. To check if the Compute Resource is ready click Edit and then Test Connection (afterwards click Cancel to leave the Compute Resource unchanged).
+
+Compute Resource
+
+Navigate to Hosts > All Hosts to see the list of all currently managed hosts. Click skylab.example.com to explore the host details.
+
+We will now start the lab stories, which will guide you through performing operations with Satellite.
+
+Check All Services are Running Using satellite-maintain
+In Satellite 6.6, it is common to check if all underlying services are running correctly. Execute the following command to check Satellite's services:
+satellite-maintain service status -b
+If the services are all running and showing a green [OK], please move to the next story of the lab
+If any services are failing, please run the following to restart all services
+satellite-maintain service restart
+The status command can be run again to make sure all services are running correctly
+satellite-maintain service status -b
+Red Hat Enterprise Linux 8 Provisioning
+Satellite 6.6 enables the power and performance of Red Hat Enterprise Linux 8. With the inclusion of Red Hat Insights as part of the Red Hat Enterprise Linux subscription, your deployments will be kept secure and performant based on rich predictive analytics and the strong workflows of Satellite.
+
+Provision a Host on an External Compute Resource
+In this exercise, we will provision a new Red Hat Enterprise Linux 8 machine on a private network using a libvirt compute resource. The experience of using libvirt as a virtualization fabric is indicative of how Satellite 6 works when connected to Red Hat Enterprise Virtualization, VMWare, OpenStack, and EC2.
+
+In the Satellite UI, Navigate to Hosts > Create Host to view the Create Host page
+In the Name field, enter lab-provisioned instead of the automatically generated name
+On the Host tab select rhel8 from the Host Group drop-down list to inherit provisioning parameters from the predefined host group. You can navigate other tabs to view the populated parameters
+newhost
+
+Click Submit
+Observe the host build process launch. The host has entered the Pending installation build state. We will give the host a chance to complete provisioning and revisit it later in the lab. (Note that the the Console button will not connect to the host console as it requires additional browser permissions)
+Manage a Red Hat Enterprise Linux 8 Machine with System Roles and Insights
+Red Hat Insights give you the ability to predict and prevent problems before they occur through ongoing, in-depth analysis of your infrastructure. Red Hat Insights now comes with all Red Hat Enterprise Linux subscriptions by default. This exercise shows you how to register a Red Hat Enterprise Linux 8 host to insight service via remote execution, observing actions, and fixing an SELinux issue using remote execution.
+
+Register Red Hat Enterprise Linux 8 Host to Red Hat Insights service
+We will register our skylab host to Red Hat Insights using an Ansible playbook
+
+In the Satellite vertical menu, Navigate to Hosts > All Hosts
+Edit skylab by clicking on Edit which is located under the action column
+Navigate to Ansible Roles tab, and select RedHatinsight.insight-client to move it to the Selected Items list
+select_role
+
+Click on Submit
+You will be directed to the skylab details page, select the arrow next to Schedule Remote Job and select Run Ansible roles
+This will direct you to a Remote Execution job progress page
+Wait until the Remote Execution job is finished, this may take few minutes
+remexec
+
+Navigate to Insights > Overview and observe there is a registered host.
+Registered_Hosts
+
+Add a typo in SELINUXTYPE in SELinux config
+We will purposefully corrupt the SELinux config to show a fixable error in Insights
+
+SSH to skylab host (remember you will need to ssh through the bastion host).
+Run setenforce 0.
+Purposefully corrupt the SELinux config by running the following
+ sed -i 's/SELINUXTYPE=targeted/SELINUXTYPE=shoulderror/' /etc/selinux/config
+Update insights by running insights-client on the skylab host's terminal, this will create a new report and will upload it to insights service.
+Refresh the Insights > Overview page, observe there is a new action with high severity
+Action
+
+You will see a medium action here as well, this is something out of our control at the moment as it requires a change by the cloud provider. Please disregard this warning for the lab.
+
+Click on the orange high action bar
+This rule should be visible: System will fail to boot when SELINUXTYPE is set improperly or the corresponding policy package is missing
+Rule
+
+Fix the SELinux issue via the Insights Planner
+We will create a Red Hat Insights plan to correct the invalid SELinux config file. The fix will be applied through an Ansible playbook
+
+In the Satellite UI, navigate to Insights > Planner.
+Click on Create a Plan, located on the upper right.
+Choose Create new plan and give it the name SELinux config fix.
+Choose a Specific System option and pick skylab.example.com host.
+Mark the associated rule: System will fail to boot when SELINUXTYPE is set improperly or the corresponding policy package is missing.
+Click Save.
+createplan
+
+Click on Run Playbook button.
+Planner
+
+While the playbook is running, you can click on the skylab.example.com link to watch the output as the fix is applied.
+Navigate back to Insights > Overview, Notice no action appears as the SELinux issue has been fixed on the skylab host.
+Red Hat Enterprise Linux 8 Modularity With Applicable Errata Reporting
+Red Hat Enterprise Linux 8 allows for different versions of an application, such as Node.js, to be available to a system via modules. These Module Streams, often referred to as the "Application Stream" or AppStream for short, can be managed by Satellite 6.6. Users can view, enable, and install these modules to use a specific version range of an application even after updates. The errata workflows in Satellite have also been enhanced to support Modules
+
+View a Module Stream
+Information about synced Module Streams is shown on the new Module Streams page
+
+Navigate to the Content > Module Streams page
+In the displayed list, you can see all of the Module Streams found in the Repositories synchronized for the Organization
+Search for the nodejs module using name = nodejs and repository = "Red Hat Enterprise Linux 8 for x86_64 - AppStream Beta RPMs"
+Notice there is a Module Stream for streams 8 and 10, these streams can be used to make a specific major version of nodejs available on a system
+Click on the module stream name in a row to view the details page, here you will be able to see the details for a module stream
+The following tabs will be listed:
+Details - general information about the Module Stream
+Repositories - repositories containing the Module Stream
+Profiles - The profiles available to this Module Stream. Enabling these on a system allow different groups of packages to be installed.
+Artifacts - A list of all the RPMs that are included in the module stream.
+Install a Module Stream on a Host Using Satellite
+Satellite provides the ability to install Module Streams to a specific host. Assume you have an application that requires Node.js version 10 and you would like to make version 10 available to the system. Installing the nodejs module with stream 10 will allow your system to stay on Node.js 10 even as future versions are released.
+
+Navigate to Hosts > Content Hosts and then click on aqua.example.com to get to the content host details page
+Navigate to the Module Streams tab and search name = nodejs
+For the nodejs stream 10, click the Actions menu and select Install to install the module stream on aqua
+install
+
+This will launch a remote execution job. Once it completes, you can see the output from the host by clicking on aqua.example.com in the hosts list at the bottom of the page
+Navigate to Hosts > Content Hosts and click aqua.example.com
+Click on the Module Streams tab
+From the Filter by Status menu, select Installed. Notice the nodejs module stream is Enabled and Installed
+These actions can also be performed on multiple hosts with host collections or host bulk actions
+
+Apply Module Stream Errata
+The errata workflows in Satellite have been enhanced to support Module Stream information. This exercise makes use of the Reporting Engine framework in Satellite 6.6 to start the errata workflow.
+
+Navigate to Monitor > Report Templates
+To the right of the Applicable Errata report template, click Generate.
+In the 'Hosts filter' box, enter name = aqua.example.com
+Click submit this will prompt you to open or save the report file, you can open with a text editor for easy viewing
+Open up the file to see an errata report for the aqua.example.com host, notice there is an applicable errata (it is in CSV format)
+Navigate to Hosts > Content Hosts and then click on aqua.example.com to get to the content host details page
+In the Packages > Installed tab, search for name = go-toolset to find the version of the package installed on the aqua host
+This should be go-toolset-1.10.3-10.module+el8+2175+e66141eb.x86_64
+Click on the Errata tab
+Notice there is an installable errata for the host
+Check the row with RHSA-2018:2015 and click the dropdown caret next to Apply Selected and select via remote execution
+applyerrata
+
+Once the Remote Execution job completes, navigate to Hosts > Content Hosts and aqua.example.com
+Go to Errata tab for host and verify there is no more installable errata.
+In the Packages > Installed tab, search for name = go-toolset to find the version of the package installed
+Notice the version has been updated: go-toolset-1.10.3-12.module+el8+2195+f6fab0d5.x86_64
+Navigate to Monitor > Report Templates
+Click Generate on the Applied Errata line
+Select all from the Filter Errata Type dropdown
+Click Submit and open the file.
+See the errata report, notice that the aqua host has an applied errata from the previous step.
+Create a Disk Image with Image Builder
+Red Hat Enterprise Linux 8 includes a new tool called image builder for creating disk images. These images can be used during image based provisioning in any of the Satellite Compute Resources. The image builder tool can use Satellite 6.6 as a content source for building these initial images.
+
+Access the Cockpit Management Dashboard
+The Cockpit Dashboard is a seperate UI exposed on the host. In future versions of Satellite, you will be able to access Cockpit directly from the Satellite UI *
+Open a new browser tab to access https://cockpit-{GUID}.rhpds.opentlc.com:9090
+The username is root and the password is r3dh4t1!
+Select the Reuse my password for privileged tasks checkbox and selec Login
+Click on the third menu item on the left, labeled Image Builder to bring up the image builder UI
+Build a Disk Image with Satellite Content
+We will create a new blueprint that creates a new efis based grub image. This image could be used during Satellite provisioning.
+
+From the image builder UI, select Manage Sources from the three dot menu item in the top right. -- If there is an error message, select the top left menu item in the Cockpit UI (with the label cockpit-{GUID}.rhpds.opentlc.com), select Services, filter on lorax-composer.service, select the service and restart it. Once that is done, reload the page in the browser.
+Notice that there is a pre-configured source called satellite which points to the Satellite instance in this lab.
+Select the Close button to dismiss the sources window.
+Select the Create Blueprint menu item to create a new disk image blueprint.
+Enter in satellite-provisioning in the Name field and press Create
+On the left side of the window, there is an Available Components column. Type in grub2-efi* and press the enter button to create a filter.
+From the filtered results, locate grub2-efi-x64 and select it. You will see a description of this component.
+Press the Add Button, and then select the blue Commit button at the top. Select Commit again to confirm the change.
+Select the Create Image button, and select the Image type of Raw Partitioned Disk Image (.img)
+Select Create to start the building process
+You can see the image processing by selecting the Image Builder menu item on the left, and then navigating to `satellite-provisioning > Images'
+This exercise will not connect this image to Satellite provisioning. If the lab were to cover this, the next steps would be to load the image into a Satellite file based repo, then push that image into the cloud provider, and then connect that image to the compute resource for provisioning.
+
+Import Report Templates from Community Repository
+In an earlier exercise, we used the built in report templates to view information about our hosts. Additional templates can be imported from the Foreman community repo or another git repository.
+
+Importing a community template
+Hammer can be used to import report templates from a git repository. Also, templates can be filtered to just the ones you want to import. In this exercise, we'll import templates from the Foreman community repository
+
+Go to Monitor > Report Templates and notice there are five templates available, these are the default ones provided by Satellite
+Access Satellite's terminal via SSH
+In Satellite's terminal, enter
+hammer import-templates --prefix 'Community - '  \
+                        --filter '.*statuses$' \
+                        --branch ea0a9cdac724a49aa6d0b89108927c6cd2c7cc50  \
+                        --organization 'Default Organization' \
+                        --location 'Default Location'
+After successful import the "Import finished" message is returned.
+
+In the Satellite web UI, refresh the Report Templates page. You will see the Community - Host statuses template is imported.
+You can execute this new report by selecting Generate on that new line and Submit on the following page.
+Additional Info
+You can also import all the community templates by removing the --filter flag.
+By default, The Foreman community repo is used to import templates, but you can import them from any git repository with --repo
+Red Hat Enterprise Linux 8 Compliance Reporting
+Satellite can be used to manage system security and standards compliance. The skylab host is set up to use a Red Hat Enterprise Linux 8 OpenSCAP compliance profile that is tailored to a limited policy for demonstration purposes
+
+Generate a Compliance Report for a host
+Satellite can generate a Compliance Report for a host based on SCAP compliance profiles that have been uploaded to the Satellite. We'll generate a report for skylab.example.com
+
+Navigate to Hosts > All Hosts, and click on the skylab.example.com host.
+Click the Schedule Remote Job dropdown menu and select Run OpenSCAP scan.
+testing_gif
+
+Let the job finish (it will take a minute to complete)
+After the job has completed, at the bottom of the page, to the right of skylab.example.com, click Host Detail
+In the Details pane, click on the Compliance button
+In the Policy RHEL8 SCAP window, click RHEL8 SCAP latest report to view the compliance report
+Review the list of policies and notice that one policy, Configure System Cryptography Policy has failed, see the summary for the command to fix by clicking the 'more details' caret next to the rule
+testing screenshot
+
+Fix failed hosts from report
+After a report has been generated for a host, we can fix those issues and generate a new report to ensure our system is compliant
+
+Navigate to Hosts > All Hosts and select the skylab.example.com host
+Click Schedule Remote Job in the host details
+In the command field, enter the following: sudo update-crypto-policies --set DEFAULT, this command will fix our compliance issue
+Click Submit
+After the job has completed, at the bottom of the page, to the right of skylab.example.com, click Host Detail
+Click the Schedule Remote Job dropdown menu and select Run OpenSCAP scan
+After the job has completed, at the bottom of the page, to the right of skylab.example.com, click Host Detail
+In the Details pane, click on the Compliance button
+In the Policy RHEL8 SCAP window, click RHEL8 SCAP latest report to view the compliance report
+View the new report, all policies will be passing in the report now
+Create Sync Plan with Custom Cron Syntax
+Satellite 6.6 allows for custom cron-like syntax when creating Sync Plans for Products. This provides finer control over the frequency of content synchronization in Products. In this story, we will create a sync plan using custom cron syntax for our Tiny Product product
+
+Navigate to Content > Sync Plans, and click Create Sync Plan
+In the Name field, enter: Tiny Product Sync
+In the Interval field, select custom cron
+In the Custom Cron field enter: */15 * * * *
+syncplan
+
+Click Save (you can leave the rest of the fields as the default values)
+In the newly created plan, the Next Sync field indicates the time when the sync will start
+Click on the Products tab for the newly created Sync Plan
+Select the Add tab
+Assign the Sync Plan to the Tiny Product product by clicking the box next to its name and then clicking Add Selected
+syncplanadd
+
+Ensure the recurring logic has been created under Monitor > Recurring Logics
+Later in the lab, verify the Sync Plan started the synchronization on the assigned product. Navigate to Content > Product > Tiny Product > Tasks. Alternatively, navigate to Monitor > Tasks to find the sync task
+Container Registry Credential Management
+Satellite 6.6 allows support for discovering container images through a registry. Additionally, you can require authentication in a lifecycle environment, meaning images in that environment will need the proper authentication to be pulled by a host.
+
+Discover a Container Image from a Private Registry
+A private Quay container registry is running on quay.example.com. Satellite can discover images there and add them as a Repository
+
+Navigate to Content > Products
+Click the Repo Discovery button
+In the Repository Type field, select Container Images
+Under Registry to Discover, select Custom and enter the URL quay.example.com
+In the Registry Username field, enter summituser
+In the Registry Password field, enter summitpassword
+In the Registry Search Parameter field, enter calipso
+Click Discover
+In the Discovered Repository list, check the box next to summituser/calipso
+Click Create Selected
+create_selected
+
+Click Run Repository Creation
+To navigate to the newly created Repository, click the Repository Created link
+To synchronize the repo, click the Select Action menu and select Sync Now
+Allow the Sync Task to finish
+Set Authentication on Lifecycle Environment
+Satellite can be configured to require authentication when using images that are in a Lifecycle Environment
+
+Navigate to Content > Lifecycle Environments
+Click Production to navigate to the Production environment page
+Set Unauthenticated Pull to No by clicking the field, unchecking the box, and clicking Save. This ensures authentication is needed to pull images from this environment
+Create Content View with Image and Promote to Production
+We will create a Content View containing our discovered image and promote it to the Production Lifecycle Environment
+
+Navigate to Content > Content Views
+Click Create New View
+In the name field, enter RHEL8 container tags
+Click Save
+In the Content View details page, click on Container Images > Repositories
+In the Add tab, add summituser/calipso by selecting it and clicking Add Repositories
+Click Publish new version on the top right to publish the content view
+Click Save to publish the Content View Version
+content-view-container
+
+Once the version is published, click on Promote in the Version 1.0 row
+To promote the Content View Version to the Production Lifecycle Environment, check the Production checkbox and click Promote Version
+You will be shown a dialog asking you to confirm forcing it thrugh all Lifecycle Environments before Production. Select Promote to confirm.
+Navigate to Hosts > Content Hosts and then click on skylab.example.com to get to the content host details page
+In the Content Host Content area, edit the associated content view to RHEL8 container tags and save
+Log in to Satellite's Registry on Skylab
+From the bastion host, ssh to the terminal for the skylab host and run docker search satellite.example.com/calipso
+Notice no results show, this is expected because we are not logged in.
+Run docker login satellite.example.com and login with the username admin and password satellite
+Run docker search satellite.example.com/calipso
+Notice the docker tags from satellite are now displayed
+Update Naming Pattern for registry
+Satellite can set a naming pattern scheme for images in a particular Lifecycle environment
+
+Back in the Satellite UI, navigate to Content > Lifecycle Environments
+Click on Production to get to the details page
+Update Registry Name Pattern to be <%= repository.docker_upstream_name %> and save.
+regnamepattern
+
+Search and Pull Image with Shortened Name
+Important: you will need to wait 60 seconds for the the new registry name pattern to be indexed before pulling the image with the new name pattern
+
+Back in the terminal for the skylab host, run docker search satellite.example.com/calipso again
+Notice that one of the images has changed its name to summituser/calipso. This is the image in the production content view
+Run docker pull satellite.example.com/summituser/calipso
+Notice the image is now listed in docker images
+Extra Credit
+Can you customize the production image name to show up as production/summituser/calipso?
+Registering the Provisioned Red Hat Enterprise Linux 8 Host and Enabling Repositories Through System Purpose
+Red Hat Enterprise Linux 8 supports setting System Purpose parameters to identify the intended usage of the system. Satellite 6.6 leverages these parameters for auto-attaching subscriptions to registered Red Hat Enterprise Linux 8 hosts. This provides a way to define how the system is used and therefore improve how subscriptions are assigned and the machine is identified in the hosted application.
+
+SSH into the provisioned host
+Navigate to Hosts > All Hosts and select the lab-provisioned host that you created in the beginning of this lab during the Provision a Host on an External Compute Resource step
+If the host is powered off, select the green Power On
+Connect to the provisioned host via ssh, you'll need to access the host via it's IP address, found in the host details page. The host must be accessed through the capsule.
+ip
+
+For example, if the IP address for your provisioned host is 192.168.122.183 (replace this with the IP address found on the host details page)
+ssh to your bastion host
+ssh capsule (on bastion host)
+ssh root@192.168.122.183 (on capsule)
+log in with the root password satellite
+Register the host to Satellite
+Note that provisioned hosts are usually registered to Satellite automatically at the end of the provisioning process (this is done by associating an Activation Key with required subscriptions to the Host Group used for provisioning). For demonstration purposes we will register the provisioned host manually using the bootstrap script:
+
+Register the host as a content host. Run the following commands:
+cd ~
+curl --insecure --output katello-ca-consumer-latest.noarch.rpm https://satellite.example.com/pub/katello-ca-consumer-latest.noarch.rpm
+Install the bootstrap rpm and register host via subscription-manager:
+yum install -y katello-ca-consumer-latest.noarch.rpm
+subscription-manager register --org="Default_Organization" --environment="Library"
+Enter admin for the username and satellite for the password
+After successful host registration run subscription-manager repos to observe that system has no repositories available through subscriptions.
+Similarly run syspurpose show to see there are no parameters currently specified for the host.
+Set the system purpose on our provisioned host
+In this section we will assign System Purpose parameters to the registered host. Satellite 6.6 supports setting these parameters in it's Web UI. Alternatively, you can use the syspurpose cli tool to set System Purpose in the host's terminal, such changes are then reflected in Satellite.
+
+Navigate to Hosts > Content Hosts and click lab-provisioned.example.com.
+Click the Subscriptions tab and select Subscriptions to see that no subscriptions are currently attached.
+Click the Details tab to see that the System Purpose Status is Not Specified. Set the system purpose parameters as follows:
+Click the edit icon next to Service Level (SLA) and select Self-Support from the drop-down menu. Click Save.
+Click the Subscriptions tab and select Subscriptions to see that subscriptions have been attached based on the System Purpose settings (you may need to click Run Auto-attach and refresh page to see the changes).
+Refresh the page and observe that a subscription has been attached to the host based on the specified system purpose parameters. Back at the Details tab see that the system purpose status is now Matched.
+You may see an error about UNABLETOGET_NAME on this screen. This is ok, the goal of this exercise was to show how system purpose can improve the effectiveness of the auto-attach logic in Satellite.
+
+System Purpose Status
+
+In the lab-provisioned's terminal, run subscription-manager repos again to see the list of repositories enabled through the attached subscription. Also run syspurpose show to see the specified parameters.
+You can now install packages from the enabled repos on the host. Try to install a package to test this out.
+yum -y install vim
+Audit the Actions Taken During the Lab
+Satellite 6.5 delivered an enhanced Audits Page, which allows for viewing and searching actions performed by the Satellite
+
+Clone and Modify a Provisioning Template
+Modifying a template will show up with the template diff in its audit entry
+
+Navigate to Hosts > Provisioning Templates
+Search name = epel
+In the Actions menu for the epel template, click clone
+Save template by clicking Submit to create the epel clone template
+To find the new epel clone template, in the Provisioning Templates page search: name = "epel clone"
+Click the epel clone template.
+In the text editor provided on the page, edit the template to change the fallback epel mirror in the template from https://dl.fedoraproject.org/pub/epel to http://mirrors.mit.edu/epel/
+The 8th line should read:
+repo_base  = host_param('epel-repo-base') ? host_param('epel-repo-base') : 'http://mirrors.mit.edu/epel/'
+Add a comment in the box below Updated EPEL mirror
+epelclonetemplate
+
+click Submit to save the template
+View audited action in audits UI
+Navigate to the Audits page Monitor > Audits
+Click the first row showing our action PROVISIONING TEMPLATE epel clone
+Notice that you can audit the template changes and see the change diff
+audits-provisioned
+
+Feel free to explore the audits UI more to see audits of the changes we made in the lab
+View Sync Tasks
+*Satellite 6.6 introduces a reworked Tasks page. Earlier in the lab we set up a sync plan for the Tiny Product. The Tasks page can be used to find those executions"
+
+Navigate to the Tasks page Monitor > Tasks
+In the Filter box enter in Tiny Product and press Search
+The sync plan is set up to run every 15 minutes. Depending on how long you have been working on this lab, you may see several lines.
+Feel free to explore the Tasks UI more to see the usability improvements.
+Optional Stories
+The following are stories that show off additional functionality in Satellite. These can be done if you still have time in the lab. If you choose to skip this section, feel free to go to the conclusion to view the community resources and other information.
+
+Deploying a Tomcat Application on Red Hat Enterprise Linux 8
+Satellite 6.6 supports distributing custom content to Capsules and hosts via file repositories, which allows for a wide range of host workflows. The following section shows how to use Satellite to distribute and deploy a versioned Tomcat application on host.
+
+Create Product and Repository
+First create a product and a file repository to store the Java application content:
+
+Navigate to Content > Products
+Click the Create Product button
+In the Name field enter Tomcat Apps
+Click Save
+In the product page that displays afterwards, click the New Repository button
+In the Name field give it the name Hello Java App
+In the Type drop-down list select file (you can leave the rest of the fields as the default values)
+Click Save to save the repository
+Upload Java Application
+There is a pre-built WAR file on the Satellite that you can now upload to the file repository:
+
+From the bastion host access the satellite's terminal via SSH
+To upload the WAR file to the file repository, enter the following hammer command:
+hammer repository upload-content --product "Tomcat Apps" \
+                                 --name "Hello Java App" \
+                                 --organization "Default Organization" \
+                                 --path /root/helloworld/hello.war
+In the Satellite UI, click on the repository Hello Java App
+In the Content Counts area, you will see one file listed
+Click on the 1 to see that the hello.war file exists in that repository.
+Create and Publish a Composite Content View
+Create a content view to make the application content accessible to Satellite hosts:
+
+Navigate to Content > Content Views
+Click the Create New View button
+Give it the name Hello World Application and click Save
+Click the File Repositories tab and then click the Add sub-tab
+Select the Hello Java App from the list and click the Add Repositories button
+Navigate back to the Content Views list by clicking the breadcrumb located under the Hello World Application title
+Note in the Content Views List there is an existing content view called RHEL8 with errata that is used to distribute the OS content to hosts. On hosts where we will be deploying our Java application, we want to have also the OS content available. One way to ensure this is by creating a Composite Content View so that the application content is distributed together with the OS content:
+
+On the Content Views page click the Create New View button
+Give it the name Hello World Application with RHEL8
+Select the Composite View? and Auto Publish checkboxes and click Save
+Select the checkbox to the left of RHEL8 with errata and verify the version is set to Always Use Latest
+Select the checkbox to the left of Hello World Application and verify the version is set to Always Use Latest
+Click Add Content Views
+You have created a composite content view that is set to auto-publish whenever a component view is updated. Therefore, if the RHEL8 with errata Content View is re-published, or the application content view receives an update, the Composite Content View will publish a new version.
+
+In the navigation breadcrumbs of the Hello World Application with RHEL8 page, click the arrow icons and select Hello World Application.
+breadcrumb
+
+Click Publish New Version
+Click Save
+Navigate to Content > Content Views and click Hello World Application with RHEL8
+Note that Version 1.0 is either published or still publishing via the Status column. If still publishing, wait until complete. Once complete, the Description column will show that this was due to an Auto Publish and which content view publish triggered the event.
+
+Deploy Java Application
+To deploy the Java application we will use an Ansible playbook executed on host via remote execution. The playbook will start the Tomcat server and place the application content we published to the appropriate directory on host:
+
+Navigate to Hosts > All Hosts
+Click on aqua.example.com
+Click Schedule Remote Job
+In the Job Category dropdown, select Ansible Playbook
+Click Submit. The Job Invocations view will be displayed
+Click aqua.example.com in the hosts table
+You can view the Ansible role executed on the host. After the remote job completes, you can view the application
+Wait for a minute or two and open a browser tab to http://aqua-<GUID>.rhpds.opentlc.com:8080/hello/web [Replace GUID in the URL with the GUID of your environment]
+Note a Hello World! application is running, this is the application we just deployed with Satellite
+Extra Credit - Deploy New Version of Java App
+On the Satellite exists a newer version of our application in a pre-built WAR file at /root/hellosummit/hello.war. Knowing the steps from the previous exercise, can you re-deploy the application? (After successful re-deployment the application page should read Hello Red Hat Summit! at http://aqua-<GUID>.rhpds.opentlc.com:8080/hello/web)
+
+Export and Import a Content View
+Content views can be exported and imported from one organization to another, or from one Satellite to another. The Repositories contained in the Content View zoo have already been synced to Another Org, and the Content View has been created. We will import the version from Default Organization's Content View
+
+View the Empty Content View in Another Org
+In the Satellite UI, in the Organization menu, select Another Org.
+The Organization menu is the first menu item in the menu bar, on the upper left of the Satellite UI
+Navigate Content > Content Views and click zoo. Take note that versions of this Content View do not exist yet
+Export Content View Version from Default Organization
+We'll export the Default Organization's zoo Content View Version 5.0 to a file in order to prepare it for import to Another Org
+
+In Satellite's terminal, list all Content View Versions for the zoo Content View in the Default Organization
+hammer content-view version list --organization-id 1 --content-view zoo
+Export the Content View Version using it's the --id option with the id 19
+hammer content-view version export --export-dir /var/lib/pulp/katello-export/ --id 19
+A tar file has been created in /var/lib/pulp/katello-export/ that you can now import in to the Another Org organization
+Import Content View Version from Another Org
+Now that we have the Content View Version exported, we can import it to Default Organization. The repositories in this Content View Version have already been synced for Another Org, this is required to import a Content View Version
+
+Enter the following command to obtain the ID for the Another Org organization
+hammer organization list
+Import the exported Content View Version to Another Org
+hammer content-view version import --export-tar /var/lib/pulp/katello-export/export-zoo-5.0.tar \
+                                   --organization-id 3
+In the UI, refresh the zoo content view page in Another Org and notice the version has been imported!
+Extra Credit
+Can you import more versions from Default Organization's zoo content view into Another Org's zoo content view?
+Conclusion
+Thanks!
+Thanks for participating in the Hands on with Satellite 6.6 lab! We hope you enjoyed it and feel free to ask your lab administrators any questions you have about Satellite.
+
+Additional Red Hat Enterprise Linux 8 Resources
+Application (Module) Streams
+Red Hat Documentation
+Red Hat Developer Blog Post
+System Purpose
+Red Hat Documentation
+Community Resources
+If you would like to keep up to date with the latest developments, or if you would like to submit a patch, please come find us in the community. The main communication area is the Foreman community, but you can of course participate in the Candlepin and Pulp communities as well.
+
+Websites:
+Foreman
+Foreman plugins
+Pulp
+Candlepin
+Community Events and Discussions
+Foreman community forum
+Foreman community event schedule
+IRC: #theforeman on freenode
+Glossary
+Term	Definition
+Activation Key	A registration macro which can be used in a kickstart file. These can be used to control actions at registration before Puppet Master kicks in. These are similar to Activation Keys in Red Hat Satellite 5, but they include less features. These features are covered by Puppet Manifests.
+Ansible Playbook	Ansible playbook contains one or multiple plays. These plays defines the work to be done for a configuration on a managed node. Ansible plays are written in YAML.
+Ansible Roles	Ansible Role is a set of tasks and additional files to configure a host.
+Application Lifecycle Environment	Named areas where content can be moved to, and which systems are grouped into. Traditional usage of these are Dev -> Test -> Prod. Channel cloning was used for this in Red Hat Satellite 5
+Application Stream (AppStream)	The Application Stream repository provides content with varying life cycles as both modules and traditional packages for Red Hat Enterprise Linux 8.
+Attach	Associating a Subscription to a Host which provides access to RPM content.
+BaseOS	The BaseOS repository provides the core set of the Red Hat Enterprise Linux 8 content in the form of traditional RPM packages.
+Capsule	A node in the Red Hat Satellite 6 deployment. It supports large scale deployments by providing services such as a Puppet Master, DHCP Integration, or a Content Cache (Pulp).
+Common Vulnerability Exposure (CVE)	A standardized format for naming and reporting security exposures. It is maintained by the MITRE Corporation.
+Compute Profile	Default attributes for new virtual machines on a compute resource.
+Compute Resource	A virtual fabric, or cloud infrastructure, where hosts can be deployed by Red Hat Satellite 6. Examples include RHEV-M, OpenStack, EC2, and VMWare.
+Content	Software packages (RPMS), or configuration modules. These are mirrored into the Library and then promoted into Application Lifecycle Environments to be used.
+Content Delivery Network (CDN)	The mechanism to deliver Red Hat content in a geographically co-located fashion. For example, content which is synced by a Satellite 6 in Europe will pull content from a source in Europe.
+Content View	A snapshot of content which is in the Library. Content views define the rules for creating the snapshots and a stream views created from the rules. Content Views are a refinement of channel cloning pattern from Red Hat Satellite 5.
+Hammer	The name of the command line tool for Red Hat Satellite 6. It works like a standard cli as well as a shell in the same way that space-cmd works.
+Host	A system, either physical or virtual, which is managed by Red Hat Satellite 6.
+Host Group	A template for how a host should be built. This includes the packages to install, and the puppet classes to apply.
+Image	A container which is currently not running.
+Insights	A module providing access to selected Red Hat Customer Portal services from the Satellite web UI.
+Location	A collection of default settings which represent a physical place. These can be nested so that a user can set up defaults for Europe, which are refined by Tel Aviv, which are refined by DataCenter East, and then finally by Rack 22.
+Library	The Library is your collection of content which can be used. If you are an ITIL shop, it is your definitive software library.
+Manifest	The means of transferring subscriptions from the Customer Portal to Red Hat Satellite 6. This is similar in function to satellite certificates.
+Module	A Module describes a set of RPM packages that belong together. Modules can contain several Streams to make multiple versions of applications available for installation.
+Module Streams	Module Streams hold different versions of the content within a Module.
+Organization	A tenant in Red Hat Satellite 6. Organizations, or orgs, are collections of Hosts, Subscriptions, Users, and Application Lifecycle Environments.
+Permission	The ability to perform an action.
+Product	A collection of content repositories which are managed as a single unit.
+Promote	The act of moving content from one Application Lifecycle Environment to another.
+Provisioning Template	User defined templates for Kickstart files and other provisioning actions. These provide similar functionality as Kickstart Profiles and Snippets in Red Hat Satellite 5.
+Puppet Agent	A Host agent which applies puppet changes to a Host.
+Puppet Master	A component of a Capsule which provides puppet manifests to Hosts.
+Repository	A collection of content (yum repository, containers, puppet repository).
+Report Templates	Provide a way to generate custom text reports based on data from Red Hat Satellite 6.6.
+Role	A collection of permissions which are applied to a set of resources (such as Hosts)
+Smart Proxy	A component of a Capsule which can integrate with external services, such as DNS or DHCP.
+Standard Operating Environment (SOE)	A controlled version of the operating system which applications are deployed on top of.
+Subscription	The right to receive content and service for Red Hat. This is purchased by customers.
+Subscription, Future-Dated	Subscriptions with Future dates into satellite allows an administrator to attach "noy-yet-valid" subscriptions to hosts, before their current subscription expire.
+Syncing	The mirroring of content from external resources into the Red Hat Satellite 6 Library.
+Sync Plans	Scheduled executing of syncing content.
+System Purpose	A way to record the intended use of a Red Hat Enterprise Linux 8 system System.
+Usergroup	A collection of roles which can be assigned to a collection of users. This is similar to the Role in Red Hat Satellite 5.
+User	A human who works in Red Hat Satellite 6. Authentication and authorization can be done via built in logic, or using external LDAP or kerberos resources.
