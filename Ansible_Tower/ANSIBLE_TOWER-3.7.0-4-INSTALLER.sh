@@ -15,22 +15,13 @@ echo -ne "\e[8;45;120t"
 reset
 if [ "$(whoami)" != "root" ]
 then
-echo " "
-echo " "
-echo " "
-echo " "
 echo "This script must be run as root - if you do not have the credentials please contact your administrator"
-sleep 2
 exit
 else
-echo " "
-echo " "
-echo " "
-echo " "
 echo '
-                               ANSIBLE-TOWER 3.7.0-4 INSTALLER FOR RHEL 7.x AND RHEL 8.x
+                                ANSIBLE-TOWER 3.7.0-4 INSTALLER FOR RHEL 7.x AND RHEL 8.x
                               FOR SETTING UP A SIMPLE SINGLE NODE CONFIGURATION FOR P.O.C.'
-read -p "              To Continue Press [Enter] or use Ctrl+c to exit the installer "
+read -p " To Continue Press [Enter] or use Ctrl+c to exit the installer"
 
 #-------------------------
 function ANSIBLETOWERTXT {
@@ -124,8 +115,6 @@ wget -q --tries=10 --timeout=20 --spider http://redhat.com
 if [[ $? -eq 0 ]]; then
 echo "Online: Continuing to Install"
 sleep 2
-echo " "
-echo " "
 else
 echo "Offline"
 echo "This script requires access to 
@@ -161,13 +150,8 @@ echo " "
 #-------------------------------
 function ANSIBLESECURITY {
 #-------------------------------
-echo "**********************"
-echo "Directories if needed"
-echo "**********************"
 mkdir /root/Downloads
 cd /root/Downloads
-echo " "
-echo " "
 echo "***************************************************************************"
 echo "SET SELINUX TO PERMISSIVE FOR THE INSTALL AND CONFIG OF Ansible Tower 3.7.0-4"
 echo "***************************************************************************"
@@ -278,7 +262,6 @@ yum -q list installed python3-pip &>/dev/null && echo "python3-pip is installed"
 yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || yum install -y yum-util* --skip-broken --noplugins
 yum -q list installed bash-completion-extras &>/dev/null && echo "bash-completion-extras is installed" || yum install -y bash-completion-extras --skip-broken --noplugins
 yum -q list installed dconf &>/dev/null && echo "dconf is installed" || yum install -y dconf* --skip-broken --noplugins
-yum -q list installed ansible-tower-cli &>/dev/null && echo "ansible-tower-cli is installed" || yum install -y ansible-tower-cli --skip-broken --noplugins
 yum -q list installed git &>/dev/null && echo "git is installed" || yum install -y git --skip-broken --noplugins --best --allowerasing
 mkdir -p /root/Downloads/git 
 cd /root/Downloads/git
@@ -317,8 +300,6 @@ yum -q list installed dconf &>/dev/null && echo "dconf" || dnf install -y dconf*
 yum -q list installed dnf-utils &>/dev/null && echo "dnf-utils is installed" || dnf install -y dnf-utils --skip-broken --noplugins --best --allowerasing
 yum -q list installed git &>/dev/null && echo "git is installed" || dnf install -y git --skip-broken --noplugins --best --allowerasing
 mkdir -p /root/Downloads/git 
-cd /root/Downloads/git
-git clone https://github.com/ansible/product-demos.git
 cd /root/Downloads
 yum-config-manager --disable epel
 echo " "
@@ -377,8 +358,7 @@ echo '****************************************************************'
 mkdir /root/Downloads
 cd /root/Downloads
 wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.7.0-4.tar.gz
-tar -zxvf /root/Downloads/ansible-tower-setup-bundle-3.7.0-4.el7.tar.gz 
-cd /root/Downloads
+tar -zxvf /root/Downloads/ansible-tower-setup-bundle-3.7.0-4.tar.gz 
 cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4
 yum localinstall -y --skip-broken /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/bundle/el7/repos/ansible-tower-dependencies/*.rpm
 sleep 2
@@ -405,7 +385,8 @@ echo 'Getting, Expanding, and installing Ansible Tower 3.7.0-4 for RHEL8'
 echo '****************************************************************'
 mkdir /root/Downloads
 cd /root/Downloads
-wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.7.0-4.tar.gz 
+wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.7.0-4.tar.gz
+
 tar -zxvf /root/Downloads/ansible-tower-setup-bundle-3.7.0-4.tar.gz 
 cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4
 dnf localinstall -y --skip-broken /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/bundle/el8/repos/ansible-tower-dependencies/*.rpm --best --allowerasing
@@ -420,7 +401,7 @@ sed -i 's/pg_password='"''"'/pg_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloa
 sed -i 's/rabbitmq_password='"''"'/rabbitmq_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory
 echo " "
 echo " "
-cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4
+cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/
 sh setup.sh
 sleep 5
 echo " "
