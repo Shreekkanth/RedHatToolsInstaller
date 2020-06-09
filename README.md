@@ -1,239 +1,54 @@
-The content below is open source, is OPC (Other Peoples Code) in a lot of cases and is provided " no warranty implied or otherwise”.  Use it as reference only.  If you have questions please ping me at shadd.gallegos@gmail.com 
-
-Table Of Contents
------------
-* Ansible-CF-Sat6-FeaturesOverlap.pdf
-
-* Provisioning_bare-metal_and_virtual_hosts_via_Ansible_Tower_with_Satellite6.odt
-
-* README.md
-
-* Red_Hat_Management.png
-
-
-===========
-
-Ansible_Tower
------------
-
-* Ansible_all.png
-
-* Ansible.png
-
-* AnsibleCluster.png
-
-* Ansible.png
-
-* AnsibleCluster.png
-
-
-  Ansible_Cheet_Sheets
-  -----------
-  * Ansible-cheat-sheet-1-768x432.jpg
-
-  * Ansible-cheat-sheet-1.webp
-
-  * Ansible_Cheat_Sheet-DevOps_Quickstart_Guide.png
-
-  * Ansible-Cheat-Sheet_Wall-Skills2.pdf
-
-
-  Ansible_PDF
-  -----------
-  * Ansible_Engine_and_Tower_Preferred_Practices.pdf
-
-  * AnsibleFest2018.pdf
-
-  * AnsibleFest.pdf
-
-  * Ansible-G2-Case-Study-Percussion.pdf
-
-  * Ansible_Tower_RBAC_Recommendations.pdf
-
-  * Ansible_Tower_Review_&_Customer_Use_Cases_.pdf
-
-  * Ansible_Tower_Training.pdf
-
-  * ansible_tower-vs-awx.pdf
-
-  * Getting-Started-with-RH-Ansible-Tower-eBook.pdf
-
-  * Git_Workflow_for_Ansible_Development.pdf
-
-
-  Ansible_Cheet_Sheets
-  -----------
-  * Ansible-cheat-sheet-1-768x432.jpg
-
-  * Ansible-cheat-sheet-1.webp
-
-  * Ansible_Cheat_Sheet-DevOps_Quickstart_Guide.png
-
-  * Ansible-Cheat-Sheet_Wall-Skills2.pdf
-
-
-  Ansible_PDF
-  -----------
-  * Ansible_Engine_and_Tower_Preferred_Practices.pdf
-
-  * AnsibleFest2018.pdf
-
-  * AnsibleFest.pdf
-
-  * Ansible-G2-Case-Study-Percussion.pdf
-
-  * Ansible_Tower_RBAC_Recommendations.pdf
-
-  * Ansible_Tower_Review_&_Customer_Use_Cases_.pdf
-
-  * Ansible_Tower_Training.pdf
-
-  * ansible_tower-vs-awx.pdf
-
-  * Getting-Started-with-RH-Ansible-Tower-eBook.pdf
-
-  * Git_Workflow_for_Ansible_Development.pdf
-
-
-  Ansible_PPT
-  -----------
-  * Ansible_Windows_Automation.pptx
-
-  * ANSIBLETOWER_3.6.4-1-INSTALLER.sh
-
-  * Ansible_Use_Case_List.xlsx
-
-
-  Ansible_PPT
-  -----------
-  * Ansible_Windows_Automation.pptx
-
-  * ANSIBLETOWER_3.6.4-1-INSTALLER.sh
-
-  * Ansible_Use_Case_List.xlsx
-
-
-  CICD
-  -----------
-  * CICD_Ansible_Jenkins_Pipeline_for_Container-Driven_CICD.png
-
-  * CICD-master
-
-  * Joe_Pisciotta-Ansible-CICD-Lab.pptx
-
-  * Tower_CI_CD.png
-
-
-  Playbook_Examples
-  -----------
-  * To Many To List
-
-
-  Ansible_Video_Demos
-  -----------
-  * DEMO_10_Introduction_to_the_expanded_Red_Hat_Insights.mp4
-
-  * DEMO_1_Ansible_automation_analytics.mp4
-
-  * DEMO_2_Ansible_multivendor_network_automation.mp4
-
-  * DEMO_3_Ansible_provisions_Red_Hat_Enterprise_Linux_on_AWS.mp4
-
-  * DEMO_4_Ansible_automation_security_response.mp4
-
-  * DEMO_5_-Red_Hat_Ansible_Tower_application_deployment.mp4
-
-  * DEMO_6_What_342_200_231s_new_in_Red_Hat_Satellite_and_Red_Hat_Smart_Management.mp4
-
-
-  CICD
-  -----------
-  * CICD_Ansible_Jenkins_Pipeline_for_Container-Driven_CICD.png
-
-  * CICD-master
-
-  * Joe_Pisciotta-Ansible-CICD-Lab.pptx
-
-  * Tower_CI_CD.png
-
-
-  Playbook_Examples
-  -----------
-  * SECURITY
-
-  * Ansible_Tower.yml
-
-  * audit.yml
-
-  * backup-attic.yml
-
-  * backup-obnam.yml
-
-  * boxen.yml
-
-  * ec2_instance_reaper.yml
-
-  * encrypt-disk.yml
-
-  * filter-dns-any-query.yml
-
-  * ganeti-upgrade.yml
-
-  * install_pip_requirements.yml
-
-  * kill-prelink.yml
-
-  * linux-update-report.yml
-
-  * local.yml
-
-  * package-update.yml
-
-  * pip_n_it.yml
-
-  * README.md
-
-  * site.yml
-
-  * ssh-deploy-key.yml
-
-  * test-issue1815.yml
-
-  * tmbackup.yml
-
-  * virt-guests.yml
-
-
-  Ansible_Video_Demos
-  -----------
-  * DEMO_10_Introduction_to_the_expanded_Red_Hat_Insights.mp4
-
-  * DEMO_1_Ansible_automation_analytics.mp4
-
-  * DEMO_2_Ansible_multivendor_network_automation.mp4
-
-  * DEMO_3_Ansible_provisions_Red_Hat_Enterprise_Linux_on_AWS.mp4
-
-  * DEMO_4_Ansible_automation_security_response.mp4
-
-  * DEMO_5_-Red_Hat_Ansible_Tower_application_deployment.mp4
-
-  * DEMO_6_What_342_200_231s_new_in_Red_Hat_Satellite_and_Red_Hat_Smart_Management.mp4
-
-  * DEMO_7_Red_Hat_Ansible_Tower_with_ServiceNow.mp4
- 
-  * DEMO_8_Red_Hat_Ansible_Tower_workflow.mp4
-
-===========
-
-Satellite
------------
-* Ansible_Modules-Foreman-Katello.tar.gz
-
-* getting-started-with-satellite-6-command-line.pdf
-
-* REDHATTOOLSINSTALLER-6.7.png
-
-* REDHATTOOLSINSTALLER-6.7.sh
-
-* xdialog-2.3.1-13.el7.centos.x86_64.rpm
+# RED HAT MANAGEMENT PORTFOLIO
+In every environment there is a core set of servers/services that are required to allow your users to interface with the systems they use daily in seamless operation. The Red Hat Management Portfolio can provide you with the tools you need from a User Front End, Provisioning, Orchestration, Automation, and Management for your environment. These systems will allow you to provide that next level of IT service to your end users/customers. 
+
+My work is focused on: 
+* Ansible Tower
+* Satellite
+* InSights
+
+![Red_Hat_Management](./Red_Hat_Management.png)
+
+The key to success is always in the planning! The venn diagram below depicts the primary functions between tools and the overlap between to help you decide where you would like to situate the functions, and assist in integrating the tools within your IT environment(s) 
+## CloudForms: A comprehensive IaaS cloud management platform that provides self-service for your virtual and cloud infrastructures while maintaining security and compliance. Lets you focus on enabling services versus managing systems so you can deliver services across your cloud environments with ease.
+
+## Satellite: The easiest way to manage your Red Hat infrastructure for efficient and compliant IT operations. Establish trusted content repos and processes that help you build a standards-based, secure Red Hat environment. 
+
+## AnsibleTower: Simple, agentless automation platform that can improve your current processes, migrate apps for better optimization, and provide a single language for DevOps practices across your organization. Ansible Tower by Red Hat is a centralized API for your Ansible automation and a graphical user interface for Ansible.
+
+## InSights: A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
+
+![Portfolio_Overlap](./RedHat_Management_Portfolio.png)
+
+Working in tandem, this is what the optimal Management system would look like from a Red Hat perspective.
+
+![E2E_Management_Portfolio](./E2E_RedHat_Management_Portfolio.png)
+
+## Table of Contents
+* [Ansible_Tower](#Ansible_Tower)
+  * Ansible_Cheat_Sheets
+  * Ansible_DOC
+  * Ansible_PDF
+  * Ansible_PPT
+  * Ansible_Use_Cases
+  * Ansible_Video_Demos
+  * Playbook_Examples
+  Simple Scripts for installing Ansible Tower on a single node/vm on RHEL7/8:
+  * ANSIBLE_TOWER-3.6.4-1-INSTALLER.sh
+  * ANSIBLE_TOWER-3.7.0-4-INSTALLER.sh
+  
+* [Redhat_Workshops](#Redhat_Workshops)
+  * Code for building workshops.
+
+* [Satellite](#Satellite)
+  * Satellite_PDF
+  * Satellite_DOC
+  * Satellite-Ansible_Playbooks
+  RPM for an X enabled server (not required) 
+  * xdialog-2.3.1-13.el7.centos.x86_64.rpm
+  Simple script checking the health of your Satellite once it is set up on your rhel7sys:
+  * sat6_healthCheck.sh
+  Simple script for installing Satellite on a single node/vm on RHEL7:
+![REDHATTOOLSINSTALLER](./PNG/REDHATTOOLSINSTALLER-6.7.png)
+  * REDHATTOOLSINSTALLER-6.7-4.sh
+  
+* [Useful_Scripts](#Useful_Scripts)
