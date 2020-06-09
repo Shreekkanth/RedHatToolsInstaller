@@ -5,23 +5,18 @@ My work is focused on:
 * Ansible Tower
 * Satellite
 * InSights
-
 ![Red_Hat_Management](./Red_Hat_Management.png)
 
 The key to success is always in the planning! The venn diagram below depicts the primary functions between tools and the overlap between to help you decide where you would like to situate the functions, and assist in integrating the tools within your IT environment(s) 
 ## Satellite: 
 The easiest way to manage your Red Hat infrastructure for efficient and compliant IT operations. Establish trusted content repos and processes that help you build a standards-based, secure Red Hat environment. 
-
 ## AnsibleTower: 
 Simple, agentless automation platform that can improve your current processes, migrate apps for better optimization, and provide a single language for DevOps practices across your organization. Ansible Tower by Red Hat is a centralized API for your Ansible automation and a graphical user interface for Ansible.
-
 ## InSights: 
 A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
-
 ![Portfolio_Overlap](./RedHat_Management_Portfolio.png)
 
 Working in tandem, this is what the optimal Management system would look like from a Red Hat perspective.
-
 ![E2E_Management_Portfolio](./E2E_RedHat_Management_Portfolio.png)
 
 ## Table of Contents
