@@ -9,13 +9,17 @@ My work is focused on:
 ![Red_Hat_Management](./Red_Hat_Management.png)
 
 The key to success is always in the planning! The venn diagram below depicts the primary functions between tools and the overlap between to help you decide where you would like to situate the functions, and assist in integrating the tools within your IT environment(s) 
-## CloudForms: A comprehensive IaaS cloud management platform that provides self-service for your virtual and cloud infrastructures while maintaining security and compliance. Lets you focus on enabling services versus managing systems so you can deliver services across your cloud environments with ease.
+## CloudForms: 
+A comprehensive IaaS cloud management platform that provides self-service for your virtual and cloud infrastructures while maintaining security and compliance. Lets you focus on enabling services versus managing systems so you can deliver services across your cloud environments with ease.
 
-## Satellite: The easiest way to manage your Red Hat infrastructure for efficient and compliant IT operations. Establish trusted content repos and processes that help you build a standards-based, secure Red Hat environment. 
+## Satellite: 
+The easiest way to manage your Red Hat infrastructure for efficient and compliant IT operations. Establish trusted content repos and processes that help you build a standards-based, secure Red Hat environment. 
 
-## AnsibleTower: Simple, agentless automation platform that can improve your current processes, migrate apps for better optimization, and provide a single language for DevOps practices across your organization. Ansible Tower by Red Hat is a centralized API for your Ansible automation and a graphical user interface for Ansible.
+## AnsibleTower: 
+Simple, agentless automation platform that can improve your current processes, migrate apps for better optimization, and provide a single language for DevOps practices across your organization. Ansible Tower by Red Hat is a centralized API for your Ansible automation and a graphical user interface for Ansible.
 
-## InSights: A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
+## InSights: 
+A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
 
 ![Portfolio_Overlap](./RedHat_Management_Portfolio.png)
 
