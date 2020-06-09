@@ -14,6 +14,7 @@ The easiest way to manage your Red Hat infrastructure for efficient and complian
 Simple, agentless automation platform that can improve your current processes, migrate apps for better optimization, and provide a single language for DevOps practices across your organization. Ansible Tower by Red Hat is a centralized API for your Ansible automation and a graphical user interface for Ansible.
 ## InSights: 
 A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
+
 ![Portfolio_Overlap](./RedHat_Management_Portfolio.png)
 
 Working in tandem, this is what the optimal Management system would look like from a Red Hat perspective.
