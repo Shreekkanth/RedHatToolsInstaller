@@ -1,4 +1,4 @@
-* Table of contents below Intro for Tools and Docs
+* Table of contents, below Intro for Tools and Docs
 
 # RED HAT MANAGEMENT PORTFOLIO
 In every environment there is a core set of servers/services that are required to allow your users to interface with the systems they use daily in seamless operation. The Red Hat Management Portfolio can provide you with the tools you need from a User Front End, Provisioning, Orchestration, Automation, and Management for your environment. These systems will allow you to provide that next level of IT service to your end users/customers. 
@@ -24,35 +24,35 @@ Working in tandem, this is what the optimal Management system would look like fr
 
 ## Table of Contents
 * [Ansible_Tower](#Ansible_Tower)
-  * Ansible_Cheat_Sheets
-  * Ansible_DOC
-  * Ansible_PDF
-  * Ansible_PPT
-  * Ansible_Use_Cases
-  * Ansible_Video_Demos
-  * Playbook_Examples
-  ### Simple Scripts for installing Ansible Tower P.O.C on a single node/vm on RHEL7/8:
-  ** [Request_an_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+ * Ansible_Cheat_Sheets
+ * Ansible_DOC
+ * Ansible_PDF
+ * Ansible_PPT
+ * Ansible_Use_Cases
+ * Ansible_Video_Demos
+ * Playbook_Examples
+### Simple Scripts for installing Ansible Tower P.O.C on a single node/vm on RHEL7/8:
+ ** [Request_an_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
 
-  * ANSIBLE_TOWER-3.6.4-1-INSTALLER.sh
-  * ANSIBLE_TOWER-3.7.0-4-INSTALLER.sh
+ * ANSIBLE_TOWER-3.6.4-1-INSTALLER.sh
+ * ANSIBLE_TOWER-3.7.0-4-INSTALLER.sh
   
 * [Redhat_Workshops](#Redhat_Workshops)
-  * Code for building workshops.
+ * Code for building workshops.
 
 * [Satellite](#Satellite)
-  * Satellite_PDF
-  * Satellite_DOC
-  * Satellite-Ansible_Playbooks
-  ### RPM for an X enabled server (not required) 
-  * xdialog-2.3.1-13.el7.centos.x86_64.rpm
-  ### Simple script checking the health of your Satellite once it is set up on your RHEL7 sys:
-  * sat6_healthCheck.sh
-  ### Simple script for installing Satellite P.O.C on a single node/vm on RHEL7:
+ * Satellite_PDF
+ * Satellite_DOC
+ * Satellite-Ansible_Playbooks
+### RPM for an X enabled server (not required) 
+ * xdialog-2.3.1-13.el7.centos.x86_64.rpm
+### Simple script checking the health of your Satellite once it is set up on your RHEL7 sys:
+ * sat6_healthCheck.sh
+### Simple script for installing Satellite P.O.C on a single node/vm on RHEL7:
   ** [Request_Satellite_License](https://www.redhat.com/en/technologies/management/smart-management)
 
 ![REDHATTOOLSINSTALLER](./Satellite/PNG/REDHATTOOLSINSTALLER-6.7.png)
 
-  * REDHATTOOLSINSTALLER-6.7-4.sh
+ * REDHATTOOLSINSTALLER-6.7-4.sh
   
 * [Useful_Scripts](#Useful_Scripts)
