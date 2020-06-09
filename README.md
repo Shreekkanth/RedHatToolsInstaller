@@ -9,9 +9,6 @@ My work is focused on:
 ![Red_Hat_Management](./Red_Hat_Management.png)
 
 The key to success is always in the planning! The venn diagram below depicts the primary functions between tools and the overlap between to help you decide where you would like to situate the functions, and assist in integrating the tools within your IT environment(s) 
-## CloudForms: 
-A comprehensive IaaS cloud management platform that provides self-service for your virtual and cloud infrastructures while maintaining security and compliance. Lets you focus on enabling services versus managing systems so you can deliver services across your cloud environments with ease.
-
 ## Satellite: 
 The easiest way to manage your Red Hat infrastructure for efficient and compliant IT operations. Establish trusted content repos and processes that help you build a standards-based, secure Red Hat environment. 
 
