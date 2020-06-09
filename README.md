@@ -32,7 +32,8 @@ Working in tandem, this is what the optimal Management system would look like fr
   * Ansible_Video_Demos
   * Playbook_Examples
   ### Simple Scripts for installing Ansible Tower P.O.C on a single node/vm on RHEL7/8:
-  [Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+  ** [Request_an_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+
   * ANSIBLE_TOWER-3.6.4-1-INSTALLER.sh
   * ANSIBLE_TOWER-3.7.0-4-INSTALLER.sh
   
@@ -48,8 +49,10 @@ Working in tandem, this is what the optimal Management system would look like fr
   ### Simple script checking the health of your Satellite once it is set up on your RHEL7 sys:
   * sat6_healthCheck.sh
   ### Simple script for installing Satellite P.O.C on a single node/vm on RHEL7:
-  [Satellite_License](https://www.redhat.com/en/technologies/management/smart-management)
+  ** [Request_Satellite_License](https://www.redhat.com/en/technologies/management/smart-management)
+
 ![REDHATTOOLSINSTALLER](./Satellite/PNG/REDHATTOOLSINSTALLER-6.7.png)
+
   * REDHATTOOLSINSTALLER-6.7-4.sh
   
 * [Useful_Scripts](#Useful_Scripts)
