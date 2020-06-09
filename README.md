@@ -44,7 +44,8 @@ Working in tandem, this is what the optimal Management system would look like fr
   Simple script checking the health of your Satellite once it is set up on your rhel7sys:
   * sat6_healthCheck.sh
   Simple script for installing Satellite on a single node/vm on RHEL7:
-![REDHATTOOLSINSTALLER](./PNG/REDHATTOOLSINSTALLER-6.7.png)
+
+![REDHATTOOLSINSTALLER](./Satellite/PNG/REDHATTOOLSINSTALLER-6.7.png)
   * REDHATTOOLSINSTALLER-6.7-4.sh
   
 * [Useful_Scripts](#Useful_Scripts)
