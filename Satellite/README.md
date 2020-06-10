@@ -3,7 +3,7 @@ REDHATTOOLSINSTALLER
 
 This code is meant to inspire!
 
-This tool was built to aid in the install Red Hat Satellite 6.7 or the latest Ansible Tower for Proof Of Concept and Education purposes.  
+This tool was built to aid in the install Red Hat Satellite 6.7 or the Ansible Tower 3.7.0-4 for Proof Of Concept and Education purposes.
 
 This tool was built and tested by the team of :
 
@@ -27,7 +27,7 @@ I can set up a full satellite for a P.O.C in 3 to 4 hours with:
 * 8 CPU
 * 22 GB ram 
 * 300 GB storage
-* 2 Ethernet  
+* 2 Ethernet
     * eth0 internal - provisioning node communication
     * eth1 external - connection to Red Hat CDN
 
@@ -47,6 +47,8 @@ I can set up a full satellite for a P.O.C in 3 to 4 hours with:
 
 **Running REDHATTOOLSINSTALLER-XXXsh:** 
 
+![REDHATTOOLSINSTALLER-6.7](./PNG/REDHATTOOLSINSTALLER-6.7.png)
+
 * git clone https://github.com/ShaddGallegos/RedHatToolsInstaller.git
 * cd RedHatToolsInstaller
 * sh REDHATTOOLSINSTALLER-XXX.sh
@@ -58,7 +60,7 @@ I believe all products should have an "installer" that guides end users to succe
 
 What this does is:
 
-* reduces TtP (time to productivity)
+* reduces TtP (Time to Productivity)
 * reduction in deployment cost
 * reduction in support costs
 * increase in margin
@@ -73,17 +75,8 @@ The script does use the epel to install components needed to run the script and 
 
 ## Who is this script for?
 
-* Anyone who wants to set up a proof of concept system or and admin that wants to deploy satellite quickly    
+* Anyone who wants to set up a proof of concept Satellite or Ansible Tower on a RHEL7 system or and admin that wants to deploy satellite quickly
 * Anyone that wants to make the Red Hat experience an even better one 
 
-## Known Issues
-kind of -> what i mean by that is because it does use some of the EPEL components it does step outside of the red hat soe (standard operating environment) but you can remove those after the fact if you want.
 
-I wanted to get this script out for people to use, so you will need to take a close look at the content-views section of the script. 
-
-* You will need to decide naming convention for your content views. Some end-users do it by product (rhel5, rhel6, rhel7) some users do it by a product (docker, webservers, security, customer name, ect…)
-
-* You then will need to decide which repos you want to add for the content views
-
-* You will need to define any custom repos i have added a few so you can see how it works (icinga, epel, maven, centos, ect…)
   
