@@ -23,8 +23,11 @@ Working in tandem, this is what the optimal Management system would look like fr
 ![E2E_Management_Portfolio](./E2E_RedHat_Management_Portfolio.png)
 
 ## Table of Contents
- ** [Request_an_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+
 [Ansible_Tower](./Ansible_Tower)
+
+ ** [Request_an_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+ 
  * Ansible_Cheat_Sheets
  * Ansible_DOC
  * Ansible_PDF
@@ -41,7 +44,9 @@ Working in tandem, this is what the optimal Management system would look like fr
  * Code for building workshops.
 
 [Satellite](./Satellite)
+
  ** [Request_Satellite_License](https://www.redhat.com/en/technologies/management/smart-management)
+
  * Satellite_PDF
  * Satellite_DOC
  * Satellite-Ansible_Playbooks
