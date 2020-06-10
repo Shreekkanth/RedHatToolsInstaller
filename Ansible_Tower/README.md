@@ -21,6 +21,7 @@ The content below is open source, is OPC (Other Peoples Code) in a lot of cases 
           Min CPU 2 (4 Reccomended)
 
    3. Network Connection to the internet so the installer can download the required packages
+
           eth0 internal Provisioning network
           eth1 external"
 
