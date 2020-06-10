@@ -1,7 +1,6 @@
 The content below is open source, is OPC (Other Peoples Code) in a lot of cases and is provided " no warranty implied or otherwise ".  Use it as reference only.  If you have questions please ping me at shadd.gallegos@gmail.com 
 
-# ANSIBLE-TOWER INSTALLER FOR RHEL 7.x AND RHEL 8.x
-# FOR SETTING UP A SIMPLE SINGLE NODE CONFIGURATION FOR P.O.C.
+# ANSIBLE-TOWER INSTALLER FOR RHEL 7.x AND RHEL 8.x FOR SETTING UP A SIMPLE SINGLE NODE CONFIGURATION FOR P.O.C.
 
 ## ANSIBLE-TOWER BASE HARDWARE REQUIREMENTS
 
@@ -26,6 +25,7 @@ The content below is open source, is OPC (Other Peoples Code) in a lot of cases 
           eth1 external"
 
    4. The ANSIBLE_TOWER-x-INSTALLER installer will work on RHEL 7 or RHEL 8 and:
+
           *verify you are root 
           *Check you are connected to the internet.
           *Provide a breif overview of what the tool is.
