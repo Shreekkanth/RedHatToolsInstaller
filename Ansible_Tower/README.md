@@ -6,7 +6,7 @@ The content below is open source, is OPC (Other Peoples Code) in a lot of cases 
 ## ANSIBLE-TOWER BASE HARDWARE REQUIREMENTS
 
    1. Ansible-Tower will require a RHEL subscription and an Ansible Tower License.
-           Please register and download your lincense at http://www.ansible.com/tower-trial
+      Please register and download your lincense at http://www.ansible.com/tower-trial
 
    2. Hardware requirement depends, however whether it is a KVM or physical-Tower 
       will require atleast 1 node with:
