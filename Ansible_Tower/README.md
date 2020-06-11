@@ -26,16 +26,16 @@ The content below is open source, is OPC (Other Peoples Code) in a lot of cases 
 
    4. The ANSIBLE_TOWER-x-INSTALLER installer will work on RHEL 7 or RHEL 8 and:
 
-          *verify you are root 
-          *Check you are connected to the internet.
-          *Provide a breif overview of what the tool is.
-          *Help the end user register with Red Hat if not already done.
-          *Take of some prep stuff install shut off firewall and selinux and install pip prior to install.
-          *Enable required repos for OS and Ansible Tower.
-          *Upgrades the OS.
-          *Installs the dependencies from the bundle forces them to requirement levels listed in bundle.
-          *Installs Tower. (Queries user for tower password) 
-          *Gives the end user the option to enable firewall and selinux.
+          * verify you are root 
+          * Check you are connected to the internet.
+          * Provide a breif overview of what the tool is.
+          * Help the end user register with Red Hat if not already done.
+          * Take of some prep stuff install shut off firewall and selinux and install pip prior to install.
+          * Enable required repos for OS and Ansible Tower.
+          * Upgrades the OS.
+          * Installs the dependencies from the bundle forces them to requirement levels listed in bundle.
+          * Installs Tower. (Queries user for tower password) 
+          * Gives the end user the option to enable firewall and selinux.
 
    5. The other items in this repo are Educational tools 
 
