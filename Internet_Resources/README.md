@@ -1,4 +1,4 @@
-# Ansible Resourses on the net 
+# Ansible Resourses on the NET 
 
 ## SECURITY
 
