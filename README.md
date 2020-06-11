@@ -7,7 +7,7 @@ My work is focused on:
 * Ansible Tower
 * Satellite
 * InSights
-![Red_Hat_Management](./Red_Hat_Management.png)
+![Red Hat Management](./Red_Hat_Management.png)
 
 The key to success is always in the planning! The venn diagram below depicts the primary functions between tools and the overlap between to help you decide where you would like to situate the functions, and assist in integrating the tools within your IT environment(s) 
 ## Satellite: 
@@ -17,16 +17,16 @@ Simple, agentless automation platform that can improve your current processes, m
 ## InSights: 
 A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
 
-![Portfolio_Overlap](./RedHat_Management_Portfolio.png)
+![Portfolio Overlap](./RedHat_Management_Portfolio.png)
 
 Working in tandem, this is what the optimal Management system would look like from a Red Hat perspective.
-![E2E_Management_Portfolio](./E2E_RedHat_Management_Portfolio.png)
+![E2E Management Portfolio](./E2E_RedHat_Management_Portfolio.png)
 
 ## Table of Contents
 
-[Ansible_Tower](./Ansible_Tower)
+[1. Ansible Tower](./Ansible_Tower)
 
- ** [Request_a_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+ ** [Request a Ansible Tower License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
  
  * Ansible_Cheat_Sheets
  * Ansible_DOC
@@ -40,15 +40,15 @@ Working in tandem, this is what the optimal Management system would look like fr
  * ANSIBLE_TOWER-3.6.4-1-INSTALLER.sh
  * ANSIBLE_TOWER-3.7.0-4-INSTALLER.sh
 
-[Internet_Resources](./Internet_Resources)
+[2. Internet Resources](./Internet_Resources)
  * Vendor specific resources all in one spot.
   
-[Redhat_Workshops](./Redhat_Workshops)
+[3. Redhat Workshops](./Redhat_Workshops)
  * Code for building workshops.
 
-[Satellite](./Satellite)
+[4. Satellite](./Satellite)
 
- ** [Request_Satellite_License](https://www.redhat.com/en/technologies/management/smart-management)
+ ** [Request Satellite License](https://www.redhat.com/en/technologies/management/smart-management)
 
  * Satellite_PDF
  * Satellite_DOC
@@ -63,4 +63,4 @@ Working in tandem, this is what the optimal Management system would look like fr
 
  * REDHATTOOLSINSTALLER-6.7-4.sh
   
-[Useful_Scripts](./Useful_Scripts)
+[5. Useful Scripts](./Useful_Scripts)
