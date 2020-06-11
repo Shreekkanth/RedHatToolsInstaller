@@ -305,3 +305,28 @@
           https://www.shadandy.com/ansible-oracle-database-clones/
           https://blog.pythian.com/automating-oracle-patching-with-an-ansible-module/
           https://ronekins.wordpress.com/2018/07/12/oracle-database-automation-with-ansible-awx/
+
+### AIX/Solaris
+
+          https://github.com/aixoss/Ansible-playbooks
+          http://docs.Ansible.com/Ansible/latest/modules/aix_inittab_module.html#aix-inittab-module
+          http://docs.Ansible.com/Ansible/latest/modules/aix_lvol_module.html#aix-lvol-module
+          http://docs.Ansible.com/Ansible/2.4/solaris_zone_module.html
+          http://docs.Ansible.com/Ansible/latest/modules/dladm_etherstub_module.html#dladm-etherstub-module
+
+### Microsoft
+
+          There are many azure and windows modules within Ansible, however Microsoft has been working hard at creating an extended set of modules to assist in Microsoft tasks. I have added playbook examples into the Linux tar playbook library above
+          https://docs.microsoft.com/en-us/azure/Ansible/Ansible-overview
+          https://github.com/mgmt-sa-tiger-team/skylight
+               
+### VMware
+
+          https://github.com/GoKEV/Lab-Playbooks.git
+          https://github.com/vmware/Ansible-role-vcenter.git
+          https://github.com/zwindler/Ansible-deploy-vmware-guest
+
+### Terraform
+
+          https://github.com/OpenStackSanDiego/osa-workshop
+          https://www.arctiq.ca/our-blog/2019/4/6/ansible-terraform-gcp-automation-goodness
