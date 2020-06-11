@@ -26,7 +26,7 @@ Working in tandem, this is what the optimal Management system would look like fr
 
 [Ansible_Tower](./Ansible_Tower)
 
- ** [Request_an_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
+ ** [Request_a_Ansible_Tower_License](https://www.redhat.com/en/technologies/management/ansible/try-it?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG)
  
  * Ansible_Cheat_Sheets
  * Ansible_DOC

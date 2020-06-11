@@ -2,30 +2,10 @@
 - hostname:
     name: "{{short_name}}"
 
-#- name: Install EPEL
-#  dnf:
-#    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
-#    state: present
-
-- name: Add EPEL 8 repository
-  yum_repository:
-    name: Extra Packages for Enterprise Linux 8 - x86_64
-    description: EPEL RHEL 8
-    baseurl: "https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/"
-    enabled: yes
-    gpgcheck: no
-    skip_if_unavailable: yes
-  when: (ansible_distribution == "RedHat" and ansible_distribution_major_version == "8")
-
-- name: Add EPEL-Modular 8 repository
-  yum_repository:
-    name: Extra Packages for Enterprise Linux Modular 8 - x86_64
-    description: EPEL MODULAR RHEL 8
-    baseurl: "https://dl.fedoraproject.org/pub/epel/8/Modular/x86_64/"
-    enabled: yes
-    gpgcheck: no
-    skip_if_unavailable: yes
-  when: (ansible_distribution == "RedHat" and ansible_distribution_major_version == "8")
+- name: Install EPEL
+  dnf:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+    state: present
 
 # temporary fix for rhel 8.2 dnf substitution
 - name: fix EPEL repo substitution
@@ -38,11 +18,6 @@
     - /etc/yum.repos.d/epel.repo
   when:
     - ansible_distribution_major_version|int == 8
-
-- name: yum-clean-metadata
-  command: yum clean all
-  args:
-    warn: yes
 
 - name: Install base packages
   dnf:
