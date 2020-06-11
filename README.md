@@ -39,6 +39,9 @@ Working in tandem, this is what the optimal Management system would look like fr
 
  * ANSIBLE_TOWER-3.6.4-1-INSTALLER.sh
  * ANSIBLE_TOWER-3.7.0-4-INSTALLER.sh
+
+[Internet_Resources](./Internet_Resources)
+ * Vendor specific resources all in one spot.
   
 [Redhat_Workshops](./Redhat_Workshops)
  * Code for building workshops.
