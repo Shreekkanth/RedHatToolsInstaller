@@ -1,3 +1,5 @@
+![Red Hat Ansible Automation](images/rh-ansible-automation-platform.png)
+
 # Red Hat Ansible Automation Platform Workshops
 
 The Red Hat Ansible Automation Workshops project is intended for effectively demonstrating Ansible's capabilities through instructor-led workshops or self-paced exercises.
@@ -44,4 +46,3 @@ The Red Hat Ansible Automation Workshops project is intended for effectively dem
  - [Release Process](docs/release.md)
 
 ---
-![Red Hat Ansible Automation](images/rh-ansible-automation-platform.png)

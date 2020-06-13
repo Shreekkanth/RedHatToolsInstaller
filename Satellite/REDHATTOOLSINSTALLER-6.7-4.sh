@@ -36,11 +36,22 @@ echo ''
 read -p "To Continue Press [Enter] or use Ctrl+c to exit the installer"
 fi
 sleep 3 
+mkdir -p /root//Downloads
+mkdir -p /root//Downloads/RHTI
+mkdir /run/user/1000/dconf/ &>/dev/null
+touch /run/user/1000/dconf/user &>/dev/null
+chmod 777 /run/user/1000/dconf/user &>/dev/null
+chmod -R 777 RHTI &>/dev/null
+chown -R nobody:nobody RHTI &>/dev/null
+echo ''
+cp -p /root/.bashrc /root/.bashrc.bak
 reset
 }
 CHECKONLINE
 
 #--------------------------required packages for script to run----------------------------
+
+
 #-------------------------
 function DISABLESECURITY {
 #-------------------------
@@ -58,7 +69,7 @@ sed -i 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config
 setenforce 0
 service firewalld stop
 chkconfig firewalld off
-sleep 5
+sleep 1
 echo " "
 echo " "
 }
@@ -120,13 +131,13 @@ subscription-manager repos --enable=rhel-7-server-extras-rpms || exit 1
 yum-config-manager --save --setopt=*.skip_if_unavailable=true
 yum clean all
 rm -fr /var/cache/yum/*
-mkdir -p ~/Downloads/RHTI
-touch ~/Downloads/RHTI/SYSREPOS
+mkdir -p /root/Downloads/RHTI
+touch /root/Downloads/RHTI/SYSREPOS
 echo " "
 echo " "
 }
 
-ls ~/Downloads/RHTI/SYSREPOS &>/dev/null
+ls /root/Downloads/RHTI/SYSREPOS &>/dev/null
 if [ $? -eq 0 ]; then
 echo 'The repo requirements to run this script have been met, proceeding'
 sleep 2
@@ -144,9 +155,10 @@ echo "*********************************************************"
 echo "INSTALLING PACKAGES ENABLING SCRIPT TO RUN"
 echo "*********************************************************"
 yum-config-manager --enable epel
+yum install -y dnf
 yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || yum install -y yum-util* --skip-broken
 yum -q list installed wget &>/dev/null && echo "wget is installed" || yum install -y wget --skip-broken
-wget https://github.com/ShaddGallegos/RedHatToolsInstaller/raw/master/xdialog-2.3.1-13.el7.centos.x86_64.rpm
+wget https://github.com/ShaddGallegos/RedHatToolsInstaller/raw/master/Satellite/xdialog-2.3.1-13.el7.centos.x86_64.rpm
 chmod 777 /home/admin/Downloads/xdialog-2.3.1-13.el7.centos.x86_64.rpm 
 yum -q list installed xdialog &>/dev/null && echo "xdialog is installed" || yum localinstall -y xdialog-2.3.1-13.el7.centos.x86_64.rpm –skip-broken
 yum -q list installed ansible &>/dev/null && echo "ansible is installed" || yum install -y ansible --skip-broken 
@@ -158,20 +170,19 @@ yum -q list installed firewalld &>/dev/null && echo "firewalld is installed" || 
 yum -q list installed gnome-terminal &>/dev/null && echo "gnome-terminal is installed" || yum install -y gnome-terminal --skip-broken
 yum -q list installed gtk2-devel &>/dev/null && echo "gtk2-devel is installed" || yum install -y gtk2-devel --skip-broken
 yum -q list installed hiera &>/dev/null && echo "hiera is installed" || yum install -y hiera --skip-broken
-yum -q list installed lynx &>/dev/null && echo "lynx is installed" || yum install -y lynx --skip-broken
 yum -q list installed perl &>/dev/null && echo "perl is installed" || yum install -y perl --skip-broken
 yum -q list installed python-deltarpm &>/dev/null && echo "python-deltarpm is installed" || yum install -y python-deltarpm --skip-broken
 yum -q list installed ruby &>/dev/null && echo "ruby is installed" || yum install -y ruby --skip-broken
 yum-config-manager --disable epel
 subscription-manager repos --disable=rhel-7-server-extras-rpms
-mkdir ~/Downloads/RHTI/
-touch ~/Downloads/RHTI/INSTALLERPACKAGES
+mkdir /root/Downloads/RHTI/
+touch /root/Downloads/RHTI/INSTALLERPACKAGES
 echo " "
 echo " "
 }
 
 
-ls ~/Downloads/RHTI/INSTALLERPACKAGES &>/dev/null
+ls /root/Downloads/RHTI/INSTALLERPACKAGES &>/dev/null
 if [ $? -eq 0 ]; then
 echo 'The requirements to run this script have been met, proceeding'
 sleep 2
@@ -216,11 +227,12 @@ fi
 #-------------------------
 function SATELLITEREADME {
 #-------------------------
+reset
+echo " "
+echo " "
+echo " "
+echo " "
 echo "************************************************************************************************************************************"
-echo " "
-echo " "
-echo " "
-echo " "
 echo " "
 echo " "
 echo " "
@@ -252,14 +264,13 @@ echo " "
 echo " "
 echo " "
 echo " "
-echo " "
+echo "************************************************************************************************************************************"
 echo " "
 echo " "
 echo " "
 echo " "
 read -p "Press [Enter] to continue"
-echo "************************************************************************************************************************************"
-clear
+reset
 if [ "$(whoami)" != "root" ]
 then
 echo "This script must be run as root - if you do not have the credentials please contact your administrator"
@@ -311,7 +322,7 @@ echo ' '
 fi
 echo " "
 echo " "
-touch ~/Downloads/RHTI/SATREGISTER
+touch /root/Downloads/RHTI/SATREGISTER
 }
 
 #-------------------------------
@@ -322,6 +333,15 @@ NMESSAGE="Skipping"
 FMESSAGE="PLEASE ENTER Y or N"
 COUNTDOWN=10
 DEFAULTVALUE=n
+HNAME=$(hostname)
+SHNAME=$(hostname -s)
+DOM="$(hostname -d)"
+export INTERNAL=$(ip -o link | head -n 2 | tail -n 1 | awk '{print $2}' | sed s/:// )
+export EXTERNAL=$(ip route show | sed -e 's/^default via [0-9.]* dev \(\w\+\).*/\1/' | head -1)
+export INTERNALIP=$(ifconfig "$INTERNAL" | grep "inet" | awk -F ' ' '{print $2}' |grep -v f |awk -F . '{print $1"."$2"."$3"."$4}')
+export INTERNALSUBMASK=$(ifconfig "$INTERNAL" |grep netmask |awk -F " " {'print $4'})
+export INTERNALGATEWAY=$(ip route list type unicast dev $(ip -o link | head -n 2 | tail -n 1 | awk '{print $2;}' | sed s/:$//) |awk -F " " '{print $7}')
+echo "INTERNALIP=$INTERNALIP" >> /root/.bashrc
 echo "*********************************************************"
 echo 'ORGANIZATION'
 echo "*********************************************************"
@@ -353,7 +373,7 @@ USER: admin AND THIS PASSWORD WHEN WE IMPORT THE MANIFEST"
 echo "*********************************************************"
 echo 'ADMIN=admin' >> /root/.bashrc
 echo 'What will the password be for your admin user?'
-read -s ADMIN_PASSWORD
+read ADMIN_PASSWORD
 echo 'ADMIN_PASSWORD='$ADMIN_PASSWORD'' >> /root/.bashrc
 echo ''
 echo ''
@@ -433,7 +453,8 @@ echo 'DHCP_GW='$(ip route list type unicast dev $(ip -o link | head -n 2 | tail 
 echo 'DHCP_DNS='$(ifconfig $INTERNAL | grep "inet" | awk -F ' ' '{print $2}' |grep -v f |awk -F . '{print $1"."$2"."$3"."$4}')'' >> /root/.bashrc
 sed -i 's/DHCP_GW=100 /DHCP_GW=/g' /root/.bashrc
 sed -i 's/DNS=100 /DNS=/g' /root/.bashrc
-touch ~/Downloads/RHTI/VARIABLES1
+echo ''$INTERNALIP' '$HNAME' '$SHNAME'' >> /etc/hosts
+touch /root/Downloads/RHTI/VARIABLES1
 echo ''
 }
 
@@ -469,7 +490,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/IPA
+touch /root/Downloads/RHTI/IPA
 }
 
 #-------------------------------
@@ -501,7 +522,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/CAPSULE
+touch /root/Downloads/RHTI/CAPSULE
 }
 
 #-------------------------------
@@ -539,7 +560,7 @@ echo 'CONFIGURE_LIBVIRT_RESOURCE=false' >> /root/.bashrc
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/SATLIBVIRT
+touch /root/Downloads/RHTI/SATLIBVIRT
 }
 
 #-------------------------------
@@ -576,7 +597,7 @@ echo 'CONFIGURE_RHEV_RESOURCE=false' >> /root/.bashrc
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/SATRHV
+touch /root/Downloads/RHTI/SATRHV
 
 }
 
@@ -599,7 +620,7 @@ echo ' '
 echo 'In another terminal please check/correct any variables in /root/.bashrc
 that are nopt needed or are wrong'
 read -p "Press [Enter] to continue"
-touch ~/Downloads/RHTI/RHVORLIBVIRT
+touch /root/Downloads/RHTI/RHVORLIBVIRT
 }
 
 #-------------------------------
@@ -622,7 +643,7 @@ else
 echo -e "\n$FMESSAGE\n"
 
 fi
-touch ~/Downloads/RHTI/SYNCREL5
+touch /root/Downloads/RHTI/SYNCREL5
 }
 
 #-------------------------------
@@ -644,7 +665,7 @@ echo 'RHEL6DEFAULTVALUE=n' >> /root/.bashrc
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/SYNCREL6
+touch /root/Downloads/RHTI/SYNCREL6
 }
 
 #---END OF VARIABLES 1 SCRIPT---
@@ -675,7 +696,7 @@ rm -rf /var/cache/yum
 echo " "
 echo " "
 echo " "
-touch ~/Downloads/RHTI/INSTALLREPOS
+touch /root/Downloads/RHTI/INSTALLREPOS
 }
 
 #------------------------------
@@ -711,7 +732,7 @@ echo "*********************************************************"
  subscription-manager repos --disable=rhel-7-server-extras-rpms
  yum clean all ; rm -rf /var/cache/yum
  yum upgrade -y; yum update -y
- touch ~/Downloads/RHTI/INSTALLDEPS
+ touch /root/Downloads/RHTI/INSTALLDEPS
 }
 
 #----------------------------------
@@ -785,7 +806,7 @@ echo "*********************************************************"
 cp /etc/sudoers /etc/sudoers.bak
 echo 'admin ALL = NOPASSWD: ALL' >> /etc/sudoers
 echo " "
-touch ~/Downloads/RHTI/GENERALSETUP
+touch /root/Downloads/RHTI/GENERALSETUP
 }
 
 # --------------------------------------
@@ -825,7 +846,7 @@ exit
 sleep 2
 echo " "
 fi
-touch ~/Downloads/RHTI/SYSCHECK
+touch /root/Downloads/RHTI/SYSCHECK
 }
 
 # --------------------------------------
@@ -860,16 +881,16 @@ echo "INSTALLING SATELLITE COMPONENTS"
 echo "*********************************************************"
 echo "INSTALLING SATELLITE"
 yum-config-manager --disable epel
-yum -q list installed satellite &>/dev/null && echo "satellite is installed" || time yum install satellite -y --skip-broken
+yum -q list installed satellite &>/dev/null && echo "satellite is installed" || time dnf install satellite -y --skip-broken --allowerasing --best
 echo " "
 echo " "
 echo " "
 echo "INSTALLING PUPPET"
-yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time yum install puppetserver -y --skip-broken
-yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time yum install puppet-agent-oauth -y --skip-broken
-yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time yum install puppet-agent -y --skip-broken
-yum -q list installed rh-mongodb34-syspaths &>/dev/null && echo "rh-mongodb34-syspaths is installed" || time yum install rh-mongodb34-syspaths -y --skip-broken
-yum -q list installed fio &>/dev/null && echo "fio is installed" || time yum install fio -y --skip-broken
+yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time dnf install puppetserver -y --skip-broken
+#yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time dnf install puppet-agent-oauth -y --skip-broken
+#yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time dnf install puppet-agent -y --skip-broken
+yum -q list installed rh-mongodb34-syspaths &>/dev/null && echo "rh-mongodb34-syspaths is installed" || time dnf install rh-mongodb34-syspaths -y --skip-broken
+yum -q list installed fio &>/dev/null && echo "fio is installed" || time dnf install fio -y --skip-broken
 
 echo " "
 echo " "
@@ -879,11 +900,11 @@ subscription-manager repos --enable=rhel-7-server-extras-rpms
 yum-config-manager --enable epel
 yum clean all
 rm -rf /var/cache/yum
-yum -q list installed rhel-system-roles &>/dev/null && echo "rhel-system-roles is installed" || time yum install rhel-system-roles -y --skip-broken
+yum -q list installed rhel-system-roles &>/dev/null && echo "rhel-system-roles is installed" || time dnf install rhel-system-roles -y --skip-broken
 sleep 2
-subscription-manager repos --disable=rhel-7-server-extras-rpms
+#subscription-manager repos --disable=rhel-7-server-extras-rpms
 yum-config-manager --disable epel
-touch ~/Downloads/RHTI/INSTALLNSAT
+touch /root/Downloads/RHTI/INSTALLNSAT
 }
 
 #
@@ -946,7 +967,7 @@ Now, Press [Enter] to continue"
 
 #--foreman-proxy-dns-tsig-principal="foreman-proxy $(hostname)@$DOM" \
 #--foreman-proxy-dns-tsig-keytab=/etc/foreman-proxy/dns.key \
-touch ~/Downloads/RHTI/CONFSAT
+touch /root/Downloads/RHTI/CONFSAT
 }
 
 
@@ -977,7 +998,7 @@ foreman-installer -v \
 systemctl enable dhcpd.service
 systemctl start dhcpd.service
 sleep 5
-touch ~/Downloads/RHTI/CONFSATDHCP
+touch /root/Downloads/RHTI/CONFSATDHCP
 }
 
 #--------------------------------------
@@ -995,8 +1016,10 @@ yum clean all
 rm -rf /var/cache/yum
 sleep 2
 foreman-maintain packages unlock
-yum -q list installed foreman-discovery* &>/dev/null && echo "foreman-discovery-image is installed" || yum install -y foreman-discovery-image* --skip-broken
-yum -q list installed rubygem-smart_proxy_discovery &>/dev/null && echo "rubygem-smart_proxy_discovery is installed" || yum install -y rubygem-smart_proxy_discovery* --skip-broken 
+yum -q list installed tfm-rubygem-foreman_discovery &>/dev/null && echo "tfm-rubygem-foreman_discovery is installed" || dnf install -y tfm-rubygem-foreman_discovery* --skip-broken --allowerasing --best 
+#yum -q list installed foreman-discovery-image &>/dev/null && echo "foreman-discovery-image is installed" || yum install -y foreman-discovery-image* --skip-broken
+#yum -q list installed rubygem-smart_proxy_discovery &>/dev/null && echo "rubygem-smart_proxy_discovery is installed" || yum install -y rubygem-smart_proxy_discovery* --skip-broken 
+
 foreman-installer -v \
 --no-lock-package-versions \
 --foreman-proxy-tftp true \
@@ -1005,17 +1028,16 @@ foreman-installer -v \
 
 systemctl start tftp.service
 systemctl enable tftp.service
-touch ~/Downloads/RHTI/CONFSATTFTP
+touch /root/Downloads/RHTI/CONFSATTFTP
 }
 
 #--------------------------------------
 function FOREMANPROXY {
 #--------------------------------------
 foreman-maintain packages unlock
-yum -q list installed tfm-rubygem-foreman_discovery &>/dev/null && echo "tfm-rubygem-foreman_discovery is installed" || yum install -y tfm-rubygem-foreman_discovery* --skip-broken
-yum -q list installed foreman-discovery-image &>/dev/null && echo "foreman-discovery-image_client is installed" || yum install -y foreman-discovery* --skip-broken
-yum -q list installed rubygem-smart_proxy_discovery &>/dev/null && echo "rubygem-smart_proxy_discovery is installed" || yum install -y rubygem-smart_proxy_discovery* --skip-broken
-yum -q list installed rubygem-smart_proxy_discovery_image &>/dev/null && echo "rubygem-smart_proxy_discovery_image y is installed" || yum install -y rubygem-smart_proxy_discovery_image --skip-broken
+#yum -q list installed foreman-discovery-image &>/dev/null && echo "foreman-discovery-image_client is installed" || yum install -y foreman-discovery* --skip-broken
+#yum -q list installed rubygem-smart_proxy_discovery &>/dev/null && echo "rubygem-smart_proxy_discovery is installed" || yum install -y rubygem-smart_proxy_discovery* --skip-broken
+#yum -q list installed rubygem-smart_proxy_discovery_image &>/dev/null && echo "rubygem-smart_proxy_discovery_image y is installed" || yum install -y rubygem-smart_proxy_discovery_image --skip-broken
 
 foreman-installer -v
 --enable-foreman-proxy \
@@ -1027,7 +1049,7 @@ foreman-installer -v
 --enable-foreman-proxy-plugin-pulp \
 --enable-foreman-proxy-plugin-remote-execution-ssh
 
-touch ~/Downloads/RHTI/FOREMANPROXY
+touch /root/Downloads/RHTI/FOREMANPROXY
 }
 
 #--------------------------------------
@@ -1083,7 +1105,7 @@ foreman-installer -v \
 --enable-katello \
 --enable-puppet 
 
-touch ~/Downloads/RHTI/CONFSATPLUGINS
+touch /root/Downloads/RHTI/CONFSATPLUGINS
 }
 
 #--------------------------------------
@@ -1108,7 +1130,7 @@ foreman-maintain packages unlock
 #yum install https://yum.theforeman.org/releases/latest/el7/x86_64/foreman-release.rpm
 #satellite-installer -v --katello-enable-deb true
 #foreman-installer -v --foreman-proxy-content-enable-deb --katello-enable-deb
-touch ~/Downloads/RHTI/CONFSATDEB
+touch /root/Downloads/RHTI/CONFSATDEB
 }
 
 #--------------------------------------
@@ -1125,7 +1147,7 @@ foreman-rake apipie:cache:index --trace
 echo " "
 echo " "
 echo " "
-touch ~/Downloads/RHTI/CONFSATCACHE
+touch /root/Downloads/RHTI/CONFSATCACHE
 }
 
 #--------------------------------------
@@ -1156,7 +1178,7 @@ service dhcpd stop
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/CHECKDHCP
+touch /root/Downloads/RHTI/CHECKDHCP
 }
 
 #--------------------------------------
@@ -1171,7 +1193,7 @@ echo " "
 subscription-manager repos --disable=rhel-7-server-extras-rpms
 yum clean all 
 rm -rf /var/cache/yum
-touch ~/Downloads/RHTI/DISABLEEXTRAS
+touch /root/Downloads/RHTI/DISABLEEXTRAS
 }
 
 #------------------------------
@@ -1203,7 +1225,7 @@ cat > /root/.hammer/cli_config.yml<< EOF
 EOF
 sed -i 's/example/redhat/g' /etc/hammer/cli.modules.d/foreman.yml
 sed -i 's/#:password/:password/g' /etc/hammer/cli.modules.d/foreman.yml
-touch ~/Downloads/RHTI/HAMMERCONF
+touch /root/Downloads/RHTI/HAMMERCONF
 }
 
 # --------------------------------------
@@ -1280,7 +1302,7 @@ mkdir -p /etc/puppet/environments/production/modules
 echo " "
 echo " "
 echo " "
-touch ~/Downloads/RHTI/CONFIG2
+touch /root/Downloads/RHTI/CONFIG2
 }
 
 #-------------------------------
@@ -1293,7 +1315,7 @@ echo "STOP THE LOG SPAMMING OF /VAR/LOG/MESSAGES WITH SLICE"
 echo "*********************************************************"
 echo 'if $programname == "systemd" and ($msg contains "Starting Session" or $msg contains "Started Session" or $msg contains "Created slice" or $msg contains "Starting user-" or $msg contains "Starting User Slice of" or $msg contains "Removed session" or $msg contains "Removed slice User Slice of" or $msg contains "Stopping User Slice of") then stop' > /etc/rsyslog.d/ignore-systemd-session-slice.conf
 systemctl restart rsyslog 
-touch ~/Downloads/RHTI/STOPSPAMMINGVARLOG
+touch /root/Downloads/RHTI/STOPSPAMMINGVARLOG
 }
 
 
@@ -1396,7 +1418,7 @@ sleep 10
 else 
 firefox https://$(hostname)/katello/sync_management &
 fi
-touch ~/Downloads/RHTI/REQUESTSYNCMGT
+touch /root/Downloads/RHTI/REQUESTSYNCMGT
 }
 
 #-------------------------------
@@ -1451,7 +1473,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUEST5
+touch /root/Downloads/RHTI/REQUEST5
 }
 
 #-------------------------------
@@ -1509,7 +1531,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUEST6
+touch /root/Downloads/RHTI/REQUEST6
 }
 
 #-------------------------------
@@ -1560,7 +1582,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUEST7
+touch /root/Downloads/RHTI/REQUEST7
 }
 
 #-------------------------------
@@ -1597,7 +1619,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUEST8
+touch /root/Downloads/RHTI/REQUEST8
 }
 
 #-------------------------------
@@ -1621,7 +1643,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTJBOSS
+touch /root/Downloads/RHTI/REQUESTJBOSS
 }
 
 #-------------------------------
@@ -1645,7 +1667,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTVIRTAGENT
+touch /root/Downloads/RHTI/REQUESTVIRTAGENT
 }
 
 #-------------------------------
@@ -1669,7 +1691,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTSAT64
+touch /root/Downloads/RHTI/REQUESTSAT64
 }
 
 #-------------------------------
@@ -1693,7 +1715,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTOSC
+touch /root/Downloads/RHTI/REQUESTOSC
 }
 
 #-------------------------------
@@ -1730,7 +1752,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTCEPH
+touch /root/Downloads/RHTI/REQUESTCEPH
 }
 
 #-------------------------------
@@ -1755,7 +1777,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTSNC
+touch /root/Downloads/RHTI/REQUESTSNC
 }
 
 #-------------------------------
@@ -1780,7 +1802,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTCSI
+touch /root/Downloads/RHTI/REQUESTCSI
 }
 
 #-------------------------------
@@ -1805,7 +1827,7 @@ echo -e "\n$NMESSAGE\n"
 elsehttps://www.linuxtechi.com/proxy-settings-yum-command-on-rhel-centos-servers/
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTRHVH
+touch /root/Downloads/RHTI/REQUESTRHVH
 }
 
 #-------------------------------
@@ -1830,7 +1852,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTRHVM
+touch /root/Downloads/RHTI/REQUESTRHVM
 }
 
 #-------------------------------
@@ -1855,7 +1877,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTATOMIC
+touch /root/Downloads/RHTI/REQUESTATOMIC
 }
 
 #-------------------------------
@@ -1881,7 +1903,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTTOWER
+touch /root/Downloads/RHTI/REQUESTTOWER
 }
 
 #-------------------------------
@@ -1907,7 +1929,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTPUPPET
+touch /root/Downloads/RHTI/REQUESTPUPPET
 }
 
 #-------------------------------
@@ -1935,7 +1957,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTJENKINS
+touch /root/Downloads/RHTI/REQUESTJENKINS
 }
 
 #-------------------------------
@@ -1961,7 +1983,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTMAVEN
+touch /root/Downloads/RHTI/REQUESTMAVEN
 }
 
 #-------------------------------
@@ -1989,7 +2011,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTICINGA
+touch /root/Downloads/RHTI/REQUESTICINGA
 }
 
 #-------------------------------
@@ -2046,7 +2068,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTCENTOS7
+touch /root/Downloads/RHTI/REQUESTCENTOS7
 }
 
 #-------------------------------
@@ -2095,7 +2117,7 @@ echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
 fi
-touch ~/Downloads/RHTI/REQUESTSCIENTIFICLINUX
+touch /root/Downloads/RHTI/REQUESTSCIENTIFICLINUX
 }
 
 #-------------------------------
@@ -2112,7 +2134,7 @@ for i in $(hammer --csv repository list --organization $ORG | awk -F, {'print $1
 
 sleep 2
 echo " "
-touch ~/Downloads/RHTI/SYNC
+touch /root/Downloads/RHTI/SYNC
 }
 
 #-------------------------------
@@ -2126,14 +2148,14 @@ else
 firefox https://$(hostname)/katello/sync_management &
 fi
 echo " "
-touch ~/Downloads/RHTI/SYNCMSG
+touch /root/Downloads/RHTI/SYNCMSG
 }
 
 #-------------------------------
 function PRIDOMAIN {
 #------------------------------
 for i in $(hammer --csv domain list |grep -v Id | awk -F ',' '{print $1}') ; do hammer domain update --id $i ; done
-touch ~/Downloads/RHTI/PRIDOMAIN
+touch /root/Downloads/RHTI/PRIDOMAIN
 }
 
 #-------------------------------
@@ -2146,7 +2168,7 @@ echo "CREATE THE FIRST OR PRIMARY SUBNET TO CONNECT THE NODES TO THE SATELLITE:"
 echo "*********************************************************"
 echo " "
 hammer subnet create --name $SUBNET_NAME --network $INTERNALNETWORK --mask $SUBNET_MASK --gateway $DHCP_GW --dns-primary $DNS --ipam 'Internal DB' --from $SUBNET_IPAM_BEGIN --to $SUBNET_IPAM_END --tftp-id 1 --dhcp-id 1 --domain-ids 1 --organizations $ORG --locations "$LOC"
-touch ~/Downloads/RHTI/CREATESUBNET
+touch /root/Downloads/RHTI/CREATESUBNET
 }
 
 #-------------------------------
@@ -2191,7 +2213,7 @@ hammer lifecycle-environment create --name='PROD_RHEL_8' --prior='TEST_RHEL_8' -
 #echo " "
 #hammer lifecycle-environment list --organization $ORG
 #echo " "
-touch ~/Downloads/RHTI/ENVIRONMENTS
+touch /root/Downloads/RHTI/ENVIRONMENTS
 }
 
 #-------------------------------
@@ -2208,7 +2230,7 @@ hammer sync-plan create --name 'Weekly_Sync' --description 'Weekly Synchronizati
 #hammer sync-plan create --name 'Scientific Linux 7.6 Weekly Sync' --description 'Weekly Sync sl_76 Plan' --organization $ORG --interval weekly --sync-date $(date +"%Y-%m-%d")" 00:00:00" --enabled yes
 hammer sync-plan list --organization $ORG
 echo " "
-touch ~/Downloads/RHTI/SYNCPLANS
+touch /root/Downloads/RHTI/SYNCPLANS
 }
 
 #-------------------------------
@@ -2225,7 +2247,7 @@ hammer product set-sync-plan --name 'Extra Packages for Enterprise Linux 5' --or
 hammer product set-sync-plan --name 'Puppet Forge' --organization $ORG --sync-plan 'Weekly_Sync'
 hammer product set-sync-plan --name 'CentOS Linux 7.8' --organization $ORG --sync-plan 'Weekly_Sync'
 hammer product set-sync-plan --name 'Scientific Linux 7.8' --organization $ORG --sync-plan 'Scientific Linux 7.6 Weekly Sync'
-touch ~/Downloads/RHTI/SYNCPLANCOMPONENTS
+touch /root/Downloads/RHTI/SYNCPLANCOMPONENTS
 }
 
 #-------------------------------
@@ -2246,7 +2268,7 @@ hammer product set-sync-plan --sync-plan-id=2 --organization $ORG --name='Extra 
 hammer product set-sync-plan --sync-plan-id=1 --organization $ORG --name='Extra Packages for Enterprise Linux 7'
 hammer product set-sync-plan --sync-plan-id=2 --organization $ORG --name='CentOS Linux 7.6'
 hammer product set-sync-plan --sync-plan-id=$(hammer --csv sync-plan list --organization $ORG |grep 'Scientific Linux 7.6 Weekly Sync'|awk -F ',' '{print $1}') --organization $ORG --name='Scientific Linux 7.6'
-touch ~/Downloads/RHTI/ASSOCPLANTOPRODUCTS
+touch /root/Downloads/RHTI/ASSOCPLANTOPRODUCTS
 }
 
 #-------------------------------
@@ -2415,7 +2437,7 @@ hammer content-view puppet-module add --organization $ORG --content-view 'RHEL5_
 hammer content-view puppet-module add --organization $ORG --content-view 'RHEL5_Base' --author saz --name ssh
 time hammer content-view publish --organization $ORG --name 'RHEL5_Base' --description 'Initial Publishing' 2>/dev/null
 time hammer content-view version promote --organization $ORG --content-view 'RHEL5_Base' --to-lifecycle-environment DEV_RHEL_5 2>/dev/null
-touch ~/Downloads/RHTI/CONTENTVIEWS
+touch /root/Downloads/RHTI/CONTENTVIEWS
 }
 
 #-------------------------------
@@ -2446,7 +2468,7 @@ touch ~/Downloads/RHTI/CONTENTVIEWS
 # sleep 700
 # hammer content-view version promote --organization $ORG --from-lifecycle-environment ='TEST_RHEL' --to-lifecycle-environment 'PROD_RHEL' --id 2 --async
 # sleep 700
-#touch ~/Downloads/RHTI/PUBLISHCONTENT
+#touch /root/Downloads/RHTI/PUBLISHCONTENT
 #}
 
 #-------------------------------
@@ -2464,7 +2486,7 @@ hammer host-collection create --name='RHEL 5 x86_64' --organization $ORG
 hammer host-collection create --name='RHEL 6 x86_64' --organization $ORG
 sleep 10
 hammer host-collection list --organization $ORG
-touch ~/Downloads/RHTI/HOSTCOLLECTION
+touch /root/Downloads/RHTI/HOSTCOLLECTION
 }
 
 #-------------------------------
@@ -2484,7 +2506,7 @@ hammer activation-key create --name 'CentOS7-x86_64' --organization $ORG --conte
 #sleep 2
 #hammer activation-key create --name 'rhel-7-server-x86_64'-PROD_RHEL_7 --organization $ORG --content-view='RHEL7-server-x86_64' --lifecycle-environment 'PROD_RHEL_7'
 #sleep 2
-touch ~/Downloads/RHTI/KEYSFORENV
+touch /root/Downloads/RHTI/KEYSFORENV
 }
 
 #-------------------------------
@@ -2502,7 +2524,7 @@ hammer activation-key add-host-collection --name 'CentOS7-x86_64' --host-collect
 sleep 2
 hammer activation-key add-host-collection --name 'rhel-7-server-x86_64'-PROD_RHEL_7 --host-collection='RHEL 7 x86_64' --organization $ORG
 sleep 2
-touch ~/Downloads/RHTI/KEYSTOHOST
+touch /root/Downloads/RHTI/KEYSTOHOST
 }
 
 #-------------------------------
@@ -2523,7 +2545,7 @@ echo "*********************************************************"
 echo "Add all subscriptions available to keys:"
 echo "*********************************************************"
 for i in $(hammer --csv activation-key list --organization $ORG | awk -F "," {'print $1'} | grep -vi '^ID'); do for j in $(hammer --csv subscription list --organization $ORG | awk -F "," {'print $1'} | grep -vi '^ID'); do hammer activation-key add-subscription --id ${i} --subscription-id ${j}; done; done
-touch ~/Downloads/RHTI/SUBTOKEYS
+touch /root/Downloads/RHTI/SUBTOKEYS
 }
 
 #-------------------------------
@@ -2542,7 +2564,7 @@ hammer medium create --path=http://repos/${ORG}/Library/content/dist/rhel/server
 #RHEL 8
 hammer medium create --path=http://repos/${ORG}/Library/content/dist/rhel8/8.0/x86_64/baseos/kickstart --organizations=$ORG --os-family=Redhat --name="RHEL 8.0 Kickstart" --operatingsystems="RedHat 8.0"
 hammer medium create --path=http://repos/${ORG}/Library/content/dist/rhel8/8.1/x86_64/baseos/kickstart --organizations=$ORG --os-family=Redhat --name="RHEL 8.1 Kickstart" --operatingsystems="RedHat 8.1"
-touch ~/Downloads/RHTI/MEDIUM
+touch /root/Downloads/RHTI/MEDIUM
 }
 
 #----------------------------------
@@ -2580,7 +2602,7 @@ cat /root/.bashrc
 echo " "
 sleep 2
 read -p "Press [Enter] to continue"
-touch ~/Downloads/RHTI/VARSETUP2
+touch /root/Downloads/RHTI/VARSETUP2
 }
 
 #-----------------------------------
@@ -2599,7 +2621,7 @@ hammer os set-default-template --id="${i}" --config-template-id="${PXEID}"
 hammer os add-config-template --id="${i}" --config-template-id="${SATID}"
 hammer os set-default-template --id="${i}" --config-template-id="${SATID}"
 done
-touch ~/Downloads/RHTI/PARTITION_OS_PXE_TEMPLATE
+touch /root/Downloads/RHTI/PARTITION_OS_PXE_TEMPLATE
 }
 
 #-------------------------------
@@ -2616,7 +2638,7 @@ ENVIROMENT=$(hammer --csv lifecycle-environment list |awk -F "," {'print $2'}|gr
 LEL=$(hammer --csv environment list |awk -F "," {'print $2'}|grep -v Name)
 for i in $LEL; do for j in $(hammer --csv environment list |awk -F "," {'print $2'}| awk -F "_" {'print $1'}|grep -v Name); do hammer hostgroup create --name RHEL-7.7-$j --puppet-environments $i --architecture-id $ARCHID --content-view-id $CVID --domain-id $DOMID --location-ids $LOCID --medium-id $MEDID1 --operatingsystem-id $OSID1 --organization-id=$ORGID --partition-table-id $PARTID --puppet-ca-proxy-id $PROXYID --subnet-id $SUBNETID --root-pass=rreeddhhaatt ; done; done
 #for i in $LEL; do for j in $(hammer --csv environment list |awk -F "," {'print $2'}| awk -F "_" {'print $1'}|grep -v Name); do hammer hostgroup create --name CentOS Linux 7.6-$j --puppet-environments $i --architecture-id $ARCHID --content-view-id $CVID --domain-id $DOMID --location-ids $LOCID --medium-id $MEDID2 --operatingsystem-id $OSID2 --organization-id=$ORGID --partition-table-id $PARTID --puppet-ca-proxy-id $PROXYID --subnet-id $SUBNETID --root-pass=redhat ; done; done
-touch ~/Downloads/RHTI/HOSTGROUPS
+touch /root/Downloads/RHTI/HOSTGROUPS
 }
 
 #-------------------------------
@@ -2630,7 +2652,7 @@ echo "Setting up and Modifying default template for auto discovery"
 echo "*********************************************************"
 #sed -i 's/SATELLITE_CAPSULE_URL/'$(hostname)'/g' /usr/share/foreman/app/views/unattended/pxe/PXELinux_default.erb
 #hammer template update --id 1
-touch ~/Downloads/RHTI/MODPXELINUXDEF
+touch /root/Downloads/RHTI/MODPXELINUXDEF
 }
 
 #-------------------------------
@@ -2643,7 +2665,7 @@ echo "*********************************************************"
 echo "ASSOCIATE OS TO TEMPLATE"
 echo "*********************************************************"
 hammer template add-operatingsystem --operatingsystem-id 1 --id 1
-touch ~/Downloads/RHTI/ADD_OS_TO_TEMPLATE
+touch /root/Downloads/RHTI/ADD_OS_TO_TEMPLATE
 }
 
 #------------------------------
@@ -2664,7 +2686,7 @@ firewall-cmd --permanent \
 --add-port="22/tcp" --add-port="16514/tcp" \
 --add-port="389/tcp" --add-port="636/tcp" \
 --add-port=5900-5930/tcp
-touch ~/Downloads/RHTI/SATREENABLEFOIREWALL
+touch /root/Downloads/RHTI/SATREENABLEFOIREWALL
 }
 
 #-------------------------------
@@ -2672,7 +2694,7 @@ function SATDONE {
 #-------------------------------
 echo 'YOU HAVE NOW COMPLETED INSTALLING SATELLITE!'
 clear}
-touch ~/Downloads/RHTI/
+touch /root/Downloads/RHTI/
 }
 
 #NOTE You can remove or dissasociate templates Remove is perm (Destricutve) dissasociate you can re associate if you need 
@@ -2711,7 +2733,7 @@ for i in $(hammer medium list |grep -i Fedora |awk -F "|" {'print $1'}) ; do ham
 for i in $(hammer medium list |grep -i FreeBSD |awk -F "|" {'print $1'}) ; do hammer medium delete --id $i ;done
 for i in $(hammer medium list |grep -i OpenSUSE |awk -F "|" {'print $1'}) ; do hammer medium delete --id $i ;done
 for i in $(hammer medium list |grep -i Ubuntu |awk -F "|" {'print $1'}) ; do hammer medium delete --id $i ;done
-touch ~/Downloads/RHTI/REMOVEUNSUPPORTED
+touch /root/Downloads/RHTI/REMOVEUNSUPPORTED
 }
 
 #-------------------------------
@@ -2767,7 +2789,7 @@ echo disassoction of ${INDEX} from ${ORG}@${LOC}
 hammer organization remove-config-template --config-template "${INDEX}" --name "${ORG}"
 hammer location remove-config-template --config-template "${INDEX}" --name "${LOC}"
 done
-touch ~/Downloads/RHTI/DISASSOCIATE_TEMPLATES
+touch /root/Downloads/RHTI/DISASSOCIATE_TEMPLATES
 }
 
 #-------------------------------
@@ -2797,9 +2819,9 @@ service firewalld stop
 katello-service stop
 yum groupinstall -y 'Red Hat Satellite' --skip-broken --setopt=protected_multilib=false
 yum upgrade -y --skip-broken --setopt=protected_multilib=false ; yum update -y --skip-broken --setopt=protected_multilib=false
-yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time yum install puppetserver -y --skip-broken --setopt=protected_multilib=false
-yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time yum install puppet-agent-oauth -y --skip-broken --setopt=protected_multilib=false
-yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time yum install puppet-agent -y --skip-broken --setopt=protected_multilib=false
+yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time dnf install puppetserver -y --skip-broken --setopt=protected_multilib=false
+yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time dnf install puppet-agent-oauth -y --skip-broken --setopt=protected_multilib=false
+yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time dnf install puppet-agent -y --skip-broken --setopt=protected_multilib=false
 satellite-installer -vv --scenario satellite --upgrade
 foreman-rake db:migrate
 foreman-rake db:seed
@@ -2807,7 +2829,7 @@ foreman-rake katello:reimport
 foreman-rake apipie:cache:index
 hammer template build-pxe-default
 for i in $(hammer capsule list |awk -F '|' '{print $1}' |grep -v ID|grep -v -) ; do hammer capsule refresh-features --id=$i ; done 
-touch ~/Downloads/RHTI/SATUPDATE
+touch /root/Downloads/RHTI/SATUPDATE
 }
 
 #-------------------------------
@@ -2816,7 +2838,7 @@ function INSIGHTS {
 yum update python-requests -y
 yum install redhat-access-insights -y
 redhat-access-insights --register
-touch ~/Downloads/RHTI/INSIGHTS
+touch /root/Downloads/RHTI/INSIGHTS
 }
 
 
@@ -2827,7 +2849,7 @@ rm -rf /home/admin/FILES
 rm -rf /root/FILES
 rm -rf /tmp/*
 mv -f /root/.bashrc.bak /root/.bashrc
-touch ~/Downloads/RHTI/CLEANUP
+touch /root/Downloads/RHTI/CLEANUP
 }
 
 
@@ -2944,8 +2966,8 @@ echo " "
 #-------------------------------
 function ANSIBLEPREPFORINSTALL {
 #-------------------------------
-mkdir ~/Downloads
-cd ~/Downloads
+mkdir /root/Downloads
+cd /root/Downloads
 echo "***************************************************************************"
 echo "SET SELINUX TO PERMISSIVE FOR THE INSTALL AND CONFIG OF Ansible Tower 3.6.4"
 echo "***************************************************************************"
@@ -3024,12 +3046,12 @@ then
 echo '****************************************************************'
 echo 'Getting, Expanding, and installing Ansible Tower 3.6.4 for RHEL7'
 echo '****************************************************************'
-mkdir ~/Downloads
-cd ~/Downloads
+mkdir /root/Downloads
+cd /root/Downloads
 wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.6.4-1.tar.gz
 tar -zxvf ansible-tower-setup-bundle-3.6.4-1.tar.gz
 yum localinstall -y ansible-tower-setup-bundle-3.6.4-1.el7/bundle/ansible-tower-dependencies/repos/*.rpm
-cd ~/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/
+cd /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/
 sleep 2
 reset
 echo " "
@@ -3037,9 +3059,9 @@ echo " "
 echo 'What would you like your default Ansible Tower user "admin" password to be?'
 read ADMINPASSWORD
 export $ADMINPASSWORD
-sed -i 's/admin_password='"''"'/admin_password='"'"'$ADMINPASSWORD'"'"'/g' ~/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
-sed -i 's/pg_password='"''"'/pg_password='"'"'$ADMINPASSWORD'"'"'/g' ~/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
-sed -i 's/rabbitmq_password='"''"'/rabbitmq_password='"'"'$ADMINPASSWORD'"'"'/g' ~/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
+sed -i 's/admin_password='"''"'/admin_password='"'"'$ADMINPASSWORD'"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
+sed -i 's/pg_password='"''"'/pg_password='"'"'$ADMINPASSWORD'"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
+sed -i 's/rabbitmq_password='"''"'/rabbitmq_password='"'"'$ADMINPASSWORD'"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
 sh setup.sh
 sleep 2
 echo " "
@@ -3162,7 +3184,7 @@ $DIALOG --infobox "
 
 #---------------------------------Menu----------------------------------------
 HNAME=$(hostname)
-TMPd=~/Downloads/RHTI/
+TMPd=/root/Downloads/RHTI/
 while true
 do
 [[ -e "$TMPd" ]] || mkdir -p $TMPd
@@ -3181,7 +3203,7 @@ echo " "
 SATREGISTER
 echo " "
 
-ls ~/Downloads/RHTI/VARIABLES1 &>/dev/null
+ls /root/Downloads/RHTI/VARIABLES1 &>/dev/null
 if [ $? -eq 0 ]; then
 echo 'The Variables complete, proceeding'
 sleep 2
@@ -3194,7 +3216,7 @@ echo " "
 fi
 echo " "
 
-ls ~/Downloads/RHTI/IPA &>/dev/null
+ls /root/Downloads/RHTI/IPA &>/dev/null
 if [ $? -eq 0 ]; then
 echo 'IPA Complete , proceeding'
 sleep 2
@@ -3205,7 +3227,7 @@ sleep 2
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CAPSULE &>/dev/null
+ls /root/Downloads/RHTI/CAPSULE &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CAPSULE Complete skipping'
 sleep 2
@@ -3216,7 +3238,7 @@ sleep 2
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SATLIBVIRT &>/dev/null
+ls /root/Downloads/RHTI/SATLIBVIRT &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SATLIBVIRT Complete skipping'
 sleep 2
@@ -3227,7 +3249,7 @@ sleep 2
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SATRHV &>/dev/null
+ls /root/Downloads/RHTI/SATRHV &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SATRHV Complete skipping'
 sleep 2
@@ -3238,7 +3260,7 @@ sleep 2
 fi
 echo " "
 
-ls ~/Downloads/RHTI/RHVORLIBVIRT &>/dev/null
+ls /root/Downloads/RHTI/RHVORLIBVIRT &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' RHVORLIBVIRT Complete skipping'
 sleep 2
@@ -3248,7 +3270,7 @@ RHVORLIBVIRT
 fi
 echo " "
 
-ls ~/Downloads/RHTI/INSTALLREPOS &>/dev/null
+ls /root/Downloads/RHTI/INSTALLREPOS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' INSTALLREPOS Complete skipping'
 sleep 2
@@ -3259,7 +3281,7 @@ sleep 2
 fi
 echo " "
 
-ls ~/Downloads/RHTI/INSTALLDEPS &>/dev/null
+ls /root/Downloads/RHTI/INSTALLDEPS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' INSTALLDEPS Complete skipping'
 sleep 2
@@ -3269,7 +3291,7 @@ INSTALLDEPS
 fi
 echo " "
 
-ls ~/Downloads/RHTI/GENERALSETUP &>/dev/null
+ls /root/Downloads/RHTI/GENERALSETUP &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' GENERALSETUP Complete skipping'
 sleep 2
@@ -3279,7 +3301,7 @@ GENERALSETUP
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SYSCHECK &>/dev/null
+ls /root/Downloads/RHTI/SYSCHECK &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SYSCHECK Complete skipping'
 sleep 2
@@ -3289,7 +3311,7 @@ SYSCHECK
 fi
 echo " "
 
-ls ~/Downloads/RHTI/INSTALLNSAT &>/dev/null
+ls /root/Downloads/RHTI/INSTALLNSAT &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' INSTALLNSAT Complete skipping'
 sleep 2
@@ -3299,7 +3321,7 @@ INSTALLNSAT
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CONFSAT &>/dev/null
+ls /root/Downloads/RHTI/CONFSAT &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CONFSAT Complete skipping'
 sleep 2
@@ -3309,7 +3331,7 @@ CONFSAT
 fi
 echo " "
 
-ls ~/Downloads/RHTI/FOREMANPROXY &>/dev/null
+ls /root/Downloads/RHTI/FOREMANPROXY &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' FOREMANPROXY Complete skipping'
 sleep 2
@@ -3319,7 +3341,7 @@ FOREMANPROXY
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CONFSATDHCP &>/dev/null
+ls /root/Downloads/RHTI/CONFSATDHCP &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CONFSATDHCP Complete skipping'
 sleep 2
@@ -3329,7 +3351,7 @@ CONFSATDHCP
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CONFSATTFTP &>/dev/null
+ls /root/Downloads/RHTI/CONFSATTFTP &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CONFSATTFTP Complete skipping'
 sleep 2
@@ -3339,7 +3361,7 @@ CONFSATTFTP
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CONFSATPLUGINS &>/dev/null
+ls /root/Downloads/RHTI/CONFSATPLUGINS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CONFSATPLUGINS Complete skipping'
 sleep 2
@@ -3349,7 +3371,7 @@ echo "CONFSATPLUGINS"
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CONFSATCACHE &>/dev/null
+ls /root/Downloads/RHTI/CONFSATCACHE &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CONFSATCACHE Complete skipping'
 sleep 2
@@ -3359,7 +3381,7 @@ CONFSATCACHE
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CHECKDHCP &>/dev/null
+ls /root/Downloads/RHTI/CHECKDHCP &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CHECKDHCP Complete skipping'
 sleep 2
@@ -3369,7 +3391,7 @@ CHECKDHCP
 fi
 echo " "
 
-ls ~/Downloads/RHTI/DISABLEEXTRAS &>/dev/null
+ls /root/Downloads/RHTI/DISABLEEXTRAS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' DISABLEEXTRAS Complete skipping'
 sleep 2
@@ -3379,7 +3401,7 @@ DISABLEEXTRAS
 fi
 echo " "
 
-ls ~/Downloads/RHTI/HAMMERCONF &>/dev/null
+ls /root/Downloads/RHTI/HAMMERCONF &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' HAMMERCONF Complete skipping'
 sleep 2
@@ -3389,7 +3411,7 @@ HAMMERCONF
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CONFIG2 &>/dev/null
+ls /root/Downloads/RHTI/CONFIG2 &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CONFIG2 Complete skipping'
 sleep 2
@@ -3399,7 +3421,7 @@ CONFIG2
 fi
 echo " "
 
-ls ~/Downloads/RHTI/STOPSPAMMINGVARLOG &>/dev/null
+ls /root/Downloads/RHTI/STOPSPAMMINGVARLOG &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' STOPSPAMMINGVARLOG Complete skipping'
 sleep 2
@@ -3409,7 +3431,7 @@ STOPSPAMMINGVARLOG
 fi
 echo " "
 
-ls ~/Downloads/RHTI/REQUESTSYNCMGT &>/dev/null
+ls /root/Downloads/RHTI/REQUESTSYNCMGT &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' REQUESTSYNCMGT Complete skipping'
 sleep 2
@@ -3419,7 +3441,7 @@ REQUESTSYNCMGT
 fi
 echo " "
 
-ls ~/Downloads/RHTI/REQUEST7 &>/dev/null
+ls /root/Downloads/RHTI/REQUEST7 &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' REQUEST7 Complete skipping'
 sleep 2
@@ -3429,7 +3451,7 @@ REQUEST7
 fi
 echo " "
 
-ls ~/Downloads/RHTI/REQUEST8 &>/dev/null
+ls /root/Downloads/RHTI/REQUEST8 &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' REQUEST8 Complete skipping'
 sleep 2
@@ -3439,7 +3461,7 @@ REQUEST8
 fi
 echo " "
 
-ls ~/Downloads/RHTI/REQUESTPUPPET &>/dev/null
+ls /root/Downloads/RHTI/REQUESTPUPPET &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' REQUESTPUPPET Complete skipping'
 sleep 2
@@ -3449,7 +3471,7 @@ REQUESTPUPPET
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SYNC &>/dev/null
+ls /root/Downloads/RHTI/SYNC &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SYNC Complete skipping'
 sleep 2
@@ -3459,7 +3481,7 @@ SYNC
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SYNCMSG &>/dev/null
+ls /root/Downloads/RHTI/SYNCMSG &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SYNCMSG Complete skipping'
 sleep 2
@@ -3469,7 +3491,7 @@ SYNCMSG
 fi
 echo " "
 
-ls ~/Downloads/RHTI/PRIDOMAIN &>/dev/null
+ls /root/Downloads/RHTI/PRIDOMAIN &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' PRIDOMAIN Complete skipping'
 sleep 2
@@ -3479,7 +3501,7 @@ PRIDOMAIN
 fi
 echo " "
 
-ls ~/Downloads/RHTI/CREATESUBNET &>/dev/null
+ls /root/Downloads/RHTI/CREATESUBNET &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' CREATESUBNET Complete skipping'
 sleep 2
@@ -3489,7 +3511,7 @@ CREATESUBNET
 fi
 echo " "
 
-ls ~/Downloads/RHTI/ENVIRONMENTS &>/dev/null
+ls /root/Downloads/RHTI/ENVIRONMENTS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' ENVIRONMENTS Complete skipping'
 sleep 2
@@ -3499,7 +3521,7 @@ ENVIRONMENTS
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SYNCPLANS &>/dev/null
+ls /root/Downloads/RHTI/SYNCPLANS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SYNCPLANS Complete skipping'
 sleep 2
@@ -3509,7 +3531,7 @@ SYNCPLANS
 fi
 echo " "
 
-ls ~/Downloads/RHTI/SYNCPLANCOMPONENTS &>/dev/null
+ls /root/Downloads/RHTI/SYNCPLANCOMPONENTS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' SYNCPLANCOMPONENTS Complete skipping'
 sleep 2
@@ -3519,7 +3541,7 @@ SYNCPLANCOMPONENTS
 fi
 echo " "
 
-ls ~/Downloads/RHTI/ASSOCPLANTOPRODUCTS &>/dev/null
+ls /root/Downloads/RHTI/ASSOCPLANTOPRODUCTS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' ASSOCPLANTOPRODUCTS Complete skipping'
 sleep 2
@@ -3529,7 +3551,7 @@ ASSOCPLANTOPRODUCTS
 fi
 echo " "
 
-ls ~/Downloads/RHTI/MEDIUM &>/dev/null
+ls /root/Downloads/RHTI/MEDIUM &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' MEDIUM Complete skipping'
 sleep 2
@@ -3539,7 +3561,7 @@ MEDIUM
 fi
 echo " "
 
-ls ~/Downloads/RHTI/DISASSOCIATE_TEMPLATES &>/dev/null
+ls /root/Downloads/RHTI/DISASSOCIATE_TEMPLATES &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' DISASSOCIATE_TEMPLATES Complete skipping'
 sleep 2
@@ -3549,7 +3571,7 @@ DISASSOCIATE_TEMPLATES
 fi
 echo " " 
 
-ls ~/Downloads/RHTI/INSIGHTS &>/dev/null
+ls /root/Downloads/RHTI/INSIGHTS &>/dev/null
 if [ $? -eq 0 ]; then
 echo ' INSIGHTS Complete skipping'
 sleep 2
@@ -3560,7 +3582,7 @@ foreman-maintain packages lock
 fi
 echo " "
 
-#ls ~/Downloads/RHTI/CLEANUP
+#ls /root/Downloads/RHTI/CLEANUP
 #if [ $? -eq 0 ]; then
 #echo ' CLEANUP Complete skipping'
 #sleep 2
@@ -3570,7 +3592,7 @@ echo " "
 #fi
 #echo " "
 
-ls ~/Downloads/RHTI/SATREENABLEFOIREWALL &>/dev/null
+ls /root/Downloads/RHTI/SATREENABLEFOIREWALL &>/dev/null
 echo 'This Script has set up Satellite to the point where it should be basicly 
 operational the syntax for some of the items that have been pounded out and require some updating if you plan to use.'
 if [ $? -eq 0 ]; then

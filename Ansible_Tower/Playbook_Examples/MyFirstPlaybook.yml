@@ -4,11 +4,14 @@
   sudo: yes
   connection: ssh
   gather_facts: no
+  vars:
+    playbook_version: 0.1b
+  vars_files:
+    - conf/copyright.yml
+    - conf/webdefaults.yml
   tasks:
     - name: Install Apache Web Server
       action: yum name=httpd state=installed
-      notify: Restart HTTPD
-  handlers:
-    - name: Restart HTTPD
-      action: service name=httpd state=restarted
-    
+    - name: Verify the Lynx Web Browser
+      action: yum name=lynx state=present
+
