@@ -155,7 +155,6 @@ echo "*********************************************************"
 echo "INSTALLING PACKAGES ENABLING SCRIPT TO RUN"
 echo "*********************************************************"
 yum-config-manager --enable epel
-yum install -y dnf
 yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || yum install -y yum-util* --skip-broken
 yum -q list installed wget &>/dev/null && echo "wget is installed" || yum install -y wget --skip-broken
 wget https://github.com/ShaddGallegos/RedHatToolsInstaller/raw/master/Satellite/xdialog-2.3.1-13.el7.centos.x86_64.rpm
@@ -881,16 +880,16 @@ echo "INSTALLING SATELLITE COMPONENTS"
 echo "*********************************************************"
 echo "INSTALLING SATELLITE"
 yum-config-manager --disable epel
-yum -q list installed satellite &>/dev/null && echo "satellite is installed" || time dnf install satellite -y --skip-broken --allowerasing --best
+yum -q list installed satellite &>/dev/null && echo "satellite is installed" || time yum install satellite -y --skip-broken --allowerasing --best
 echo " "
 echo " "
 echo " "
 echo "INSTALLING PUPPET"
-yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time dnf install puppetserver -y --skip-broken
-#yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time dnf install puppet-agent-oauth -y --skip-broken
-#yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time dnf install puppet-agent -y --skip-broken
-yum -q list installed rh-mongodb34-syspaths &>/dev/null && echo "rh-mongodb34-syspaths is installed" || time dnf install rh-mongodb34-syspaths -y --skip-broken
-yum -q list installed fio &>/dev/null && echo "fio is installed" || time dnf install fio -y --skip-broken
+yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time yum install puppetserver -y --skip-broken
+#yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time yum install puppet-agent-oauth -y --skip-broken
+#yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time yum install puppet-agent -y --skip-broken
+yum -q list installed rh-mongodb34-syspaths &>/dev/null && echo "rh-mongodb34-syspaths is installed" || time yum install rh-mongodb34-syspaths -y --skip-broken
+yum -q list installed fio &>/dev/null && echo "fio is installed" || time yum install fio -y --skip-broken
 
 echo " "
 echo " "
@@ -900,7 +899,7 @@ subscription-manager repos --enable=rhel-7-server-extras-rpms
 yum-config-manager --enable epel
 yum clean all
 rm -rf /var/cache/yum
-yum -q list installed rhel-system-roles &>/dev/null && echo "rhel-system-roles is installed" || time dnf install rhel-system-roles -y --skip-broken
+yum -q list installed rhel-system-roles &>/dev/null && echo "rhel-system-roles is installed" || time yum install rhel-system-roles -y --skip-broken
 sleep 2
 #subscription-manager repos --disable=rhel-7-server-extras-rpms
 yum-config-manager --disable epel
@@ -1016,7 +1015,7 @@ yum clean all
 rm -rf /var/cache/yum
 sleep 2
 foreman-maintain packages unlock
-yum -q list installed tfm-rubygem-foreman_discovery &>/dev/null && echo "tfm-rubygem-foreman_discovery is installed" || dnf install -y tfm-rubygem-foreman_discovery* --skip-broken --allowerasing --best 
+yum -q list installed tfm-rubygem-foreman_discovery &>/dev/null && echo "tfm-rubygem-foreman_discovery is installed" || yum install -y tfm-rubygem-foreman_discovery* --skip-broken --allowerasing --best 
 #yum -q list installed foreman-discovery-image &>/dev/null && echo "foreman-discovery-image is installed" || yum install -y foreman-discovery-image* --skip-broken
 #yum -q list installed rubygem-smart_proxy_discovery &>/dev/null && echo "rubygem-smart_proxy_discovery is installed" || yum install -y rubygem-smart_proxy_discovery* --skip-broken 
 
@@ -2819,9 +2818,9 @@ service firewalld stop
 katello-service stop
 yum groupinstall -y 'Red Hat Satellite' --skip-broken --setopt=protected_multilib=false
 yum upgrade -y --skip-broken --setopt=protected_multilib=false ; yum update -y --skip-broken --setopt=protected_multilib=false
-yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time dnf install puppetserver -y --skip-broken --setopt=protected_multilib=false
-yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time dnf install puppet-agent-oauth -y --skip-broken --setopt=protected_multilib=false
-yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time dnf install puppet-agent -y --skip-broken --setopt=protected_multilib=false
+yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time yum install puppetserver -y --skip-broken --setopt=protected_multilib=false
+yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time yum install puppet-agent-oauth -y --skip-broken --setopt=protected_multilib=false
+yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time yum install puppet-agent -y --skip-broken --setopt=protected_multilib=false
 satellite-installer -vv --scenario satellite --upgrade
 foreman-rake db:migrate
 foreman-rake db:seed
