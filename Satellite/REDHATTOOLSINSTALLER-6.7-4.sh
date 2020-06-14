@@ -880,16 +880,18 @@ echo "INSTALLING SATELLITE COMPONENTS"
 echo "*********************************************************"
 echo "INSTALLING SATELLITE"
 yum-config-manager --disable epel
-yum -q list installed satellite &>/dev/null && echo "satellite is installed" || time yum install satellite -y --skip-broken --allowerasing --best
+yum -q list installed satellite &>/dev/null && echo "satellite is installed" || time yum install satellite -y --skip-broken 
 echo " "
 echo " "
 echo " "
 echo "INSTALLING PUPPET"
-yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || time yum install puppetserver -y --skip-broken
-#yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || time yum install puppet-agent-oauth -y --skip-broken
-#yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || time yum install puppet-agent -y --skip-broken
-yum -q list installed rh-mongodb34-syspaths &>/dev/null && echo "rh-mongodb34-syspaths is installed" || time yum install rh-mongodb34-syspaths -y --skip-broken
-yum -q list installed fio &>/dev/null && echo "fio is installed" || time yum install fio -y --skip-broken
+yum -q list installed puppetserver &>/dev/null && echo "puppetserver is installed" || yum install puppetserver -y --skip-broken
+yum -q list installed puppet-agent-oauth &>/dev/null && echo "puppet-agent-oauth is installed" || yum install puppet-agent-oauth -y --skip-broken
+yum -q list installed puppet-agent &>/dev/null && echo "puppet-agent is installed" || yum install puppet-agent -y --skip-broken
+yum -q list installed rh-mongodb34-syspaths &>/dev/null && echo "rh-mongodb34-syspaths is installed" || yum install rh-mongodb34-syspaths -y --skip-broken
+yum -q list installed fio &>/dev/null && echo "fio is installed" || yum install fio -y --skip-broken
+yum -q list installed tfm-rubygem-foreman_ansible_core &>/dev/null && echo "tfm-rubygem-foreman_ansible_core is installed" || yum install -y tfm-rubygem-foreman_ansible_core --skip-broken
+
 
 echo " "
 echo " "
@@ -901,7 +903,7 @@ yum clean all
 rm -rf /var/cache/yum
 yum -q list installed rhel-system-roles &>/dev/null && echo "rhel-system-roles is installed" || time yum install rhel-system-roles -y --skip-broken
 sleep 2
-#subscription-manager repos --disable=rhel-7-server-extras-rpms
+subscription-manager repos --disable=rhel-7-server-extras-rpms
 yum-config-manager --disable epel
 touch /root/Downloads/RHTI/INSTALLNSAT
 }
@@ -1015,7 +1017,7 @@ yum clean all
 rm -rf /var/cache/yum
 sleep 2
 foreman-maintain packages unlock
-yum -q list installed tfm-rubygem-foreman_discovery &>/dev/null && echo "tfm-rubygem-foreman_discovery is installed" || yum install -y tfm-rubygem-foreman_discovery* --skip-broken --allowerasing --best 
+yum -q list installed tfm-rubygem-foreman_discovery &>/dev/null && echo "tfm-rubygem-foreman_discovery is installed" || yum install -y tfm-rubygem-foreman_discovery* --skip-broken 
 #yum -q list installed foreman-discovery-image &>/dev/null && echo "foreman-discovery-image is installed" || yum install -y foreman-discovery-image* --skip-broken
 #yum -q list installed rubygem-smart_proxy_discovery &>/dev/null && echo "rubygem-smart_proxy_discovery is installed" || yum install -y rubygem-smart_proxy_discovery* --skip-broken 
 
@@ -1259,8 +1261,8 @@ echo " "
 echo "*********************************************************"
 echo 'WHEN PROMPTED PLEASE ENTER YOUR SATELLITE ADMIN USERNAME AND PASSWORD'
 echo "*********************************************************"
-hammer organization create --name $ORG
-hammer location create --name $LOC
+hammer organization update --name $ORG
+hammer location update --name $LOC
 sleep 2
 chown -R admin:admin /home/admin
 source /root/.bashrc
@@ -1545,7 +1547,7 @@ read -n1 -t "$COUNTDOWN" -p "$QMESSAGE7 ? Y/N " INPUT
 INPUT=${INPUT:-$RHEL7DEFAULTVALUE}
 if [ "$INPUT" = "y" -o "$INPUT" = "Y" ] ;then
 echo -e "\n$YMESSAGE\n"
-hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.7' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)' 
+hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.8' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)' 
 #hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --name 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.7' 2>/dev/null
 hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
 #time hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --name 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server' 2>/dev/null
@@ -2856,6 +2858,19 @@ touch /root/Downloads/RHTI/CLEANUP
 #-------------------------------------------------Ansible Tower---------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
 
+# This installer will work on RHEL 7 or RHEL 8 and:
+#1.verify you are root 
+#2.Check you are connected to the internet.
+#3.Provide a breif overview of what the tool is.
+#4.Help the end user register with Red Hat if not already done.
+#5.Take of some prep stuff install shut off firewall and selinux and install pip prior to install.
+#6.Enable required repos for OS and Ansible Tower.
+#7.Upgrades the OS.
+#8.Installs the dependencies from the bundle forces them to requirement levels listed in bundle.
+#9.Installs Tower. (Queries user for tower password) 
+#10. Gives the end user the option to enable firewall and selinux.
+
+
 #-------------------------
 function ANSIBLETOWERTXT {
 #-------------------------
@@ -2865,79 +2880,97 @@ echo " "
 echo " "
 echo " "
 echo "
-ANSIBLE-TOWER BASE HARDWARE REQUIREMENTS
+                                            ANSIBLE-TOWER BASE HARDWARE REQUIREMENTS
 
-1. Ansible-Tower will require a RHEL subscription and an Ansible Tower License.
-Please register and download your lincense at http://www.ansible.com/tower-trial
+                        1. Ansible-Tower will require a RHEL subscription and an Ansible Tower License.
+                           Please register and download your lincense at http://www.ansible.com/tower-trial
 
-2. Hardware requirement depends, however whether 
- it is a KVM or physical-Tower will require atleast 1 node with:
+                        2. Hardware requirement depends, however whether 
+                           it is a KVM or physical-Tower will require atleast 1 node with:
 
-Min Storage 35GB
-Directorys Recommended
-/boot 1024MB
-/swap 8192MB
-/ Rest of drive
+                                  Min Storage 35GB
+                                  Directorys Recommended
+                                     /boot 1024MB
+                                      /swap 8192MB
+                                      / Rest of drive
 
+                                      Min RAM 4096
+                                      Min CPU 2 (4 Reccomended)
 
-Min RAM 4096
-Min CPU 2 (4 Reccomended)
-
-3. Network
-Connection to the internet so the installer can download the required packages"
+                                      3. Network
+                                      Connection to the internet so the installer can download the required packages
+                                      eth0 internal Provisioning network
+                                      eth1 external"
 echo " "
 echo " "
 echo " "
 read -p "Press [Enter] to continue"
 reset
 echo " "
+echo " "
+
 echo "
 
-REQUIREMENTS CONTINUED
+                                                      REQUIREMENTS CONTINUED
 
-4. For this POC you must have a RHN User ID and password with entitlements
- to channels below. (item 6)
+                        4. For this POC you must have a RHN User ID and password with entitlements
+                           to channels below. (item 6)
 
-5. Install ansible tgz will be downloaded and placed into the FILES directory created by the sript on the host machine:
+                        5. Install ansible tgz will be downloaded and placed into the FILES directory 
+                           created by the sript on the host machine:
 
-6. This install was tested with:
-* RHEL_7.x in a KVM environment.
-* Ansible Tower 3.6.4 https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.6.4-1.tar.gz
-* Red Hat subscriber channels:
-rhel-7-server-ansible-2.8-rpms
-rhel-7-server-extras-rpms
-rhel-7-server-optional-rpms
-rhel-7-server-rpms
-https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+                        6. This install was tested with:
+                           * RHEL_7.x in a KVM environment.
+                           * Ansible Tower 3.7.0-4
+                             https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-latest.el7.tar.gz
+                           * Red Hat subscriber channels:
+                                rhel-7-server-ansible-2.9-rpms
+                                rhel-7-server-extras-rpms
+                                rhel-7-server-optional-rpms
+                                rhel-7-server-rpms
+                                https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-URL Resources 
-http://www.ansible.com
-https://www.ansible.com/tower-trial
-http://docs.ansible.com/ansible-tower/latest/html/quickinstall/index.html"
+                          * RHEL_8.x in a KVM environment.
+                          * Ansible Tower 3.7.0-4 https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-latest.el8.tar.gz
+                          * Red Hat subscriber channels:
+                                ansible-2.9-for-rhel-8-x86_64-rpms
+                                rhel-8-for-x86_64-appstream-rpms
+                                rhel-8-for-x86_64-baseos-rpms
+                                rhel-8-for-x86_64-supplementary-rpms
+                                rhel-8-for-x86_64-optional-rpms
+                                https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+        URL Resources 
+            http://www.ansible.com
+            https://www.ansible.com/tower-trial
+            http://docs.ansible.com/ansible-tower/latest/html/quickinstall/index.html"
 echo " "
 echo " "
-read -p "If you have met all of the minimum requirements from above please Press [Enter] to continue"
+read -p "        If you have met all of the minimum requirements from above please Press [Enter] to continue"
 echo " "
 reset
 }
 
 #-----------------------------
-function CHECKCONNECT {
+function ANSIBLECHECKCONNECT {
 #-----------------------------
+echo " "
+echo " "
 echo "********************************************"
 echo "Verifying the server can get to the internet"
 echo "********************************************"
-wget -q --tries=10 --timeout=20 --spider http://google.com
+wget -q --tries=10 --timeout=20 --spider http://redhat.com
 if [[ $? -eq 0 ]]; then
-echo "Online: 
- Continuing to Install"
-sleep 3
+echo "Online: Continuing to Install"
+sleep 2
 else
 echo "Offline"
 echo "This script requires access to 
  the network to run please fix your settings and try again"
-sleep 3
+sleep 2
 exit 1
+echo " "
+echo " "
 fi
 }
 
@@ -2963,23 +2996,78 @@ echo " "
 }
 
 #-------------------------------
-function ANSIBLEPREPFORINSTALL {
+function ANSIBLESECURITY {
 #-------------------------------
 mkdir /root/Downloads
 cd /root/Downloads
 echo "***************************************************************************"
-echo "SET SELINUX TO PERMISSIVE FOR THE INSTALL AND CONFIG OF Ansible Tower 3.6.4"
+echo "SET SELINUX TO PERMISSIVE FOR THE INSTALL AND CONFIG OF Ansible Tower 3.7.0-4"
 echo "***************************************************************************"
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config
 setenforce 0
 service firewalld stop
 echo " "
 echo " "
-echo "*******************"
-echo "FIRST DISABLE REPOS"
-echo "*******************"
-subscription-manager repos --disable "*"
-yum-config-manager --disable "*"
+}
+
+#-------------------------------
+function YOURUSER {
+#-------------------------------
+echo "*********************************************************"
+echo "Setting up your user on the system if needed"
+echo "*********************************************************"
+echo " "
+YMESSAGE="Adding your user"
+NMESSAGE="Skipping"
+FMESSAGE="PLEASE ENTER Y or N"
+COUNTDOWN=15
+DEFAULTVALUE=n
+echo " "
+read -n1 -p "Do you need to ad your user to the system Y/N " 
+INPUT=${INPUT:-$DEFAULTVALUE}
+if [ "$INPUT" = "y" -o "$INPUT" = "Y" ] ;then
+echo -e "\n$YMESSAGE\n"
+echo " "
+echo "Enter your username: "
+read USERNAME
+echo " "
+echo "Enter the password: "
+read PASSWORD
+echo " "
+adduser "$USERNAME" --group wheel
+echo "$PASSWORD" | passwd "$USERNAME" --stdin
+echo " "
+sudo -u "$USERNAME" ssh-keygen -f /home/"$USERNAME"/.ssh/id_rsa -t rsa -N ''
+chown -R "$USERNAME":"$USERNAME" /usr/share/"$USERNAME"
+mkdir -p /home/"$USERNAME"/git
+chown -R "$USERNAME":"$USERNAME" /home/admin
+echo " "
+echo " "
+fi
+}
+
+#-------------------------------
+function ADMINUSERS {
+#-------------------------------
+echo " "
+echo "*********************************************************"
+echo "SETTING UP ADMIN"
+echo "*********************************************************"
+echo " "
+echo 'What would you like your default Ansible Tower user "admin" password to be?'
+read ADMINPASSWORD
+export $ADMINPASSWORD
+groupadd admin
+useradd admin --group admin wheel -p $ADMINPASSWORD
+mkdir -p ~/.ssh
+mkdir -p ~/git
+chown -R admin:admin /home/admin
+sudo -u admin ssh-keygen -f ~/.ssh/id_rsa -N ''
+echo " "
+echo "***********************************************************************"
+echo "SETTING UP ROOT KEYS (Please select NO if it prompts you to overwrite "
+echo "***********************************************************************"
+ssh-keygen -f /root/.ssh/id_rsa -t rsa -N ''
 echo " "
 echo " "
 }
@@ -2991,11 +3079,20 @@ grep -q -i "release 7." /etc/redhat-release
 status=$?
 if test $status -eq 0
 then
+echo " "
+echo "*******************"
+echo "DISABLE REPOS"
+echo "*******************"
+subscription-manager repos --disable "*"
+sleep 2
+echo " "
+echo " "
 echo "*******************"
 echo "ENABLE REPOS RHEL7 "
 echo "*******************"
+subscription-manager repos --enable rhel-7-server-extras-rpms --enable rhel-7-server-optional-rpms --enable rhel-7-server-supplementary-rpms --enable rhel-server-rhscl-7-rpms --enable rhel-7-server-rpms --enable rhel-7-server-ansible-2.9-rpms
 yum -q list installed epel &>/dev/null && echo "epel is installed" || yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm --skip-broken
-subscription-manager repos --enable rhel-7-server-rh-common-rpms --enable rhel-7-server-extras-rpms --enable rhel-7-server-optional-rpms --enable rhel-7-server-supplementary-rpms --enable rhel-server-rhscl-7-rpms --enable rhel-7-server-rpms --enable rhel-7-server-ansible-2.9-rpms
+yum-config-manager --add-repo https://releases.ansible.com/ansible-tower/cli/ansible-tower-cli-el7.repo
 yum clean all
 rm -rf /var/cache/yum
 yum-config-manager --setopt=\*.skip_if_unavailable=1 --save \*
@@ -3005,17 +3102,57 @@ sleep 2
 echo "********************************"
 echo "CHECKING AND INSTALLING PACKAGES"
 echo "********************************"
+yum-config-manager --enable epel 
+yum clean all 
+rm -rf /var/cache/yum
 yum -q list installed wget &>/dev/null && echo "wget is installed" || yum install -y wget --skip-broken --noplugins
-yum -q list installed python3-pip-wheel &>/dev/null && echo "wgpython3-pip-wheel is installed" || yum install -y python3-pip-wheel --skip-broken --noplugins
 yum -q list installed python3-pip &>/dev/null && echo "python3-pip is installed" || yum install -y python3-pip --skip-broken --noplugins
-yum -q list installed platform-python-pip &>/dev/null && echo "platform-python-pip is installed" || yum install -y platform-python-pip --skip-broken --noplugins
 yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || yum install -y yum-util* --skip-broken --noplugins
-yum -q list installed dialog &>/dev/null && echo "dialog is installed" || yum localinstall -y dialog --skip-broken --noplugins
-yum -q list installed bash-completion-extras &>/dev/null && echo "bash-completion-extras" || yum install -y bash-completion-extras --skip-broken --noplugins
-yum -q list installed dconf &>/dev/null && echo "dconf" || yum install -y dconf* --skip-broken --noplugins
+yum -q list installed bash-completion-extras &>/dev/null && echo "bash-completion-extras is installed" || yum install -y bash-completion-extras --skip-broken --noplugins
+yum -q list installed dconf &>/dev/null && echo "dconf is installed" || yum install -y dconf* --skip-broken --noplugins
+yum -q list installed git &>/dev/null && echo "git is installed" || yum install -y git --skip-broken --noplugins
+mkdir -p /root/Downloads/git 
+cd /root/Downloads/git
+git clone https://github.com/ansible/product-demos.git
+cd /root/Downloads
 yum-config-manager --disable epel
 echo " "
 echo " "
+elif test $status -eq 1
+then
+echo '*******************'
+echo 'ENABLE REPOS RHEL 8' 
+echo '*******************'
+subscription-manager repos --disable '*'
+subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms --enable rhel-8-for-x86_64-appstream-rpms --enable rhel-8-for-x86_64-baseos-rpms --enable rhel-8-for-x86_64-supplementary-rpms 
+yum -q list installed epel &>/dev/null && echo "epel is installed" || dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm --skip-broken
+dnf config-manager --add-repo https://releases.ansible.com/ansible-tower/cli/ansible-tower-cli-el8.repo
+yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || dnf install -y yum-utils --skip-broken
+yum-config-manager --setopt=\*.skip_if_unavailable=1 --save \*
+dnf clean all
+rm -rf /var/cache/dnf
+echo " "
+echo " "
+sleep 2
+echo "********************************"
+echo "CHECKING AND INSTALLING PACKAGES"
+echo "********************************"
+yum-config-manager --enable epel 
+yum clean all 
+rm -rf /var/cache/yum
+yum -q list installed yum-utils &>/dev/null && echo "yum-utils is installed" || dnf install -y yum-util* --skip-broken --noplugins --best --allowerasing
+yum -q list installed wget &>/dev/null && echo "wget is installed" || dnf install -y wget --skip-broken --noplugins --best --allowerasing
+yum -q list installed python3-pip &>/dev/null && echo "python3-pip is installed" || dnf install -y python3-pip --skip-broken --noplugins --best --allowerasing
+yum -q list installed platform-python-pip &>/dev/null && echo "platform-python-pip is installed" || dnf install -y platform-python-pip --skip-broken --noplugins --best --allowerasing
+yum -q list installed dconf &>/dev/null && echo "dconf" || dnf install -y dconf* --skip-broken --noplugins --best --allowerasing
+yum -q list installed dnf-utils &>/dev/null && echo "dnf-utils is installed" || dnf install -y dnf-utils --skip-broken --noplugins --best --allowerasing
+yum -q list installed git &>/dev/null && echo "git is installed" || dnf install -y git --skip-broken --noplugins --best --allowerasing
+mkdir -p /root/Downloads/git 
+cd /root/Downloads
+yum-config-manager --disable epel
+echo " "
+echo " "
+sleep 2
 fi
 }
 
@@ -3029,10 +3166,31 @@ then
 echo "*******************"
 echo "Upgrade RHEL7 "
 echo "*******************"
-yum upgrade -y
+yum upgrade -y --skip-broken
+echo " "
+echo " "
+elif test $status -eq 1
+then 
+echo "*******************"
+echo "Upgrade RHEL8 "
+echo "*******************"
+dnf upgrade -y --skip-broken --best --allowerasing 
 echo " "
 echo " "
 fi
+}
+
+#---------------------------
+function CloudRequirements {
+#---------------------------
+echo '*********************************************'
+echo 'Installing Cloud Requirements (Ignore Errors)'
+echo '*********************************************'
+yum install -y python3-pip ansible ansible-doc
+source /var/lib/awx/venv/ansible/bin/activate
+umask "0022"
+pip3 install --user --upgrade pip boto3 ansible-tower-cli boto botocore requests requests-credssp cryptography pywinrm PyVmomi azure-mgmt-compute azure-mgmt-resource azure-keyvault-secrets six netaddr passlib
+deactivate
 }
 
 #-----------------------------
@@ -3041,49 +3199,81 @@ function ANSIBLEINSTALLTOWER {
 grep -q -i "release 7." /etc/redhat-release
 status=$?
 if test $status -eq 0
-then
+then 
 echo '****************************************************************'
-echo 'Getting, Expanding, and installing Ansible Tower 3.6.4 for RHEL7'
+echo 'Getting, Expanding, and installing Ansible Tower 3.7.0-4 for RHEL7'
 echo '****************************************************************'
 mkdir /root/Downloads
 cd /root/Downloads
-wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.6.4-1.tar.gz
-tar -zxvf ansible-tower-setup-bundle-3.6.4-1.tar.gz
-yum localinstall -y ansible-tower-setup-bundle-3.6.4-1.el7/bundle/ansible-tower-dependencies/repos/*.rpm
-cd /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/
+wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.7.0-4.tar.gz
+tar -zxvf /root/Downloads/ansible-tower-setup-bundle-3.7.0-4.tar.gz 
+cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4
+yum localinstall -y --skip-broken /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/bundle/el7/repos/ansible-tower-dependencies/*.rpm
 sleep 2
-reset
 echo " "
 echo " " 
+cd 
 echo 'What would you like your default Ansible Tower user "admin" password to be?'
 read ADMINPASSWORD
 export $ADMINPASSWORD
-sed -i 's/admin_password='"''"'/admin_password='"'"'$ADMINPASSWORD'"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
-sed -i 's/pg_password='"''"'/pg_password='"'"'$ADMINPASSWORD'"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
-sed -i 's/rabbitmq_password='"''"'/rabbitmq_password='"'"'$ADMINPASSWORD'"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.6.4-1.el7/inventory
+sed -i 's/admin_password='"''"'/admin_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory
+sed -i 's/pg_password='"''"'/pg_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory
+sed -i 's/rabbitmq_password='"''"'/rabbitmq_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory
+echo " "
+echo " "
+cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4
 sh setup.sh
+sleep 5
+echo " "
+echo " "
+elif test $status -eq 1
+then
+echo '****************************************************************'
+echo 'Getting, Expanding, and installing Ansible Tower 3.7.0-4 for RHEL8'
+echo '****************************************************************'
+mkdir /root/Downloads
+cd /root/Downloads
+wget https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-3.7.0-4.tar.gz
+
+tar -zxvf /root/Downloads/ansible-tower-setup-bundle-3.7.0-4.tar.gz 
+cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4
+dnf localinstall -y --skip-broken /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/bundle/el8/repos/ansible-tower-dependencies/*.rpm --best --allowerasing
 sleep 2
+echo " "
+echo " "
+echo 'What would you like your default Ansible Tower user "admin" password to be?'
+read ADMINPASSWORD
+export $ADMINPASSWORD
+sed -i 's/admin_password='"''"'/admin_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory 
+sed -i 's/pg_password='"''"'/pg_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory
+sed -i 's/rabbitmq_password='"''"'/rabbitmq_password='"'"$ADMINPASSWORD"'"'/g' /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/inventory
+echo " "
+echo " "
+cd /root/Downloads/ansible-tower-setup-bundle-3.7.0-4/
+sh setup.sh
+sleep 5
 echo " "
 echo " "
 fi
 }
 
+
+#-------------------------
+function ANSIBLESELINUX {
+#-------------------------
 DEFAULTVALUE=y
 NMESSAGE="Disabled"
 FMESSAGE="PLEASE ENTER Y or N"
 COUNTDOWN=10
-#-------------------------
-function ANSIBLESELINUX {
-#-------------------------
-clear
 echo '*******'
 echo 'SELinux'
 echo '*******'
-echo 'If you do not know what selinux is please visit
-https://www.redhat.com/en/topics/linux/what-is-selinux.
-It is Red Hats position that SELinux should be enabled unless 
-your enterprise dictates you disable SELinux on your systems.
-The default answer is yes'
+echo '
+         If you do not know what selinux is please visit
+         https://www.redhat.com/en/topics/linux/what-is-selinux.
+         It is Red Hats position that SELinux should be enabled unless 
+         your enterprise dictates you disable SELinux on your systems.
+         The default answer is yes'
 echo " "
 read -n1 -p "Would you like to ENABLE SELinux? Y/n " INPUT
 INPUT=${INPUT:-$DEFAULTVALUE}
@@ -3096,24 +3286,25 @@ elif [ "$INPUT" = "n" -o "$INPUT" = "N" ] ;then
 echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
+REQUEST
 fi
 }
 
 #-------------------------
 function ANSIBLEFIREWALL {
 #-------------------------
-clear
 echo " "
 echo '********'
 echo 'Firewall'
 echo '********'
 echo ''
-echo 'The ports used by Ansible Tower and its services are:
+echo '
+         The ports used by Ansible Tower and its services are:
  
- 80, 443 (normal Tower ports)
- 22 (ssh)
- 5432 (database instance - if the database is installed on 
- an external instance, needs to be opened to the tower instances)'
+             80, 443 (normal Tower ports)
+             22 (ssh)
+             5432 (database instance - if the database is installed on 
+             an external instance, needs to be opened to the tower instances)'
 echo " "
 read -n1 -p "Would you like to ENABLE Firewall? Y/n " INPUT
 INPUT=${INPUT:-$DEFAULTVALUE}
@@ -3129,6 +3320,7 @@ chkconfig firewalld off
 echo -e "\n$NMESSAGE\n"
 else
 echo -e "\n$FMESSAGE\n"
+ANSIBLEFIREWALL
 fi
 } 
 
@@ -3457,8 +3649,10 @@ sleep 2
 else
 echo "REQUEST8"
 REQUEST8
+for i in $(hammer --csv repository list |grep -i kickstart | awk -F ',' '{print $1}') ; do hammer repository update --id $i --download-policy immediate ; done
 fi
 echo " "
+
 
 ls /root/Downloads/RHTI/REQUESTPUPPET &>/dev/null
 if [ $? -eq 0 ]; then
@@ -3606,16 +3800,18 @@ echo " "
 sleep 2
 ;;
 2) dMsgBx "ANSIBLE TOWER 3.6.4 INSTALL" \
-CHECKCONNECT
 ANSIBLETOWERTXT
+ANSIBLECHECKCONNECT
 ANSIBLEREGISTER
-ANSIBLEPREPFORINSTALL
+ANSIBLESECURITY
+#YOURUSER
+#ADMINUSERS
 ANSIBLESYSTEMREPOS
 ANSIBLELINUXUPGRADE
+#CloudRequirements
 ANSIBLEINSTALLTOWER
-INSIGHTS
-ANSIBLEFIREWALL
 ANSIBLESELINUX
+ANSIBLEFIREWALL
 ;;
 3) dMsgBx "SATELLITE POST INSTALL CLEANUP" \
 #REMOVEUNSUPPORTED
