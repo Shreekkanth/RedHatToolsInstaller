@@ -1,0 +1,12 @@
+# unmanage-remanage for solarwinds entrypoint
+---
+- hosts: localhost
+  gather_facts: no
+  become: no
+  connection: local
+  
+  tasks:
+    - name: include solarwinds role to unamanage or remanage nodes
+      include_role:
+        name: role-unmanage-remanage
+

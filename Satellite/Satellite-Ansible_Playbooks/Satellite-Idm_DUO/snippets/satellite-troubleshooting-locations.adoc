@@ -1,0 +1,44 @@
+== Troubleshooting {rhsat62}
+===  {rhsat62}
+==== Logfiles
+Check /var/log/foreman/production.log +
+Check /var/log/foreman-proxy/proxy.log +
+Check /var/log/httpd/*
+
+==== Debug mode
+To set Red Hat Satellite in debug mode, edit the file [blue]#/usr/share/foreman/config/environments/production.rb# and uncomment the line [blue]#config.log_level = :debug#.
+Then restart Satellite using katello-service restart.
+
+=== Managed hosts
+Check /var/lib/puppet/certs +
+Check /var/log/messages +
+Check /var/lib/gofer +
+Check /root/anaconda-ks.cfg +
+Check /root/install.*
+
+=== Red Hat documentation
+. General Red Hat Documentation: link:https://www.redhat.com/docs[]
+
+. Red Hat partners: link:http://www.redhat.com/partners[]
+
+. Hardware compatibility list. link:https://hardware.redhat.com/[]
+
+. Red Hat Puppet Guide link:https://access.redhat.com/documentation/en-US/Red_Hat_Satellite/6.1/html/Puppet_Guide/index.html[]
+
+. Red Hat Satellite Documentation link:https://access.redhat.com/documentation/en-US/Red_Hat_Satellite/6.2/[]
+
+. Red Hat has created a solution guide called 10 Steps to Build a Standard Operating Environment, which describes all parts of the implementation and usage of a {rhsat62}. It can be found  link:https://access.redhat.com/articles/1585273[here]
+
+=== Open Source resources
+. Red Hat Satellite upstream repository for Red Hat Satellite assets: link:https://github.com/RedHatSatellite/[].
+. Bootstrapscript upstream repository on Github: link:https://github.com/Katello/katello-client-bootstrap[].
+. Katello link:http://www.katello.org/[].
+. Foreman link:http://theforeman.org/[].
+. Puppet Website of link:http://forge.puppet.com/[Puppet Forge].
+. link:https://docs.puppet.com/[Documentation of PuppetLabs].
+
+
+. Included links:
+.. Template writing: link:http://projects.theforeman.org/projects/foreman/wiki/templatewriting[]
+.. Dynamic disk partitioning: link:http://projects.theforeman.org/projects/foreman/wiki/Dynamic_disk_partitioning[]
+.. ERB language: link:http://www.stuartellis.eu/articles/erb/[]

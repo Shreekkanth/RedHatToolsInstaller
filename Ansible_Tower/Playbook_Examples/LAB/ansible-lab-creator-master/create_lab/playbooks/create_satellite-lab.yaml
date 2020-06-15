@@ -1,0 +1,76 @@
+---
+
+- name: Build VMs  
+  hosts: kvm
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/libvirt_build_vms
+
+    - include_role:
+        name: ../roles/libvirt_start_vms
+
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/ansible_host_configure
+
+- name: Configure Operating systems
+  hosts: satellite
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role: 
+        name: ../roles/extend_vm_disks
+
+    - include_role:
+        name: ../roles/rhsm_register
+
+- name: Install Satellite
+  hosts: satellite
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/config-satellite
+
+      vars: 
+        manifest_file_path: "{{ playbook_dir }}/manifest.zip"
+        satellite_organization: "Example Org"
+        satellite_location: "DataCenter"
+        satellite_username: "admin"
+        satellite_password: "password"
+
+        satellite_repositories:
+          - product: "Red Hat Enterprise Linux Server"
+            name: "Red Hat Enterprise Linux 7 Server (RPMs)"
+            release_version:
+              - "7.6"
+              - "7Server"
+            base_arch: "x86_64"
+          - product: "Red Hat OpenShift Container Platform"
+            name: "Red Hat OpenShift Container Platform 3.11 (RPMs)"
+            release_version: []
+            base_arch: "x86_64"
+        satellite_sync_plan: "MyPlan"
+        satellite_activation_keys:
+         - rhel-7:
+           subscription: "RHEL subscription"
+         - rhel-7-test:
+           subscription: "RHEL subscription"
+
+
+

@@ -1,0 +1,24 @@
+---
+# file: roles/provisioning/tasks/users.yml
+- name: Creating the stack user
+  user:
+    name=stack
+    comment="Undercloud user"
+    state=present
+  tags:
+    - provisioning
+    - provisioning-user
+
+- name: Adding stack user to sudo
+  copy:
+    src=etc/sudoers.d/stack
+    dest=/etc/sudoers.d/
+    owner=root
+    group=root
+    mode=0440
+    force=yes
+    validate='visudo -cf %s'
+  tags:
+    - provisioning
+    - provisioning-user
+    - provisioning-user-sudo

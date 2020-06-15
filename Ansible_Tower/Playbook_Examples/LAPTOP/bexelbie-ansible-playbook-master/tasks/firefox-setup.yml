@@ -1,0 +1,23 @@
+---
+# Setup Firefox
+
+# Output of the profile creation resembles:
+- name: Create .mozilla directory
+  shell: firefox -CreateProfile {{ myuser }} 2>&1 | cut -f4 -d\' | cut -f1-6 -d\/
+
+# Find the profile direction
+- name: Find .mozilla/firefox profiledirectory
+  shell: grep -e '^\[Profile|^Path|^Default|^Name' ~/.mozilla/firefox/profiles.ini | grep -C 1 '^Name={{ myuser }}' | grep '^Path' | cut -c6-
+  register: firefox_output
+  notify:
+    - created_firefox_profile
+
+# Install plugins
+- name: Package install - Firefox Extensions
+  become: yes
+  dnf:
+    state: present
+    name:
+      - mozilla-https-everywhere
+      - mozilla-ublock-origin
+      - mozilla-privacy-badger

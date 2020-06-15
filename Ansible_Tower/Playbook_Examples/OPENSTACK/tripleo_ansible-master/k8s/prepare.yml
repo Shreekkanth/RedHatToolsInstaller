@@ -1,0 +1,16 @@
+---
+
+- hosts: all_nodes
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - ../common/roles/ntp
+    - base_os
+    - ../ocp/roles/base_os_extra
+    - firewall
+    - selinux_disable
+    - sysctl
+    - hosts
+    - docker
+    - epel_repo

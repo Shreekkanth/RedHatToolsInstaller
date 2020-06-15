@@ -1,0 +1,38 @@
+---
+#### Copy Certificate
+- name: "Copy Certificate: {{cert}}"
+  copy:
+    src:  "{{ certificates_base_src + cert.name }}"
+    dest: "{{ certificates_base_dest + cert.name  }}"
+  when: jboss_import_certs
+  tags:
+    - jboss_eap_certs
+
+#### Import Certificate to Truststore file of JBoss
+#### to validate: keytool -list -storepass changeit -keystore cacerts -v | grep "{{cert.alias}}"
+- name: "Import Certificate: {{cert}}. To validate keytool -list -storepass {{ cacerts_pass_ori }} -keystore {{cacerts_path_dest}} -v | grep '{{cert.alias}}'"
+  java_cert:
+    cert_path:     "{{ certificates_base_dest + cert.name }}"
+    cert_alias:    "{{ cert.alias }}"
+    keystore_path: "{{ cacerts_path_dest }}"
+    keystore_pass: "{{ cacerts_pass_ori }}"
+    executable:    "{{ keytool_executable }}"
+    state: present
+  when: jboss_import_certs
+  tags:
+    - jboss_eap_certs
+
+#### Remove Certificate from Truststore file of JBoss
+- name: "Remove Certificate to Truststore file: {{cert}}"
+  java_cert:
+    cert_alias:    "{{ cert.alias }}"
+    keystore_path: "{{ cacerts_path_dest }}"
+    keystore_pass: "{{ cacerts_pass_ori }}"
+    executable:    "{{ keytool_executable }}"
+    state: absent
+  when: jboss_remove_certs
+  tags:
+    - jboss_eap_certs
+
+#
+# EOF

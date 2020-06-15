@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: Reserve IP address
+      import_role:
+        name: ipcontrol_assign_ip
+      vars:
+        ipcontrol_assign_ip_username: "{{ ipcontrol_username }}"
+        ipcontrol_assign_ip_password: "{{ ipcontrol_password }}"
+        ipcontrol_assign_ip_description: "Test device reservation"
+        ipcontrol_assign_ip_hostname: "RN099999"

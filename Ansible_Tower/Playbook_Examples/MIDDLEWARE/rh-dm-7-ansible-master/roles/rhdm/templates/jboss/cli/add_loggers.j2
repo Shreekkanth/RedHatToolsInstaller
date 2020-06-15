@@ -1,0 +1,32 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Configure loggers
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/add_loggers.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+## loop.index
+# Add loggers:
+{% for item in add_loggers %}
+/subsystem=logging/logger={{item.logger}}/:add(category={{item.logger}},level={{item.level}})
+{% endfor %}
+
+{% for item in add_loggers_debug %}
+#/subsystem=logging/logger={{item.logger}}/:add(category={{item.logger}},level={{item.level}})
+{% endfor %}
+
+
+run-batch
+#
+# EOF

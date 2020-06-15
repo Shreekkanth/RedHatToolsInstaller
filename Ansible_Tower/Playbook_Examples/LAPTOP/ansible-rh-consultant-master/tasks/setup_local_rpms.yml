@@ -1,0 +1,7 @@
+---
+- name: Move RPMs to /tmp
+  copy:
+    src: "{{ item }}"
+    dest: /tmp/
+    mode: 0764
+  loop: "{{ csb_packages_offline }}"

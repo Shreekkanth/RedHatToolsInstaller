@@ -1,0 +1,315 @@
+---
+# defaults file for rhpam role
+jboss_eap_user:      quicklab
+jboss_eap_group:     quicklab
+
+
+base_dir_download: "/home/user1/Downloads/software/"
+base_dir_install:  "/rhpam/"
+base_dir_working:  "{{ base_dir_install  + 'work/' }}"
+#
+prompt_bash:      LAB
+environment_code: lab
+#### JBoss
+jboss_eap_artifact_name_7_1: jboss-eap-7.1.0.zip
+jboss_eap_base_version:      '7.1'
+#jboss_eap_patches_7_1:       [ "jboss-eap-7.1.1-patch.zip", "jboss-eap-7.1.2-patch.zip", "jboss-eap-7.1.3-patch.zip", "jboss-eap-7.1.4-patch.zip","jboss-eap-7.1.5-patch.zip"]
+jboss_eap_patches_7_1:       [ "jboss-eap-7.1.1-patch.zip", "jboss-eap-7.1.2-patch.zip", "jboss-eap-7.1.3-patch.zip", "jboss-eap-7.1.4-patch.zip"]
+jboss_name_to_conf:          jboss-eap-extra
+jboss_eap_base_dir_7_1:      jboss-eap-7.1
+marker_standalone_conf:      '# The JAVA_OPTS to this custom installation.'
+jboss_config_mode:           standalone-full.xml
+#rhpam_service_name_prefix:   "tst_"
+rhpam_service_name_prefix:   ""
+rhpam_service_name:          "{{rhpam_service_name_prefix + 'rhpam.service'}}"
+rhpam_service_conf_name:     "{{rhpam_service_name_prefix + 'rhpam_service.conf'}}"
+jboss_service_name:          "{{rhpam_service_name}}"
+#
+bind_address:                "{{inventory_hostname}}"
+bind_address_management:     "{{inventory_hostname}}"
+#
+java_home:           /usr/bin/java
+#java_home_real_path: /usr/java/default/
+#java_home_real_path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.171-8.b10.el7_5.x86_64/jre/bin/java
+####
+jboss_eap_scripts_cli_templates_list:
+    - add_datasources.j2
+    - add_loggers.j2
+    - add_node_identifier.j2
+    - add_system_properties.j2
+    - configure_handler.j2
+    - configure_ejbtimer.j2
+    - remove_configure_handler.j2
+    - remove_node_identifier.j2
+    - remove_system_properties.j2
+    - remove_configure_ejbtimer.j2
+    - tuning_pro.j2
+#
+jboss_eap_scripts_cli_list:
+  - add_datasources.cli
+  - add_node_identifier.cli
+  - add_system_properties.cli
+  - configure_handler.cli
+  - configure_ejbtimer.cli
+  - tuning_pro.cli
+
+#### JBoss Flags
+jboss_eap_apply_patches: true
+jboss_eap_patch_remove:  false
+jboss_eap_create_users:  true
+jboss_service_install:   true
+temporal_dir_delete:     false
+####
+jboss_tx_node_id: "{{'tx_' + inventory_hostname.split('.')[1] | regex_replace('-', '_') }}"
+#jboss_tx_node_id: "{{'tx_' + inventory_hostname | regex_replace('-', '_') }}"
+#jboss_tx_node_id: "{{'tx_node_' + inventory_hostname | regex_replace('-', '_') }}"
+#jboss_tx_node_id: "{{'tx_node_' + inventory_hostname[6:inventory_hostname | length] }}"
+
+add_loggers: []
+#  - {logger: org.hibernate.loader.Loader, level: ERROR}
+
+add_loggers_debug: []
+#  - {logger: org.jboss.as.domain.http.api,         level: TRACE}
+#  - {logger: org.jboss.as.domain.management,       level: TRACE}
+#  - {logger: org.jboss.jca.core.connectionmanager, level: TRACE}
+
+#### MySQL
+mysql_user:  mysql
+mysql_group: mysql
+mysql_gui:   810
+mysql_uid:   810
+mysql_tar_gz_filename: mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+mysql_run_path_base:   /var/run/mysql/
+mysql_conf_tmpfiles_d: /usr/lib/tmpfiles.d/mysql.conf
+rhpam_jdbc_lib_list:   "{{rhpam_jdbc_lib_list_mysql}}"
+#
+mysql_configuration_dev: {
+     name: "dev",
+     service: "dev", port: "3406", socket: "/var/run/mysql/mysql_dev.sock",
+     prefix: "dev_", user: "mysql",
+     char: "utf8", collation_server: "utf8_general_ci",
+     lc_messages: "en_US" }
+
+mysql_configurations:
+  - "{{mysql_configuration_dev}}"
+
+#mysql_rhpam_db_prefix:    "u01_"
+mysql_rhpam_db_prefix:    ""
+mysql_rhpam_db_name:      "{{mysql_rhpam_db_prefix + 'RHPAM'}}"
+mysql_user_rhpam_name:    RHPAM
+mysql_ejbtimer_db_name:   "{{mysql_rhpam_db_prefix + 'EJBTIMER'}}"
+mysql_user_ejbtimer_name: EJBTIMER
+#
+mysql_ddl_scripts_mysql5: ["mysql5-jbpm-schema.sql", "mysql-jbpm-amend-auto-increment-procedure.sql", "quartz_tables_mysql.sql"]
+org_quartz_jobStore_driverDelegateClass: "{{ org_quartz_jobStore_driverDelegateClass_mysql }}"
+#### MySQL Flags
+mysql_service_active:   false
+mysql_user_remove:      false
+mysql_user_create:      false
+mysql_install:          false
+mysql_uninstall:        false
+mysql_service_requires: true
+#### RHPAM
+rhpam_version: "7.1.0"
+rhpam_files_7_0_1:
+  - rhpam-7.0.1-add-ons.zip
+  - rhpam-7.0.1-business-central-eap7-deployable.zip
+  - rhpam-7.0.1-kie-server-ee7.zip
+
+rhpam_files_7_0_2:
+  - rhpam-7.0.2-add-ons.zip
+  - rhpam-7.0.2-business-central-eap7-deployable.zip
+  - rhpam-7.0.2-kie-server-ee7.zip
+
+rhpam_files_7_1_0:
+  - rhpam-7.1.0-add-ons.zip
+  - rhpam-7.1.0-business-central-eap7-deployable.zip
+  - rhpam-7.1.0-kie-server-ee7.zip
+
+rhpam_files: "{{rhpam_files_7_1_0}}"
+
+rhpam_extra_lib_list:
+  - rh-pam-7-extend-rest-api-1.0-SNAPSHOT.jar
+
+rhpam_patches_7_1: [ "rhpam-7.1.1-update.zip" ]
+#rhpam_patches_7_1: [ ]
+#### RHPAM Flags
+rhpam_bc_install:          true
+rhpam_kie_install:         true
+rhpam_controller_install:  true
+deploy_extra_lib:          false
+rhpam_uninstall:           false
+rhpam_apply_patches:       true
+rhpam_remove_patch:        false
+####
+periodic_size_rotating_handler_name: PERIODIC_SIZE
+periodic_handler_max_backup_index:   100
+periodic_autoflush:                  true
+periodic_suffix:                     .yyyy-MM-dd
+periodic_rotate_size:                65000000
+periodic_path:                       server.log
+periodic_relative_to:                jboss.server.log.dir
+periodic_append:                     true
+periodic_named_formatter:            PATTERN_01
+####
+module_name:                         "{{ module_name_mysql }}"
+driver_module_name:                  "{{ driver_module_name_mysql }}"
+module_resources:                    "{{ module_resources_mysql }}"
+driver_xa_datasource_class_name:     "{{ driver_xa_datasource_class_name_mysql }}"
+valid_connection_checker_class_name: "{{ ds_valid_connection_checker_class_name_mysql }}"
+exception_sorter_class_name:         "{{ ds_exception_sorter_class_name_mysql }}"
+stale_connection_checker_class_name: "{{ ds_stale_connection_checker_class_name_mysql }}"
+kieserver_connection_url:            "{{ 'jdbc:mysql://localhost:'+ mysql_configurations[0].port + '/' + mysql_rhpam_db_name + '?useSSL=false' }}"
+ejbtimer_connection_url:             "{{ 'jdbc:mysql://localhost:'+ mysql_configurations[0].port + '/' + mysql_ejbtimer_db_name + '?useSSL=false' }}"
+#
+ds_allocation_retry:                    3
+ds_allocation_retry_wait_millis:        3000
+ds_valid_connection_checker_class_name: "{{ valid_connection_checker_class_name }}"
+ds_exception_sorter_class_name:         "{{ exception_sorter_class_name }}"
+ds_stale_connection_checker_class_name: "{{ stale_connection_checker_class_name }}"
+ds_kieserver_connection_url:            "{{ kieserver_connection_url }}"
+ds_ejbtimer_connection_url:             "{{ ejbtimer_connection_url }}"
+ds_background_validation:          "true"
+ds_background_validation_millis:   300000
+ds_blocking_timeout_wait_millis:   5000
+ds_driver_name:                    "{{ module_name }}"
+ds_query_timeout:                  5
+ds_xa_resource_timeout:            30
+ds_set_tx_query_timeout:           "true"
+ds_share_prepared_statements:      "false"
+ds_spy:                            "false"
+ds_tracking:                       "false"
+ds_use_ccm:                        "true"
+ds_use_fast_fail:                  "false"
+ds_validate_on_match:              "false"
+ds_initial_pool_size:              0
+ds_max_pool_size:                  10
+ds_min_pool_size:                  1
+ds_idle_timeout_minutes:           10
+ds_prepared_statements_cache_size: 100
+ds_statistics_enabled:             "true"
+ds_pool_use_strict_min:            "true"
+ds_same_rm_override:               "false"
+ds_pool_prefill:                   "false"
+ds_flush_strategy:                 "FailingConnectionOnly"
+ds_track_statements:               "false"
+ds_wrap_xa_resource:               "true"
+#
+ds_rhpam_username: "{{ mysql_user_rhpam_name }}"
+ds_rhpam_password: "{{ mysql_user_rhpam_pwd }}"
+ds_ejbtimer_username: "{{ mysql_user_ejbtimer_name }}"
+ds_ejbtimer_password: "{{ mysql_user_ejbtimer_pwd }}"
+####
+ds_kie_name:      KieServerDS
+ds_ejbtimer_name: EjbTimerDS
+
+ds_kie_jndiname:      "{{'java:jboss/datasources/' + ds_kie_name }}"
+ds_ejbtimer_jndiname: "{{'java:jboss/datasources/' + ds_ejbtimer_name }}"
+####
+env_hibernate_dialect_class:  "{{ env_hibernate_dialect_class_mysql }}"
+env_kiserver_datasource_name: "{{ ds_kie_jndiname }}"
+is_oracle_ds: false
+####
+# EJB Timers Scheduler
+database_data_store_name: ejb_timer_ds
+database_vendor_name:     "{{database_vendor_mysql}}"
+database_jndi_name:       "{{ds_ejbtimer_jndiname}}"
+database_data_store_allow_execution:  "true"
+database_data_store_refresh_interval: 30000
+database_data_store_partition:        ejb_timer_part
+
+####
+ds_conf_kieserver: {
+  name:                                "{{ ds_kie_name }}",
+  connection_url:                      "{{ ds_kieserver_connection_url }}",
+  driver_name:                         "{{ ds_driver_name }}",
+  jndi_name:                           "{{ ds_kie_jndiname }}",
+  allocation_retry:                    "{{ ds_allocation_retry }}",
+  allocation_retry_wait_millis:        "{{ ds_allocation_retry_wait_millis }}",
+  allow_multiple_users:                "false",
+  background_validation:               "{{ ds_background_validation }}",
+  background_validation_millis:        "{{ ds_background_validation_millis }}",
+  blocking_timeout_wait_millis:        "{{ ds_blocking_timeout_wait_millis }}",
+  exception_sorter_class_name:         "{{ ds_exception_sorter_class_name }}",
+  spy:                                 "{{ ds_spy }}",
+  jta:                                 "true",
+  enabled:                             "true",
+  enlistment_trace:                    "false",
+  initial_pool_size:                   "{{ ds_initial_pool_size }}",
+  max_pool_size:                       "{{ ds_max_pool_size }}",
+  min_pool_size:                       "{{ ds_min_pool_size }}" ,
+  password:                            "{{ ds_rhpam_password }}",
+  pool_use_strict_min:                 "{{ ds_pool_use_strict_min }}",
+  prepared_statements_cache_size:      "{{ ds_prepared_statements_cache_size }}",
+  query_timeout:                       "{{ ds_query_timeout }}",
+  set_tx_query_timeout:                "{{ ds_set_tx_query_timeout }}",
+  xa_resource_timeout:                 "{{ ds_xa_resource_timeout }}",
+  share_prepared_statements:           "{{ ds_share_prepared_statements }}",
+  statistics_enabled:                  "{{ ds_statistics_enabled }}",
+  tracking:                            "{{ ds_tracking }}",
+  idle_timeout_minutes:                "{{ ds_idle_timeout_minutes }}",
+  use_ccm:                             "{{ ds_use_ccm }}",
+  use_fast_fail:                       "{{ ds_use_fast_fail }}",
+  user_name:                           "{{ ds_rhpam_username }}",
+  valid_connection_checker_class_name: "{{ ds_valid_connection_checker_class_name }}",
+  validate_on_match:                   "{{ ds_validate_on_match }}",
+  stale_connection_checker_class_name: "{{ ds_stale_connection_checker_class_name }}",
+  track_statements:                    "{{ ds_track_statements }}",
+  same_rm_override:                    "{{ ds_same_rm_override }}",
+  pool_prefill:                        "{{ ds_pool_prefill }}",
+  wrap_xa_resource:                    "{{ ds_wrap_xa_resource }}",
+  flush_strategy:                      "{{ ds_flush_strategy }}"
+}
+
+ds_conf_ejbtimer: {
+  name:                                "{{ ds_ejbtimer_name }}",
+  connection_url:                      "{{ ds_ejbtimer_connection_url }}",
+  driver_name:                         "{{ ds_driver_name }}",
+  jndi_name:                           "{{ ds_ejbtimer_jndiname }}",
+  allocation_retry:                    "{{ ds_allocation_retry }}",
+  allocation_retry_wait_millis:        "{{ ds_allocation_retry_wait_millis }}",
+  allow_multiple_users:                "false",
+  background_validation:               "{{ ds_background_validation }}",
+  background_validation_millis:        "{{ ds_background_validation_millis }}",
+  blocking_timeout_wait_millis:        "{{ ds_blocking_timeout_wait_millis }}",
+  exception_sorter_class_name:         "{{ ds_exception_sorter_class_name }}",
+  spy:                                 "{{ ds_spy }}",
+  jta:                                 "true",
+  enabled:                             "true",
+  enlistment_trace:                    "false",
+  initial_pool_size:                   "{{ ds_initial_pool_size }}",
+  max_pool_size:                       "{{ ds_max_pool_size }}",
+  min_pool_size:                       "{{ ds_min_pool_size }}" ,
+  password:                            "{{ ds_ejbtimer_password }}",
+  pool_use_strict_min:                 "{{ ds_pool_use_strict_min }}",
+  prepared_statements_cache_size:      "{{ ds_prepared_statements_cache_size }}",
+  query_timeout:                       "{{ ds_query_timeout }}",
+  set_tx_query_timeout:                "{{ ds_set_tx_query_timeout }}",
+  xa_resource_timeout:                 "{{ ds_xa_resource_timeout }}",
+  share_prepared_statements:           "{{ ds_share_prepared_statements }}",
+  statistics_enabled:                  "{{ ds_statistics_enabled }}",
+  tracking:                            "{{ ds_tracking }}",
+  idle_timeout_minutes:                "{{ ds_idle_timeout_minutes }}",
+  use_ccm:                             "{{ ds_use_ccm }}",
+  use_fast_fail:                       "{{ ds_use_fast_fail }}",
+  user_name:                           "{{ ds_ejbtimer_username }}",
+  valid_connection_checker_class_name: "{{ ds_valid_connection_checker_class_name }}",
+  validate_on_match:                   "{{ ds_validate_on_match }}",
+  stale_connection_checker_class_name: "{{ ds_stale_connection_checker_class_name }}",
+  track_statements:                    "{{ ds_track_statements }}",
+  same_rm_override:                    "{{ ds_same_rm_override }}",
+  pool_prefill:                        "{{ ds_pool_prefill }}",
+  wrap_xa_resource:                    "{{ ds_wrap_xa_resource }}",
+  flush_strategy:                      "{{ ds_flush_strategy }}"
+}
+
+####
+kie_ds_conf_list: []
+
+kie_ds_xa_conf_list:
+  - "{{ ds_conf_kieserver }}"
+  - "{{ ds_conf_ejbtimer }}"
+
+#
+#
+# EOF

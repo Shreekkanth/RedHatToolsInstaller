@@ -1,0 +1,8 @@
+---
+- hosts: jumpbox
+  any_errors_fatal: true
+  gather_facts: false
+  tasks:
+  - include_role:
+      name: "pam-demo-install"
+    when: git_username is defined and git_access_token is defined

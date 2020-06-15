@@ -1,0 +1,13 @@
+- debug: 
+    msg: "Creating {{ acl }} ACL..."
+
+- name: "Create ACL"
+  ec2_vpc_nacl:
+    state: present
+    name: "{{ acl }}"
+    aws_access_key: "{{ key }}"
+    aws_secret_key: "{{ secret }}"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    subnets: "{{ subnets }}"
+    validate_certs: no

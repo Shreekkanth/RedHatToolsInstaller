@@ -1,0 +1,15 @@
+# jenkins/tasks/premain.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Pull jenkins/jenkins image
+  docker_image:
+    name: jenkins/jenkins:latest
+    docker_host: unix://var/run/docker.sock 
+    tag: latest 
+    pull: true
+    debug: false
+    state: present
+
+- name: Build redhat-automation/jenkins-auto:latest
+  command: "docker build -t redhat-automation/jenkins-auto:latest ./roles/jenkins/files/"
+  delegate_to: localhost

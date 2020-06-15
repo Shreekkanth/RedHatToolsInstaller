@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  authors: Red Hat Consulting
+  description: First boot script to be executed on a server to configure initial parameters
+  company: Red Hat
+  license: TBD
+  min_ansible_version: 2.1
+  platforms:
+  - name: EL
+    versions:
+    - 7.3
+  galaxy_tags:
+    - firstboot
+dependencies:

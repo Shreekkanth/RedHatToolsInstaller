@@ -1,0 +1,108 @@
+---
+
+icingaweb2_yum_repo:
+  baseurl: http://packages.icinga.com/epel/$releasever/release/
+  gpgkey: http://packages.icinga.com/icinga.key
+icingaweb2_apt_repo:
+  repo: "deb http://packages.icinga.com/{{ansible_os_family|lower}} icinga-{{ansible_distribution_release}} main"
+  gpgkey: http://packages.icinga.com/icinga.key
+
+icw2_centos_scl_ver:
+  "6": "rh-php70"
+  "7": "rh-php71"
+
+# initial config vars
+
+icinga2_backend: icinga_ido
+icingaweb2_backend: icingaweb_db
+director_backend: director
+
+icinga2_binary: /usr/sbin/icinga2
+
+# initial config files
+
+icingaweb2_config_dirs:
+  '.':
+    owner: "root"
+    group: "icingaweb2"
+    mode: "2770"
+  'modules':
+    owner: "root"
+    group: "icingaweb2"
+    mode: "2770"
+  'modules/monitoring':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "2770"
+  'enabledModules':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "2750"
+
+icingaweb2_config_templates:
+  'resources_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "root"
+    mode: "0644"
+  'groups_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'config_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'roles_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'authentication_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'modules/monitoring/backends_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'modules/monitoring/commandtransports_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'modules/monitoring/config_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'icingaweb_add_user_sql.j2':
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    force: no
+
+director_config_templates:
+  'modules/director/config_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+  'modules/director/kickstart_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+
+graphite_config_templates:
+  'modules/graphite/config_ini.j2':
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "0660"
+
+os_icingaweb2_schema:
+  Debian: /usr/share/icingaweb2/etc/schema/mysql.schema.sql
+  RedHat: /usr/share/doc/icingaweb2/schema/mysql.schema.sql
+os_apache_user:
+  Debian: www-data
+  RedHat: apache
+os_icinga2_user:
+  Debian: nagios
+  RedHat: icinga
+os_icinga2_group:
+  Debian: nagios
+  RedHat: icinga

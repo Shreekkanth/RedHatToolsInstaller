@@ -1,0 +1,10 @@
+---
+- name: Upload manifest to Satellite
+  hosts: localhost
+  vars_files:
+    - ../vars/common.yml
+    - ../vars/organization.yml
+    - ../vars/rhcdn_repositories.yml
+
+  roles:
+    - rhcdn_repositories

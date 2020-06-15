@@ -1,0 +1,58 @@
+{
+  "spec": [
+    {
+      "required": true,
+      "min": 0,
+      "default": "",
+      "max": 50,
+      "question_description": "This will be used to create the {% if onboard_in_scm | bool %}Source Control Project, Source Control Group/Organizaiton, and {% endif %}Ansible Tower Team (which can be mapped to LDAP later.)",
+      "choices": "",
+      "new_question": true,
+      "variable": "tower_team_name",
+      "question_name": "Enter a Team Name to Onboard",
+      "type": "text"
+    },
+    {
+      "required": false,
+      "min": 0,
+      "default": "",
+      "max": 1024,
+      "question_description": "This will be used to create the {% if onboard_in_scm | bool %}Source Control Project, Source Control Group/Organiztion, and {% endif %}Ansible Tower Team description.",
+      "choices": "",
+      "variable": "tower_team_desc",
+      "question_name": "Enter a Team Description.",
+      "type": "text"
+    },
+    {% if onboard_in_scm | bool %}
+    {
+      "required": false,
+      "min": 0,
+      "default": "",
+      "max": 30,
+      "question_description": "Group/Org is used for bringing many users to the new Project/Repository.",
+      "choices": "",
+      "new_question": true,
+      "variable": "gl_grp_owner",
+      "question_name": "Enter the Source Control username that will be owner of the new Source Control Group/Organization.",
+      "type": "text.user_input"
+    },
+    {% endif %}{{ '' }}
+    {% for env in tower_inventories %}
+    
+    {
+      "required": false,
+      "min": null,
+      "default": "",
+      "max": null,
+      "question_description": "Applies {{ env.access }} access to the selected inventories.",
+      "choices": "{{ env.inventories | join('\\n') }}",
+      "new_question": true,
+      "variable": "grant_{{ env.name | truncate(4, True, '', 0) | lower }}_inventories",
+      "question_name": "Please select {{ env.name }} Inventories to grant the team \"{{ env.access }}\" access on.",
+      "type": "multiselect"
+    }{% if not loop.last %},{% endif %}{{ '' }}
+    {% endfor %}{{ '' }}
+  ],
+  "description": "",
+  "name": ""
+}

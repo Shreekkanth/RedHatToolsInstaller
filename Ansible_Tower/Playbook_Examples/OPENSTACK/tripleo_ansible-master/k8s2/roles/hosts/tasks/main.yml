@@ -1,0 +1,19 @@
+---
+
+- name: /etc/hosts
+  lineinfile: >-
+    dest=/etc/hosts
+    state=present
+    regexp='^{{ item.addr }}'
+    line='{{ item.addr }}	{{ item.name }} {{ item.short }}'
+    backup=yes
+  with_items:
+    - name: k8s2-master1.k8stest.local
+      short: k8s2-master1
+      addr: 10.0.1.121
+    - name: k8s2-node1.k8stest.local
+      short: k8s2-node1
+      addr: 10.0.1.122
+    - name: k8s2-node2.k8stest.local
+      short: k8s2-node2
+      addr: 10.0.1.123

@@ -1,0 +1,56 @@
+- name: set facts for windows machines
+  gather_facts: false
+  hosts:
+    - "{{ ('tag_' ~ env_type ~ '_' ~ guid ~ '_windows') | replace('-', '_') }}"
+  tasks:
+    - name: get the Administrator password
+      ec2_win_password:
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        instance_id: "{{ ec2_id }}"
+        region: "{{ aws_region }}"
+        key_file: "~/.ssh/{{ key_name }}.pem"
+        wait: yes
+      delegate_to: localhost
+      register: win_password
+    - debug:
+        var: win_password
+
+    - name: set facts for remote access
+      set_fact:
+        ansible_become: false
+        ansible_connection: winrm
+        ansible_host: "{{ ec2_public_dns_name }}"
+        ansible_password: "{{ win_password.win_password }}"
+        ansible_port: 5986
+        ansible_user: Administrator
+        ansible_winrm_server_cert_validation: ignore
+
+        # THIS DOES NOT WORK
+    # - name: ensure IIS and ASP.NET are installed
+    #   win_feature:
+    #     name: AS-Web-Support
+    # - name: wait for host to be available
+    #   wait_for_connection:
+
+    - name: adding host to inventory
+      add_host:
+        ansible_connection: 'winrm'
+        ansible_host: "{{ ec2_public_dns_name }}"
+        ansible_password: "{{ win_password.win_password }}"
+        ansible_port: 5986
+        ansible_user: Administrator
+        ansible_winrm_server_cert_validation: ignore
+        groups: ec2_windows
+        name: windows_test_host
+
+
+        #THIS DOES WORK
+- name: test windows hosts
+  hosts: windows_test_host
+  tasks:
+    - name: ensure IIS and ASP.NET are installed
+      win_feature:
+        name: AS-Web-Support
+    - name: wait for host to be available
+      wait_for_connection:

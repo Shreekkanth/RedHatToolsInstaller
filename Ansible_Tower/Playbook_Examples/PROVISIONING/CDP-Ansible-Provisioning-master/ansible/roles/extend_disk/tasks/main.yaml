@@ -1,0 +1,52 @@
+---
+- name: Get partition info
+  parted:
+    device: /dev/sda
+  register: parted_facts
+
+- block:
+
+  - name: Dump parted info
+    debug:
+      msg: "{{ parted_facts }}"
+      verbosity: 1
+
+  - name: Create 3rd partition to extend lvm space
+    parted:
+      device: "/dev/sda"
+      number: 3
+      state: present
+      flags: "lvm"
+      part_start: "{{ parted_facts.partitions[1].end }}KiB"
+    register: create_partition
+
+  - name: Dump new partition info
+    debug:
+      msg: "{{ create_partition }}"
+      verbosity: 1
+
+  - name: Create pv on 3rd partition
+    lvg:
+      vg: vg00
+      pvs: "/dev/sda2,/dev/sda3"
+
+  - name: Create ESR mount point
+    lvol:
+      lv: lvESR
+      vg: vg00
+      size: 20G
+
+  - name: Format volume
+    filesystem:
+      dev: /dev/mapper/vg00-lvESR
+      fstype: xfs
+
+  - name: Mount volume
+    mount:
+      src: /dev/mapper/vg00-lvESR
+      fstype: xfs
+      state: mounted
+      path: /esr
+
+  when: parted_facts.disk.size > parted_facts.partitions[1].end
+

@@ -1,0 +1,2 @@
+register_file: '/tmp/register'
+config_file: '/tmp/config'

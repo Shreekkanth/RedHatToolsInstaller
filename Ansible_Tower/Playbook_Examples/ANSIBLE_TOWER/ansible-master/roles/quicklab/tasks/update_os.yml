@@ -1,0 +1,15 @@
+---
+- name: update OS to latest version
+  yum:
+    name: "*"
+    state: latest
+
+- name: reboot VMs
+  reboot:
+    connect_timeout: 20
+    reboot_timeout: 300
+  register: reboot_result
+
+- name: VMs restarted and online again
+  debug:
+    msg: "The system rebooted in {{ reboot_result.elapsed }} seconds."

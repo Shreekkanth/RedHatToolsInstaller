@@ -1,0 +1,6 @@
+[undercloud]
+10.64.201.204
+#10.10.9.200
+
+[lab:children]
+undercloud

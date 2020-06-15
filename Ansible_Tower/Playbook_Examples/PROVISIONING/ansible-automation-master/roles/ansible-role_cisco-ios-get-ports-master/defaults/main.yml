@@ -1,0 +1,4 @@
+---
+cisco_ios_get_ports_interface_type: Gigabit Ethernet Port
+cisco_ios_get_ports_available_only: false
+cisco_ios_get_ports_name: 

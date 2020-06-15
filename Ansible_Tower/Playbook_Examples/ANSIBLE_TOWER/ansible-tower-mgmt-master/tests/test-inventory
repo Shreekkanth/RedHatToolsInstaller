@@ -1,0 +1,31 @@
+[tower]
+ansible_tower_test ansible_connection=docker ansible_all_ipv6_addresses=[]
+
+[database]
+
+[all:vars]
+tower_docker_image='docker.io/centos/systemd'
+admin_password=tower
+
+pg_host=''
+pg_port=''
+
+pg_database='awx'
+pg_username='awx'
+pg_password=tower
+
+rabbitmq_port=5672
+rabbitmq_vhost=tower
+rabbitmq_username=tower
+rabbitmq_password=tower
+rabbitmq_cookie=cookiemonster
+
+# Needs to be true for fqdns and ip addresses
+rabbitmq_use_long_name=false
+
+[tower:vars]
+ansible_tower_license="{{ lookup('file', playbook_dir + '/../files/tower-license.txt') }}"
+
+[local:children]
+tower
+database

@@ -1,0 +1,13 @@
+---
+# defaults file for openshift-storage-setup
+lvm_package_name: "lvm2"
+lvm_package_version: "present"
+openshift_storage_device: "/dev/vda"
+openshift_storage_vg_name: "etcd-vg"
+openshift_storage_lv_name: "etcd-lv"
+openshift_storage_lv_size: "100%VG"
+openshift_storage_lv_fstype: "xfs"
+openshift_storage_lv_path: "/dev/mapper/etcd--vg-etcd--lv"
+openshift_storage_mount_path: "/var/lib/etcd"
+openshift_storage_fstab_regexp: "etcd"
+openshift_storage_fstab_line: "{{openshift_storage_lv_path}} {{openshift_storage_mount_path}} {{ openshift_storage_lv_fstype }} defaults 0 0"

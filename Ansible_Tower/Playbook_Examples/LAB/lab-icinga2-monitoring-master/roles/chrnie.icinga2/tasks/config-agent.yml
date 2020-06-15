@@ -1,0 +1,23 @@
+---
+- debug:
+    msg: "System {{ inventory_hostname }} will be an icinga2 {{icinga2_role}}"
+  tags:
+    - install
+    - config
+
+- name: Disable conf.d on Client
+  replace:
+    destfile: /etc/icinga2/icinga2.conf
+    regexp: '^include_recursive "conf.d"$'
+    replace: '//include_recursive "conf.d"'
+  notify: Test config before restart icinga 2
+  tags:
+    - install
+    - config
+
+- name: Manage Certificates
+  include_tasks: "pki.yml"
+  tags:
+    - install
+    - update
+

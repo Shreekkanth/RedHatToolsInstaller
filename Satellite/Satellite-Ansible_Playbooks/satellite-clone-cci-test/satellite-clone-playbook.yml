@@ -1,0 +1,8 @@
+---
+- hosts: satellite
+  vars_files:
+  - satellite-clone-vars.yml
+  remote_user: root
+  roles:
+  - init
+  - satellite-clone

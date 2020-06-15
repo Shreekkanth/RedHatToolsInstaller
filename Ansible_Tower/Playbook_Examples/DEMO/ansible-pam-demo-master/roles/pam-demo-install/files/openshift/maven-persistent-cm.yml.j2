@@ -1,0 +1,50 @@
+apiVersion: v1
+data:
+  mavenNexus: |-
+    <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+       <inheritFrom />
+       <name>mavenNexus</name>
+       <privileged>false</privileged>
+       <capOnlyOnAlivePods>false</capOnlyOnAlivePods>
+       <alwaysPullImage>false</alwaysPullImage>
+       <instanceCap>2147483647</instanceCap>
+       <slaveConnectTimeout>0</slaveConnectTimeout>
+       <idleMinutes>0</idleMinutes>
+       <activeDeadlineSeconds>0</activeDeadlineSeconds>
+       <label>mavenNexus</label>
+       <serviceAccount>jenkins</serviceAccount>
+       <nodeSelector />
+       <customWorkspaceVolumeEnabled>false</customWorkspaceVolumeEnabled>
+       <volumes>
+        <org.csanchez.jenkins.plugins.kubernetes.volumes.ConfigMapVolume>
+            <mountPath>/home/jenkins/.m2/</mountPath>
+            <configMapName>maven-m2-settings</configMapName>
+        </org.csanchez.jenkins.plugins.kubernetes.volumes.ConfigMapVolume>
+       </volumes>
+       <containers>
+          <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+             <name>jnlp</name>
+             <image>{{ jenkins_maven_agent_image }}</image>
+             <privileged>false</privileged>
+             <alwaysPullImage>true</alwaysPullImage>
+             <workingDir>/tmp</workingDir>
+             <command />
+             <args>${computer.jnlpmac} ${computer.name}</args>
+             <ttyEnabled>false</ttyEnabled>
+             <resourceRequestCpu />
+             <resourceRequestMemory />
+             <resourceLimitCpu />
+             <resourceLimitMemory />
+             <envVars />
+          </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+       </containers>
+       <envVars />
+       <annotations />
+       <imagePullSecrets />
+       <nodeProperties />
+    </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+kind: ConfigMap
+metadata:
+  labels:
+    role: jenkins-slave
+  name: jenkins-agents-nexus

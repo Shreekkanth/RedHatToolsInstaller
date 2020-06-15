@@ -1,0 +1,68 @@
+<%#
+kind: PXELinux
+name: BDI bare-metal-PXELinux
+oses:
+- RedHat 7
+%>
+#
+# This file was deployed via '<%= @template_name %>' template
+#
+# Supported host/hostgroup parameters:
+#
+# blacklist = module1, module2
+#   Blacklisted kernel modules
+#
+
+<%
+  options = []
+# options << "ipv6.disable=1"
+
+  if @host.params['blacklist']
+    options << "modprobe.blacklist=" + @host.params['blacklist'].gsub(' ', '')
+  end
+  options = options.join(' ')
+
+  interface = @host.provision_interface
+  subnet = @host.subnet
+  static_arg = 'static=yes'
+  static = ( @host.token.nil? ? '?' : '&' ) + static_arg 
+
+  ifnames = []
+  ifmacs = []
+  @host.managed_interfaces.each do |i| 
+    if interface.attached_devices.include? i.identifier
+      ifnames.push(i.identifier) 
+      ifmacs.push("ifname=#{i.identifier}:#{i.mac}")
+    end
+  end
+
+# Bonding
+  if @host.provision_interface.type == "Nic::Bond"
+    bondifname = @host.provision_interface.identifier
+    bondifline = "bond=#{bondifname}:#{ifnames.join(',')}:mode=#{@host.provision_interface.mode},#{@host.provision_interface.bond_options}"
+  end
+
+# VLAN tagging
+  if defined? subnet.vlanid and subnet.vlanid != "0" and  subnet.vlanid != "" and @host.provision_interface
+    vlanifname = @host.provision_interface.identifier + "." + subnet.vlanid
+    vlanline = "vlan=#{vlanifname}:#{@host.provision_interface.identifier}"
+  else
+    vlanifname = nil
+  end 
+
+# get static config
+  ip = interface.ip
+  mask = subnet.mask
+  gw = subnet.gateway
+  dns = subnet.dns_primary
+-%>
+
+
+
+DEFAULT linux
+
+LABEL linux
+    KERNEL <%= @kernel %>
+    APPEND initrd=<%= @initrd %> ks=<%= foreman_url('provision').gsub(foreman_server_fqdn.to_s, @host.content_source.to_s+':8000')  %><%= static %> kssendmac ks.sendmac inst.ks.sendmac <%= ifmacs.join(' ') %> <%= vlanline %> <%= bondifline %> ip=<%= ip %>::<%= gw %>:<%= mask %>:<%= @host %>:<%= vlanifname or bondifname or @host.provision_interface.identifier or nil %>:none nameserver=<%= dns %> <%= options %>
+
+

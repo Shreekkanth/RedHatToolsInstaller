@@ -1,0 +1,5 @@
+---
+- hosts: tower
+  gather_facts: false
+  tasks:
+    - name: Install requests python package

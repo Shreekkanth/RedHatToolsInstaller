@@ -1,0 +1,47 @@
+---
+- hosts: all
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Get datetime from local system
+      setup:
+        filter: ansible_date_time
+      register: info
+      delegate_to: localhost
+
+    - name: Display full variable
+      debug:
+        var: info.ansible_facts.ansible_date_time
+
+    - name: Display current time - ISO 8601 Format
+      debug:
+        var: info.ansible_facts.ansible_date_time.iso8601
+
+    - name: Display current time - Epoch
+      debug:
+        var: info.ansible_facts.ansible_date_time.epoch
+
+    - name: Set timestamp for 5 minutes in the future
+      set_fact:
+        job_schedule_timestamp: "{{ info.ansible_facts.ansible_date_time.epoch|int + 300 }}"
+
+    - name: Debug job_schedule_timestamp
+      debug:
+        var: job_schedule_timestamp
+
+    - name: Set lookup string for datetime
+      set_fact:
+        job_schedule_timestamp_lookup: "date -u --date=@{{ job_schedule_timestamp }} +%Y%m%dT%H%M%SZ"
+
+    - name: Debug job_schedule_timestamp_lookup
+      debug:
+        var: job_schedule_timestamp_lookup
+
+    - name: Set iso time string
+      set_fact:
+        timestring: "{{ lookup('pipe', job_schedule_timestamp_lookup)}}"
+
+    - name: Debug timestring
+      debug:
+        var: timestring

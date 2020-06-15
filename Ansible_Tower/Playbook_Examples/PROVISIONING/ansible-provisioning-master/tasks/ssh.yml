@@ -1,0 +1,20 @@
+---
+# files: roles/provisioning/tasks/ssh.yml
+- name: Deploying team SSH keys
+  get_url:
+    url={{ ssh_keys_pkg }}
+    dest=/tmp/rcipsshkeys-latest.noarch.rpm
+    force=yes
+    validate_certs=no
+  when: ansible_local.vpn.user == 'present' and ansible_local.vpn.status == 'started'
+  tags:
+    - provisioning
+    - provisioning-ssh
+
+- yum:
+    name=/tmp/rcipsshkeys-latest.noarch.rpm
+    state=present
+  when: ansible_local.vpn.user == 'present' and ansible_local.vpn.status == 'started'
+  tags:
+    - provisioning
+    - provisioning-ssh

@@ -1,0 +1,104 @@
+- name: Get Satellite Organization ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/organizations?search=label=\"{{ hostinfo.sat_organization }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: satorg
+
+- name: Get Satellite Location ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/locations?search=title=\"{{ hostinfo.sat_location }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: satloc
+
+- name: Get Satellite Hostgroup ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/hostgroups?search=title=\"{{ hostinfo.sat_hostgroup }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: sathgrp
+
+- name: Get Satellite Architecture ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/architectures?search=name=\"{{ hostinfo.sat_architecture }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: satarch
+
+- name: Get Satellite Operating System ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/operatingsystems?search=title=\"{{ hostinfo.sat_operatingsystem|regex_replace(' ','+') }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: satopsys
+
+- name: Get Satellite Subnet ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/subnets?search=name=\"{{ hostinfo.sat_subnet }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: satsubnet
+
+- name: Get Satellite Domain ID
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/domains?search=name=\"{{ hostinfo.sat_domain }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: satdomain

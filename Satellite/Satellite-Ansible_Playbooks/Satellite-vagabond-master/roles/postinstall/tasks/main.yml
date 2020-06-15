@@ -1,0 +1,66 @@
+---
+# RHEL 7 doesn't have pip2
+- name: Install pip2
+  easy_install:
+    name: pip
+    state: present
+
+# Upgrade the requests module to avoid issues
+- name: Upgrade python module requests
+  pip:
+    name: requests
+    state: present
+    extra_args: --upgrade -I
+
+# These modules are required for the foreman ansible plugins
+- name: Install additional python modules
+  pip:
+    name: "{{ item }}"
+    state: present
+    extra_args: -I
+  loop: "{{ pip_packages }}"
+
+- name: Copy MOTD
+  template:
+    src: motd.yml.j2
+    dest: /etc/motd
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure hammer for the default organization
+  command: >
+    hammer defaults add --param-name organization
+    --param-value "{{ initial_org }}"
+    && touch /root/.satellite/default_org
+  args:
+    creates: /root/.satellite/default_org
+
+- name: Configure hammer for the default location
+  command: >
+    hammer defaults add --param-name location
+    --param-value "{{ initial_loc }}"
+    && touch /root/.satellite/default_loc
+  args:
+    creates: /root/.satellite/default_loc
+
+- name: Copy manifest local to satellite server
+  copy:
+    src: manifest.zip
+    dest: "{{ manifest }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Upload the Satellite manifest
+  katello_manifest:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    organization: "{{ initial_org }}"
+    validate_certs: false
+    state: present
+    manifest_path: "{{ manifest | default(omit, true) }}"
+
+- import_tasks: full_install.yml
+  tags: [never, full]

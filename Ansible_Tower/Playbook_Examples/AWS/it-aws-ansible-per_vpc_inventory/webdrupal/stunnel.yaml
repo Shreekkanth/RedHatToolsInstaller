@@ -1,0 +1,16 @@
+---
+- hosts: webdrupal-mysql:webdrupal-app
+
+  tasks:
+    - name: Restart stunnel
+      shell: service stunnel_server restart
+      ignore_errors: yes
+      when: stunnel_server is defined
+      tags:
+        - bounce
+
+    - name: Restart stunnel
+      shell: service stunnel_client restart
+      ignore_errors: yes
+      tags:
+        - bounce

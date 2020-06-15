@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks: 
+    - name: Test close ticket
+      include_role:
+        name: sc_close_ticket

@@ -1,0 +1,65 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: get VM disks
+  command: "ls {{ vm_location }}"
+  register: disks
+  changed_when: "disks.rc != 0"
+
+- name: Clone Image
+  command: >
+           virt-clone --connect qemu:///system --original {{ template_name }} 
+           --name {{ item.key }}.{{ domain_name }} 
+           --file {{ vm_location }}{{ item.key }}.{{ domain_name }}.{{ item.value.file_type }} 
+  when: item.key not in disks.stdout
+  with_dict: "{{ guests }}"
+
+- name: Set memory For VMs
+  shell: "virt-xml --memory {{ item.value.mem }} {{ item.key }}.{{ domain_name }} --edit"
+  with_dict: "{{ guests }}"
+
+- name: Set vCPUs For VMs
+  shell: "virt-xml --vcpu {{ item.value.cpus }} {{ item.key }}.{{ domain_name }} --edit"
+  with_dict: "{{ guests }}"
+
+- name: Increase disk sizes
+  shell: "qemu-img resize {{ vm_location }}/{{ item.key }}.{{ domain_name }}.{{ item.value.file_type }} +{{item.value.disk}}G"
+  with_dict: "{{ guests }}"
+
+- name: Create working directories
+  file: path={{ working_location }}{{ item.key }}.{{ domain_name }} state=directory
+  with_dict: "{{ guests }}"
+
+- name: Create network configuration for each VM
+  shell: echo -e "BOOTPROTO=static
+         \nDEVICE=eth0
+         \nONBOOT=yes
+         \nTYPE=Ethernet
+         \nIPADDR={{ item.value.ipaddress }}
+         \nPREFIX=24
+         \nGATEWAY={{ gateway }}
+         \nDNS1={{ dns1 }}
+         \nDNS2={{ dns2 }}
+         \nDOMAIN={{ domain_name }}" >>{{ working_location }}{{ item.key }}.{{ domain_name }}/ifcfg-eth0
+  with_dict: "{{ guests }}"
+
+- name: Set Hostname and Copy in network configuration
+  shell: "virt-customize --hostname {{ item.key }}.{{ domain_name }} --copy-in {{ working_location }}{{ item.key }}.{{ domain_name }}/ifcfg-eth0:/etc/sysconfig/network-scripts/ --edit /etc/ssh/sshd_config:'s/^#UseDNS yes/UseDNS no/' -d {{ item.key }}.{{ domain_name }}"
+  with_dict: "{{ guests }}"
+
+- name: Check if root ssh keys generated
+  stat: path=/root/.ssh/id_rsa.pub
+  register: root_ssh
+
+# Need to make sure the --selinux-relabel is inplace https://bugzilla.redhat.com/show_bug.cgi?id=1378311
+- name: Copy in ssh keys
+  shell: "virt-customize --ssh-inject root:file:/root/.ssh/id_rsa.pub --selinux-relabel -d {{ item.key }}.{{ domain_name }}"
+  with_dict: "{{ guests }}"
+  when: root_ssh.stat.exists == True
+
+- name: Clean up working files
+  file: path={{ working_location }}{{ item.key }}.{{ domain_name }} state=absent
+  with_dict: "{{ guests }}"
+

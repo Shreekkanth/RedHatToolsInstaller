@@ -1,0 +1,53 @@
+---
+- name: some new task with some parameters
+  hosts: target
+  become: yes
+  remote_user: mtenheuv
+
+  vars: 
+    - parameter_a: aaa
+    - parameter_b: bbb
+    - packages:
+      - screen
+      - tree
+      - samba-client
+      - git
+      - firewalld
+      - httpd
+    - services:
+      - httpd
+      - firewalld
+
+  tasks:
+  - name: install packages on {{ inventory_hostname }}
+    yum:
+      name: "{{ item }}"
+      state: latest
+    with_items: "{{ packages }}" 
+
+  - name: configure services 
+    service:
+      name: "{{ item }}" 
+      state: started
+      enabled: yes
+    with_items: "{{ services }}" 
+
+  - name: open port
+    firewalld: 
+      service: http
+      state: enabled
+      permanent: 1
+      immediate: 1
+
+  - name: push file
+    template:
+      src: templates/index.html.j2
+      dest: /var/www/html/index.html
+    notify: restart-services
+
+  handlers:
+  - name: restart-services
+    service:
+      name: "{{ item }}" 
+      state: restarted
+    with_items: "{{ services }}" 

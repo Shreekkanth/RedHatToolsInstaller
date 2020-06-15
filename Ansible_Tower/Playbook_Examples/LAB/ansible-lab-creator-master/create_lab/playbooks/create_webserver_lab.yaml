@@ -1,0 +1,47 @@
+---
+
+- name: Build VMs Ready for webserver 
+  hosts: kvm
+  become: true
+  vars_files:
+    - vars/webserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: libvirt_build_vms
+
+    - include_role:
+        name: libvirt_start_vms
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - vars/webserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible_host_configure 
+
+- name: Configure VM for Webserver 
+  hosts: webserver
+  become: true
+  vars_files:
+    - vars/webserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: extend_vm_disks
+
+    - include_role:
+        name: rhsm_register
+
+- name: Install Ansible Tower
+  hosts: webserver
+  become: true
+  vars_files:
+    - vars/webserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: install_apache_webserver 

@@ -1,0 +1,102 @@
+---
+
+- name: Control if the role is supported on this system
+  assert:
+    that: >
+          {% for key, value in supported_distrobution.iteritems() -%}
+            ( ansible_distribution == "{{ key }}" and ansible_distribution_version | float >= {{ value.version }}){% if not loop.last %} or {% endif %}
+          {%- endfor %}
+    msg: >
+          This play is only supported on the following operating systems:
+          {% for key, value in supported_distrobution.iteritems() -%}
+            {{ key }} {{ value.version }}{% if not loop.last %}, {% endif %}
+          {%- endfor %}
+
+- name: Include OS specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: RedHat - Install required packages
+  yum:
+    name: "{{ item.key if ('version' not in item.value) else ('%s-%s' % (item.key, item.value['version'])) }}"
+    state: "{{ item.value.state | default('present') }}"
+  with_dict: "{{ packages }}"
+  when: ansible_os_family == 'RedHat'
+
+- name: Hosting provider ssh config
+  template:
+    src: ssh_config.j2
+    dest: "~{{ ansible_user }}/.ssh/config"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0600"
+  when: test_framework_hosting_provider is defined
+
+
+- name: Test framework root directory
+  file:
+    dest: "{{ testframework_virtual_env }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "2775"
+
+- name: Virtual environment dependencies
+  pip:
+    name: "{{ item.key }}"
+    version: "{{ item.value.version | default('') }}"
+    state: "{{ item.value.state | default('present') }}"
+    virtualenv: "{{ testframework_virtual_env }}/venv"
+  environment:
+    PATH: "{{ testframework_python_root }}/root/usr/bin:{{ ansible_env.PATH }}"
+    LD_LIBRARY_PATH: "{{ testframework_python_root }}/root/usr/lib64"
+    MANPATH: "{{ testframework_python_root }}/root/usr/share/man"
+    XDG_DATA_DIRS: "{{ testframework_python_root }}/root/usr/share"
+    PKG_CONFIG_PATH: "{{ testframework_python_root }}/root/usr/lib64/pkgconfig"
+  with_dict: "{{ pip_pre_packages }}"
+  become: False
+
+- name: Test framework dependencies
+  pip:
+    name: "{{ item.key }}"
+    version: "{{ item.value.version | default('') }}"
+    state: "{{ item.value.state | default('present') }}"
+    virtualenv: "{{ testframework_virtual_env }}/venv"
+  environment:
+    PATH: "{{ testframework_python_root }}/root/usr/bin:{{ ansible_env.PATH }}"
+    LD_LIBRARY_PATH: "{{ testframework_python_root }}/root/usr/lib64"
+    MANPATH: "{{ testframework_python_root }}/root/usr/share/man"
+    XDG_DATA_DIRS: "{{ testframework_python_root }}/root/usr/share"
+    PKG_CONFIG_PATH: "{{ testframework_python_root }}/root/usr/lib64/pkgconfig"
+  with_dict: "{{ pip_packages }}"
+  become: False
+
+- name: Hosted python modules
+  pip:
+    name: "{{ item }}"
+    virtualenv: "{{ testframework_virtual_env }}/venv"
+  environment:
+    PATH: "{{ testframework_python_root }}/root/usr/bin:{{ ansible_env.PATH }}"
+    LD_LIBRARY_PATH: "{{ testframework_python_root }}/root/usr/lib64"
+    MANPATH: "{{ testframework_python_root }}/root/usr/share/man"
+    XDG_DATA_DIRS: "{{ testframework_python_root }}/root/usr/share"
+    PKG_CONFIG_PATH: "{{ testframework_python_root }}/root/usr/lib64/pkgconfig"
+    GIT_SSH_COMMAND: "ssh -i /home/{{ ansible_user }}/.ssh/id_rsa"
+  with_items:
+    - "{{ test_framework_hosted_pip_dependencies }}"
+  become: False
+
+- name: Import test cases
+  copy:
+    src: "{{ item }}"
+    dest: "{{ testframework_virtual_env }}"
+    owner: root
+    group: root
+    mode: 0755
+  with_fileglob:
+    - files/test_*.py
+
+- name: Scripted interface
+  template:
+    src: testrunner.sh.j2
+    dest: "{{ testframework_virtual_env }}/testrunner.sh"
+    mode: 0755

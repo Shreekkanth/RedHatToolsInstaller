@@ -1,0 +1,36 @@
+#
+# bchardim@redhat.com  20170405
+# Disclaimer  | These ansible playbooks are NOT SUPPORTED by Red Hat Global Support Service.
+#
+
+These ansible playbooks pretend to deploy automatically an Satellite6.
+
+###################################################
+# Prerequisites
+###################################################
+
++ Satellite
+
+For testing deploy at least 2 vCPUs 8GB RAM server with latest RHEL7 installed with an additional 100G unpartitioned disk.
+For production deploy review Red Hat Satellite 6 official documentation.
+
+
+#####################################################
+# Playbook configuration
+#####################################################
+
++ Follow the standard ansible configuration on inventory and vars/*.yml file.
+
++ Please make special attention on ansible-vault encrypted files that store passwords.
+  These files are provided empty and MUST be created using ansible-vault using your own vault password in order to fill with your confidencial data
+
+# ansible-vault create satellite-install/vars/main.yml
+---
+sat_email: 'root@localhost'
+sat_user: 'admin'
+sat_pass: 'somepassword'
+...
+
+
+It stores the username/password for satellite admin user
+

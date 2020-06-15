@@ -1,0 +1,24 @@
+---
+- name: display message to stdout
+  debug:
+    msg: "using ansible tower catalog {{ ansible_tower_catalog_path }}"
+
+- name: initialize ansible_tower_vars
+  set_fact:
+    ansible_tower_vars: {}
+
+- name: update ansible_tower_vars
+  include_tasks: "{{ role_path }}/includes/load_vars.yaml"
+  loop:
+    - credentials
+    - teams
+    - users
+    - inventories
+    - projects
+    - job_templates
+    - workflow_templates
+
+- debug: var=ansible_tower_vars
+
+- name: include tower specific tasks
+  include_tasks: "{{ role_path }}/includes/installer.yaml"

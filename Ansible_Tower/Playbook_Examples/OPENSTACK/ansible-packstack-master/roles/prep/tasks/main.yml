@@ -1,0 +1,16 @@
+---
+- name: Include Redeploy OS if Requested
+  include: redeploy.yml
+  when: redeploy
+
+- name: Prep for all hosts
+  include: all.yml
+
+- name: Prep for controller hosts
+  include: controller.yml
+  when: "'controller' in group_names"
+
+- name: Prep for compute hosts
+  include: compute.yml
+  when: "'compute' in group_names"
+

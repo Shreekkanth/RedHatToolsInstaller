@@ -1,0 +1,11 @@
+---
+# tasks file for ovirt-vm-disk
+
+- name: "Create OCP {{ ovirt_vm_disk_vm_name }} {{ ovirt_vm_disk_name }} disk"
+  ovirt_disks:
+    name: "{{ ovirt_vm_disk_vm_name }}-{{ ovirt_vm_disk_name }}-disk"
+    vm_name: "{{ ovirt_vm_disk_vm_name }}"
+    storage_domain: "{{ ovirt_vm_disk_storage_domain }}"
+    size: "{{ ovirt_vm_disk_size }}"
+    format: cow
+    interface: virtio

@@ -1,0 +1,18 @@
+---
+#### Defensive Programming To Check If software Is Already Downloaded
+- name: Check Existence of Libraries "{{ softName }}"
+  stat:
+    path: "{{  base_dir_download + softName  }}"
+  register: library_exists
+
+###
+- name: Sync Download "{{ softName }}"
+  get_url:
+    url:            "{{ softUrl }}"
+    dest:           "{{ base_dir_download }}"
+    validate_certs: false
+  register: url_mysqldownload
+  when: library_exists.stat.exists == false
+
+#
+# EOF

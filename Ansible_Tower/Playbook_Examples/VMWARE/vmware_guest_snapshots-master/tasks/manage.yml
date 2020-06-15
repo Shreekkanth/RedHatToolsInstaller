@@ -1,0 +1,70 @@
+---
+
+- name: Search for VM folder in MDC
+  vmware_guest_find:
+    name: "{{ vm_name.split ('.') [0] | upper | default(omit) }}"
+    hostname: "{{ vm_hostname | default(omit) }}"
+    password: "{{ vm_hostname_password | default(omit) }}"
+    username: "{{ vm_hostname_username | default(omit) }}"
+    validate_certs: "{{ vm_hostname_validate_certs | default(omit) }}"
+    port: "{{ vm_hostname_port | default(omit) }}"
+  delegate_to: localhost
+  when: vm_name is defined and vm_source is not defined
+  register: vm_source
+  ignore_errors: true
+
+- name: Search for VM folder in WMDC
+  vmware_guest_find:
+    name: "{{ vm_name.split ('.') [0] | upper | default(omit) }}"
+    hostname: "{{ vm_hostname2 | default(omit) }}"
+    password: "{{ vm_hostname_password | default(omit) }}"
+    username: "{{ vm_hostname_username | default(omit) }}"
+    validate_certs: "{{ vm_hostname_validate_certs | default(omit) }}"
+    port: "{{ vm_hostname_port | default(omit) }}"
+  delegate_to: localhost
+  when: vm_name is defined and vm_hostname2 is defined and vm_source is failed and vm_source2 is not defined
+  register: vm_source2
+
+- name: Manage VM snapshot using vCenter folder value
+  vmware_guest_snapshot:
+    name: "{{ vm_name.split ('.') [0] | upper | default(omit) }}"
+    folder: "{{ vm_source.folders }}"
+    state: "{{ vm_snapshot_state | default(omit) }}"
+    datacenter: "{{ vm_datacenter | upper }}"
+    snapshot_name: "{{ vm_snapshot_name }}"
+    description: "{{ vm_snapshot_description | default(omit) }}"
+    hostname: "{{ vm_hostname | default(omit) }}"
+    password: "{{ vm_hostname_password | default(omit) }}"
+    username: "{{ vm_hostname_username | default(omit) }}"
+    validate_certs: "{{ vm_hostname_validate_certs | default(omit) }}"
+    port: "{{ vm_hostname_port | default(omit) }}"
+  register: snapshot_outcome
+  delegate_to: localhost
+  when: vm_source is defined and vm_source is succeeded
+
+- name: Manage VM snapshot using 2nd vCenter folder value
+  vmware_guest_snapshot:
+    name: "{{ vm_name.split ('.') [0] | upper | default(omit) }}"
+    folder: "{{ vm_source2.folders }}"
+    state: "{{ vm_snapshot_state | default(omit) }}"
+    datacenter: "{{ vm_datacenter2 | upper }}"
+    snapshot_name: "{{ vm_snapshot_name }}"
+    description: "{{ vm_snapshot_description | default(omit) }}"
+    hostname: "{{ vm_hostname2 | default(omit) }}"
+    password: "{{ vm_hostname_password | default(omit) }}"
+    username: "{{ vm_hostname_username | default(omit) }}"
+    validate_certs: "{{ vm_hostname_validate_certs | default(omit) }}"
+    port: "{{ vm_hostname_port | default(omit) }}"
+  register: snapshot_outcome2
+  delegate_to: localhost
+  when: vm_source2 is defined and vm_source2 is succeeded and vm_source2 is not skipped and vm_datacenter2 is defined
+
+- name: Print snapshot outcome for vCenter 1
+  debug:
+    var: snapshot_outcome
+  when: snapshot_outcome is defined and snapshot_outcome is succeeded and snapshot_outcome2 is skipped
+
+- name: Print snapshot outcome for vCenter 2
+  debug:
+    var: snapshot_outcome2
+  when: snapshot_outcome2 is defined and snapshot_outcome2 is succeeded and snapshot_outcome is skipped

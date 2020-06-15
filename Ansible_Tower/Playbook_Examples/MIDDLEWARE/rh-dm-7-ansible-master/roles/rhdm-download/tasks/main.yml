@@ -1,0 +1,175 @@
+---
+# tasks file for rhdm-download
+#
+#### Defensive Programming
+# https://github.com/openshift/openshift-ansible/blob/master/docs/best_practices_guide.adoc
+#
+####
+- name: Fail for Missing Transfer Method
+  fail: msg="{{ MSG_001_TRANSFER_METHOD }}  "
+  when: transfer_method is not defined or transfer_method == ''
+  tags:
+   - rhdm
+
+####
+- name: Fail for Missing Red Hat Network Username
+  fail: msg="{{ MSG_002_USERNAME_MISSING }}  "
+  when: transfer_method == TRANSFER_METHOD_CSP_TO_HOST and (rhn_username is not defined or rhn_username == '')
+  tags:
+   - rhdm
+
+####
+- name: Fail for Missing Red Hat Network Password
+  fail: msg="{{ MSG_003_PASSWORD_MISSING }}  "
+  when: transfer_method == TRANSFER_METHOD_CSP_TO_HOST and (rhn_password is not defined or rhn_password == '')
+  tags:
+   - rhdm
+
+#### Set Facts
+- name: Set MySQL Download Facts
+  set_fact:
+    mysql_jdbc_artifact_version: "{{ mysql_connector_java_version }}"
+    mysql_jdbc_artifact:         "{{ base_dir_download + 'mysql-connector-java-' + mysql_connector_java_version + '.jar' }}"
+  tags:
+   - mysql_bundle
+
+####
+- name: Set Oracle JDBC Download Facts
+  set_fact:
+    oracle_jdbc_artifact_version: "{{ oracle_jdbc_java_version }}"
+    oracle_jdbc_artifact:         "{{ base_dir_download + 'ojdbc8-' + oracle_jdbc_java_version + '.jar' }}"
+    oracle_maven_repository:      "{{ oracle_maven_repo_url }}"
+    oracle_maven_repo_artifact:   "{{ oracle_maven_repo_url + 'com/oracle/jdbc/ojdbc8/' + oracle_jdbc_java_version +'/ojdbc8-' + oracle_jdbc_java_version + '.jar' }}"
+    oracle_curl_cookies_download: "{{ base_dir_download + 'curl_cookies.txt' }}"
+    #
+    oracle_orai18n_artifact_version:      "{{ oracle_jdbc_java_version }}"
+    oracle_orai18n_artifact:              "{{ base_dir_download + 'orai18n-' + oracle_jdbc_java_version + '.jar' }}"
+    oracle_orai18n_maven_repo_artifact:   "{{ oracle_maven_repo_url + 'com/oracle/jdbc/orai18n/' + oracle_jdbc_java_version +'/orai18n-' + oracle_jdbc_java_version + '.jar' }}"
+    oracle_orai18n_curl_cookies_download: "{{ base_dir_download + 'curl_cookies_orai18n.txt' }}"
+  tags:
+   - oracle_jdbc
+
+#### Create the Destination folder
+- name: Create JBoss SSO Software Destination
+  file:
+    path:  "{{ base_dir_download }}"
+    owner: "{{ rhdm_user_os }}"
+    group: "{{ rhdm_group_os }}"
+    state: directory
+    mode: "755"
+  tags:
+   - rhdm
+
+#### Download JBoss EAP Software
+- name: "Download JBoss EAP Software"
+  include_tasks: downloadCSP.yml
+  vars:
+    softUrl:  "{{ item.value.url }}"
+    softName: "{{ item.value.name}}"
+    itemKey:  "{{item.key}}"
+  tags:
+    - rhdm
+  with_dict: "{{ rh_jboss_soft | default({}) }}"
+
+#### Download RH Decision Manager Software: decision-central, kie-server.
+- name: "Download RH Decision Manager Software: Adapters, etc."
+  include_tasks: downloadCSP.yml
+  vars:
+    softUrl:  "{{ item.value.url }}"
+    softName: "{{ item.value.name}}"
+    itemKey:  "{{item.key}}"
+  tags:
+    - rhdm
+  with_dict: "{{ rhdm_soft | default({}) }}"
+
+#### Download MySQL
+- name: Download MySQL Bundle
+  include_tasks: downloadFile.yml
+  vars:
+    softUrl:  "{{ item.value.url }}"
+    softName: "{{ item.value.name}}"
+  tags:
+    - mysql_bundle
+  with_dict: "{{ mysql_soft | default({}) }}"
+
+#### Download MySQL JDBC from Maven Central
+- name: Check Existence of MySQL JDBC JAR Library
+  stat:
+    path: "{{ mysql_jdbc_artifact }}"
+  register: mysql_jdbc_artifact_exists
+  tags:
+    - mysql_bundle
+
+- name: Download MySQL JDBC Driver JAR Library
+  maven_artifact:
+    group_id:    mysql
+    artifact_id: mysql-connector-java
+    version:     "{{ mysql_jdbc_artifact_version }}"
+    dest:        "{{ base_dir_download }}"
+    keep_name:   yes
+  tags:
+    - mysql_bundle
+  when: mysql_jdbc_artifact_exists.stat.exists == false
+
+#### Check Existence Oracle JDBC from Oracle Maven Repository
+- name: Check Existence of Oracle JDBC JAR Library
+  stat:
+    path: "{{ oracle_jdbc_artifact }}"
+  register: oracle_jdbc_artifact_exists
+  tags:
+    - oracle_jdbc
+
+#### Remove the curl_cookies to download Oracle JDBC
+- name: Remove the {{ oracle_curl_cookies_download}}
+  file:
+    path: "{{ oracle_curl_cookies_download}}"
+    state: "absent"
+  tags:
+    - oracle_jdbc
+  when: oracle_jdbc_artifact_exists.stat.exists == false
+
+#### Download Oracle JDBC Library using the curl tool
+- name: Download Oracle JDBC Driver JAR Library with curl
+  command: "curl -c {{ oracle_curl_cookies_download}}  --location-trusted --user {{oracle_maven_username}}:{{oracle_maven_password}}  {{oracle_maven_repo_artifact}} -o {{oracle_jdbc_artifact}} {{curl_proxy}}"
+  no_log: false
+  tags:
+    - oracle_jdbc
+  when: oracle_jdbc_artifact_exists.stat.exists == false
+
+#### Check Existence Oracle I18N from Oracle Maven Repository
+- name: Check Existence of Oracle I18N JAR Library
+  stat:
+    path: "{{ oracle_orai18n_artifact }}"
+  register: oracle_orai18n_artifact_exists
+  tags:
+    - oracle_jdbc
+
+#### Remove the curl_cookies to download Oracle I18N
+- name: Remove the {{ oracle_orai18n_curl_cookies_download}}
+  file:
+    path: "{{ oracle_orai18n_curl_cookies_download}}"
+    state: "absent"
+  tags:
+    - oracle_jdbc
+  when: oracle_orai18n_artifact_exists.stat.exists == false
+
+#### Download Oracle I18N Library using the curl tool https://maven.oracle.com/com/oracle/jdbc/orai18n/12.2.0.1/orai18n-12.2.0.1.jar
+- name: Download Oracle I18N Driver JAR Library with curl
+  command: "curl -c {{ oracle_orai18n_curl_cookies_download }}  --location-trusted --user {{oracle_maven_username}}:{{oracle_maven_password}}  {{oracle_orai18n_maven_repo_artifact}} -o {{oracle_orai18n_artifact}} {{curl_proxy}}"
+  no_log: false
+  tags:
+    - oracle_jdbc
+  when: oracle_orai18n_artifact_exists.stat.exists == false
+
+#### Download JMeter
+- name: Download JMeter Bundle
+  include_tasks: downloadFile.yml
+  vars:
+    softUrl:  "{{ item.value.url }}"
+    softName: "{{ item.value.name}}"
+  tags:
+    - jmeter_bundle
+  with_dict: "{{ jmeter_soft | default({}) }}"
+
+#
+# EOF

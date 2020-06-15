@@ -1,0 +1,43 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    org_id: 3
+    git_creds_id: 30
+    team_id: 1
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Create Project ACEPlus 
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/projects/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body_format: json
+      body: >
+        {
+          "credential": "{{ git_creds_id }}",
+          "scm_branch": "master",
+          "description": "ACEPlus Master Branch",
+          "scm_update_cache_timeout": 0,
+          "scm_update_on_launch": "true",
+          "scm_clean": "true",
+          "scm_type": "git",
+          "scm_delete_on_update": "true",
+          "scm_url": "https://gitlab.consulting.redhat.com/mzali/aeon-aceplus.git",
+          "timeout": 0,
+          "organization": "{{ org_id }}",
+          "name": "ACEPlus DR Playbook - Master",
+          "team": "{{ team_id }}"
+        }
+      status_code: 201

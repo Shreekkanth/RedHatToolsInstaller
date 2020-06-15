@@ -1,0 +1,59 @@
+---
+#### Check Existence JBoss EAP Patch ZIP
+- name: "Check Existence of Libraries RHPAM: {{patch}}"
+  stat:
+    path: "{{ rhpam_patch_dest + patch }}"
+  register: rhpam_patch_exists
+  tags:
+    - rhpam_patch
+
+#### Copy RHPAM Patch
+- name: "Copy RHPAM Patch: {{patch}}"
+  copy:
+    src: "{{ base_dir_download + patch }}"
+    dest: "{{ rhpam_patch_dest }}"
+  tags:
+    - rhpam_patch
+  when: rhpam_apply_patches and rhpam_patch_exists.stat.exists == false
+
+#### Extract RHPAM Patches Libraries
+- name: "Extract RHPAM Patch: {{patch}}"
+  unarchive:
+    src:   "{{ base_dir_download + patch }}"
+    dest:  "{{ rhpam_patch_dest }}"
+    remote_src: no
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+  tags:
+    - rhpam_patch
+  when: rhpam_apply_patches
+
+#### Patch JBoss BPM
+- name: "apply-updates RHPAM: {{patch}}"
+  shell:  "./apply-updates.sh  {{rhpam_business_central_war}} rhpam-business-central-eap7-deployable"
+  args:
+    chdir: "{{ rhpam_patch_dest + patch[0:-4] }}"
+  tags:
+    - rhpam_patch
+  when: rhpam_apply_patches
+
+#### Patch JBoss BPM
+- name: "apply-updates RHPAM: {{patch}}"
+  shell:  "./apply-updates.sh  {{rhpam_kieserver_war}}  rhpam-kie-server-ee7"
+  args:
+    chdir: "{{ rhpam_patch_dest + patch[0:-4] }}"
+  tags:
+    - rhpam_patch
+  when: rhpam_apply_patches
+
+#### Remove the ZIP
+- name: "Remove the RHPAM Patch ZIP: {{patch}}"
+  file:
+    path: "{{ rhpam_patch_dest + patch }}"
+    state: "absent"
+  tags:
+    - rhpam_patch
+  when: rhpam_remove_patch
+
+#
+# EOF

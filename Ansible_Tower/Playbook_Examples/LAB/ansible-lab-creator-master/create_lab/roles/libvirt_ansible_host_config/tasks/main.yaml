@@ -1,0 +1,32 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: ensure that CheckKnownHosts is set to no
+  delegate_to: localhost
+  blockinfile:
+    path: /etc/ansible/hosts
+    marker_begin: ansible ssh configuration start
+    block: |
+           ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+    insertbefore: BOF
+    marker_end: ansible ssh configuration end
+    state: present
+
+- name: Create KVM Ansible_Host ansible group
+  delegate_to: localhost
+  blockinfile:
+    path: /etc/ansible/hosts
+    marker_begin: ansible host KVM and Ansible configuration start
+    block: |
+           [kvm]
+           {{ KVM_HOST }}
+           [ansible_host]
+           {{ ANSIBLE_HOST }}
+    
+    insertafter: EOF
+    marker_end: ansible host KVM and Ansible configuration end
+    state: present
+
+

@@ -1,0 +1,60 @@
+---
+genie_role_repos:
+  - name: "genie-credentials"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-credentials.git"
+    dest: "roles/genie-credentials"
+  - name: "genie-gitlab-groups"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-gitlab-groups.git"
+    dest: "roles/genie-gitlab-groups"
+  - name: "genie-gitlab-projects"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-gitlab-projects.git"
+    dest: "roles/genie-gitlab-projects"
+  - name: "genie-inventories"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-inventories.git"
+    dest: "roles/genie-inventories"
+  - name: "genie-job-templates"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-job-templates.git"
+    dest: "roles/genie-job-templates"
+  - name: "genie-prerequisites"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-prerequisites.git"
+    dest: "roles/genie-prerequisites"
+  - name: "genie-projects"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-projects.git"
+    dest: "roles/genie-projects"
+  - name: "genie-rbac"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-rbac.git"
+    dest: "roles/genie-rbac"
+  - name: "genie-teams"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-teams.git"
+    dest: "roles/genie-teams"
+
+genie_playbook_repos:
+  - name: "genie-credential-onboarding"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-credential-onboarding.git"
+    dest: "playbooks/credentials"
+  - name: "genie-inventory-onboarding"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-inventory-onboarding.git"
+    dest: "playbooks/inventory"
+  - name: "genie-job-template-onboarding"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-job-template-onboarding.git"
+    dest: "playbooks/job-templates"
+  - name: "genie-platform-onboarding"
+    url: "ssh://git@gitlab.consulting.redhat.com:2222/Tower_Genie/genie-platform-onboarding.git"
+    dest: "playbooks/platform"
+
+genie_job_templates:
+  - name: "Ansible Tower Genie - Platform Onboarding"
+    file: "platform-onboarding.yml"
+    desc: "Playbook to onboard teams into Source Control systems and Ansible Tower in multiple environments."
+    survey: "platform-onboarding-survey.json"
+  - name: "Ansible Tower Genie - Job Template Onboarding"
+    file: "job-template-onboarding.yml"
+    desc: "Playbook to onboard job templates into Ansible Tower in multiple environments."
+    survey: "job-template-onboarding-survey.json"
+  #TODO: Actually create inventory and credential playbooks
+
+# Defaults for building variables - Don't touch ;)
+tower_environments: []
+tower_secrets: []
+tower_inventories: []
+scm_prj_branches: []

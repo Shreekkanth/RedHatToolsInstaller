@@ -1,0 +1,18 @@
+---
+- name: vars test
+  hosts: local
+  vars:
+    http_port: 80
+    id_rsa: 1234
+
+  tasks:
+  - name: Write value
+    debug:
+      msg: "Vault is id_rsa " 
+
+- name: second playbook
+  hosts: local
+  tasks:
+  - name: Write value
+    debug:
+      msg: "Vault is id_rsa " 

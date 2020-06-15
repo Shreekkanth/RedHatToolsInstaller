@@ -1,0 +1,38 @@
+- name: Install katello-ca-consumer package
+  yum:
+    name: "http://{{ satinfo.puppet_proxy_name }}/pub/katello-ca-consumer-latest.noarch.rpm"
+    state: present
+
+- name: Register to Satellite
+  redhat_subscription:
+    activationkey: "{{ satinfo.all_parameters|selectattr('name','equalto','kt_activation_keys') | map(attribute='value') | first }}"
+    org_id: "{{ hostinfo.sat_organization }}"
+
+- name: Set rhsm interval on coll/svil/cert hosts
+  lineinfile:
+    path: "/etc/rhsm/rhsm.conf"
+    regexp: "^certCheckInterval.*"
+    line: "certCheckInterval = 720"
+    state: present
+  when: "satinfo.hostgroup_title is match('^bdi/(coll|svil|cert)')"
+  register: rhsmconf
+
+- name: Restart rhsmcertd if needed
+  service:
+    name: rhsmcertd
+    state: restarted
+  when: rhsmconf is changed
+
+- name: Enable repositories
+  rhsm_repository:
+    name: "{{ base_repositories }}"
+
+- name: Enable extra repository if needed
+  rhsm_repository:
+    name: rhel-server-rhscl-7-rpms
+  when: "'jboss_eap' in (satinfo.all_puppetclasses|selectattr('module_name', 'equalto', 'profile') | map(attribute='name') | map('regex_replace', 'profile::' ) | list) "
+
+- name: Install Katello Agent
+  when: install_katello_agent
+  include_tasks:    
+    file: install_katello_agent.yml

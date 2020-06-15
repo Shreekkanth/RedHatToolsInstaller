@@ -1,0 +1,30 @@
+initial_org: "Acme_Inc"
+initial_loc: "Anyplace"
+admin_user: "admin"
+admin_pass: "redhat"
+
+extra_packages:
+  - sos
+  - parted
+  - chrony
+  - lvm2
+  - lvm2-python-libs
+
+pip_packages:
+  - nailgun
+  - netaddr
+  - apypie
+
+manifest: "/tmp/manifest.zip"
+
+lifecycle01: devel
+lifecycle02: stage
+lifecycle03: prod
+
+subscriptions: "Employee SKU"
+
+sat_server_repos:
+  - rhel-7-server-rpms
+  - rhel-server-rhscl-7-rpms
+  - rhel-7-server-satellite-6.5-rpms
+  - rhel-7-server-satellite-maintenance-6-rpms

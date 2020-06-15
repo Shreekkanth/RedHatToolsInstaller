@@ -1,0 +1,10 @@
+---
+#Katello Package to remove, with * to ensure correct package is found. This keeps the systems clean
+katello_old: katello-ca-consumer-example.com*
+
+#Link to Satellite server, and corresponding katello package to grab and install
+katello_package: katello-ca-consumer-latest.noarch.rpm
+satellite_link: http://satellite.example.com/pub
+
+#Organization
+organization_id: Default_Organization

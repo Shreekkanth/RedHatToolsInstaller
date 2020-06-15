@@ -1,0 +1,5 @@
+---
+# vars file for tower
+tower_setup_mode: setup # or setup-bundle
+tower_setup_url: "https://releases.ansible.com/ansible-tower/{{ tower_setup_mode }}/ansible-tower-{{ tower_setup_mode }}-latest.tar.gz"
+tower_setup_location: /root

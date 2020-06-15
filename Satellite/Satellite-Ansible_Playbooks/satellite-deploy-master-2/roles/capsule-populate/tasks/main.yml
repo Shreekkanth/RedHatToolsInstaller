@@ -1,0 +1,32 @@
+---
+  - name: "Verify that capsule services are running as expected"
+    command: 
+      "/usr/bin/katello-service status"
+
+  - name: "Download bootstrap.py client registration script from satellite"
+    get_url:
+      url: "https://{{ groups['satellite']|first }}/pub/bootstrap.py"
+      dest: "/var/www/html/pub"
+      force: yes
+
+  - name: "Set organization and location to capsule"
+    command:
+      "hammer capsule update --name {{ item }} --organizations '{{ sat_org }}' --locations '{{ capsule_location }}'"
+    delegate_to: "{{ groups['satellite']|first }}"
+    run_once: true
+    with_items: "{{ groups['capsules'] }}"
+  
+  - name: "Assign Library env to capsule"
+    command:
+      "hammer capsule content add-lifecycle-environment --name {{ item }} --organization '{{ sat_org }}' --environment Library"
+    delegate_to: "{{ groups['satellite']|first }}"
+    run_once: true
+    with_items: "{{ groups['capsules'] }}"
+  
+  - name: "Sync content from satellite to capsule"
+    command:
+      "hammer capsule content synchronize --name {{ item }} --organization '{{ sat_org }}' --environment Library"
+    delegate_to: "{{ groups['satellite']|first }}"
+    run_once: true
+    with_items: "{{ groups['capsules'] }}"
+...

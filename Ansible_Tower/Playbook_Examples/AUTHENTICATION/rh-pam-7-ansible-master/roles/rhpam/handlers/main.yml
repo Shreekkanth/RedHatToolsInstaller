@@ -1,0 +1,67 @@
+---
+##
+# http://docs.ansible.com/ansible/latest/systemd_module.html
+# https://www.freedesktop.org/software/systemd/man/systemctl.html
+#
+# handlers file for rhpam
+##
+
+# Execute
+- name: "reload systemd"
+  become: true
+  systemd:
+    daemon_reload: yes
+
+- name: "enable mysql service"
+  become: true
+  systemd:
+    name:    "{{mysql_dev_service_name}}"
+    enabled: yes
+
+- name: "start mysql service"
+  become: true
+  systemd:
+    state: started
+    name:  "{{mysql_dev_service_name}}"
+
+- name: "stop mysql service"
+  become: true
+  systemd:
+    state: stopped
+    name:  "{{mysql_dev_service_name}}"
+
+- name: "restart mysql service"
+  become: true
+  systemd:
+    state: restarted
+    name:  "{{mysql_dev_service_name}}"
+
+####
+- name: "enable jboss service"
+  become: true
+  systemd:
+    name:    "{{jboss_service_name}}"
+    enabled: yes
+
+- name: "start jboss service"
+  become: true
+  systemd:
+    state: started
+    name:  "{{jboss_service_name}}"
+
+- name: "stop jboss service"
+  become: true
+  systemd:
+    state: stopped
+    name:  "{{jboss_service_name}}"
+
+- name: "restart jboss service"
+  become: true
+  systemd:
+    state: restarted
+    name:   "{{jboss_service_name}}"
+
+####
+#
+#
+# EOF

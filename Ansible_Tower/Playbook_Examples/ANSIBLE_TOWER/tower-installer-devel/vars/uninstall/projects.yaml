@@ -1,0 +1,5 @@
+---
+- name: Ansible Network
+  state: absent
+  scm_type: manual
+  path: ansible_network

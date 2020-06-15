@@ -1,0 +1,34 @@
+---
+
+- name: Unregister systems
+  hosts: webserver
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: rhsm_unregister
+
+
+- name: Remove lab based on var file   
+  hosts: kvm
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: clear_down_lab
+
+- name: Configure Ansible Host to remove Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible_host_clear_entries
+
+

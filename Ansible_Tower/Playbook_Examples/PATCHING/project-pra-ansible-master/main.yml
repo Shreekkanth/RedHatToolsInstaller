@@ -1,0 +1,13 @@
+# main entrypoint for the project
+--- 
+- hosts: all
+  gather_facts: no
+  become: no
+  
+  tasks:
+    - name: set stat for patchings is started
+      set_stats:
+        data:
+          patching_status: "started"
+        aggregate: no
+        per_host: no

@@ -1,0 +1,13 @@
+[all:vars]
+ansible_python_interpreter=python
+
+[tower]
+dev01
+
+[tower:vars]
+tower_host = http://dev01
+tower_username = admin
+tower_password = password
+tower_verify_ssl = False
+
+ansible_tower_catalog_path = {{ playbook_dir }}/vars/default

@@ -1,0 +1,22 @@
+---
+# - install packages for other functionality not in base Fedora Workstation
+- name: Package install - Gnome Shell Extensions
+  become: yes
+  dnf:
+    state: present
+    name:
+      - gnome-shell-extension-pomodoro
+      - gnome-shell-extension-topicons-plus
+      - gnome-shell-extension-drive-menu
+
+- name: Enable Top Icons Gnome Shell Extension
+  shell: "gnome-shell-extension-tool --enable TopIcons@phocean.net"
+  ignore_errors: yes
+
+- name: Enable Pomodoro Gnome Shell Extension
+  shell: "gnome-shell-extension-tool --enable pomodoro@arun.codito.in"
+  ignore_errors: yes
+
+- name: Enable Drive Menu Gnome Shell Extension
+  shell: "gnome-shell-extension-tool --enable drive-menu@gnome-shell-extensions.gcampax.github.com"
+  ignore_errors: yes

@@ -1,0 +1,15 @@
+- debug:
+    msg: "Creating {{ tag }} Subnet..."
+
+- name: Create subnets
+  ec2_vpc_subnet:
+    aws_access_key: "{{ key }}"
+    aws_secret_key: "{{ secret }}"
+    region: "{{ region }}"
+    state: present
+    vpc_id: "{{ vpc_id }}"
+    cidr: "{{ cidr }}"
+    az: "{{ az }}"
+    resource_tags:
+      Name: "{{ tag }}"
+    validate_certs: no

@@ -1,0 +1,94 @@
+---
+# Ansible Tower environment Stuff
+- pause:
+    prompt: "Enter Ansible Tower environment {{ env_loop }}'s arbitrary name (no spaces) (e.g. Production)"
+  register: tower_env_name
+
+- pause:
+    prompt: "Enter Ansible Tower environment {{ env_loop }}'s Ansible Tower URL"
+  register: tower_env_url
+
+- pause:
+    prompt: "Would you like to verify Ansible Tower environment {{ env_loop }}'s SSL Certificates (True/False)"
+  register: tower_env_verify_ssl
+
+- pause:
+    prompt: "Enter Ansible Tower environment {{ env_loop }}'s Ansible Tower Organization"
+  register: tower_env_org
+
+- pause:
+    prompt: "Enter Ansible Tower environment {{ env_loop }}'s Ansible Tower admin username"
+  register: tower_env_user
+
+- pause:
+    prompt: "Enter Ansible Tower environment {{ env_loop }}'s Ansible Tower admin password"
+    echo: False
+  register: tower_env_pass
+
+- pause:
+    prompt: "Enter the Git branch to map to Ansible Tower environment {{ env_loop }} when performing Team platform onboarding (e.g. master)"
+  register: tower_env_branch
+  when: onboard_in_scm | bool
+
+- pause:
+    prompt: "Do you want Ansible Tower Teams to be able to create their own job templates with the specified branch in Ansible Tower environment {{ env_loop }} (yes/no)"
+  register: tower_env_rbac_prj
+
+- pause:
+    prompt: "Enter the permission to grant to new Ansible Tower Teams assigned inventories when performing platform onboarding in Ansible Tower environment {{ env_loop }} (use, admin, update)"
+  register: tower_env_rbac_inv
+
+# Build lists
+- name: Create Tower Environment Dictionary | Project use access
+  set_fact:
+    tower_env: [{name: "{{ tower_env_name.user_input }}", url: "{{ tower_env_url.user_input }}", verify_ssl: "{{ tower_env_verify_ssl.user_input | bool }}", org: "{{ tower_env_org.user_input }}", user: "{{ tower_env_user.user_input }}", pass: "{% raw %}{{{% endraw%} tower_{{ tower_env_name.user_input | truncate(4, True, '', 0) | lower }}_pass {% raw%}}}{% endraw %}", proj_branch: "{{ tower_env_branch.user_input }}", proj_access: "use", inventory_rbac_role: "{{ tower_env_rbac_inv.user_input }}", grant_rbac_inventories: "{% raw %}{{{% endraw %} grant_{{ tower_env_name.user_input | truncate(4, True, '', 0) | lower }}_inventories {% raw %}}}{% endraw %}"}]
+  when: tower_env_rbac_prj.user_input | lower == "yes"
+
+- name: Create Tower Environment Dictionary | No project access
+  set_fact:
+    tower_env: [{name: "{{ tower_env_name.user_input }}", url: "{{ tower_env_url.user_input }}", verify_ssl: "{{ tower_env_verify_ssl.user_input | bool }}", org: "{{ tower_env_org.user_input }}", user: "{{ tower_env_user.user_input }}", pass: "{% raw %}{{{% endraw%} tower_{{ tower_env_name.user_input | truncate(4, True, '', 0) | lower }}_pass {% raw%}}}{% endraw %}", proj_branch: "{{ tower_env_branch.user_input }}", inventory_rbac_role: "{{ tower_env_rbac_inv.user_input }}", grant_rbac_inventories: "{% raw %}{{{% endraw %} grant_{{ tower_env_name.user_input | truncate(4, True, '', 0) | lower }}_inventories {% raw %}}}{% endraw %}"}]
+  when: tower_env_rbac_prj.user_input | lower == "no"
+
+- name: Build Tower Environments
+  set_fact:
+    tower_environments: "{{ tower_environments | union(tower_env) }}"
+
+- name: Create Tower Secret Dictionary
+  set_fact:
+    tower_secret: [{name: "{{ tower_env_name.user_input }}", pass: "{{ tower_env_pass.user_input }}"}]
+
+- name: Build Tower Secrets
+  set_fact:
+    tower_secrets: "{{ tower_secrets | union(tower_secret) }}"
+
+# Capture list of the environment's inventories for customizing our job template surveys
+- name: Configure tower-cli
+  template:
+    src: 'tower_cli.cfg.j2'
+    dest: '~/.tower_cli.cfg'
+    mode: '0400'
+  vars:
+    tower_user: "{{ tower_env_user.user_input }}"
+    tower_pass: "{{ tower_env_pass.user_input }}"
+    tower_url: "{{ tower_env_url.user_input }}"
+  changed_when: False
+  no_log: True
+
+- name: Collect List of Environment {{ env_loop }}'s inventories
+  shell: tower-cli inventory list | awk '{print $2}'
+  register: env_inventories
+  changed_when: False
+
+- name: Destroy tower_cli config
+  file:
+    path:  "~/.tower_cli.cfg"
+    state: "absent"
+  changed_when: False
+
+- name: Create Tower Inventory Dictionary
+  set_fact:
+    inventories: [{name: "{{ tower_env_name.user_input }}", inventories: "{{ env_inventories.stdout_lines | reject('search', '^=|^name') | list }}", access: "{{ tower_env_rbac_inv.user_input | lower }}"}]
+
+- name: Build Tower Inventories
+  set_fact:
+    tower_inventories: "{{ tower_inventories | union(inventories) }}"

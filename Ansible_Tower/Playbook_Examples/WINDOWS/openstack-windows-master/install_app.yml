@@ -1,0 +1,55 @@
+---
+- name: Install our App
+  hosts: "{{ myhostname }}"
+  gather_facts: false
+  vars:
+    ansible_port: 5985
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: basic
+    ansible_winrm_kerberos_delegation: yes
+  tasks:
+
+  - name: Install IIS Web-Server with sub features and management tools
+    win_feature:
+      name: Web-Server
+      state: present
+      restart: True
+
+  - name: Create directory structure
+    win_file:
+      path: "{{ item }}"
+      state: directory
+    with_items:
+      - C:\inetpub\
+      - C:\inetpub\wwwroot
+
+  - name: Create default index file
+    win_template:
+      src: files/index.html.j2
+      dest: C:\inetpub\wwwroot\index.html
+
+- name: Add VM to LoadBalancer
+  hosts: "{{ myhostname }}"
+  gather_facts: false
+  connection: local
+  tasks:
+  - name:
+    shell: neutron --os-username {{ opst_username }} --os-project-name {{ opst_project_name }} --os-password {{ opst_password }} --os-auth-url {{ opst_url }} lbaas-member-create --subnet provider --address {{ ansible_host }} --protocol-port 80 pool1 | grep '| id ' | cut -d '|' -f 3
+    register: poold_id
+    
+
+  - name: Update tower host
+    tower_host:
+      name: "{{ inventory_hostname }}"
+      inventory: "Windows"
+      state: present
+      variables: "ansible_host: {{ ansible_host }}\nansible_user: admin\nansible_ssh_pass: {{ ansible_ssh_pass }}\npool_id: {{ poold_id.stdout | regex_replace(' ') }}"
+      tower_host: "{{ tower_host }}"
+      tower_username: "{{ tower_username }}"
+      tower_password: "{{ tower_password }}"
+
+
+
+
+      

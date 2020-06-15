@@ -1,0 +1,6 @@
+---
+tower_send_assets:
+  - assets: "{{ lookup('file', '{{ inventory_hostname }}/inventory_1.yml') }}"
+    files:
+    password_management: default
+    prevent:

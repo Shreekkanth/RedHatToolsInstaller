@@ -1,0 +1,9 @@
+---
+# Send assets to Tower
+
+- hosts: all
+  tasks:
+  - name: Send assets to Tower
+    include_role:
+      name: tower_send_assets
+    loop: "{{ tower_send_assets }}"

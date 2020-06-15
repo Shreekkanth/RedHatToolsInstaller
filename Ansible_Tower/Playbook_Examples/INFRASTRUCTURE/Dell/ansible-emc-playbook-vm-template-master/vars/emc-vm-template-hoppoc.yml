@@ -1,0 +1,45 @@
+---
+# vCenter Variables
+vctr_hostname: "hopvcspoc01.corp.emc.com"
+vctr_datacenter: "openshift-poc"
+vctr_cluster: "hoppoc"
+vctr_validate_certs: False
+
+# VM Build kickstart ISO Variables
+vctr_iso_datastore: "hoppoc_VMAX0651_023C"
+vctr_iso_path: "ISO/{{ vctr_iso_source_path | basename }}"
+
+# VM Template Variables
+vctr_vm_template_os_type: "rhel7_64Guest"
+vctr_vm_template_folder: "/openshift-poc/vm/template"
+vctr_vm_template_seed_snap_name: "Seed Snapshot"
+vctr_vm_template_seed_snap_desc: "First snapshot post OS install"
+vctr_vm_template_post_snap_name: "Post-configuration Snapshot"
+vctr_vm_template_post_snap_desc: "Snapshot post-configuration and OS install"
+vctr_vm_template_disks:
+  - size_gb: "80"
+    type: "thin"
+    datastore: "hoppoc_VMAX0651_023C"
+    disk_mode: "persistent"
+  # multi-disk add not working ansible 2.7 open issues on upstream repo
+  # - size_gb: "20"
+  #   type: "thin"
+  #   datastore: "hoppoc_VMAX0651_023C"
+  #   disk_mode: "persistent"
+vctr_vm_template_hardware:
+  hotadd_cpu: True
+  hotremove_cpu: True
+  hotadd_memory: True
+  memory_mb: "8192"
+  num_cpus: "2"
+  num_cpu_cores_per_socket: "1"
+  scsi: "paravirtual"
+  version: "10" #change to 13 for ESXi6.5
+  boot_firmware: "{{ vm_build_type }}"
+vctr_vm_template_networks:
+  - name: "LB_Bknd_Prod_3100"
+    device_type: "vmxnet3"
+    start_connected: True
+vctr_vm_template_cdrom:
+  type: "iso"
+  iso_path: "[{{ vctr_iso_datastore }}] {{ vctr_iso_path }}"

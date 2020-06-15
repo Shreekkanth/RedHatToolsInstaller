@@ -1,0 +1,11 @@
+- name: Remove RHV Virtual Machines
+  hosts: rhvm
+  gather_facts: false
+  become: false
+  vars_files:
+  - vms_definition.yml
+  tasks:
+  - name: call remove role
+    with_items: "{{ provision_vms }}"
+    include_role:
+      name: rhv_remove_vm

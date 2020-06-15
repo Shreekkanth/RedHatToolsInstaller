@@ -1,0 +1,22 @@
+[webdrupal-app]
+cmsapp[1:4].stage.a4.vary.redhat.com
+
+[webdrupal-mysql]
+cmsmysql[1:2].stage.a4.vary.redhat.com
+
+[webdrupal-proxy]
+cmsweb[1:4].stage.a4.vary.redhat.com
+#TODO: confirm that the two group names below are legit (were webdrupal-core-az2a and webdrupal-core-az4b)
+[webdrupal-core-az4a]
+cmsmysql1.stage.a4.vary.redhat.com
+cmsweb1.stage.a4.vary.redhat.com
+cmsweb3.stage.a4.vary.redhat.com
+cmsapp1.stage.a4.vary.redhat.com
+cmsapp3.stage.a4.vary.redhat.com
+
+[webdrupal-core-az4b]
+cmsmysql2.stage.a4.vary.redhat.com
+cmsweb2.stage.a4.vary.redhat.com
+cmsweb4.stage.a4.vary.redhat.com
+cmsapp2.stage.a4.vary.redhat.com
+cmsapp4.stage.a4.vary.redhat.com

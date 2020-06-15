@@ -1,0 +1,13 @@
+---
+- hosts: buildah
+  gather_facts: no
+
+  tasks:
+  - name: Check NTP/Chrony Config lines
+    ntp_conf_check:
+      config_lines: ['server 0.rhel.pool.ntp.org iburst', 'server 1.rhel.pool.ntp.org iburst']
+      ntp_version: ntp
+      state: present
+    register: response
+
+  - debug: var=response

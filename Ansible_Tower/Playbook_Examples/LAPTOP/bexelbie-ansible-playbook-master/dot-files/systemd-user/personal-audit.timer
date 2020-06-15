@@ -1,0 +1,8 @@
+[Unit]
+Description=Run personal-audit.service
+
+[Timer]
+OnCalendar=hourly
+
+[Install]
+WantedBy=user-graphical-login.target

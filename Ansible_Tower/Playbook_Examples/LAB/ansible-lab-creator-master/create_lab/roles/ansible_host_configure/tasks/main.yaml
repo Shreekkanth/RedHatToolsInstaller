@@ -1,0 +1,78 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: ensure that CheckKnownHosts is set to no
+  delegate_to: localhost
+  blockinfile:
+    path: /etc/ansible/hosts
+    marker_begin: ansible ssh configuration start
+    block: |
+           ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+    insertbefore: BOF
+#    insertafter: '^\## db-[99:101]-node.example.com'
+    marker_end: ansible ssh configuration end
+    state: present
+
+    #  lineinfile:
+    #    path: /etc/ansible/hosts
+    #    regexp: "ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
+    #    insertafter: '^\## db-[99:101]-node.example.com'
+    #    line: "ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
+    #    state: present
+
+- name: Create {{ platform_group_name }} ansible group
+  delegate_to: localhost
+  blockinfile:
+    path: /etc/ansible/hosts
+    marker_begin: ansible host {{ platform_group_name }} configuration start
+    block: |
+           [{{ platform_group_name }}]
+            
+    marker_end: ansible host {{ platform_group_name }} configuration end
+    state: present
+
+
+#  lineinfile:
+#    path: /etc/ansible/hosts
+#    line: "{{ platform_group_name }}"
+#    state: present
+
+- name: Update Ansible Hosts file with Openshift systems
+  delegate_to: localhost
+  lineinfile:
+    path: /etc/ansible/hosts
+    regexp: ".*{{ item.key }}.{{ domain_name }}$"
+    line: "{{ item.key }}.{{ domain_name }}"
+#    insertbefore: "^# ansible host {{ platform_group_name }} configuration end ANSIBLE MANAGED BLOCK"
+    insertafter: '^\[{{ platform_group_name }}\]'
+    state: present
+  with_dict: "{{ guests }}"
+
+- name: Update /etc/hosts from dictionary
+  delegate_to: localhost
+  lineinfile:
+    dest: /etc/hosts
+    regexp: ".*{{ item.key }}$"
+    line: "{{ item.value.ipaddress }} {{ item.key }}.{{ domain_name }} {{ item.key }}"
+    state: present
+  with_dict: "{{ guests }}"
+
+- name: Refresh inventory
+  meta: refresh_inventory
+
+- name: get port, default 22
+  delegate_to: localhost
+  set_fact:
+    ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
+
+- name: Ensure ssh host key known
+  delegate_to: localhost
+  lineinfile:
+    dest: ~/.ssh/known_hosts
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + '{{ item.key }}.{{ domain_name }}') }}"
+  with_dict: "{{ guests }}"
+

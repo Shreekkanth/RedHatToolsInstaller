@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Include cmdb_add_ci role
+      include_role:
+        name: cmdb_add_ci
+      vars:
+        cmdb_add_ci_env: test

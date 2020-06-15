@@ -1,0 +1,56 @@
+---
+- name: Deploy Windows VM on OpenStack
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: Create server instance
+    os_server:
+      auth_type: password
+      auth:
+        auth_url: "{{ opst_url }}"
+        username: "{{ opst_username }}"
+        password: "{{ opst_password }}"
+        project_name: "{{ opst_project_name }}"
+      state: present
+      name: "{{ myhostname }}"
+      image: ef5e4b48-2cc2-4859-8852-771b8802ab1f
+      flavor: windows
+      security_groups: default
+      key_name: tower
+      nics:
+        - net-id: 9ab31468-03b0-413b-8af8-16caf391571c
+      wait: yes
+    register: newvm
+
+  - debug:
+      msg: "IP Address: {{ newvm.openstack.accessIPv4 }}"
+      
+  - name: Wait for RDP Port to come available
+    wait_for:
+      host: "{{ newvm.openstack.accessIPv4 }}"
+      port: 3389
+      delay: 5
+      timeout: 600
+    when: newvm.changed
+    
+  - name: 
+    shell: nova --os-username {{ opst_username }} --os-project-name {{ opst_project_name }} --os-password {{ opst_password }} --os-auth-url {{ opst_url }} get-password "{{ myhostname }}" files/tower.priv
+    register: mypass
+    until: mypass.stdout != ""
+    retries: 60
+    delay: 15
+    
+  - debug:
+      msg: "Password: {{ mypass.stdout }}"
+    
+  - name: Add host to tower
+    tower_host:
+      name: "{{ myhostname }}"
+      inventory: "Windows"
+      state: present
+      variables: "ansible_host: {{ newvm.openstack.accessIPv4 }}\nansible_user: admin\nansible_ssh_pass: {{ mypass.stdout }}"
+      tower_host: "{{ tower_host }}"
+      tower_username: "{{ tower_username }}"
+      tower_password: "{{ tower_password }}"
+      
+      

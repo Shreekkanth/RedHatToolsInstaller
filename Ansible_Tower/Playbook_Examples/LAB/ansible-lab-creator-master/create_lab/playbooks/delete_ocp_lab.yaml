@@ -1,0 +1,45 @@
+---
+
+- name: Unregister Openshift systems
+  hosts: ocp_systems
+  become: true
+  vars_files:
+    - ../vars/ocp3.5_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/rhsm_unregister
+
+
+- name: Remove openshift lab based on var file   
+  hosts: kvm
+  become: true
+  vars_files:
+    - ../vars/ocp3.5_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/clear_down_lab
+
+- name: Configure Ansible Host with Openshift Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - ../vars/ocp3.5_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/ansible_host_clear_entries
+
+- name: Remove DNS records
+  hosts: idm
+  become: true
+  vars_files:
+    - ../vars/ocp3.5_vms.yml
+
+  tasks:
+    - include_vars: "{{ playbook_dir }}/config.yaml"
+    - include_role:
+        name: ../roles/config-dnsenv
+      vars:
+         dns_record_state: absent

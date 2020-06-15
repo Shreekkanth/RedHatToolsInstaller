@@ -1,0 +1,23 @@
+# ansible-playbook  vmware_delete_vm.yml --extra-vars "vm_name=gtaylor-ans-1" --ask-pass --ask-vault-pass
+---
+- name: remove the vm 
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vcenter-vault.yml
+  tasks:
+    - set_fact:
+        vm_name: "{{vm_name}}"
+        datacenter: "{{ datacenter }}"
+
+    - name: remove "{{ vm_name }}" 
+      vmware_guest:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: False
+        cluster: SysMgmt_vMotion
+        name: "{{ vm_name }}"
+        state: absent
+        force: true
+      register: facts

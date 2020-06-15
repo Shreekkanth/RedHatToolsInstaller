@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Ansible fact
+# Get the status of the VPN (user and status)
+#
+
+user="openvpn"
+
+cat <<EOF
+{
+EOF
+
+if ! getent passwd $user &>/dev/null; then
+    echo "    \"user\" : \"absent\""
+else
+    echo "    \"user\" : \"present\","
+    count=$(ps -u $user -f | grep $user -c)
+    if [ $count == 0 ]; then
+        echo "    \"status\" : \"stopped\""
+    else
+        echo "    \"status\" : \"started\""
+    fi
+fi
+
+cat <<EOF
+}
+EOF

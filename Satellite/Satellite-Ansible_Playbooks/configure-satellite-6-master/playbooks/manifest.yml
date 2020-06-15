@@ -1,0 +1,10 @@
+---
+- name: Upload manifest to Satellite
+  hosts: localhost
+  vars_files:
+    - ../vars/common.yml
+    - ../vars/organization.yml
+    - ../vars/manifest.yml
+
+  roles:
+    - manifest

@@ -1,0 +1,32 @@
+---
+# This set of tasks registers a custom service.
+# Pass in {{ nagios_custom_service }} from calling role as a sring definition of service.
+#   service_description=NTP Status&check_command=nrpe!check_ntp!-a '-w 75 -c 50'
+
+
+- name: Add Nagios custom service check
+  uri:
+    url: "{{ nagios_api_url }}/config/service?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    body: "host_name={{ ansible_nodename }}&{{ nagios_custom_service }}&{{ svc_check_string }}&{{ notification_string }}"
+    status_code: 200
+  register: api_response
+  delegate_to: localhost
+
+- debug:
+    msg: "{{ api_response.json }}"
+
+- name: Apply Nagios config
+  uri:
+    url: "{{ nagios_api_url }}/system/applyconfig?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    status_code: 200
+  register: api_response
+  delegate_to: localhost
+  failed_when: "'success' not in api_response.json"
+  run_once: true
+
+- debug:
+    msg: "{{ api_response.json }}"

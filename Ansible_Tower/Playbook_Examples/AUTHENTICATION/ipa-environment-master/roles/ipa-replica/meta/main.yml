@@ -1,0 +1,12 @@
+---
+
+dependencies:
+  - role: ipa-client-ansible
+    ipaclient_server: "{{ hostvars[groups['ipa-server'][0]]['ansible_fqdn'] }}"
+    ipaclient_domain: "{{ ansible_domain | upper }}"
+    ipaclient_enroll_user: admin
+    ipaclient_enroll_pass: "{{ ipa_server_admin_secret }}"
+    ipaclient_validate_certs: False
+    ipaclient_unsafe_migrate: True
+    ipaclient_resource_pools:
+      - ipaservers

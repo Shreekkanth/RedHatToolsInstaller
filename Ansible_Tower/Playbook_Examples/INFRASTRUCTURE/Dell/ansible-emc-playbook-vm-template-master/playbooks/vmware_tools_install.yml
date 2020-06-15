@@ -1,0 +1,24 @@
+---
+- name: "VMWare Tools Install"
+  hosts: "new_template"
+  gather_facts: False
+  vars_files:
+    - "vars/emc-vm-template-postprovision.yml"
+  tasks:
+    - name: "Install VMWare Tools"
+      command: '/tmp/vmware-tools-distrib/vmware-install.pl -d -f'
+      changed_when: 'vmware_tools_install_result.rc == 0'
+      register: "vmware_tools_install_result"
+      become: True
+
+    - name: "Display VMWare Tools Installation Output"
+      debug:
+        var: "vmware_tools_install_result.stdout_lines"
+        verbosity: "1"
+
+    - name: "Ensure VMWare Tools service is started and enabled"
+      service:
+        name: "vmware-tools"
+        enabled: True
+        state: "started"
+      become: True

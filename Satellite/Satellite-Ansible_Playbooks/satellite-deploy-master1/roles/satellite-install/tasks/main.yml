@@ -1,0 +1,62 @@
+---
+  # Check variables
+  - assert:
+      that: "sat_install_source == 'repo' or sat_install_source == 'cdn'"
+      msg: "Satellite install source (sat_install_source) have to be either 'repo' or 'cdn' (current value is '{{ sat_install_source }}')"
+
+  #TODO add user and passwd ops
+  # Generate sat_proxy_ops var from rhsm_proxy, if required
+  - name: "Generate sat_proxy_ops var from rhsm_proxy"
+    set_fact:
+      sat_proxy_ops: "--katello-proxy-url 'http://{{ item.server }}' --katello-proxy-port '{{ item.port }}' --katello-proxy-username  '{{ item.user }}' --katello-proxy-password '{{ item.passwd }}' " 
+    with_items: '{{ rhsm_proxy }}'
+    run_once: true
+    when: item.use_proxy == "yes"
+
+  # We will need base RHEL and Software Collections for sure,
+  # repo with Satellite packages (either custom repo or CDN repo
+  # will be configured lower)
+  - name: "Disable all RHSM repos and only enable base RHEL and SCL repos"
+    shell:
+      subscription-manager repos --disable '*' --enable 'rhel-{{ ansible_distribution_major_version }}-server-rpms' --enable 'rhel-server-rhscl-{{ ansible_distribution_major_version }}-rpms'
+
+  # Setup repo when installing from custom repository
+  - name: "Custom Satellite repo configured"
+    copy:
+      src: "{{ sat_repo_file }}"
+      dest: /etc/yum.repos.d/
+      force: yes
+    when: "sat_install_source == 'repo'"
+
+  # Setup repos when installing from CDN
+  - name: "CDN Satellite repo configured"
+    shell: |
+      subscription-manager repos --enable "{{ sat_cdn_reponame }}"
+    when: "sat_install_source == 'cdn'"
+
+  # Now, finally install required packages and install the Satellite
+  - name: "Package satellite installed"
+    yum:
+      name: "{{ sat_installer_pkg }}"
+      state: present
+      update_cache: yes
+    register: installing
+  
+  - name: "Satellite configured"
+    command:
+      "{{ sat_installer_cmd }} {{ sat_proxy_ops | default() }} --foreman-admin-email {{ sat_email }} --foreman-admin-username {{ sat_user }} --foreman-admin-password {{ sat_pass }} --foreman-initial-organization {{ sat_org }} --foreman-initial-location {{ sat_location }} --certs-ca-expiration {{ sat_ca_expiration }}"
+    no_log: True
+    when: installing.changed
+
+  # Configure /etc/puppet/auth.conf to allow capsule puppetca proxy requests from clients to satellite puppetca
+  - name: "Configure /etc/puppet/auth.conf to allow capsule puppetca proxy requests from clients to satellite puppetca"
+    replace:
+      dest: "/etc/puppet/auth.conf"
+      regexp: '^(\s*path\s+/certificate_revocation_list/ca.*)\n(\s*method\s+find.*)$'
+      replace: '\1\nauth any\n\2'
+    notify: restart_katello
+
+  # Force handler actions to be executed here
+  - name: "Force handler actions to be executed here"
+    meta: flush_handlers
+...

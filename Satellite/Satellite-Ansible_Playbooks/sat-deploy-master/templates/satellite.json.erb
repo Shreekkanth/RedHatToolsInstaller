@@ -1,0 +1,18 @@
+{
+    "description": "Satellite boxes built from Dev environment for <%= base.upcase %>",
+    "name": "sat-<%= base %>",
+    "versions": [
+        {
+            "version": "<%= version %>",
+            "status": "active",
+            "description_html": "Pre-built Satellite release box",
+            "description_markdown": "",
+            "providers": [
+                {
+                    "name": "libvirt",
+                    "url": "<%= deployment_url %>/sat-<%= version %>-<%= base %>.box"
+                }
+            ]
+        }
+    ]
+}

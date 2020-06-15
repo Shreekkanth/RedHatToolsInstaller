@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    closed_request_id: 539893
+    open_request_id: 539894
+    ca_sdm_url: "{{ api_base_url }}"
+    ca_sdm_key: "{{ api_key }}"
+
+  tasks:
+    - name: Check ticket status of closed request
+      include_role:
+        name: ansible-role_sdm-ticket-status
+      vars:
+        sdm_ticket_status_api_base_url: "{{ ca_sdm_url }}"
+        sdm_ticket_status_api_key: "{{ ca_sdm_key }}"
+        sdm_ticket_status_ticket_id: "{{ closed_request_id }}"
+
+    - name: Check ticket status of open request
+      include_role:
+        name: ansible-role_sdm-ticket-status
+      vars:
+        sdm_ticket_status_api_base_url: "{{ ca_sdm_url }}"
+        sdm_ticket_status_api_key: "{{ ca_sdm_key }}"
+        sdm_ticket_status_ticket_id: "{{ open_request_id }}"
+
+    - name: Check ticket status of open request until closed
+      include_role:
+        name: ansible-role_sdm-ticket-status
+      vars:
+        sdm_ticket_status_api_base_url: "{{ ca_sdm_url }}"
+        sdm_ticket_status_api_key: "{{ ca_sdm_key }}"
+        sdm_ticket_status_ticket_id: "{{ open_request_id }}"
+        sdm_ticket_status_wait: true

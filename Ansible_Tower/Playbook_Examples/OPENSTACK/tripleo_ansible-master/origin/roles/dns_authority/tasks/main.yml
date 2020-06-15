@@ -1,0 +1,85 @@
+---
+
+- name: install bind related packages
+  yum: name={{ item }} state=latest
+  with_items:
+    - bind
+    - bind-chroot
+    - bind-utils
+
+- name: install bind config files
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - src: named.conf.j2
+      dest: /etc/named.conf
+    - src: named.conf.example.com.j2
+      dest: /etc/named/named.conf.example.com
+    - src: named.conf.osetest.local.j2
+      dest: /etc/named/named.conf.osetest.local
+  notify: restart bind
+
+- name: create zone dir
+  file: path=/var/named/master state=directory
+
+- name: install zone files
+  template: src={{ item.src }} dest=/var/named/master/{{ item.dest }}
+  with_items:
+    - src: 1.0.10.in-addr.arpa.j2
+      dest: 1.0.10.in-addr.arpa
+    - src: 99.16.172.in-addr.arpa.j2
+      dest: 99.16.172.in-addr.arpa
+    - src: example.com.j2
+      dest: example.com
+    - src: osetest.local.j2
+      dest: osetest.local
+  notify: restart bind
+
+- name: disable firewalld
+  service: name=firewalld state=stopped enabled=no
+
+- name: install iptables
+  yum: name=iptables-services state=latest
+
+- name: enable iptables
+  service: name=iptables state=started enabled=yes
+
+- name: index of first INPUT
+  shell: iptables -S | grep -n -- '-A INPUT' | head -n 1 | sed -e 's/:.*$//'
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: first_input
+
+- name: index of ssh INPUT
+  shell: iptables -S | grep -n 'dport 22' | head -n 1 | sed -e 's/:.*$//'
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: ssh_input
+
+#- debug: msg="{{ ssh_input }}"
+#- debug: msg="{{ ssh_input.stdout|int - first_input.stdout|int }}"
+
+- name: check if dport 53 has been set
+  shell: iptables -S | grep 'my dns dport'
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: add iptables dport rules
+  shell: iptables -I INPUT {{ ssh_input.stdout|int - first_input.stdout|int + 1}} -p udp --dport 53 -j ACCEPT -m comment --comment 'my dns dport'
+  when: result|failed
+  notify: save iptables config
+
+- name: check if sport 53 has been set
+  shell: iptables -S | grep 'my dns sport'
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: add iptables sport rules
+  shell: iptables -I INPUT {{ ssh_input.stdout|int - first_input.stdout|int + 1}} -p udp --sport 53 -j ACCEPT -m comment --comment 'my dns sport'
+  when: result|failed
+  notify: save iptables config

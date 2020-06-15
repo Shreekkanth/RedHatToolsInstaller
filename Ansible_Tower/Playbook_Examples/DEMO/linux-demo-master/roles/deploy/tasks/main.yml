@@ -1,0 +1,27 @@
+
+- name: Clone template or virtual machine and customize
+  vmware_guest:
+    datacenter: "{{ vCenterDatacenter }}"
+    cluster: "{{ vCenterCluster }}"
+    folder: "{{ vCenterFolder }}"
+    name: "{{ inventory_hostname }}"
+    template: "{{ vCenterCloneSource }}"
+    snapshot_src: "{{ VCenterCloneSnapshot }}"
+    linked_clone: True
+    state: poweredon
+    wait_for_ip_address: true
+    networks:
+    - name: "{{ vCenterPortGroup }}"
+      ip: "{{ ansible_host }}"
+      netmask: "{{ VMSubnetMask }}"
+      gateway: "{{ VMGateway }}"
+      dns_servers:
+      - "{{ VMDNS1 }}"
+      - "{{ VMDNS2 }}"
+  register: newvm
+
+
+
+
+
+

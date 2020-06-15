@@ -1,0 +1,17 @@
+---
+- hosts: cisco
+  connection: network_cli
+  gather_facts: false
+
+  tasks:
+    - name: Get available interfaces
+      include_role:
+        name: cisco_ios_get_ports
+
+    - name: Debug cisco_ports
+      debug:
+        msg: "{{ cisco_ports }}"
+
+    - name: Debug cisco_ports first item
+      debug:
+        msg: "{{ cisco_ports[0] }}"

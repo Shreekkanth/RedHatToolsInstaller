@@ -1,0 +1,28 @@
+---
+#
+#
+org_quartz_jobStore_driverDelegateClass_postgresqldelegate: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+org_quartz_jobStore_driverDelegateClass_cloudscapedelegate: org.quartz.impl.jdbcjobstore.CloudscapeDelegate
+org_quartz_jobStore_driverDelegateClass_mysql:              org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+org_quartz_jobStore_driverDelegateClass_oracle:             org.quartz.impl.jdbcjobstore.oracle.OracleDelegate
+#
+org_quartz_scheduler_instanceName:          "Quartz_Scheduler_{{ inventory_hostname.split('.')[0] | regex_replace('-', '_') + inventory_hostname.split('.')[1] | regex_replace('-', '_') }}"
+org_quartz_scheduler_instanceId:            "ins_{{ inventory_hostname.split('.')[0] | regex_replace('-', '_') + inventory_hostname.split('.')[1] | regex_replace('-', '_') }}"
+org_quartz_scheduler_skipUpdateCheck:       "true"
+org_quartz_scheduler_idleWaitTime:          30000
+org_quartz_threadPool_threadCount:          15
+org_quartz_threadPool_threadPriority:       5
+org_quartz_threadPool_class:                org.quartz.simpl.SimpleThreadPool
+org_quartz_jobStore_misfireThreshold:       60000
+org_quartz_jobStore_clusterCheckinInterval: 15000
+org_quartz_jobStore_class:                  org.quartz.impl.jdbcjobstore.JobStoreCMT
+org_quartz_jobStore_useProperties:          "false"
+org_quartz_jobStore_isClustered:            "true"
+org_quartz_jobStore_dataSource:             "{{ ds_kie_name }}"
+org_quartz_jobStore_nonManagedTXDataSource: "{{ ds_quartz_name }}"
+org_quartz_jobStore_tablePrefix:            QRTZ_
+org_quartz_dataSource_kieDS_jndiURL:        "{{ ds_kie_jndiname }}"
+org_quartz_dataSource_quartzDS_jndiURL:     "{{ ds_quartz_jndiname }}"
+
+#
+# EOF

@@ -1,0 +1,10 @@
+{
+    "credential_type": 1,
+    "organization": 3,
+    "team": 1,
+    "name": "pms-creds",
+    "inputs": {
+        "password": "xxx",
+        "username": "xxx"
+    }
+  }

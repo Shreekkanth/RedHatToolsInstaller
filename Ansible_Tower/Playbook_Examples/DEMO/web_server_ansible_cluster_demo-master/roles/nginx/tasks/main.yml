@@ -1,0 +1,41 @@
+---
+# tasks file for nginx
+- block:
+    - name: Configure official nginx repo
+      yum_repository:
+        name: "nginx-repo"
+        description: Nginx.org repo
+        baseurl: https://nginx.org/packages/rhel/7/$basearch/
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: https://nginx.org/keys/nginx_signing.key
+        sslverify: yes
+        sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    - name: Clear out any nginx installs
+      yum:
+        name: nginx*
+        state: absent
+    - name: Install older version of nginx
+      yum:
+        name: nginx-1.8.1-1.el7.ngx
+        state: present
+        update_cache: yes
+    - name: Revert nginx config
+      copy:
+        src: orig_default.conf
+        dest: /etc/nginx/conf.d/default.conf
+    - name: Start and enable nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+    - name: Copy over new index page
+      template:
+        src: index.html.j2
+        dest: /usr/share/nginx/html/index.html
+    - name: Copy over new index page
+      copy:
+        src: 404.html
+        dest: /usr/share/nginx/html/404.html
+  tags:
+    - nginx_prep

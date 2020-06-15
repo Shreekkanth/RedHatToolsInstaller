@@ -1,0 +1,28 @@
+---
+# NOTE: The linrunner repo and packages should also provide
+# extra functionallity to Dell XPS laptops too
+- name: "Power Mgmt | Install TLP Linrunner (ThinkPad Only)"
+  package:
+    name: "http://repo.linrunner.de/fedora/tlp/repos/releases/tlp-release.fc{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+  register: reg_tlp_lenovo
+  when: ansible_system_vendor == "LENOVO"
+
+- name: "Power Mgmt | Install pre-requisite software (ThinkPad Only)"
+  package:
+    name: "{{ powermgmt_packages_lenovo }}"
+    state: latest
+  when: ansible_system_vendor == "LENOVO"
+
+- name: "Power Mgmt | Install pre-requisite software"
+  package:
+    name: "{{ powermgmt_packages }}"
+    state: latest
+  register: reg_powermgmt_packages
+
+- name: "Power Mgmt | Enable and Start thermald (if installed)"
+  service:
+    name: thermald
+    state: enabled
+    enabled: true
+  when: "'thermald' in reg_powermgmt_packages['results']"

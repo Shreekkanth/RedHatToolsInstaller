@@ -1,0 +1,22 @@
+---
+
+- name: Test config before restart icinga 2
+  shell: "{{ icinga2_binary }} daemon -C"
+  register: configTest
+  changed_when: configTest.rc == 0
+  notify: Restart Icinga 2
+
+- name: Restart Icinga 2
+  service:
+    name: icinga2
+    state: restarted
+
+- name: kickstart director
+  shell: icingacli director kickstart run
+
+- name: director migration run
+  shell: icingacli director migration run
+
+- name:  director migrate and kickstart
+  shell: icingacli director migration run
+  notify: kickstart director

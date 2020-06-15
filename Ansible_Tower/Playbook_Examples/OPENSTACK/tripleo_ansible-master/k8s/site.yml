@@ -1,0 +1,5 @@
+---
+- include: prepare.yml
+- include: kubeadm.yml
+- include: etcd.yml
+- include: bootstrap_master.yml

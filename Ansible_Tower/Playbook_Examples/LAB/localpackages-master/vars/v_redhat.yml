@@ -1,0 +1,11 @@
+---
+
+packages:
+  rsync:
+    - /var/run/rpm/rsync/rsync-3.1.2-6.el7_6.1.x86_64.rpm
+  nextpackage:
+    - /var/run/rpm/nextpackage/nextpackage-1.1.1-6.el7_6.1.x86_64.rpm
+  otherpackage:
+    - /var/run/rpm/otherpackage/otherpackage-2.2.2-6.el7_6.1.x86_64.rpm
+    
+...

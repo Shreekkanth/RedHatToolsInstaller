@@ -1,0 +1,20 @@
+---
+# tasks file for tower_cred_types
+
+- name: Tower credential types
+  tower_credential_type:
+    description: "{{ item.description }}"
+    injectors:
+      env: 
+        "{{ item.inj_env }}"
+      extra_vars:
+        "{{ item.inj_extra_vars }}"
+    inputs:
+      fields:
+        "{{ item.fields }}"
+      required:
+        "{{ item.required }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    tower_verify_ssl: "{{ check_ssl }}"

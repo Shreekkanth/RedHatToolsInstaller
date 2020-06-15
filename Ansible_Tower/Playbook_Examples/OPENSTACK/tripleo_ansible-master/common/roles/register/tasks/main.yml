@@ -1,0 +1,33 @@
+---
+
+- name: create instackenv.json
+  template: src=instackenv.json.j2 dest=~/tripleo_configs/instackenv.json
+
+- name: check if instackenv.json is already imported
+  shell: . ~/stackrc && openstack baremetal node list -f value | wc -l
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: baremetal import
+  shell: . ~/stackrc && openstack baremetal import --json ~/tripleo_configs/instackenv.json
+  when: result.stdout == "0"
+
+- name: get first node uuid
+  shell: . ~/stackrc && openstack baremetal node list -f value -c UUID | head -n 1
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: first_node
+
+- name: check if configure boot is already run
+  shell: ". ~/stackrc && openstack baremetal node show {{ first_node.stdout }} | grep -E \"u'capabilities':.*boot_option:local\""
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: baremetal configure boot
+  shell: . ~/stackrc && openstack baremetal configure boot
+  when: result|failed

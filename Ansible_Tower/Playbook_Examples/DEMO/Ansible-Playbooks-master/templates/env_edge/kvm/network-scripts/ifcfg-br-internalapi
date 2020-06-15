@@ -1,0 +1,7 @@
+DEVICE=br-internalapi
+TYPE=Bridge
+ONBOOT=yes
+IPADDR={{ kvm.br_internalapi.ipaddr | mandatory }}
+NETMASK={{ kvm.br_internalapi.netmask | mandatory }}
+GATEWAY={{ kvm.br_internalapi.gateway | mandatory }}
+DEFROUTE=yes

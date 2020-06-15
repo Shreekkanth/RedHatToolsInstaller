@@ -1,0 +1,5 @@
+---
+tower_orgs:
+  - name: My Org
+    description: My Org
+    state: present

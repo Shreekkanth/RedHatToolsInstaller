@@ -1,0 +1,26 @@
+# If there is HTML in the output then it failed to connect to the repo and
+# returned a standard html error page
+- name: "Download {{ task_file_name  }} from {{ project_role_name  }}"
+  uri:
+    url: "{{git_repo_prefix }}/{{ project_role_name }}/raw/tasks/{{ task_file_name }}?at=refs%2Fheads%2F{{ branch_name }}"
+    return_content: yes
+  register: role_yaml
+  failed_when: "'html>' in role_yaml.content "
+
+- set_fact:
+    svg_file: "./svgs/{{ project_role_name}}.svg"
+
+- set_fact:
+    flowchart_file: "./flowchart_specs/{{project_role_name}}.flowchart"
+
+- set_fact:
+    png_file: "./pngs/{{project_role_name}}.png"
+
+- name: Parse out task titles into a Flowchart.js source file
+  template:
+    src: create_flowchart.j2
+    dest: "{{ flowchart_file }}"
+
+- command: "{{ npm_config_prefix}}/bin/diagrams flowchart {{ flowchart_file }} {{ svg_file }}"
+
+- command: "{{ npm_config_prefix}}/bin/svgexport {{ svg_file }} {{ png_file }}"

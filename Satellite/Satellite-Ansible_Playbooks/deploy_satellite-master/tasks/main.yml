@@ -1,0 +1,27 @@
+---
+- name: SATELLITE | Perform satellite preparation
+  block:
+    - include_tasks: provision_satellite.yml
+    - include_tasks: firewall.yml
+    - include_tasks: install_software.yml
+    - include_tasks: configure_satellite.yml
+  when: make_satellite
+
+- include_tasks: upload_manifest.yml
+  when: upload_manifest
+
+- include_tasks: add_repos.yml
+  when: add_repos
+
+- include_tasks: epel_repo.yml
+  when: add_epel
+
+- include_tasks: make_lifecycle.yml
+  when: make_lifecycle
+
+- include_tasks: sync_plans.yml
+  when: make_sync_plans
+
+- include_tasks: content_views.yml
+  when: make_content_views
+

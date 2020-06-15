@@ -1,0 +1,17 @@
+---
+# tasks file for ansible_tower
+#
+- block:
+    - name: initialize role
+      include_tasks: "{{ role_path }}/includes/init.yaml"
+
+    - name: check for required argument
+      fail:
+        msg: "missing required argument: ansible_tower_catalog_path"
+      when: ansible_tower_catalog_path is undefined
+
+    - name: install catalog to tower
+      include_tasks: "{{ role_path }}/includes/loader.yaml"
+
+  tags:
+    - always

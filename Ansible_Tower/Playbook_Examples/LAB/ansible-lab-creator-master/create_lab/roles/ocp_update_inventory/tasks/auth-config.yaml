@@ -1,0 +1,18 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Add Apache HTPasswd authentication (NOT FOR PRODUCTION) 
+  delegate_to: localhost
+  blockinfile:
+    path: "{{ tmp_inv_loc }}" 
+    marker_begin: Auth Apache configuration start
+    block: |
+           openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+ 
+    marker_end: Auth Apache Configuration End
+    insertbefore: '^\[masters]'
+    state: present
+  when: "authconfig == 'apache'"
+

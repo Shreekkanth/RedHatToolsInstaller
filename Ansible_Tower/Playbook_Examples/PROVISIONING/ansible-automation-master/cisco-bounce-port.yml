@@ -1,0 +1,57 @@
+---
+- hosts: "{{ device_name }}"
+  connection: network_cli
+  gather_facts: false
+
+  vars:
+    wait_time_min: 2
+    switchport: GigabitEthernet1/38
+    validate_mac: false
+    mac_address: 00:11:22:33:44:55
+    tower_host: 10.32.21.54
+    template_id: 14
+
+  tasks:
+    # - name: Validate endpoint location
+    #   include_role:
+    #     name: cisco_ios_endpoint_location
+    #   vars:
+    #     cisco_ios_endpoint_location_mac: mac_address
+
+    - name: Disable port
+      include_role:
+        name: cisco_ios_set_port_enable_state
+      vars:
+        cisco_ios_set_port_enable_state_switchport: "{{ switchport }}"
+        cisco_ios_set_port_enable_state_enabled: false
+
+    - name: Create date lookup string
+      set_fact:
+        enable_port_timestamp_lookup: "date -u --date=\"now + {{ wait_time_min }} minutes\" +%Y%m%dT%H%M%SZ"
+
+    - name: Get scheduled time
+      set_fact:
+        enable_port_time_iso8601: "{{ lookup('pipe', enable_port_timestamp_lookup) }}"
+
+    - name: Include payload variables
+      include_vars:
+        file: vars/schedule_enable_cisco_switchport.yml
+
+    - name: Schedule enable port
+      uri:
+        user: "{{ tower_username }}"
+        password: "{{ tower_password }}"
+        validate_certs: no
+        force_basic_auth: true
+        url: "https://{{ tower_host }}/api/v2/job_templates/{{ template_id }}/schedules/"
+        method: POST
+        body: "{{ payload }}"
+        body_format: json
+        return_content: yes
+        status_code: 201
+      register: return_value
+
+    - name: Debug return_value
+      debug:
+        var: return_value
+        verbosity: 1

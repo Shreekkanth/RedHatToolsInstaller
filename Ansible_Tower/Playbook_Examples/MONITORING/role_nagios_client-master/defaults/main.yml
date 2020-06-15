@@ -1,0 +1,65 @@
+---
+# Sane defaults file for role_nagios_client
+
+nagios_servers:
+  - nagios1.example.com
+  - nagios2.example.com
+
+nagios_plugin_directory: /usr/lib64/nagios/plugins
+
+# Parameters for nrpe.cfg
+nrpe_port: 5666
+dont_blame_nrpe: 1
+nrpe_user: nrpe
+nrpe_group: nrpe
+nrpe_timeout: 180
+
+###############################
+# Defaults for nagios_register
+register_to_nagios: yes
+
+nagios_register_custom_service: no
+
+nagios_api_url: https://nagios1.example.com/nagiosxi/api/v1
+nagios_api_key: 1234567890
+nagios_notifications_enabled: 0
+nagios_notification_period: 24x7
+nagios_notification_interval: 5
+nagios_notification_contact: nagiosadmin
+
+nagios_svc_check_period: 24x7
+nagios_svc_check_interval: 5
+nagios_svc_check_retry_interval: 5
+nagios_svc_check_attempts: 2
+
+partition_list:
+  - partition: /
+    warn: 20%
+    crit: 10%
+  - partition: /var
+    warn: 20%
+    crit: 10%
+  - partition: /var/log
+    warn: 20%
+    crit: 10%
+  - partition: /var/log/audit
+    warn: 20%
+    crit: 10%
+
+svc_procs_crit: 2000
+svc_procs_warn: 1000
+
+# Memory thresholds - %Free
+svc_mem_crit: 5
+svc_mem_warn: 15
+
+svc_swap_crit: 20
+svc_swap_warn: 50
+
+svc_ping_crit: 5000,100%
+svc_ping_warn: 3000,80%
+
+service_checks:
+  - sshd
+  - rsyslog
+  

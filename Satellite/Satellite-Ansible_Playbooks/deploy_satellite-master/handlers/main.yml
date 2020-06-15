@@ -1,0 +1,6 @@
+---
+# handlers file for deploy_satellite
+#
+- name: firewalld_reload
+  command: firewall-cmd --reload
+

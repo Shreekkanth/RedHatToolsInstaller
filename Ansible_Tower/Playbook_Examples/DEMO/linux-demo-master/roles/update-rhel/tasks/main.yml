@@ -1,0 +1,64 @@
+---
+- name: Create VMWare snapshot
+  vmware_guest_snapshot:
+    datacenter: MNS
+    folder: /MNS/vm/POC/Demo
+    name: "{{ inventory_hostname }}"
+    state: present
+    snapshot_name: Updates
+    description: Snapshot before doing updates
+  delegate_to: localhost
+
+- name: Install Updates (exclude Kernel)
+  yum:
+    name: '*'
+    state: latest
+    security: "{{ security_updates }}"
+    skip_broken: yes
+    exclude: kernel*
+  register: updates
+  
+- name: Install Kernel Updates
+  yum:
+    name: 'kernel'
+    state: latest
+  when: update_kernel == "Yes"
+  register: updated_kernel
+    
+- name: Restart Services if updated
+  service:
+    name: "{{ item.name }}"
+    state: restarted
+  ignore_errors: yes
+  when:
+    - "item.search in updates.results[0]"
+    - updates.changed
+  with_items:
+    - { name: "httpd", search: "httpd" }
+    - { name: "nginx", search: "nginx" }
+    - { name: "php-fpm", search: "php-fpm" }
+
+- name: Reboot Server if Kernel Updates were done
+  shell: sleep 2 && /sbin/shutdown -r now "Ansible Reboot"
+  async: 1
+  poll: 0
+  when:
+    - update_kernel == "Yes"
+    - updated_kernel.changed
+
+- name: Wait for Server to come back if Kernel Updates were installed
+  wait_for_connection:
+    timeout: 900
+    delay: 20
+  when:
+    - update_kernel == "Yes"
+    - updated_kernel.changed
+    
+- name: Remove VMWare snapshot
+  vmware_guest_snapshot:
+    datacenter: MNS
+    folder: /MNS/vm/POC/Demo
+    name: "{{ inventory_hostname }}"
+    snapshot_name: Updates
+    state: absent
+  delegate_to: localhost

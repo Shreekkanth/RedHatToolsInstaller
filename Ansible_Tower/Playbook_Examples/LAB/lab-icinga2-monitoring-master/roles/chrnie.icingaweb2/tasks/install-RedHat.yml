@@ -1,0 +1,54 @@
+---
+- name: Add icinga2 repository
+  yum_repository:
+    name: icinga-stable-release
+    description: icinga2 latest repository
+    baseurl: "{{ icingaweb2_yum_repo.baseurl }}"
+    gpgkey: "{{ icingaweb2_yum_repo.gpgkey }}"
+  when: icingaweb2_manage_repo_icinga
+  tags:
+    - install
+
+- name: Add epel
+  yum:
+    name: epel-release
+    state: present
+  when: icingaweb2_manage_repo_epel
+  tags:
+    - install
+
+- name: Add centos-release-scl
+  yum:
+    name: centos-release-scl
+    state: present
+  when: icingaweb2_manage_repo_scl
+  tags:
+    - install
+
+- name: Install icingaweb2 basic packages
+  yum:
+    name: "{{ item }}"
+    state: "{{ icingaweb2_state }}"
+  register: track_icingaweb2_install
+  with_items:
+    - git
+    - icingaweb2
+    - icingacli
+    - httpd
+  tags:
+    - install
+    - update
+
+- name: Set php date.timezone
+  copy:
+     content: "date.timezone = {{ icingaweb2_php_timezone }}"
+     dest: /etc/opt/rh/{{icw2_centos_scl_ver[ansible_distribution_major_version]}}/php.d/20-date.ini 
+
+- name: Start and enable services
+  service:
+    name: "{{item}}"
+    enabled: yes
+    state: started
+  with_items:
+    - "{{icw2_centos_scl_ver[ansible_distribution_major_version]}}-php-fpm"
+    - httpd

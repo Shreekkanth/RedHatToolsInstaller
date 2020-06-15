@@ -1,0 +1,9 @@
+---
+# Tower organizations
+
+- hosts: all
+  tasks:
+  - name: Tower organizations
+    include_role:
+      name: tower_orgs
+    loop: "{{ tower_orgs }}"

@@ -1,0 +1,114 @@
+---
+- name: login to catalog
+  uri:
+    url: "{{ sc_close_ticket_api_base_url }}"
+    method: POST
+    body: "{{ lookup('template', 'login.j2') }}"
+    headers:
+      Content-Type: text/xml;charset=UTF-8
+      SOAPAction: login
+    return_content: yes
+    status_code: 200
+    validate_certs: false
+  register: return_login
+
+# - name: Debug return_login
+#   debug:
+#     var: return_login
+
+# - name: create key fact
+#   set_fact:
+#     session_id: "{{ return_login.content | regex_search('.*logInReturn.*>(.*)</logInReturn','\\1') | first  }}"
+
+- name: Parse XML for session_id fact
+  xml:
+    xmlstring: "{{ return_login.content }}"
+    xpath: /s:Envelope/s:Body/n:logInResponse/logInReturn
+    content: text
+    namespaces:
+      s: http://schemas.xmlsoap.org/soap/envelope/
+      n: http://services.soap.usm.ca.com
+  register: login_return
+
+- name: Create session_id fact
+  set_fact:
+    session_id: "{{ login_return.matches[0]['logInReturn'] }}"
+
+# - name: Debug session_id
+#   debug:
+#     var: session_id
+
+- name: get subscription ID
+  uri:
+    url: "{{ sc_close_ticket_api_base_url }}"
+    method: POST
+    body: "{{ lookup('template', 'get_form_id.j2') }}"
+    headers:
+      Content-Type: text/xml;charset=UTF-8
+      SOAPAction:
+    return_content: yes
+    status_code: 200
+    validate_certs: false
+  register: return_form_id
+
+# - name: Debug return_form_id
+#   debug:
+#     var: return_form_id
+
+- name: Parse XML for subscription ID fact
+  xml:
+    xmlstring: "{{ return_form_id.content }}"
+    xpath: //subscriptionType[text() = '5']/../subscriptionDetailID
+    content: text
+
+  register: form_id_return
+
+# - name: debug return_form_id
+#   debug:
+#     var: form_id_return
+
+- name: Create subscription_id fact
+  set_fact:
+    subscription_id: "{{ form_id_return.matches[0]['subscriptionDetailID'] }}"
+
+
+- name: get catalog status
+  uri:
+    url: "{{ sc_close_ticket_api_base_url }}"
+    method: POST
+    body: "{{ lookup('template', 'get_status.j2') }}"
+    headers:
+      Content-Type: text/xml;charset=UTF-8
+      SOAPAction:
+    return_content: yes
+    status_code: 200
+    validate_certs: false
+  register: catalog_status
+
+- name: Parse XML for catalog status fact
+  xml:
+    xmlstring: "{{ catalog_status.content }}"
+    xpath: /s:Envelope/s:Body/n:getRequestStatusResponse/getRequestStatusReturn
+    content: text
+    namespaces:
+      s: http://schemas.xmlsoap.org/soap/envelope/
+      n: http://services.soap.usm.ca.com
+  register: status_catalog
+
+- name: Create getRequestStatusReturn fact
+  set_fact:
+    current_status: "{{ status_catalog.matches[0]['getRequestStatusReturn'] }}"
+
+- name: update catalog
+  uri:
+    url: "{{ sc_close_ticket_api_base_url }}"
+    method: POST
+    body: "{{ lookup('template', 'update_status.j2') }}"
+    headers:
+      Content-Type: text/xml;charset=UTF-8
+      SOAPAction:
+    return_content: yes
+    status_code: 200
+    validate_certs: false
+  register: update_catalog
+  when: current_status != '2'

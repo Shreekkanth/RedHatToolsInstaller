@@ -1,0 +1,39 @@
+---
+# Set this to true if you want to delete lab before rebuilding
+local_lab_delete: "true"
+
+# Environmental variables
+vm_location: "/var/lib/libvirt/images/"
+platform_group_name: "rhel7ha_systems"
+
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+  rhel-ha-for-rhel-7-server-rpms:
+    enable: true
+
+# Names and details of vms/instances to be created
+guests:
+  rhel7-ha-node001:
+    mem: 4096
+    cpus: 2
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.81
+  rhel7-ha-node002:
+    mem: 4096
+    cpus: 2
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.82
+  rhel7-ha-node003:
+    mem: 4096
+    cpus: 2
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.83
+

@@ -1,0 +1,19 @@
+---
+- name: Validate Variables
+  debug:
+    var:
+      "{{ item }}"
+  with_items:
+    - rhel_osp_version
+    - user_name
+    - project_name
+    - cluster_id
+    - private_network
+    - tunnel_network
+    - external_network
+    - nfs_export
+    - cirros_image_name
+    - windows_image_name
+    - rhel_image_name
+    - redeploy
+    - boot_disk

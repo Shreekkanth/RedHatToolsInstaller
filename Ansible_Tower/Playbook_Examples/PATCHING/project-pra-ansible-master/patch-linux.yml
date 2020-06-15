@@ -1,0 +1,35 @@
+# patch linux entrypoint
+---
+- hosts: all
+  gather_facts: yes
+  ignore_unreachable: yes
+  ignore_errors: yes
+  serial: 5
+
+  tasks:
+    - name: include role patch linux
+      include_role:
+        name: role-patch-linux
+      when: ansible_facts['os_family'] == "RedHat" or "Linux" in hostvars['MachineType']
+      ignore_unreachable: yes
+  
+  post_tasks:
+    - name: set state for patching status COMPLETE
+      set_stats:
+        data:
+          linux_patching_status: "complete"
+        per_host: no
+        aggregate: no
+      when: 
+        - linux_patching_fact == "complete"
+      ignore_unreachable: yes
+
+    - name: set state for patching status FAILED
+      set_stats:
+        data:
+          linux_patching_status: "failed"
+        per_host: no
+        aggregate: no
+      when:
+        - linux_patching_fact == "failed"
+      ignore_unreachable: yes

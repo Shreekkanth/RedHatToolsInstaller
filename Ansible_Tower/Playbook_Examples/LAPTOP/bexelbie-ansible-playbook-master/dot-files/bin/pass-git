@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo -n "password="
+pass show $1 | head -1

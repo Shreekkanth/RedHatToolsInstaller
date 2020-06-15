@@ -1,0 +1,76 @@
+---
+- name: 'Update All Packages'
+  yum: name=* state=latest
+
+- name: 'Install Capsule Installer RPM'
+  yum: name=satellite-capsule state=latest
+
+- name: 'Get Server Hostname'
+  shell: hostname -f
+  delegate_to: "{{ capsule_server }}"
+  register: server_fqdn
+
+- name: 'Get Server IP Address'
+  shell: ifconfig eth0 2>/dev/null|awk '/inet/ {print $2}'|sed 's/addr://'
+  delegate_to: "{{ capsule_server }}"
+  register: server_ip
+
+- name: 'Set fact for Server IP'
+  set_fact: server_ip="{{ server_ip.stdout.split('\n')[0] }}"
+
+- name: 'Add /etc/hosts record for capsule'
+  delegate_to: "{{ capsule_server }}"
+  lineinfile:
+    dest: /etc/hosts
+    regexp: ".*{{ ansible_nodename }}$"
+    line: "{{ capsule_ip }} {{ ansible_nodename }}"
+    state: present
+
+- name: 'Get oauth-consumer-key'
+  shell: grep oauth_consumer_key "{{ foreman_directory }}"settings.yaml | cut -d ' ' -f 2
+  delegate_to: "{{ capsule_server }}"
+  register: oauth_consumer_key
+
+- name: 'Get oauth-consumer-secret'
+  shell: grep oauth_consumer_secret "{{ foreman_directory }}"settings.yaml | cut -d ' ' -f 2
+  delegate_to: "{{ capsule_server }}"
+  register: oauth_consumer_secret
+
+- name: 'Get pulp-oauth-secret'
+  shell: grep oauth_secret /etc/pulp/server.conf | tail -1 | cut -d ' ' -f 2
+  delegate_to: "{{ capsule_server }}"
+  register: pulp_oauth_secret
+
+- name: 'Generate Certs'
+  command: capsule-certs-generate --capsule-fqdn {{ ansible_nodename }} --certs-tar {{ capsule_certs_tar }}
+  delegate_to: "{{ capsule_server }}"
+
+- name: 'Fetch Certs'
+  delegate_to: "{{ capsule_server }}"
+  fetch:
+    src: "{{ capsule_certs_tar }}"
+    dest: /tmp
+
+- name: 'Copy Certs to Capsule'
+  copy:
+    src: "/tmp/{{ inventory_hostname }}{{ capsule_certs_tar }}"
+    dest: ~/
+
+- name: 'Change cert permissions'
+  file: path='/etc/pki/katello/private' mode=0775
+  delegate_to: "{{ capsule_server }}"
+  when: devel is defined and devel == true
+
+- name: 'Run Install'
+  shell: >
+    satellite-installer
+    --scenario capsule
+    --foreman-proxy-trusted-hosts "{{ server_fqdn.stdout }}"
+    --foreman-proxy-trusted-hosts "{{ ansible_nodename }}"
+    --foreman-proxy-foreman-base-url "https://{{ server_fqdn.stdout }}"
+    --foreman-proxy-register-in-foreman true
+    --foreman-proxy-oauth-consumer-key "{{ oauth_consumer_key.stdout }}"
+    --foreman-proxy-oauth-consumer-secret "{{ oauth_consumer_secret.stdout }}"
+    --capsule-certs-tar "{{ capsule_certs_tar }}"
+    --capsule-parent-fqdn "{{ server_fqdn.stdout }}"
+    --capsule-pulp-oauth-secret "{{ pulp_oauth_secret.stdout }}"

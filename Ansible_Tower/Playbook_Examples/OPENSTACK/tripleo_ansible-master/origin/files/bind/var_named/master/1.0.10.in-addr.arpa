@@ -1,0 +1,23 @@
+$TTL 60
+
+@                       IN              SOA     osetest.local. root.osetest.local. (
+                                        17062201        ; Serial
+                                        3600            ; Refresh
+                                        900             ; Retry
+                                        3600000         ; Expire
+                                        3600            ; Minimum
+                                )
+                        IN      NS      ns.osetest.local.
+
+11			IN	PTR	ns.osetest.local.
+
+18			IN	PTR	ocp36-lb1.osetest.local.
+19			IN	PTR	ocp36-lb2.osetest.local.
+20			IN	PTR	ocp36-lb.osetest.local.
+21			IN	PTR	ocp36-master1.osetest.local.
+22			IN	PTR	ocp36-master2.osetest.local.
+23			IN	PTR	ocp36-master3.osetest.local.
+31			IN	PTR	ocp36-infra1.osetest.local.
+32			IN	PTR	ocp36-infra2.osetest.local.
+41			IN	PTR	ocp36-node1.osetest.local.
+42			IN	PTR	ocp36-node2.osetest.local.

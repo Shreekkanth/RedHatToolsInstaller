@@ -1,0 +1,5 @@
+BOOTPROTO=none
+NAME=ens2f1
+UUID=6be42c64-f502-4d25-80da-9e744dfa4beb
+DEVICE=ens2f1
+ONBOOT=no

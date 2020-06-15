@@ -1,0 +1,53 @@
+#
+#
+#
+#
+#
+# https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html
+# https://dev.mysql.com/doc/refman/5.7/en/mysqld-safe.html
+#
+#
+# Type=forking | simple | oneshot | dbus | notify | idle
+#
+# systemctl {start|stop|restart|status} mysqld
+#
+# EOH
+#
+[Unit]
+Description=MySQL Server Custom: {{item.1.name}}
+Documentation=https://dev.mysql.com/doc/refman/en/using-systemd.html
+Documentation=https://dev.mysql.com/doc/mysql-linuxunix-excerpt/5.7/en/using-systemd.html
+Documentation=https://www.freedesktop.org/software/systemd/man/systemd.service.html
+After=network.target
+After=syslog.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=forking
+User={{mysql_user}}
+Group={{mysql_group}}
+EnvironmentFile=/etc/sysconfig/mysql_{{item.1.name}}.conf
+# Execute pre and post scripts as root:
+PermissionsStartOnly=true
+#
+PIDFile={{mysql_run_base + 'mysql_' + item.1.service + '.pid' }}
+#ExecStart={{mysql_home + 'bin/mysqld --defaults-file=${MYSQL_CNF}' + mysql_conf_base + item.1.name + '_' + '%02d' | format(item.0) +'.cnf'}} --daemonize
+#ExecStop={{mysql_home + 'bin/mysqladmin --defaults-file=${MYSQL_CNF}' + mysql_conf_base + item.1.name + '_' + '%02d' | format(item.0) +'.cnf  shutdown'}}
+ExecStart={{mysql_home + 'bin/mysqld --defaults-file=${MYSQL_CNF}' }} --daemonize
+ExecStop={{mysql_home + 'bin/mysqladmin --defaults-file=${MYSQL_CNF}  shutdown'}}
+#
+RemainAfterExit=no
+PrivateTmp=false
+# Sets open_files_limit
+LimitNOFILE = 5000
+TimeoutStartSec=10
+TimeoutStopSec=10
+#
+RestartPreventExitStatus=1
+Restart=on-failure
+#
+# EOF

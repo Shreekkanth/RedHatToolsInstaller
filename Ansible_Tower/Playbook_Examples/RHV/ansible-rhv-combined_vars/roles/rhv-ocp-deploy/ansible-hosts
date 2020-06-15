@@ -1,0 +1,22 @@
+[masters]
+rhv-ocp-master-1.homelab.work
+
+ 
+
+[etcd]
+rhv-ocp-master-1.homelab.work
+
+ 
+
+[nodes]
+rhv-ocp-master-1.homelab.work openshift_node_group_name="node-config-master"
+rhv-ocp-infra-1.homelab.work openshift_node_group_name="node-config-infra" 
+rhv-ocp-app-1.homelab.work openshift_node_group_name="node-config-compute"
+
+ 
+
+## Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+etcd

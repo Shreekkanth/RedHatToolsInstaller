@@ -1,0 +1,50 @@
+---
+- name: "VMWare Tools Copy"
+  hosts: "new_template"
+  gather_facts: False
+  vars_files:
+    - "vars/emc-vm-template-postprovision.yml"
+  tasks:
+    - name: "Ensure open-vm-tools not installed"
+      package:
+        name: "open-vm-tools"
+        state: "absent"
+      become: True
+
+    - name: "Mount VMWare Tools ISO"
+      command: '/usr/bin/mount /dev/cdrom /mnt'
+      args:
+        warn: False #avoids ansible warning to use mount module
+      register: "mount_tools_iso"
+      changed_when: 'mount_tools_iso.rc == 0'
+      failed_when:
+        - 'mount_tools_iso.rc != 0'
+        - '"no medium found on" in mount_tools_iso.stderr'
+      become: True
+
+    - name: "Find proper VMWare Tools tarball"
+      find:
+        paths: "/mnt"
+        patterns: "VMwareTools*.tar.gz"
+      register: "vmware_tools_iso_tar"
+      failed_when: "vmware_tools_iso_tar.files | length < 1"
+
+      # output value of found tarball file for debugging
+    - debug:
+        var: "vmware_tools_iso_tar.files[0].path"
+        verbosity: "1"
+
+    - name: "Ensure path to VMWare Tools tarball is set"
+      set_fact:
+        vmware_tools_tarball: "{{ vmware_tools_iso_tar.files[0].path }}"
+
+    - name: "Extract VMWare Tools installer"
+      unarchive:
+        remote_src: True
+        dest: "/tmp"
+        src: "{{ vmware_tools_tarball }}"
+
+    - name: "Ensure VMWare Tools ISO is ejected"
+      command: '/usr/bin/eject'
+      become: True
+      ignore_errors: True

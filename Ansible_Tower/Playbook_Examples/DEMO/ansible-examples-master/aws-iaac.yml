@@ -1,0 +1,68 @@
+- hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars/aws-test.yml
+  tasks:
+
+    - debug:
+        var: vpc_config
+
+    - include_role:
+        name: aws
+      vars:
+        action: add-vpc
+        vpc_name: "{{ item.value.name }}"
+        cidr: "{{ item.value.cidr }}"
+        key: "{{ aws_key }}"
+        secret: "{{ aws_secret }}"
+        region: "{{ aws_region }}"
+      with_dict: "{{ vpc_config }}"
+      tags:
+        - vpc
+    
+    - include_role:
+        name: aws
+      vars:
+        action: add-custom-nets
+        vpc_name: "{{ item.value.name }}"
+        vpc_subnets: "{{ item.value.subnets }}"
+        key: "{{ aws_key }}"
+        secret: "{{ aws_secret }}"
+        region: "{{ aws_region }}"
+      with_dict: "{{ vpc_config }}"
+           
+    - include_role:
+        name: aws
+      vars:
+        action: add-default-secgroups
+        vpc_name: "{{ item.value.name }}"
+        secgroups: "{{ item.value.default_secgroups }}"
+        key: "{{ aws_key }}"
+        secret: "{{ aws_secret }}"
+        region: "{{ aws_region }}"
+      with_dict: "{{ vpc_config }}"
+
+    - include_role:
+        name: aws
+      vars:
+        action: add-default-acls
+        vpc_name: "{{ item.value.name }}"
+        acls: "{{ item.value.default_acls }}"
+        vpc_subnets: "{{ item.value.subnets }}"
+        key: "{{ aws_key }}"
+        secret: "{{ aws_secret }}"
+        region: "{{ aws_region }}"
+      with_dict: "{{ vpc_config }}"
+
+    - include_role:
+        name: aws
+      vars:
+        action: add-default-rtables
+        vpc_name: "{{ item.value.name }}"
+        vpc_rtables: "{{ item.value.route_tables }}"
+        vpc_subnets: "{{ item.value.subnets }}"
+        key: "{{ aws_key }}"
+        secret: "{{ aws_secret }}"
+        region: "{{ aws_region }}"
+      with_dict: "{{ vpc_config }}"
+

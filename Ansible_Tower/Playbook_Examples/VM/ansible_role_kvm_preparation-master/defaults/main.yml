@@ -1,0 +1,6 @@
+---
+# defaults file for kvm_preparation
+storage_pool:
+  name: default
+  type: dir
+  path: /var/lib/libvirt/images

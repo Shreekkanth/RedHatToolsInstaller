@@ -1,0 +1,73 @@
+---
+# Throughout this documentation, ensure that you understand the following terminology:
+# - Source server: Existing Satellite server.
+# - Target server: new server, to which Satellite server is being cloned to.
+# Note:
+# 1. All the options mentioned in this file affects only the target server.
+# 2. To change any variable, just uncomment the corresponding line and provide a new value.
+
+############## optional variables ####################
+
+# The backup folder on your target server (defaults to /backup).
+# Required backup files:
+#   - Standard backup scenario : config_files.tar.gz, mongo_data.tar.gz, pgsql_data.tar.gz, (optional) pulp_data.tar
+#   - Online backup or RHEL migration scenario   : config_files.tar.gz, mongo_dump folder, foreman.dump, candlepin.dump
+# Note:
+# 1. Place the backup files only on the target server and not on the source server.
+# 2. If the folder mentioned by `backup_dir` does not exist or not accessible, the script will stop with an error.
+#backup_dir: /backup
+
+# Disable firewall to setup Satellite for testing purposes. (defaults to false)
+#disable_firewall: false
+
+# Run katello reindex after the Satellite install. (defaults to false)
+# Note: If you are planning to clone your Satellite 6.1 and immediately upgrade to 6.2, you may choose to skip this step.
+#run_katello_reindex: false
+
+# Run several pre-install checks (defaults to true)
+#run_pre_install_check: true
+
+# Automatically register the target server to Red Hat Portal. (defaults to false)
+# By default,
+#   - The target server will not be registered to the Red Hat portal.
+#   - It is the responsibility of the user to make the required repositories available.
+# If you override this option, you must update `activationkey` and `org` variables in the next section.
+#register_to_portal: false
+
+# Credentials to register the target server to Red Hat portal.
+# - Use this section if and only if `register_to_portal` is `true`.
+# - You will need an activation key with a Satellite subscription.
+# - For security reasons only Activationkey / Org combination is supported for now.
+# - If you don't know how to create Activation keys in https://access.redhat.com, refer
+#   to the knowledge base article https://access.redhat.com/articles/1378093.  In this
+#   document, there are separate sections for `Creating an Activation Key` and `Finding
+#   your Organization ID`.
+# - `org` field below is the unique Red Hat ID for your organization in portal. It may
+#   look like `1111111`.
+#activationkey: changeme
+#org: changeme
+
+# Enable Red Hat Satellite, Red Hat Enterprise Linux, and Red Hat Software Collections repositories for
+# Satellite installation.
+# uncomment the following line to override this option (defaults to true). If you override this option, you must make
+# sure that the required rpms are available for Satellite installation.
+#enable_repos: true
+
+# Set this to true (defaults to false) if you are cloning a rhel6 source server to a rhel7 target server.
+#rhel_migration: false
+
+# Disable postgres triggers (defaults to true). This is set to true to ignore postgresql constraints such as unique indexes
+# when restoring the database. This is helpful if the playbook is blocked by errors on the pg_restore command.
+#disable_postgres_triggers: true
+
+# Run restorecon step (defaults to false) to add a step to restore selinux contexts across the fileystem. The backup is restored
+# with selinux context, but if selinux issues are still present, this option is useful.
+#restorecon: false
+
+# Disable checking that satellite is already installed. (defaults to false)
+#skip_satellite_rpm_check: false
+
+# Overwrite /etc/hosts file (defaults to true). The playbook will overwrite /etc/hosts file with the hostname from the backup files provided. If you
+# have a custom /etc/hosts file and do not want it overwritten, you can disable this step and setup the file yourself. If you
+# do disable this option, make sure the source server's (original Satellite's) hostname can resolve to 127.0.0.1.
+#overwrite_etc_hosts: true

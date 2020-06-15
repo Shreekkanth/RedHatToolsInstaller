@@ -1,0 +1,238 @@
+---
+ #
+ ##title           :health-check.yml
+ ##description     :execute health-check status within development environment
+ ##included tools  :reference template health-check-short.j2
+ ##author          :todd penn
+ ##date            :20190118
+ ##version         :0.1    
+ ##usage           :ansible-playbook health-check.yml
+ ##notes           :current release includes specific hosts used in development
+ #                   - devvm1
+ #                   - gitlab
+ #                   - jenkins
+ #                   - ocp
+ #                   - rhev cluster
+ #                   - rocketchat
+ ##TODO            :determine additional resources and specific checks for monitoring
+ ##TODO            :develop role for playbook to have more organized structure
+ ##TODO            :add tokens and passwords into separate vaulted file using ansible-vault
+ #=========================================================================================
+
+- name: Health Check Status
+  hosts: health-check
+  ignore_errors: True
+  vars:
+    - gitlab: { 'name': 'gitlab', 'fqdn': 'gitlab.srv.cdn.dynetics.com' }
+    - jenkins: { 'name': 'jenkins', 'fqdn': 'jenkins.srv.cdn.dynetics.com:8080' }
+    - ocp: { 'name': 'rhelrt2', 'fqdn': 'rhelrt2.srv.cdn.dynetics.com' }
+    - rchat: { 'name': 'rocketchat', 'fqdn': 'rocketchat.paas.cdn.dynetics.com' }
+    - gitlab_health: "http://{{ gitlab.fqdn }}/-/health"
+
+  tasks:
+    - name: Set Variable for Date and Time
+      set_fact:
+        get_date_time: "{{ lookup('pipe', 'date +%Y%m%d%H%M') }}"
+      delegate_to: localhost
+      run_once: True
+
+    - debug: msg="{{ get_date_time }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Check Disk Space
+      shell: "df -hlx XFS | grep / | awk '0+$5 > 80 {print}'"
+      register: low_disk_space
+
+    - debug: msg="{{ low_disk_space }}"
+      tags:
+        - never
+        - debug
+
+    - name: Check Gitlab URL
+      uri:
+        url: "http://{{ gitlab.fqdn }}"
+        status_code: 200
+      delegate_to: localhost
+      run_once: True
+      register: get_gitlab_url
+
+    - debug: msg="{{ get_gitlab_url }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Check Gitlab
+      uri:
+        url: "{{ gitlab_health }}"
+        status_code: 200 
+      register: get_gitlab_probe
+      delegate_to: localhost
+      run_once: True
+
+    - debug: msg="{{ get_gitlab_probe }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Check Jenkins Service
+      command: systemctl status jenkins
+      delegate_to: jenkins.srv.cdn.dynetics.com
+      run_once: True
+      register: jenkins_svc
+
+    - debug: msg="{{ jenkins_svc }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Check Jenkins URL
+      uri:
+        url: "http://{{ jenkins.fqdn }}"
+        status_code: 200
+      delegate_to: localhost
+      run_once: True
+      register: get_jenkins_url
+
+    - debug: msg="{{ get_jenkins_url }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Queue build of a project in Jenkins
+      uri:
+        url: "http://{{ jenkins.fqdn }}/job/01-run-health-check/build?token=11567bcb6d1a39c6ce6136cd4b1337725e"
+        method: GET
+        user: jenkinsadm
+        password: admin
+        force_basic_auth: yes
+        status_code: 201
+      delegate_to: localhost
+      run_once: True
+      register: get_jenkins_job
+
+    - debug: msg="{{ get_jenkins_job | to_nice_yaml }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Check OCP
+      command: 'oc get nodes --config=/etc/origin/master/admin.kubeconfig'
+      delegate_to: "{{ ocp.fqdn }}"
+      run_once: True
+      register: get_nodes
+      
+    - debug: msg="{{ get_nodes.stdout_lines }}"
+      tags:
+        - never
+        - debug
+
+    - name: Check Rocketchat URL
+      uri:
+        url: "http://{{ rchat.fqdn }}"
+        status_code: 200 
+      delegate_to: localhost
+      run_once: True
+      register: get_rocketchat_url
+
+    - debug: msg="{{ get_rocketchat_url.msg }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Check Rocketchat Message
+      rocketchat:
+        domain: "{{ rchat.fqdn }}"
+        token: d8mqmKb5oBGxB86b4/xhhcYWBpXoKNDjW8qi5AjFaT38jJ9Gjg9pXHbqd7K6skNNYC
+        msg: |
+             Running Test: RocketChat Post {{ ansible_date_time.date }} {{ ansible_date_time.time }} 
+        channel: #devnull
+        color: normal
+        validate_certs: False
+        protocol: http
+      delegate_to: localhost
+      run_once: True
+      register: get_rocketchat_check
+
+    - debug: msg="{{ get_rocketchat_check }}"  
+      tags:
+        - never
+        - debug
+
+    - name: Post Health Check Report to Rocketchat
+      rocketchat:
+        domain: "{{ rchat.fqdn }}"
+        token: Hd8ibzBLFnWDFKd3d/YhpfrP6zes4jd3aCnSaPLRKgixiRZpRoj5KTFYQQPL3vonqQ 
+        msg: "{{ lookup('template', './health-check-short.j2') }}"
+        channel: #health-check
+        color: good
+        validate_certs: False
+        protocol: http
+      delegate_to: localhost
+      run_once: True
+      register: post_health_status
+      tags:
+        - send_report_chat
+
+    - debug: msg={{ post_health_status }}
+      tags:
+        - never
+        - debug
+
+    - name: Check Health Check Directory Exists
+      stat:
+        path: /var/01-health-checks
+      delegate_to: localhost
+      run_once: True
+      register: healthdir
+
+    - name: Create Health Check Directory
+      file:
+        path: /var/01-health-checks
+        state: directory
+        mode: u=rwx,g=rxs,o=r
+        owner: root
+        group: developer
+      delegate_to: localhost
+      run_once: True
+      when: not healthdir.stat.exists
+
+    - name: Create Health Check Report Locally
+      template:
+        src: health-check-short.j2
+        dest: "/var/01-health-checks/status-{{ get_date_time }}"
+        mode: 0440
+        owner: root
+        group: developer
+      delegate_to: localhost
+      run_once: True
+
+    - name: Email Health Check Report
+      mail:
+        host: smtp.gmail.com
+        port: 587
+        username: monitorlabmvp@gmail.com
+        password: lwnwfpjnnbggadtk
+        from: noreply-health-check <monitorlabmvp@gmail.com>
+        to:
+        - 
+        - Joel Slayton <joel.slayton@dynetics.com>
+        - Rick Franklin <rick.franklin@dynetics.com>
+        - Stacey Bailey <Stacey.Bailey@dynetics.com>
+        - John Todd <John.Todd@dynetics.com>
+        - Craig Davis <Craig.Davis@dynetics.com>
+        - Jason Foster <Jason.Foster@dynetics.com>
+        - Ben Stoneman <stoneman@redhat.com>
+        - Preston Davis <pdavis@redhat.com>
+        - Khary Mendez <kmendez@redhat.com>
+        - Eric Shih <eshih@redhat.com>
+        - Jason Smith <jasosmit@redhat.com>
+        - Satish Irrinki <sirrinki@redhat.com>
+        cc: Health Check Monitor <monitorlabmvp@gmail.com>
+        subject: "HEALTH CHECK STATUS ON  {{ get_date_time }}"
+        body: "{{ lookup('template', './health-check-short.j2') }}" 
+      delegate_to: localhost
+      run_once: True
+      tags:
+        - send_report_email

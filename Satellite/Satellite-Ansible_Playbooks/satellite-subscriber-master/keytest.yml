@@ -1,0 +1,8 @@
+---
+- name: Testing activation keys/group vars
+  hosts: all
+  gather_facts: false
+  become: no
+  tasks:
+    - debug:
+      msg: "Current AK: {{ activation_key }}"

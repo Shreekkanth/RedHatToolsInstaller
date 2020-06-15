@@ -1,0 +1,10 @@
+---
+
+- hosts: masters
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - keepalived
+    - nginx_as_lb
+    - update_for_lb

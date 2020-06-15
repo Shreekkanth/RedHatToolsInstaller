@@ -1,0 +1,54 @@
+"*":
+  "activate-power-mode":
+    autoToggle: false
+    comboMode:
+      enabled: false
+    plugins:
+      playAudio: true
+      screenShake: true
+  "autocomplete-plus":
+    confirmCompletion: "enter"
+    useCoreMovementCommands: false
+  "autocomplete-python-jedi":
+    fuzzyMatcher: false
+    useSnippets: "required"
+  core:
+    audioBeep: false
+    automaticallyUpdate: false
+    closeDeletedFileTabs: true
+    disabledPackages: [
+      "exception-reporting"
+      "markdown-preview"
+    ]
+    telemetryConsent: "limited"
+  editor:
+    invisibles: {}
+    showIndentGuide: true
+    softWrap: false
+    softWrapAtPreferredLineLength: false
+  "git-plus":
+    experimental:
+      stageFilesBeta: false
+    general: {}
+  linter: {}
+  "linter-ui-default": {}
+  "tree-view": {}
+  "vim-mode-plus": {}
+  welcome:
+    showOnStartup: false
+".asciidoc.source":
+  editor:
+    softWrap: true
+    softWrapAtPreferredLineLength: true
+".md.text":
+  editor:
+    softWrap: true
+    softWrapAtPreferredLineLength: true
+".gfm.source":
+  editor:
+    softWrap: true
+    softWrapAtPreferredLineLength: true
+".plain.text":
+  editor:
+    softWrap: true
+    softWrapAtPreferredLineLength: true

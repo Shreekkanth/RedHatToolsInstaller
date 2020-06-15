@@ -1,0 +1,137 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Get 3DS inventory ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories'
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: inv_id
+
+  - name: Print 
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+
+  - name: Create 3ds_web group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "3ds_web", "name": "3ds_web" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS Web Server"  or item.name == "3DS SPMGR Servers"
+    ignore_errors: yes
+
+  - name: Create 3ds_web_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "3ds_web_dr", "name": "3ds_web_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS Web Server"  or item.name == "3DS SPMGR Servers"
+    ignore_errors: yes
+
+  - name: Create 3ds_app group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "3ds_app", "name": "3ds_app" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS Apps Server"  or item.name == "3DS SPMGR Servers"
+    ignore_errors: yes
+
+  - name: Create 3ds_app_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "3ds_app_dr", "name": "3ds_app_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS Apps Server" or item.name == "3DS SPMGR Servers"
+    ignore_errors: yes
+
+
+  - name: Create 3ds_db group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "3ds_db", "name": "3ds_db" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS DB Server" or item.name == "3DS Oracle Servers"
+    ignore_errors: yes
+
+  - name: Create 3ds_db_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "3ds_db_dr", "name": "3ds_db_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS DB Server" or item.name == "3DS Oracle Servers"
+    ignore_errors: yes
+
+
+
+
+

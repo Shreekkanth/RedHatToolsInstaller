@@ -1,0 +1,72 @@
+---
+# tasks file for role_ntpserver
+- name: Remove chrony
+  yum:
+    name: chrony
+    state: absent
+
+- name: Install required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ntp
+
+- name: Apply NTP server configuration
+  template:
+    src: templates/ntp.conf.j2
+    dest: /etc/ntp.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart ntpd
+
+- name: Allow NTP through the firewall
+  firewalld:
+    service: ntp
+    immediate: true
+    permanent: true
+    state: enabled
+
+- name: Enable NTP service
+  service:
+    name: ntpd
+    state: started
+    enabled: true
+
+- name: Install Nagios NTP checks
+  copy:
+    src: files/check_ntpd.pl
+    dest: "{{ nagios_plugin_directory }}"
+    owner: root
+    group: root
+    mode: 0755
+  when: nagios_ntp_checks
+
+- name: Deploy Nagios NTP check
+  template:
+    src: ntp-checks.cfg.j2
+    dest: /etc/nrpe.d/ntp-checks.cfg
+    owner: root
+    group: root
+    mode: 0644
+  notify: 
+    - Restart nrpe
+  when: nagios_ntp_checks
+
+
+# Now we need to include role_nagios_client to register our custom service in nagios.
+- name: Set nagios_custom_service fact
+  set_fact:
+    nagios_register_custom_service: true
+
+- name: Define nagios service check string
+  set_fact:
+    nagios_custom_service: service_description=NTP Health&check_command=check_nrpe!check_ntp!-a '-w 75 -c 50'
+
+- name: Source Nagios Register role
+  include_role:
+    name: role_nagios_client
+    
+

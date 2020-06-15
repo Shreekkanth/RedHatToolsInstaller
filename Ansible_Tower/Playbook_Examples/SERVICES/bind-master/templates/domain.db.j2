@@ -1,0 +1,18 @@
+$TTL 60  ;  60 seconds (for testing only)
+@ IN SOA master.{{ public_domain }}.  root.{{ public_domain }}. (
+  2011112904  ;  serial
+  60  ;  refresh (1 minute)
+  15  ;  retry (15 seconds)
+  1800  ;  expire (30 minutes)
+  10  ; minimum (10 seconds)
+)
+{% for host in groups.dns %}
+	IN NS {{ hostvars[host].inventory_hostname }}.
+{% endfor %}
+$ORIGIN {{ public_domain }}.
+{% for host in groups.lb %}
+openshift-cluster	A {{ virt_networks.public.cidr }}.{{ hostvars[host].ip_addr }}  ; For multiple masters
+{% endfor %}
+{% for host in groups.infranode  %}
+*.{{ subdomain_prefix }} A {{ virt_networks.public.cidr }}.{{ hostvars[host].ip_addr }}  ; wildcard DNS entry
+{% endfor %}

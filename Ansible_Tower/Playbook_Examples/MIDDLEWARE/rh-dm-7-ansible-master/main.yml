@@ -1,0 +1,19 @@
+#
+#
+#
+---
+- hosts: lab
+  remote_user: quicklab
+
+  vars:
+    jboss_import_certs:      false
+    jboss_remove_certs:      true
+    jboss_eap_apply_patches: true
+    jboss_eap_patch_remove:  true
+    mysql_service_requires:  false
+
+  roles:
+  - rhdm
+
+#
+# EOF

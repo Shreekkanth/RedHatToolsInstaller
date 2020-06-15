@@ -1,0 +1,82 @@
+#  ansible-playbook  vmware_create_content_host.yml  --extra-vars "vm_name=gtaylor-ans-1" --ask-pass --ask-vault-pass
+---
+- name: create a vm from a template
+  hosts: localhost 
+  connection: local
+  gather_facts: no
+  vars_files: 
+    - vcenter-vault.yml
+  vars:
+    # now in the vault vcenter-vault.yml
+
+  tasks:
+    - set_fact:
+        vm_name: "{{ vm_name }}"
+        datacenter: "{{ datacenter }}"
+        cluster_name: vMotion-Cluster
+        resource_pool: CEE
+
+    - name: clone the template
+      vmware_guest:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: False
+        name: "{{ vm_name }}"
+        template: "{{ template }}"
+        datacenter: "{{ datacenter }}" 
+        folder: "{{ folder }}"
+        state: poweredon
+        cluster: "{{ cluster_name }}"
+        resource_pool: "{{ resource_pool }}"
+        hardware:
+          memory_mb: 2048
+        wait_for_ip_address: yes
+
+    - name: get vm "{{ vm_name }}" facts 
+      vmware_guest_facts:
+        hostname: "{{ vcenter_ip }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: False
+        name: "{{ vm_name }}"
+        datacenter: "{{ datacenter }}"
+        folder: "{{ folder }}"
+
+      register: vm_facts
+
+    - name: print facts
+      debug:
+        var: vm_facts.instance.hw_eth0.ipaddresses.0
+
+    - name: add the ip
+      add_host:
+        name: "{{ vm_name }}"
+        groups: provisioned_vms
+        ansible_host: "{{ vm_facts.instance.hw_eth0.ipaddresses.0 }}"
+
+- name: second play to update hostname
+  hosts: provisioned_vms
+  remote_user: root
+  become: yes
+  vars: 
+    - vm_name: "{{ vm_name }}"
+    - ansible_become_pass: "{{root_pass}}"
+    - ansible_ssh_pass: "{{ root_pass }}"
+  vars_files:
+    - vcenter-vault.yml 
+
+  tasks:
+    - name: verify inventory_hostname_short
+      debug:
+        var: inventory_hostname_short
+
+    - name: change hostname
+      hostname:
+        name: "{{ vm_name }}"
+      notify: restart vm
+
+  handlers:
+    - name: restart vm
+      reboot:
+      remote_user: root

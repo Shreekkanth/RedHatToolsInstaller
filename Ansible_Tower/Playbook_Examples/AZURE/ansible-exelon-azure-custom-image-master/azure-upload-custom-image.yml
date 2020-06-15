@@ -1,0 +1,31 @@
+---
+- hosts: "localhost"
+  tasks:
+    - name: Ensure Azure Python library is installed
+      include_role:
+        name: "prerequisites"
+      vars:
+        prq_pylibs:
+          - "ansible[azure]"
+
+    #https://docs.microsoft.com/en-us/azure/virtual-machines/linux/upload-vhd#option-1-upload-a-specialized-vhd
+    # Create a resource group
+    # azure_rm_resourcegroup:
+
+    # Create a storage account
+    # azure_rm_storageaccount
+
+    # Get/list storage account keys
+    #azure_rm_storageaccount_facts
+
+    # Create a storage container
+    # azure_rm_storageblob
+
+    # Upload the VHD
+    # azure_rm_storageblob
+
+    # Create a managed disk
+    # azure_rm_managed_disk
+
+    # Create the VM (--attach-os-disk): separate playbook/job template
+    # azure_rm_virtualmachine

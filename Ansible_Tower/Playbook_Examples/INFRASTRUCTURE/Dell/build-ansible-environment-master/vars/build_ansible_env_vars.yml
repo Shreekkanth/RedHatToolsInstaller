@@ -1,0 +1,50 @@
+---
+ans_data_home: "/apps/data"
+ans_env_dirs:
+  - "/source_iso"
+  - "/ansible/roles"
+  - "/ansible/playbooks"
+
+ans_env_role_repos:
+  - src: "git@prometheus2.isus.emc.com:ansible/role-create-kickstart-iso.git"
+    dest: "/ansible/roles/create-kickstart-iso"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-patching.git"
+    dest: "/ansible/roles/patching"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-resolv.git"
+    dest: "/ansible/roles/resolv"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-satellite6_bootstrap.git"
+    dest: "/ansible/roles/satellite6_bootstrap"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-vmware-tools.git"
+    dest: "/ansible/roles/vmware_tools"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-hosts.git"
+    dest: "/ansible/roles/hosts"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-vmware-export-ovf.git"
+    dest: "/ansible/roles/vmware_export_ovf"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-api.git"
+    dest: "/ansible/roles/ahuffman.api"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-sat6_create_hosts.git"
+    dest: "/ansible/roles/ahuffman.sat6_create_hosts"
+  - src: "git@prometheus2.isus.emc.com:ansible/role-satellite6_manage_content_views.git"
+    dest: "/ansible/roles/satellite6_manage_content_views"
+
+ans_env_playbook_repos:
+  - src: "git@prometheus2.isus.emc.com:ansible/build-boot-iso.git"
+    dest: "/ansible/playbooks/build-boot-iso"
+  - src: "git@prometheus2.isus.emc.com:ansible/emc-vm-template.git"
+    dest: "/ansible/playbooks/emc-vm-template"
+  - src: "git@prometheus2.isus.emc.com:ansible/emc-vm-template-kickstart.git"
+    dest: "/kickstart"
+  - src: "git@prometheus2.isus.emc.com:ansible/build-ansible-environment.git"
+    dest: "/ansible/playbooks/build-ansible-environment"
+  - src: "git@prometheus2.isus.emc.com:ansible/pine-post-configuration.git"
+    dest: "/ansible/playbooks/pine-post-configuration"
+  - src: "git@prometheus2.isus.emc.com:ansible/migrate-satellite-clients.git"
+    dest: "/ansible/playbooks/migrate-satellite-clients"
+  - src: "git@prometheus2.isus.emc.com:ansible/distribute-sat6-roles.git"
+    dest: "/ansible/playbooks/distribute-sat6-roles"
+  - src: "git@prometheus2.isus.emc.com:ansible/sat6-manage-content-views.git"
+    dest: "/ansible/playbooks/sat6-manage-content-views"
+
+# list of python libraries/modules to install
+ans_env_python_libraries:
+  - "pyvmomi"

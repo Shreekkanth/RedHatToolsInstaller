@@ -1,0 +1,56 @@
+---
+# file: 00-config-tasks.yml
+
+- name: clone git repos for working purposes
+  git: 
+    repo: 'https://{{ git_username | urlencode }}:{{ git_access_token }}@gitlab.consulting.redhat.com/erocha/{{ item }}.git'
+    dest: '{{ pam_demo_working_dir }}/pam-demo/{{ item }}'
+  with_items:
+  - hr-workflows
+  - client-app
+  - work-item-handlers
+
+- name: clone git repos for working purposes
+  git: 
+    repo: 'https://{{ git_username | urlencode }}:{{ git_access_token }}@gitlab.consulting.redhat.com/erocha/{{ item }}.git'
+    dest: '{{ pam_demo_working_dir }}/{{ item }}'
+  with_items:
+  - nexus
+
+- name: create project
+  command: 'oc new-project {{ pam_demo_project }}'
+
+- name: create m2 settings.xml config map
+  command: 'oc create -f {{ role_path }}/files/openshift/m2-settings-cm.yml -n {{ pam_demo_project }}'
+
+- name: create maven jenkins agent configuration from template 
+  template: 
+    src: '{{ role_path }}/files/openshift/maven-persistent-cm.yml.j2'
+    dest: '{{ pam_demo_working_dir }}/maven-persistent-cm.yml'
+
+- name: create maven jenkins agent configured to use a local nexus
+  command: 'oc create -f {{ pam_demo_working_dir }}/maven-persistent-cm.yml -n {{ pam_demo_project }}'
+
+- name: create the jenkins template in the project to avoid cluster RBAC issues
+  command: 'oc create -f {{ role_path }}/files/openshift/jenkins-persistent.json -n {{ pam_demo_project }}'
+
+- name: create pam 7.1 image streams
+  command: 'oc create -f {{ role_path }}/files/openshift/rhpam71-image-streams.yml -n {{ pam_demo_project }}'
+
+- name: create pam 7.1 immutable kiserver template
+  command: 'oc create -f {{ role_path }}/files/openshift/rhpam71-prod-immutable-kieserver.yml -n {{ pam_demo_project }}'
+
+- name: create secret from git access token
+  command: 'oc create secret generic openshift-s2i-builder --from-literal=username={{ git_username }} --from-literal=password={{ git_access_token }} --type=kubernetes.io/basic-auth -n {{ pam_demo_project }}'
+
+- name: link secret to builder serviceaccount 
+  command: 'oc secret link builder openshift-s2i-builder -n {{ pam_demo_project }}'
+
+- name: annotate secret to allow openshift to use it by default
+  command: 'oc annotate secret openshift-s2i-builder "build.openshift.io/source-secret-match-uri-1=https://gitlab.consulting.redhat.com/uki-sa/*" -n {{ pam_demo_project }}'
+
+- name: create kieserver keystore
+  command: "keytool -genkeypair -alias jboss -keyalg RSA -keystore {{ pam_demo_working_dir }}/keystore.jks -storepass mykeystorepass -keypass mykeystorepass --dname 'CN=sa,OU=presales,O=demolab.local,L=London,C=UK'"
+
+- name: create secret from kieserver keystore
+  command: 'oc create secret generic kieserver-app-secret --from-file={{ pam_demo_working_dir }}/keystore.jks'

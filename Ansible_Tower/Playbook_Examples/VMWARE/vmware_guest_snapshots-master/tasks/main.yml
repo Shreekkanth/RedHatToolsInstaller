@@ -1,0 +1,7 @@
+---
+# tasks file for vmware_guest_snapshots
+
+- name: Ensure requirements are in place for role
+  include_tasks: requirements.yml
+- name: Manage tasks
+  include_tasks: manage.yml

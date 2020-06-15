@@ -1,0 +1,245 @@
+ansible_ssh_user: "{{ lookup('env', 'ANSIBLE_LX_USERNAME') }}"
+
+ansible_ssh_pass: "{{ lookup('env', 'ANSIBLE_LX_PASSWORD') }}"
+
+ansible_git_username: "{{ lookup('env', 'ANSIBLE_GIT_USERNAME') }}"
+
+ansible_git_personal_access_token: "{{ lookup('env', 'ANSIBLE_GIT_PERSONAL_ACCESS_TOKEN') }}"
+
+ansible_tower: "127.0.0.1"
+
+tower_execution_path: "/var/lib/awx"
+
+ansible_tower_license: {
+    "company_name": "Starbucks Corporation",
+    "contact_email": "bradley.thornton@starbucks.com",
+    "contact_name": "Bradley Thornton",
+    "hostname": "094a8bd8facf48db9604c73c8e43e811",
+    "instance_count": 1200,
+    "license_date": 1517596777,
+    "license_key": "544f5a37471432b1c63056738c7635893e530f712b540495b45535bfa41eb2e6",
+    "license_type": "enterprise",
+    "subscription_name": "Ansible Tower by Red Hat, Standard (1200 Managed Nodes)",
+    "eula_accepted": true
+}
+
+ansible_tower_ldap_config: {
+    "AUTH_LDAP_SERVER_URI": "ldap://ldap.starbucks.net:389",
+    "AUTH_LDAP_BIND_DN": "s-ciscoacs@starbucks.net",
+    "AUTH_LDAP_BIND_PASSWORD": "okS#3HQC",
+    "AUTH_LDAP_START_TLS": false,
+    "AUTH_LDAP_CONNECTION_OPTIONS": {
+        "OPT_NETWORK_TIMEOUT": 30,
+        "OPT_REFERRALS": 0
+    },
+    "AUTH_LDAP_USER_SEARCH": [
+        "OU=Corp,DC=starbucks,DC=net",
+        "SCOPE_SUBTREE",
+        "(sAMAccountName=%(user)s)"
+    ],
+    "AUTH_LDAP_USER_DN_TEMPLATE": null,
+    "AUTH_LDAP_USER_ATTR_MAP": {
+        "first_name": "givenName",
+        "last_name": "sn",
+        "email": "mail"
+    },
+    "AUTH_LDAP_GROUP_SEARCH": [
+        "OU=PAT Roles,OU=Security Roles,DC=starbucks,DC=net",
+        "SCOPE_SUBTREE",
+        "(objectClass=group)"
+    ],
+    "AUTH_LDAP_GROUP_TYPE": "ActiveDirectoryGroupType",
+    "AUTH_LDAP_REQUIRE_GROUP": null,
+    "AUTH_LDAP_DENY_GROUP": null,
+    "AUTH_LDAP_USER_FLAGS_BY_GROUP": {},
+    "AUTH_LDAP_ORGANIZATION_MAP": {
+        "00001": {
+            "admins": "CN=RL - PAT - T4-00001,OU=PAT Roles,OU=Security Roles,DC=starbucks,DC=net",
+            "remove_users": false,
+            "remove_admins": false,
+            "users": true
+        }
+    },
+    "AUTH_LDAP_TEAM_MAP": {}
+}
+
+ansible_organizations:
+  - name: "00001"
+    description: "Organization for FGID-00001"
+  - name: "00296"
+    description: "Organization for FGID-00296"
+
+ansible_tower_inventories:
+  - name: "orion inventory"
+    organization: "00001"
+  - name: "localhost"
+    organization: "00001"
+  - name: "verde inventory"
+    organization: "00296"
+  - name: "reposync servers"
+    organization: "00296"
+
+ansible_hosts:
+  - name: "localhost"
+    description: "self"
+    inventory: "localhost"
+  - name: "rhd50243.starbucks.net"
+    description: "reposync server"
+    inventory: "reposync servers"
+  - name: "rhd50249.starbucks.net"
+    description: "reposync server"
+    inventory: "reposync servers"
+
+ansible_credentials:
+  - name: "sudo"
+    organization_name: "00001"
+    credential_name: "Machine"
+    inputs:
+      username: "sudo"
+      become_username: "sudo"
+      become_method: "sudo"
+      become_password: "wudo"
+  - name: "vault"
+    organization_name: "00001"
+    credential_name: "Vault"
+    inputs:
+      vault_password: "4<3*a6Ee_v7vqEa@"
+  - name: "git"
+    organization_name: "00001"
+    credential_name: "Source Control"
+    inputs:
+      username: "s-netinv"
+      password: "2Cg%Fb}7s3D-B!6"
+  - name: "m-00001-14"
+    organization_name: "00001"
+    credential_name: "Machine"
+    inputs:
+      username: "m-00001-14"
+      password: "ASK"
+      become_method: "sudo"
+      become_password: "ASK"
+
+ansible_projects:
+  - name: "Orion Inventory Sync Project"
+    organization: "00001"
+    scm_type: "git"
+    scm_url: "https://scm.starbucks.com/jamhall/tower_inventory_sync.git"
+    scm_credential: "git"
+  - name: "Currency Report"
+    organization: "00296"
+    scm_type: "git"
+    scm_url: "https://scm.starbucks.com/00296/currency_report_playbook.git"
+    scm_credential: "git"
+  - name: "Patching"
+    organization: "00296"
+    scm_type: "git"
+    scm_url: "https://scm.starbucks.com/00296/os_update_playbook.git"
+    scm_credential: "git"
+  - name: "Yum Reposync"
+    organization: "00296"
+    scm_type: "git"
+    scm_url: "https://scm.starbucks.com/00296/sync_repo_playbook.git"
+    scm_credential: "git"
+  - name: "Yum Webserver Sync"
+    organization: "00296"
+    scm_type: "git"
+    scm_url: "https://scm.starbucks.com/00296/webserver_sync_playbook.git"
+    scm_credential: "git"
+  - name: "Verde Inventory"
+    organization: "00296"
+    scm_type: "git"
+    scm_url: "https://scm.starbucks.com/00296/verde_inventory.git"
+    scm_credential: "git"
+
+ansible_tower_inventory_script:
+  - name: "orion_inventory"
+    description: ""
+    script: "#!/usr/bin/env python\n\"\"\" Dyanamic inventory from orion\n\"\"\"\nimport yaml\nimport json\nimport os\nimport re\nimport requests\nfrom pprint import pprint\nfrom requests.packages.urllib3.exceptions import InsecureRequestWarning\nrequests.packages.urllib3.disable_warnings(InsecureRequestWarning)\n\nORION_VARS= \"\"\"\n  - name: airport\n    build_group: true\n  - name: blade_chassis\n    build_group: false\n  - name: block\n    build_group: true\n  - name: city\n    build_group: false\n  - name: comments\n    build_group: false\n  - name: department\n    build_group: true\n  - name: device_type\n    build_group: true\n  - name: dns\n    build_group: false\n  - name: facility\n    build_group: false\n  - name: idf\n    build_group: true\n  - name: iosimage\n    build_group: false\n  - name: iosversion\n    build_group: false\n  - name: machinetype\n    build_group: false\n  - name: network_support_team\n    build_group: true\n  - name: nodedescription\n    build_group: false\n  - name: nodeid\n    build_group: false\n  - name: nodename\n    build_group: false\n  - name: objectsubtype\n    build_group: false\n  - name: region\n    build_group: false\n  - name: site\n    build_group: true\n  - name: standard_route_map_acl\n    build_group: true\n  - name: vendor\n    build_group: true\n  - name: vendor_name\n    build_group: false\n\"\"\"\n\ndef read_orion_attributes():\n    props = yaml.load(ORION_VARS)\n    return props\n\ndef collect_from_orion(attrs):\n    \"\"\" Collect devices from Orion\n    \"\"\"\n    columns = (',').join([x['name'] for x in attrs])\n    host = \"orion.starbucks.net\"\n    api_url = \"https://%s:17778/SolarWinds/InformationService/v3/Json/Query\" % host\n    username = 'api'\n    password = 'EpLeZAC89p2K2dvsmB9XkBVvUSTD7SZB'\n    query = \"SELECT %s FROM Orion.NodesCustomProperties cp INNER JOIN orion.nodes nd on cp.NodeID = nd.NodeID\" % columns\n    payload = {\"query\": query}\n    response = requests.post(api_url, json=payload, verify=False, auth=(username, password))\n    return response.json()['results']\n\ndef determine_os(vendor, description):\n    \"\"\" Determines the friendly OS name from the description\n    Args:\n        vendor (str): The vendor name\n        description (str): The description string from orion\n    Returns:\n        os (str): The fiendlu os name in netmiko format\n    \"\"\"\n    # pylint: disable=too-many-branches\n    if re.search('Cisco', vendor):\n        if re.search(r'IOS Software, IOS-XE Software', description):\n            oper_sys = 'cisco_xe'\n        elif re.search(r'Cisco IOS Software \\[Denali\\], ASR1000', description):\n            oper_sys = 'cisco_xe'\n        elif re.search(r'Cisco IOS Software.*ISR Software', description):\n            oper_sys = 'cisco_xe'\n        elif re.search(r'IOS XR Software', description):\n            oper_sys = 'cisco_xr'\n        elif re.search(r'IOS Software, .*\\d{2,5}.* Software', description):\n            oper_sys = 'cisco_ios'\n        elif re.search(r'Internetwork Operating System Software', description):\n            oper_sys = 'cisco_ios'\n        elif re.search(r'NX-OS', description):\n            oper_sys = 'cisco_nxos'\n        elif re.search(r'Adaptive Security Appliance', description):\n            oper_sys = 'cisco_asa'\n        elif re.search(r'ASA', description):\n            oper_sys = 'cisco_asa'\n        elif re.search(r'Firewall Services Module', description):\n            oper_sys = 'cisco_fwsm'\n        elif re.search(r'PIX', description):\n            oper_sys = 'cisco_pix'\n        elif re.search(r'ACE', description):\n            oper_sys = 'cisco_aceos'\n        elif re.search('Cisco Controller', description):\n            oper_sys = 'cisco_wlc'\n        elif re.search(r'Cisco Catalyst Operating System', description):\n            oper_sys = 'cisco_catos'\n        else:\n            oper_sys = 'unknown'\n    elif re.search(r'Arista', vendor):\n        oper_sys = 'arista_eos'\n    elif re.search(r'Gigamon', vendor):\n        oper_sys = 'gigamon_gigavue-os'\n    elif re.search(r'InfoBlox', vendor):\n        oper_sys = 'infoblox_nios'\n    elif re.search(r'Meraki', vendor):\n        oper_sys = 'meraki_os'\n    elif re.search(r'F5', vendor):\n        oper_sys = 'f5_tmos'\n    elif re.search(r'Windows', vendor):\n        oper_sys = 'ms_windows'\n    else:\n        oper_sys = 'unknown'\n    # pylint: enable=too-many-branches\n    return oper_sys\n\ndef determine_org(name):\n    \"\"\" Determines the organization\n    Args:\n        name (str): The device name\n    Returns:\n        str: the org name\n    \"\"\"\n    short_name = name.split('.')[0].split('-')[0]\n    if re.search(r'^[a-z0-9]{9}\\d{3}$', short_name):\n        org = 'network'\n    elif re.search(r'^ms\\d{5}$', short_name):\n        org = 'network'\n    elif re.search('cnx', short_name):\n        org = 'storage'\n    elif re.search(r'^[a-z]{5}\\d{3}[a-z]{3}\\d$', short_name):\n        org = 'virtualization'\n    elif re.search(r'^[a-z]{3}ucs\\d{2}$', short_name):\n        org = 'virtualization'\n    else:\n        org = 'unknown'\n    return org\n\ndef determine_meta(device):\n    \"\"\" Builds metadata from device name\n    Args:\n        device (str): A dictionary fo a device\n    Returns:\n        dict:  The modified device dictionary\n    \"\"\"\n    device['short_name'] = device['nodename'].split('.')[0]\n    device['site_code'] = device['nodename'][0:6]\n    device['airport_code'] = device['nodename'][0:3]\n    device['facility_code'] = device['nodename'][3:6]\n    device['device_type'] = device['nodename'][7:9]\n    device['block'] = device['nodename'][6]\n    if device['block'] == 'l' or device['facility_code'].startswith('lb') or \\\n       'zone10' in device['short_name']:\n        device['environment'] = 'non-prod'\n    else:\n        device['environment'] = 'prod'\n    return device\n\ndef determine_team(device):\n    \"\"\" Determines the network team\n    Args:\n        device (str): A dictionary fo a device\n    Returns:\n        dict:  The modified device dictionary\n    \"\"\"\n    b2b_routers = ['iaddc1ert001', 'chddc1ert002', 'chddc1ert003', 'kynudcert001',\n                   'shadc1ert001', 'shadc1ert002']\n    name = device['nodename'].split('.')[0]\n    if name in b2b_routers:\n        device['team'] = 'client'\n    elif re.search('(s|e)', device['block']):\n        device['team'] = 'dc'\n    elif re.search('(crt004|crt005|dc1irt|udcirt)', name):\n        device['team'] = 'dc'\n    elif re.search('(i|c)', device['block']) and re.search('(sw|fw|ob)', device['device_type']):\n        device['team'] = 'dc'\n    elif re.search('(u|w|i|c)', device['block']):\n        device['team'] = 'client'\n    elif device['block'] == 'r':\n        device['team'] = 'retail'\n    elif device['block'] == 'l':\n        device['team'] = 'lab'\n    else:\n        device['team'] = 'unknown'\n    return device\n\ndef pared_down(devices):\n    \"\"\" Reduces device list to network and specifc vendors\n    Args:\n        devices (list): A list of device dicts\n    Returns:\n        list:  The reduced device list\n    \"\"\"\n    cleaned_devices = []\n    for device in devices:\n        device = dict((k.lower(), v) for k, v in device.iteritems())\n        if determine_org(device['nodename']) == 'network':\n            device['os'] = determine_os(device['vendor'], device['nodedescription'])\n            exclusions = ['meraki_os', 'ms_windows']\n            if device['os'] not in exclusions:\n                device['vendor'] = device['vendor'].split()[0].lower()\n                device = determine_meta(device)\n                device = determine_team(device)\n                cleaned_devices.append(device)\n    return cleaned_devices\n\ndef build_groups(devices):\n    \"\"\" Build groups of devices\n    Args:\n        devices (list): A list of device dicts\n    Returns:\n        dict:  A dict of groups\n    \"\"\"\n    groups = {}\n    groups_of = ['airport_code', 'block', 'device_type', 'environment', \\\n                 'facility_code', 'os', 'site_code', 'team', 'vendor']\n    for group in groups_of:\n        uniques = set([d[group] for d in devices])\n        for unique in uniques:\n            group_name = \"%s_%s\" % (group, unique)\n            groups[group_name] = [d['nodename'] for d in devices if d[group] == unique]\n\n    scdt_list = set([d['nodename'][0:9] for d in devices])\n    for entry in scdt_list:\n        groups['scdt_' + entry] = [d['nodename'] for d in devices if d['nodename'].startswith(entry)]\n    bdt_list = set([d['nodename'][6:9] for d in devices])\n    for entry in bdt_list:\n        groups['bdt_' + entry] = [d['nodename'] for d in devices if d['nodename'][6:9] == entry ]\n    return groups\n\ndef build_orion_groups(devices, attrs):\n    \"\"\" Build groups of devices\n    Args:\n        devices (list): A list of device dicts\n        attrs: (list): A list of attrs from Orion\n    Returns:\n        dict:  A dict of groups\n    \"\"\"\n    groups = {}\n    groups_of = [x['name'] for x in attrs if x['build_group']]\n    for group in groups_of:\n        uniques = set([device[group] for device in devices if device[group]])\n        for unique in uniques:\n            group_name = \"orion_%s_%s\" % (group, unique)\n            groups[group_name] = [d['nodename'] for d in devices if d[group] == unique]\n    return groups\n\n\ndef build_inventory(devices, groups):\n    \"\"\" Builds an Ansible style inventory\n    Args:\n        devices (list): A list of device dicts\n    Returns:\n        dict: An ansible style dictionary\n    \"\"\"\n    inventory_all = {'_meta':{'hostvars': {}}}\n    inventory_all['localhost'] = {'hosts': ['localhost']}\n    for device in devices:\n        inventory_all['_meta']['hostvars'][device['nodename']] = device\n        inventory_all['_meta']['hostvars'][device['nodename']]['id'] = device['nodename']\n    for group in groups:\n        inventory_all[group] = {'hosts': [], 'vars': {}}\n        inventory_all[group]['hosts'] = groups[group]\n    return inventory_all\n\n\ndef main():\n    \"\"\" The starting point\n    \"\"\"\n    attrs = read_orion_attributes()\n    devices = collect_from_orion(attrs)\n    devices = pared_down(devices)\n    groups = build_groups(devices)\n    orion_groups = build_orion_groups(devices, attrs)\n    groups.update(orion_groups)\n    inventory = build_inventory(devices, groups)\n    print json.dumps(inventory)\n\nif __name__ == '__main__':\n    main()\n"
+    organization_name: "00001"
+
+ansible_tower_inventory_sources:
+  - name: "orion_inventory_source"
+    source: "custom"
+    source_path: ""
+    source_script: "orion_inventory"
+    source_vars: ""
+    credential: null
+    source_regions: ""
+    instance_filters: ""
+    group_by: ""
+    overwrite: true
+    overwrite_vars: false
+    timeout: 0
+    verbosity: 1
+    inventory_name: "orion inventory"
+    update_on_launch: true
+    update_cache_timeout: 30
+    update_on_project_update: false
+
+ansible_tower_project_inventory_sources:
+  - name: "verde"
+    inventory_name: "verde inventory"
+    source_project: "Verde Inventory"
+    source_path: "verde.py"
+    credential_name: "git"
+    overwrite: true
+    update_on_launch: true
+    source_vars: "---\nVAC_SEARCH_SERVERS: http://vac-user-api-v1.production.iaas.kubernetes.starbucks.net/api/v1/search/servers?rtail_operating_system=%2F%5E.*RHEL.*%24%2F&status=Active&fgid=00296\nVAC_HOST_GROUPS: maintenance_window_name"
+
+ansible_job_templates:
+  - name: "Orion Inventory Sync Template"
+    job_type: "run"
+    inventory: "orion inventory"
+    playbook: "main.yml"
+    project: "Orion Inventory Sync Project"
+    become_enabled: true
+    forks: 1
+    machine_credential: "m-00001-14"
+    extra_vars: "---\nansible_service_user: s-netinv\nansible_service_token: d236d50d8e5673f0255b0dabc91fb0dd09ce03cb\nANSIBLE_HOST_KEY_CHECKING: False"
+  - name: "Currency Report"
+    job_type: "run"
+    inventory: "verde inventory"
+    playbook: "currency_report.yml"
+    project: "Currency Report"
+    become_enabled: false
+    forks: 0
+    machine_credential: "m-00001-14"
+    extra_vars: "---"
+  - name: "OS Update"
+    job_type: "run"
+    inventory: "verde inventory"
+    playbook: "os_update.yml"
+    project: "Patching"
+    become_enabled: true
+    forks: 0
+    machine_credential: "m-00001-14"
+  - name: "sync_repos_rhel"
+    job_type: "run"
+    inventory: "verde inventory"
+    playbook: "repo_sync.yml"
+    project: "Yum Reposync"
+    become_enabled: true
+    forks: 0
+    machine_credential: "m-00001-14"
+  - name: "yum_webserver_sync"
+    job_type: "run"
+    inventory: "verde inventory"
+    playbook: "webserver_sync.yml"
+    project: "Yum Webserver Sync"
+    become_enabled: true
+    forks: 0
+    machine_credential: "m-00001-14"
+
+ansible_job_schedules:
+  - name: "sync_repos_daily"
+    description: "every day until March 29, 2018"
+    job_template_name: "sync_repos_rhel"
+    enabled: false
+    rrule: "DTSTART:20180208T090000Z RRULE:FREQ=DAILY;INTERVAL=1;UNTIL=20180330T000000Z"
+    extra_data: ""
+  - name: "Currency Report Schedule"
+    description: "every day"
+    job_template_name: "Currency Report"
+    enabled: true
+    rrule: "DTSTART:20180215T050000Z RRULE:FREQ=DAILY;INTERVAL=1"
+    extra_data: ""

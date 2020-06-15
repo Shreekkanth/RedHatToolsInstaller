@@ -1,0 +1,27 @@
+---
+
+# OVERVIEW
+#   TODO
+#
+# VARS
+#   TODO
+
+- name: "Install Satellite Capsule Server with only 'Configuration Managment' features enabled"
+  hosts: config-capsule-servers
+
+  tasks:
+    - name: foo
+      command: >
+        satellite-installer --scenario capsule
+          --capsule-parent-fqdn                         "satellite6-master-0.rhc-lab.iad.redhat.com"
+          --foreman-proxy-register-in-foreman           "true"
+          --foreman-proxy-foreman-base-url              "https://satellite6-master-0.rhc-lab.iad.redhat.com"
+          --foreman-proxy-trusted-hosts                 "satellite6-master-0.rhc-lab.iad.redhat.com"
+          --foreman-proxy-trusted-hosts                 "sat-cap-content-1.rhc-lab.iad.redhat.com"
+          --foreman-proxy-oauth-consumer-key            "MKbWhrvnRgCX9TTMpCAZNPnALxBWMsYr"
+          --foreman-proxy-oauth-consumer-secret         "rooUFejJF2gHsF4KrsZpo9Gigjo74T9y"
+          --capsule-pulp-oauth-secret                   "n5NfA4AJF6cvgsMJEzgJGpk9QShSNFB3"
+          --capsule-certs-tar                           "~/sat-cap-content-1.rhc-lab.iad.redhat.com.tar"
+          --capsule-puppet-ca-proxy                     "https://satellite6-master-0.rhc-lab.iad.redhat.com:8140"
+          --foreman-proxy-puppetca                      "false"
+          --capsule-puppet                              "true"

@@ -1,0 +1,10 @@
+---
+# tasks file for tower_send_assets
+
+- name: Send assets to Tower
+  tower_send:
+    assets: "{{ item.assets | default (omit, true) }}"
+    files: "{{ item.files | default (omit, true) }}"
+    password_management: "{{ item.password_management }}"
+    prevent: "{{ item.prevent }}"
+    tower_verify_ssl: "{{ check_ssl }}"

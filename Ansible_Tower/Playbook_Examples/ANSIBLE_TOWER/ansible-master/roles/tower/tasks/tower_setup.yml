@@ -1,0 +1,6 @@
+---
+- name: download ansible tower setup package
+  unarchive:
+    src: "{{ tower_setup_url }}"
+    dest: "{{ tower_setup_location }}"
+    remote_src: yes

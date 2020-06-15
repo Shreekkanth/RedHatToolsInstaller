@@ -1,0 +1,17 @@
+---
+- name: add user
+  hosts: target
+  become: yes
+
+  vars_files:
+  - vault.yml
+
+  tasks:
+  - name: make user
+    user: 
+      name: "{{ item.user_name }}" 
+      password: "{{ item.user_password | password_hash('sha512') }}"
+    with_items: "{{ newusers }}"
+
+
+...

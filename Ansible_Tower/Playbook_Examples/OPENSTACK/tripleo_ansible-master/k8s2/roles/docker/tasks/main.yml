@@ -1,0 +1,38 @@
+---
+
+- name: install docker
+  yum: name={{ item }} state=installed
+  with_items:
+#    - docker-1.12.6-16.el7.centos.x86_64
+    - docker
+
+#- name: docker version
+#  shell: docker version
+#  register: result
+#- debug: msg={{ result.stdout }}
+
+#- name: update /etc/sysconfig/docker
+#  lineinfile: >-
+#    dest=/etc/sysconfig/docker
+#    state=present
+#    regexp='^OPTIONS.*--insecure-registry'
+#    line='--selinux-enabled --log-driver=journald --signature-verification=false --insecure-registry 172.30.0.0/16'
+#    backup=yes
+
+- name: check if the vg exists
+  shell: vgs | grep docker-vg
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: prepare for docker-storage-setup
+  template: src=docker-storage-setup dest=/etc/sysconfig/docker-storage-setup
+  when: result|failed
+  
+- name: run docker-storage-setup
+  shell: docker-storage-setup
+  when: result|failed
+  
+- name: docker service
+  service: name=docker state=started enabled=true

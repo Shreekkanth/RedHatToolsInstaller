@@ -1,0 +1,29 @@
+#!/bin/bash
+
+PLUGINDIR=$(dirname $0)
+. $PLUGINDIR/utils.sh
+
+path_SUDO=/bin/sudo
+path_LSOF=/sbin/lsof
+path_WC=/bin/wc
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 username"
+  echo "Username: Username to check for open files"
+  exit $STATE_UNKNOWN
+else
+  USER=$1
+fi
+
+# Calculate open files for user
+LSOF=$(path_SUDO $path_LSOF -u $USER | $path_WC -l)
+echo "$1 has $LSOF files open"
+
+# Determine if this is good or bad
+if [[ $LSOF -lt 3000 ]]; then
+  exit $STATE_OK
+elif [[ ( $LSOF -fe 3000 ) && ( $LSOF -lt 8000 ) ]]; then
+  exit $STATE_WARNING
+else
+  exit $STATE_CRITICAL
+fi

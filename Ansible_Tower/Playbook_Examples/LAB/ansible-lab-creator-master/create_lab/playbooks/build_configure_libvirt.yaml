@@ -1,0 +1,17 @@
+---
+- name: Build and Configure Libvirt Env 
+  hosts: localhost 
+  become: true
+
+  tasks:
+   - include_role: 
+        name: install_libvirt_env
+
+   - include_role:
+        name: gen_ssh_keys
+
+   - include_role:
+        name: libvirt_configure_image
+
+   - include_role:
+        name: libvirt_ansible_host_config

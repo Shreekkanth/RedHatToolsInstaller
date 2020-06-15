@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  remote_user: root
+  vars:
+    env_name: development
+    testframework_virtual_env: /opt/devilhorn/testframework
+  roles:
+    - role: development-alteration
+      when: env_name == development
+    - common
+    - test-framework
+    - ipa-server
+    - provider-identity-parcel
+    - ipa-replica
+    - ipa-master

@@ -1,0 +1,20 @@
+Vagrant.configure(2) do |config|
+
+  # config.dns.tld = "vagrant.dev"
+
+  # RHEL 7
+  config.vm.define "harden-rhel7-el7" do |rhel7|
+    rhel7.vm.box = "samdoran/rhel7"
+    rhel7.vm.hostname = "harden-rhel7-rhel7"
+    config.vm.provider "virtualbox" do |vbox|
+      vbox.name = "harden-rhel7"
+      vbox.cpus = 1
+      vbox.memory = 512
+    end
+  end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "vagrant.yml"
+  end
+
+end

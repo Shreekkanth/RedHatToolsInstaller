@@ -1,0 +1,24 @@
+---
+boxes:
+  rhel6:
+    config: rhel6
+    activation_key: 'rhel6'
+  rhel7:
+    config: rhel7
+    activation_key: 'rhel7'
+  rhel8:
+    config: rhel8
+    activation_key: 'rhel8'
+
+  satellite-6-3-qa-rhel7:
+    base: rhel7
+    config: satellite-rhel7
+    minor_version: '6.3.0-13.0'
+    major_version: '6.3'
+    activation_key: satellite-6.3-qa-rhel7
+  satellite-6-3-15-rhel7:
+    base: rhel7
+    config: satellite-rhel7
+    minor_version: '6.3.0-15.0'
+    major_version: '6.3'
+    activation_key: satellite-6.3-qa-rhel7

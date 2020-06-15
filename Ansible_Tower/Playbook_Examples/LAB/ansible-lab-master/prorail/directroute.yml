@@ -1,0 +1,237 @@
+---
+- name: install webservers
+  become: yes
+  remote_user: mtenheuv
+  hosts: app1, app2
+  tags: webs
+  vars:
+    packages:
+      - firewalld
+      - httpd
+
+  tasks:
+    - name: Install packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ packages }}"
+      notify: restart httpd
+
+    - name: ensure selinux is enabled and on
+      selinux:
+        policy: targeted
+        state: enforcing
+
+    - name: start firewalld
+      service: 
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: configure firewalld
+      firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: yes 
+      with_items: 
+        - http
+        - https
+      notify: restart httpd
+
+    - name: start httpd
+      service: 
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: put a file in place
+      template:
+        src: templates/default_index.html.j2 
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Setup httpd config
+      copy: 
+        dest: /etc/httpd/conf/httpd.conf
+        src: files/httpd.conf
+      notify: restart httpd
+
+
+  handlers:
+    - name: restart httpd
+      service:
+        name: httpd
+        state: restarted
+        enabled: yes
+
+- name: setup haproxys
+  become: yes
+  remote_user: mtenheuv
+  hosts: prx
+  tags: prx
+
+  vars:
+    packages:
+      - haproxy
+      - firewalld
+      - keepalived
+      - ipvsadm
+      - psmisc # killall command
+
+    # haproxy options
+    mode: http
+    mylogname: haproxy.mobile.mth
+    balance: roundrobin
+    iface: eth0
+    httpd_port: 80
+
+    # keepalived options
+    keepalived_vip: 192.168.204.100
+    keepalived_bind_interface: eth0
+
+    dr_keepalived_vip: 192.168.204.101
+ 
+  tasks:
+    - name: Install packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ packages }}" 
+      notify: restart haproxy
+
+    - name: ensure selinux is enabled and on
+      selinux:
+        policy: targeted
+        state: enforcing
+
+    - name: start firewalld service
+      service: 
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: configure firewalld
+      firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: yes 
+      with_items: 
+        - http
+        - https
+
+    - name: add rich rule to firewalld
+      firewalld:
+        rich_rule: 'rule protocol value="vrrp" accept' 
+        permanent: true
+        state: enabled
+        immediate: yes
+      
+
+    - name: start services
+      service: 
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - keepalived
+        - haproxy
+
+    - name: Setup basic config
+      template:
+        src: templates/haproxy.cfg.j2 
+        dest: /etc/haproxy/haproxy.cfg
+      notify: restart haproxy
+
+    - name: Setup keepalived config
+      template:
+        src: templates/keepalived.cfg2.j2
+        dest: /etc/keepalived/keepalived.conf
+      notify: restart keepalived
+
+    - name: Setup ip forwarding
+      sysctl: 
+        name: "{{ item }}" 
+        value: 1
+        state: present
+        reload: yes
+      with_items:
+        - net.ipv4.ip_forward
+        - net.ipv4.ip_nonlocal_bind
+      notify: 
+        - restart keepalived
+        - restart haproxy
+
+  handlers:
+    - name: restart haproxy
+      service:
+        name: haproxy
+        state: restarted
+        enabled: yes
+
+    - name: restart keepalived
+      service:
+        name: keepalived
+        state: restarted
+        enabled: yes
+
+# now setup the clients
+
+- name: setup hosts for DR
+  become: yes
+  remote_user: mtenheuv
+  hosts: app2
+  tags: app2
+  vars:
+    dr_keepalived_vip: 192.168.204.101
+    packages:
+    - arptables
+  
+  tasks:
+  - name: install arptables 
+    yum:
+      name: arptables
+      state: present
+
+  - name: configure arptables drop
+    command: arptables -A INPUT -s {{ dr_keepalived_vip }} -j DROP
+  
+  - name: configure arptables mangle
+    command: arptables -A OUTPUT -s {{ dr_keepalived_vip }} -j mangle --mangle-ip-s {{ dr_keepalived_vip }}
+
+  - name: store arptables config
+    shell: arptables-save > /etc/sysconfig/arptables
+
+  - name: enable arptables service
+    service:
+      name: arptables
+      state: started
+      enabled: yes
+
+  # quick and dirty. You should create a file with a for 
+  - name: Add script to start IP
+    template: 
+      src: templates/ip-add.sh.j2
+      dest: /usr/local/sbin/ip-add.sh
+      mode: 0700
+      owner: root
+      group: root
+  
+  - name: Now add service 
+    template:
+      src: files/ip-add.service
+      dest: /etc/systemd/system/ip-add.service
+
+  - name: Scan new service file
+    command: systemctl daemon-reload
+
+  - name: Enable new service
+    service:
+      name: ip-add.service
+      state: started
+      enabled: yes
+
+...

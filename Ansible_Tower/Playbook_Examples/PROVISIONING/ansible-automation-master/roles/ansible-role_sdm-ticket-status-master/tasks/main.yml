@@ -1,0 +1,43 @@
+---
+- name: Get authentication key
+  uri:
+    url: "{{ sdm_ticket_status_api_base_url }}/rest_access"
+    method: POST
+    headers:
+      Accept: Application/json
+      Authorization: "Basic {{ sdm_ticket_status_api_key }}"
+      Content-Type: Application/Json
+    body:
+      rest_access:
+    body_format: json
+    return_content: yes
+    status_code: 201
+  register: auth_key_result
+
+- name: Include request task
+  include_tasks: request.yml
+  when: not sdm_ticket_status_wait
+
+- name: Include request and wait task
+  include_tasks: request-wait.yml
+  when: sdm_ticket_status_wait
+
+- name: Register result (sdm_ticket_status)
+  set_fact:
+    sdm_ticket_status:
+      ticket_id: "{{ sdm_ticket_status_ticket_id }}"
+      status:
+        code: "{{ ticket_status_result.json.crs['@id'] }}"
+        text: "{{ ticket_status_result.json.crs['@COMMON_NAME'] }}"
+
+- name: Delete access key
+  uri:
+    url: "{{ sdm_ticket_status_api_base_url }}/rest_access/{{ auth_key_result.json.rest_access['@id'] }}"
+    method: DELETE
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    return_content: yes
+    status_code: 204
+  # register: delete_access_key_result

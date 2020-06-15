@@ -1,0 +1,110 @@
+---
+- name: "Build Ansible Environment"
+  hosts: "localhost"
+  vars_prompt:
+    - name: "ans_data_home"
+      prompt: "Enter the path where you want the Ansible data"
+      default: "/apps/data"
+      private: False
+  vars_files:
+    - "vars/build_ansible_env_vars.yml"
+    - "vars/encrypted-ssh-priv-keys.yml"
+  tasks:
+    - name: "Ensure git is installed"
+      package:
+        name: "git"
+        state: "installed"
+      become: True
+
+    - name: "Ensure base directories exist"
+      file:
+        state: "directory"
+        mode: "0755"
+        owner: "root"
+        group: "root"
+        path: "{{ ans_data_home }}{{ item }}"
+      with_items: "{{ ans_env_dirs }}"
+      become: True
+
+    - name: "Ensure ssh keys are available"
+      block:
+        - name: "Ensure directory exists"
+          file:
+            state: "directory"
+            mode: "0700"
+            owner: "root"
+            group: "root"
+            path: "/root/.ssh"
+
+        - name: "SSH template build private key"
+          copy:
+            mode: "0600"
+            owner: "root"
+            group: "root"
+            content: "{{ ks_image_ssh_priv_key }}"
+            dest: "/root/.ssh/id_rsa"
+
+        - name: "SSH template build public key"
+          copy:
+            mode: "0644"
+            owner: "root"
+            group: "root"
+            content: "{{ ks_image_ssh_pub_key }}"
+            dest: "/root/.ssh/id_rsa.pub"
+
+        - name: "SSH gitlab deploy private key"
+          copy:
+            mode: "0600"
+            owner: "root"
+            group: "root"
+            content: "{{ gitlab_ssh_priv_key }}"
+            dest: "/root/.ssh/gitlab_priv_key_id_rsa"
+
+        - name: "SSH giblab deploy public key"
+          copy:
+            mode: "0644"
+            owner: "root"
+            group: "root"
+            content: "{{ gitlab_ssh_pub_key }}"
+            dest: "/root/.ssh/gitlab_priv_key_id_rsa.pub"
+      become: True
+
+    - name: "Ensure required Python libraries are installed"
+      include_role:
+        name: "prerequisites"
+      vars:
+        prq_pylibs: "{{ ans_env_python_libraries }}"
+
+    - name: "Ensure Roles are available"
+      git:
+        accept_hostkey: True
+        bare: False
+        clone: True
+        force: True
+        key_file: "/root/.ssh/gitlab_priv_key_id_rsa"
+        recursive: False
+        remote: "origin"
+        umask: "0022"
+        update: True
+        repo: "{{ item.src }}"
+        dest: "{{ ans_data_home }}{{ item.dest }}"
+        version: "{{ item.ver | default('HEAD') }}"
+      become: True
+      with_items: "{{ ans_env_role_repos }}"
+
+    - name: "Ensure Playbooks are available"
+      git:
+        accept_hostkey: True
+        bare: False
+        clone: True
+        force: True
+        key_file: "/root/.ssh/gitlab_priv_key_id_rsa"
+        recursive: False
+        remote: "origin"
+        umask: "0022"
+        update: True
+        repo: "{{ item.src }}"
+        dest: "{{ ans_data_home }}{{ item.dest }}"
+        version: "{{ item.ver | default('HEAD') }}"
+      become: True
+      with_items: "{{ ans_env_playbook_repos }}"

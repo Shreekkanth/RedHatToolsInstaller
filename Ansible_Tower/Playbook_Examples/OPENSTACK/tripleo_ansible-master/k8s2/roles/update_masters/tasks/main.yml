@@ -1,0 +1,52 @@
+---
+
+- name: backup /etc/kubernetes
+  shell: test -d /root/orig.{{ item }} || cp -rp /etc/{{ item }} /root/orig.{{ item }}
+  with_items:
+    - kubernetes
+
+- name: update /etc/kubernetes/*.conf
+  shell: grep '10\.0\.1\.121' {{ item }} && sed -i 's/10\.0\.1\.121/{{ inventory_hostname }}/' {{ item }}
+  ignore_errors: yes
+  with_items:
+    - /etc/kubernetes/kubelet.conf
+    - /etc/kubernetes/admin.conf
+    - /etc/kubernetes/controller-manager.conf
+    - /etc/kubernetes/scheduler.conf
+  when: inventory_hostname != groups['masters'][0]
+
+- name: update /etc/kubernetes/manifests/kube-apiserver.yaml
+  lineinfile: >-
+    dest={{ item.dest }}
+    regexp={{ item.regexp }}
+    line={{ item.line }}
+    backrefs=yes
+  with_items:
+    - dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+      regexp: '^    - --advertise-address='
+      line: '    - --advertise-address={{ inventory_hostname }}'
+  when: inventory_hostname != groups['masters'][0]
+  register: result
+
+- name: update /etc/kubernetes/manifests/kube-apiserver.yaml 2
+  lineinfile: >-
+    dest={{ item.dest }}
+    insertafter='^    - kube-apiserver'
+    line='    - --apiserver-count=3'
+  with_items:
+    - dest: /etc/kubernetes/manifests/kube-apiserver.yaml
+
+#- debug: msg="{{ result }}"
+
+- name: restart docker and kubelet
+  shell: systemctl daemon-reload && systemctl restart docker kubelet
+
+- name: wait for heapster to start
+  shell: kubectl -n kube-system get pods | grep 'kube-apiserver.*Running'
+  register: result
+  until: result|success
+  retries: 20
+  delay: 10
+  changed_when: false
+
+

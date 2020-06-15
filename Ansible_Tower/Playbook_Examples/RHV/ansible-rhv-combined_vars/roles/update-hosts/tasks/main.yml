@@ -1,0 +1,23 @@
+---
+# tasks file for update-hosts
+
+  - name: Update everything
+    yum:
+      name: "*"
+      state: latest
+
+  - name: Reboot required - Step 1
+    command: needs-restarting -r
+    register: reboot_required
+    ignore_errors: True
+    changed_when: False
+    when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+  - name: Reboot required - Step 2
+    shell: ( /bin/sleep 5 ; shutdown -r now "Ansible updates triggered" ) &
+    async: 30
+    poll: 0
+    ignore_errors: true
+    notify:
+      - waiting for server to come back after reboot
+    when: (ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux') and reboot_required.rc == 1

@@ -1,0 +1,6 @@
+- name: Gathering Facts
+  hosts: all
+  tasks:
+    - name: Set Custom Fact
+      set_fact:
+        custom_fact: "{{ inventory_hostname }}"

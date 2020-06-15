@@ -1,0 +1,4 @@
+---
+
+ipa_master_bind_dn: "cn=Directory Manager"
+ipa_master_ds_secret:

@@ -1,0 +1,40 @@
+---
+- name: Remove epel
+  hosts: all
+  remote_user: vagrant
+  become: yes
+
+  tasks:
+    - name: remove epel repo
+      yum: name=epel-release state=absent
+
+- name: Register with subscription-manager
+  hosts: all
+  remote_user: vagrant
+  become: yes
+  vars:
+    rhn_user: "{{ lookup('env','RHN_USER') }}"
+    rhn_pass: "{{ lookup('env','RHN_PASS') }}"
+    rhn_pool: 8a85f98260c27fc50160c32cc5fe5ceb
+  
+  tasks:
+    # equivalent command: subscription-manager register --username=[user]
+    - name: register with subscription-manager
+      redhat_subscription: state=present username={{ rhn_user }} password={{ rhn_pass }}
+      register: registration_status
+
+    - name: attach to subscription
+      shell: subscription-manager attach --pool {{ rhn_pool }}
+      when: registration_status.changed
+
+    - name: disable all repos
+      shell: subscription-manager repos --disable '*'
+      when: registration_status.changed
+
+    - name: enable select repos
+      shell: subscription-manager repos 
+             --enable=rhel-7-server-rpms
+             #--enable=rhel-7-server-extras-rpms
+             #--enable=rhel-7-fast-datapath-rpms
+      when: registration_status.changed
+

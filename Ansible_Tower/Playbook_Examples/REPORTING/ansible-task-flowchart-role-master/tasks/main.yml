@@ -1,0 +1,19 @@
+---
+- name: create directories for storing pngs, svg and role yaml task files
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items: "{{ core_folders }}"
+
+- block:
+    - name: iterate creation of flowchart across the roles provided on Ansible 2.4+
+      include_tasks: single_flowchart.yml
+      with_items: "{{ list_of_roles }}"
+      loop_control:
+        loop_var: project_role_name
+  rescue:
+    - name:  iteration creation of flowchart across the roles provided on Ansible 2.0 -> 2.3
+      include: single_flowchart.yml
+      with_items: "{{ list_of_roles }}"
+      loop_control:
+        loop_var: project_role_name

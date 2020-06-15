@@ -1,0 +1,83 @@
+parameter_defaults:
+  # Set CSRF_COOKIE_SECURE / SESSION_COOKIE_SECURE in Horizon
+  # Type: boolean
+  HorizonSecureCookies: True
+
+  # The content of the SSL certificate (without Key) in PEM format.
+  # Type: string
+  SSLCertificate: |
+    -----BEGIN CERTIFICATE-----
+    MIIENzCCAh+gAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwWTELMAkGA1UEBhMCVVMx
+    CzAJBgNVBAgMAlRYMQ8wDQYDVQQHDAZEYWxsYXMxDDAKBgNVBAoMA1NFQTEeMBwG
+    A1UEAwwVMjQwNDoxODA6MjI1MDoxOjpDMTEyMB4XDTE5MDgyMjE5NDQ1NVoXDTI5
+    MDgxOTE5NDQ1NVowSDELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlRYMQwwCgYDVQQK
+    DANTRUExHjAcBgNVBAMMFTI0MDQ6MTgwOjIyNTA6MTo6QzExMjCCASIwDQYJKoZI
+    hvcNAQEBBQADggEPADCCAQoCggEBAMqTYEUdMbfgJsu9z6ZRqch87bJm7AvM/W5s
+    lfJBsB9crOXDxj6n/g2Ra9bzw2JErGNDdR8DVgZb/1EDj77TkFpRtqAkR7J0EsoI
+    Jd+pY4dU/RV9T/ozM5YwAn5FgthCEYEagVKTtiKT0aPzjvMtMT7GCQtTsIEHasdE
+    hUEIyeRQRIjp4TQDtGis0/ynRAuZxfpTCAcL6jKQKS0sjVlGDXhBAT3CcjbFvwVI
+    9toAWOo14cfpfOO0ntbwEjFYOVWkvr5q9oBIVDqSa41sBfS+/fkYux6DALClyjtM
+    3IGYepT7QYGV2AUtw+MA3hixEaHVqnXfCSfSQgpDxrZFkRPPAVUCAwEAAaMaMBgw
+    CQYDVR0TBAIwADALBgNVHQ8EBAMCBeAwDQYJKoZIhvcNAQELBQADggIBAAvsUwCs
+    5QhN5G0J3gy/r/9f+Q5ILPWscHoXH0OSZVmUi/0lyRgxMzNsnjh20M57HOrYAiSF
+    RVAIqwlc+FxiOxRUPKUZi5F8ZzgYGf3D8eZ0F+I/dGSAQeSe/luaXmd8MwD4YLti
+    nUHJWiC4ast+EPKRTk6AMm7pGPFnV2dzfAG+J1j5L9E4ir48IrupnAS6G6Hd8ND6
+    uh7GQWEDh/tTUm+uYRNrM0Qkz9C/CNm/dEf1AjWwaJ3wVYlhLbUCEM97Z2xWWdhm
+    eeCle3DUdjI81enEJSrj8NKnxuVyZyPsUgU/V1DuUXJZORyGTLQn2O/c4XqzDZf+
+    WrOb03Bv8Mr8pvQ94aEc5mOfIaSnKfkSCcQuYpzmDtygrQMAa1H29sZHIU00w8xJ
+    n9FrkOMprFCqU8hLO+SFcaWKn1iRfXHK5ygWQVY2VHHXPW8T1zetI4PqKjQf5SYM
+    51q2k6cayrHe4FYYiU9qCe5kaXVarsg+79CUssC+Fu5vlH7dQISsW75KzVbOuSCj
+    toti/uzdnQEUmWebKGMqKysjQocwnju+SsQSIPg8d8K+0tDDs7H9Br7E4DfjnC48
+    26FzV7mnk5hwz9sW/MwPr5zyOtSnq5YenyXx888KmhWGZtVuUS+ozWyoTpXNGeMX
+    gJHl+QTMY/TrBTqJDoFGtHxRJZDcZWqo3XFv
+    -----END CERTIFICATE-----
+
+  # The content of an SSL intermediate CA certificate in PEM format.
+  # Type: string
+  SSLIntermediateCertificate: ''
+
+  # The content of the SSL Key in PEM format.
+  # Mandatory. This parameter must be set by the user.
+  # Type: string
+  SSLKey: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpAIBAAKCAQEAypNgRR0xt+Amy73PplGpyHztsmbsC8z9bmyV8kGwH1ys5cPG
+    Pqf+DZFr1vPDYkSsY0N1HwNWBlv/UQOPvtOQWlG2oCRHsnQSyggl36ljh1T9FX1P
+    +jMzljACfkWC2EIRgRqBUpO2IpPRo/OO8y0xPsYJC1OwgQdqx0SFQQjJ5FBEiOnh
+    NAO0aKzT/KdEC5nF+lMIBwvqMpApLSyNWUYNeEEBPcJyNsW/BUj22gBY6jXhx+l8
+    47Se1vASMVg5VaS+vmr2gEhUOpJrjWwF9L79+Ri7HoMAsKXKO0zcgZh6lPtBgZXY
+    BS3D4wDeGLERodWqdd8JJ9JCCkPGtkWRE88BVQIDAQABAoIBAFUsP+bvTm80VLuH
+    VB5m6Y79T+eZtJeFmezqxOT1z3pwOdXlSZ4gfgXwZbocBcN0glK+Eyl1+p5z4daL
+    O84NH/2Jq9KLToXundPKNzph+xH0nvCBHrZg/sif6Px0d3470SZKIaO5rXO+WP+p
+    MSp3juQI2dakWmr11mRwH+LnMhPHGHN9qVxZINMMgok1CJVGIAkxyKfCsa/eEcTa
+    URkIDn1FCrM9DUQeIxWED5BzmvTLuMVqal9WNxSxeP166MWkHYP7cW/vvrj6xYaY
+    SS7+qi+zeVdZc26HiA90yG8+Pgg2F/Pr8DdqpQSQ0vkPr6P82WTL1AQ/7LeQXgJ5
+    n3HQ+6UCgYEA541DhNkc8ttu4B3Yx7bsO84JXPNF0QOB/qMnjMIIG+YgVo+hZXxN
+    UOVFA7QUU1bOUk4aojVjWL82YnxAd1eYCknIhUnYCmzjPfNyMTt5XAqCiJlFVL4p
+    dc1kCNF7Q391/qpYJ9qE3dC+IyTMN3UezOU413MUCwYjNyP/1LhEyucCgYEA3/bm
+    vtDZYqqFyApTzBGAPIBZl/Yrx2KLrM+3VYfa/q+cWf+xWsIAVHMGWJPAtwVT59+t
+    Pj2GdUVPCMRD4EY6iJW8rLvBeNDk60XqyEpYP8F5o08URBH4tweV05Xj1/3RvTJY
+    P5l6bs6eMLrFEBmNgCb6FHVyhCHRofMQeVmv5mMCgYEAlPNMUbMQajE5+7V3c9F5
+    2WbKox5i9PdasiDmGife64N3nfc7DXuOiNFTOfSndozKoCtZ+qp5Q+eM5oGjPqH8
+    TfH0qbk83kf5TirCdGUbxleEbLab4M2LAhqjlQCcWGkv0ChoGQr6mW3kQdsz+yC+
+    NXPmwsFmTUkfciMYORBoQFUCgYAMehHCwZnKsFtBmKmwba0qMbBMEe/AbNIBL5U0
+    E5x0oc3hCaiUuMgR7FKHLrwGtipFeaWKGR1bfR/5Cg4J+X+bSlQ3f0I4+9I09TEu
+    NU4TRzECkw46+JFViPukzO3jg4Vit+JIsMEsWSBg8Ja33eSPJhy6dQyLJeMq1YKu
+    b/unpwKBgQDT5BPjZwFA1QGhqsVhFcTDBqeZv4mBjrC/4cyxslXFj52Q/Tjef464
+    7HoL9wdVlJ2BgZEnaXzYzlv5IFVRMGY6H3zD+V75wORjgQnz6vT0AFuWfqWGMq0Z
+    zW8ue1xQwt/TVQ/djPCYn9y0jE+YP5acBr6lsyurFBZ5pgZCaIpX9A==
+    -----END RSA PRIVATE KEY-----
+
+  # ******************************************************
+  # Static parameters - these are values that must be
+  # included in the environment but should not be changed.
+  # ******************************************************
+  # The filepath of the certificate as it will be stored in the controller.
+  # Type: string
+  DeployedSSLCertificatePath: /etc/pki/tls/private/overcloud_endpoint.pem
+
+  # *********************
+  # End static parameters
+  # *********************
+resource_registry:
+  OS::TripleO::NodeTLSData: /usr/share/openstack-tripleo-heat-templates/puppet/extraconfig/tls/tls-cert-inject.yaml

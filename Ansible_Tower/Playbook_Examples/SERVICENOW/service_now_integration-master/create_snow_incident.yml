@@ -1,0 +1,37 @@
+- name: Create ServceNow Incident Ticket
+  hosts: localhost 
+  gather_facts: False
+  connection: local
+ 
+  vars:
+####                                 
+##   Below are the required variables needed to run this playbook 
+####                                 
+#    Username: [snow username]
+#    Password: [snow password]
+#    snow_urgency: [numeric value that correspondes with your defined SNOW severity values, usually 1,2 or 3]
+#    snow_short_description: [Description of the problem. Example "System Crashed"]
+#    snow_description: [Longer Description of the problem. Example "The system crashed and was automatically rebooted"]
+#    snow_instance_url: [FQDN of your ServiceNow instance. Example "MY_INSTANCE.service-now.com"]
+####
+#   Don't edit these, these will automatically set if run from Ansible Tower
+####
+    vcenter_host: "{{ lookup('env', 'VMWARE_HOST') | default('null') }}"
+    vcenter_user: "{{ lookup('env', 'VMWARE_USER') | default('null') }}"
+    vcenter_pass: "{{ lookup('env', 'VMWARE_PASSWORD') | default('null') }}"
+####
+
+  vars_prompt:
+    - name: vcenter_password
+      prompt: vCenter password
+      when: vcenter_password == "null"
+
+    - name: Username
+      prompt: SNOW username
+      default: admin
+
+    - name: Password
+      prompt: SNOW password
+
+  roles:
+  - create_snow_incident

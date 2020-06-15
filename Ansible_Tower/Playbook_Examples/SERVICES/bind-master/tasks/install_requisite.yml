@@ -1,0 +1,49 @@
+---
+# tasks file for bind
+
+- name: Install requisite packages for bind
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ bind_requisite_packages }}"
+
+- name: Create zone directory
+  file:
+    path: "{{ bind_basedir }}/zones"
+    state: directory
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+
+- name: Configure named.conf
+  template:
+    src: named.conf.j2
+    dest: "{{ bind_named_conf }}"
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    backup: yes
+
+- name: Restore default SELinux security contexts of zone directory
+  command: restorecon -R "{{ item }}"
+  with_items: 
+  - "{{ bind_named_conf }}"
+  - "{{ bind_basedir }}"
+
+- name: Enable and start firewalld service
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Configure firewalld to allow inbound DNS queries
+  firewalld:
+    service: dns
+    permanent: true
+    state: enabled
+    zone: public
+    immediate: yes
+
+- name: Enable and start named service
+  service:
+    name: named
+    state: started
+    enabled: yes

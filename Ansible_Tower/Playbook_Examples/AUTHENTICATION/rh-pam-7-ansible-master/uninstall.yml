@@ -1,0 +1,17 @@
+#
+#
+#
+---
+- hosts: lab
+  remote_user: quicklab
+  vars:
+    mysql_uninstall:     true
+    mysql_install:       false
+    temporal_dir_delete: true
+    rhpam_uninstall:     true
+
+  roles:
+    - rhpam
+
+
+# EOF

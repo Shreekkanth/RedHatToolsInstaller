@@ -1,0 +1,6 @@
+[all]
+localhost ansible_connection=local
+
+[all:vars]
+# LDAP Configuration
+ldap_admin_password="nothing01"

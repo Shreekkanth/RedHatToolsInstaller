@@ -1,0 +1,23 @@
+---
+- name: Install the satellite packages
+  yum:
+    name: satellite
+    state: present
+
+- name: Create the .satellite directory
+  file:
+    path: /root/.satellite
+    state: directory
+    mode: 0755
+
+- name: Install Satellite Server
+  shell: >
+    satellite-installer
+    --scenario satellite
+    --foreman-admin-username "{{ admin_user }}"
+    --foreman-admin-password "{{ admin_pass }}"
+    --foreman-initial-location "{{ initial_loc }}"
+    --foreman-initial-organization "{{ initial_org }}"
+    && touch /root/.satellite/installed
+  args:
+    creates: /root/.satellite/installed

@@ -1,0 +1,9 @@
+---
+
+ - name: Installs basic Red Hat IDM Server
+   hosts: idm-server
+   user: root
+   become: true
+
+   roles:
+     - idm-deploy

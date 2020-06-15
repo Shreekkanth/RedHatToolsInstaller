@@ -1,0 +1,11 @@
+{
+    “company_name”: “Red Hat”,
+    “contact_email”: “sgallego@redhat.com”,
+    “contact_name”: “Shadd Gallegos”,
+    “instance_count”: 10000,
+    “license_date”: 1531800000,
+    “license_key”: “059d265f81153b2537d3bae68e804fcf9651c659349bb4969c381b1e310158df”,
+    “license_type”: “enterprise”,
+    “subscription_name”: “Ansible Tower by Red Hat, Standard (10000 Managed Nodes)“,
+    “trial”: "false"
+}

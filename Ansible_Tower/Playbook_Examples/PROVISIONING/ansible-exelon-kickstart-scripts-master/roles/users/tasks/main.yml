@@ -1,0 +1,23 @@
+---
+- name: Create users
+  user:
+    name: "{{ item.name }}"
+    group: "{{ item.primary_group }}"
+    groups: "{{ item.groups | join(',') }}"
+    uid: "{{ item.uid }}"
+    comment: "{{ item.comment }}"
+    password: "{{ item.password }}"
+    shell: "{{ item.shell }}"
+    home: "{{ item.home }}"
+    state: "present"
+  with_items: "{{ users }}"
+
+- name: Ensure home directory permissions are set
+  file:
+    path: "{{ item.home }}"
+    owner: "{{ item.home_owner }}"
+    group: "{{ item.home_group }}"
+    mode: "{{ item.home_mode }}"
+    recurse: True
+    state: "directory"
+  with_items: "{{ users }}"

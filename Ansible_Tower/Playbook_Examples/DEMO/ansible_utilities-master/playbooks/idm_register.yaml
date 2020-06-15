@@ -1,0 +1,29 @@
+---
+- hosts: IdmClients
+  remote_user: root
+  vars:
+    idm_server: master.idm.example.com
+    idm_ip: 192.168.1.121
+    idm_realm: IDM.EXAMPLE.com
+    idm_user: admin
+    # run ansible-vault encrypt_string "rhn password" --ask-vault-pass to encrypt password --example password is redhat
+    idm_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31376339333265643462353839333733333730373535313334656339386236616238336466366331
+          6434313231636563303838303864626335333366383738630a373630646163646433613739373666
+          34656365373865306462643864646363356566623233613434313834373063626633323562383333
+          6363616336633234610a333035626164373964356165613638346436623934636261323332653534
+          3633
+
+    - name: Install ipa-client-install package
+      yum:
+        name: ipa-client
+        state: present
+
+    - name: register {{ ansible_fqdn }} client to idm server
+      ipa_host:
+        ipa_host: "{{ idm_server }}"
+        fqdn: "{{ ansible_fqdn }}"
+        ip_address: "{{ ansible_default_ipv4.address }}"
+        ipa_user: "{{ idm_user }}"
+        state: present

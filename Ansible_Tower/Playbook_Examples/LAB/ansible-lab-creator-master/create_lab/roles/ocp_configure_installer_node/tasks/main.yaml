@@ -1,0 +1,34 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Check if inventory inplace already
+  stat: path=/root/inventory
+  with_dict: "{{ guests }}"
+  when: "item.key in inventory_hostname and item.value.installer_node == True"
+  register: st_invfile
+
+- name: Create Inventory file on install node
+  copy:
+    src: /tmp/inventory
+    dest: /root/inventory
+    owner: root
+    group: root
+    mode: 0640
+  with_items: "{{ st_invfile.results }}"
+  when: "item.item.key in inventory_hostname and item.item.value.installer_node == True"
+
+- name: Update /etc/hosts from dictionary
+  lineinfile:
+    dest: /etc/hosts
+    regexp: ".*{{ item.key }}$"
+    line: "{{ item.value.ipaddress }} {{ item.key }}.{{ domain_name }} {{ item.key }}"
+    state: present
+  with_dict: "{{ guests }}"
+
+- name: copy ssh key to installer node
+  copy: 
+    src: "/root/.ssh/id_rsa" 
+    dest: "/root/.ssh/id_rsa" 
+    mode: 0600
+

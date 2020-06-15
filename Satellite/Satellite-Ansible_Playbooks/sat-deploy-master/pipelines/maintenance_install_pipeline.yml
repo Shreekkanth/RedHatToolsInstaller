@@ -1,0 +1,30 @@
+- name: create vagrant boxes
+  hosts: localhost
+  vars_files:
+    - vars/maintenance_base.yml
+  roles:
+    - forklift
+
+- hosts:
+    - "{{ forklift_name }}"
+  become: yes
+  vars_files:
+    - vars/maintenance_base.yml
+  vars:
+    compose_repository_compose: "{{ 'SatMaintenance' if pipeline_version == 'maintenance' else 'SatMaintenanceNext' }}"
+    compose_repository_type: Server
+    compose_repository_version: 6
+    activation_key: "{{ pipeline_os }}"
+    satellite_version: "{{ pipeline_version }}"
+  roles:
+    - etc_hosts
+    - dogfood_register
+    - compose-repository
+    - update_os_packages
+  tasks:
+    - name: install rubygem-foreman_maintain
+      package:
+        name: rubygem-foreman_maintain
+        state: present
+    - name: run foreman-maintain
+      command: foreman-maintain --help

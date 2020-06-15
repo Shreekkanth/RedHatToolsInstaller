@@ -1,0 +1,25 @@
+$TTL 60
+
+@                       IN              SOA     example.com. root.example.com. (
+                                        17062201        ; Serial
+                                        3600            ; Refresh
+                                        900             ; Retry
+                                        3600000         ; Expire
+                                        3600            ; Minimum
+                                )
+                        IN      NS      {{ origin.prefix }}-ns.example.com.
+
+{{ origin.prefix }}-ns			IN	A	172.16.99.11
+
+{{ origin.prefix }}-lb1			IN	A	172.16.99.18
+{{ origin.prefix }}-lb2			IN	A	172.16.99.19
+{{ origin.prefix }}-lb			IN	A	172.16.99.20
+{{ origin.prefix }}-master1		IN	A	172.16.99.21
+{{ origin.prefix }}-master2		IN	A	172.16.99.22
+{{ origin.prefix }}-master3		IN	A	172.16.99.23
+{{ origin.prefix }}-infra1		IN	A	172.16.99.31
+{{ origin.prefix }}-infra2		IN	A	172.16.99.32
+{{ origin.prefix }}-node1		IN	A	172.16.99.41
+{{ origin.prefix }}-node2		IN	A	172.16.99.42
+
+*.app					IN	A	172.16.99.30

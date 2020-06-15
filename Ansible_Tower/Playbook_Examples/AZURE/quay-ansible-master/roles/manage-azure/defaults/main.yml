@@ -1,0 +1,45 @@
+---
+# defaults file for manage-azure
+
+quay_name: quay
+bastion_name: "bastion"
+redis_name: "redis"
+clair_name: "clair"
+
+quay_resource_group: quay
+quay_deployment_location: southcentralus
+resource_prefix: "{{ quay_deployment_location }}"
+
+quay_vnet_name: "{{ quay_name }}"
+quay_virtual_net: "172.17.0.0/16"
+quay_subnet_name: "{{ quay_name }}"
+
+bastion_ssh_nsg_access: "Allow"
+bastion_nsg_name: "{{ bastion_name }}-nsg"
+quay_nsg_name: "{{ quay_name }}-nsg"
+redis_nsg_name: "{{ redis_name }}-nsg"
+clair_nsg_name: "{{ clair_name }}-nsg"
+
+bastion_ssh_port: 22
+quay_https_port: 443
+
+quay_ecosystem_public_ips:
+  - name: "{{resource_prefix}}-{{ quay_name }}-ob-ip"
+    allocation_method: "Static"
+  - name: "{{resource_prefix}}-{{ quay_name }}-ip"
+    allocation_method: "Static"
+  - name: "{{resource_prefix}}-{{ redis_name }}-ob-ip"
+    allocation_method: "Static"
+  - name: "{{resource_prefix}}-{{ redis_name }}-dummy-ip"
+    allocation_method: "Static"
+  - name: "{{resource_prefix}}-{{ clair_name }}-ob-ip"
+    allocation_method: "Static"
+  - name: "{{resource_prefix}}-{{ clair_name }}-dummy-ip"
+    allocation_method: "Static"
+  - name: "{{resource_prefix}}-{{ bastion_name }}-ip"
+    allocation_method: "Dynamic"
+
+quay_storage_account_name: "{{resource_prefix}}{{ quay_name }}"
+quay_storage_account_type: "Standard_LRS"
+
+quay_container_storage_name: "{{ quay_name }}"

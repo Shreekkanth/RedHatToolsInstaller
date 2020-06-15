@@ -1,0 +1,13 @@
+---
+# TODO ntp config
+- hosts: satellite-servers
+  environment:
+    - PYTHONPATH: "{{ python_path }}"
+
+  roles:
+    - satellite-preinstall
+    - rhsm
+    - update-restart
+    - satellite-install
+    - satellite-populate
+...

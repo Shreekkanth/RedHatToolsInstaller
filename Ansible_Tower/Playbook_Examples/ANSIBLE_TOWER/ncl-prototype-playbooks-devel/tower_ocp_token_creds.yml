@@ -1,0 +1,9 @@
+---
+# OpenShift token type credentials
+
+- hosts: all
+  tasks:
+  - name: OpenShift token type credentials
+    include_role:
+      name: tower_creds
+    loop: "{{ tower_ocp_token_creds }}"

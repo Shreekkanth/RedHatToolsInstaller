@@ -1,0 +1,29 @@
+---
+
+- name: director directory
+  file:
+    path: "/etc/icingaweb2/modules/director"
+    state: directory
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "2770"
+  tags:
+    - install
+
+- name: write director ini files from templates
+  template:
+    dest: "/etc/icingaweb2/{{ item.key | regex_replace('^(.*)_(...).j2$', '\\1.\\2') }}"
+    src: "templates/{{ item.key }}"
+    owner: "{{ item.value.owner }}"
+    group: "{{ item.value.group }}"
+    mode: "{{ item.value.mode }}"
+  with_dict: "{{ director_config_templates }}"
+  notify: director migrate and kickstart
+  tags:
+    - install
+
+- git:
+    repo: 'https://github.com/Icinga/icingaweb2-module-director.git'
+    dest: /usr/share/icingaweb2/modules/director
+    version: "{{ director_release }}"
+  notify: director migration run

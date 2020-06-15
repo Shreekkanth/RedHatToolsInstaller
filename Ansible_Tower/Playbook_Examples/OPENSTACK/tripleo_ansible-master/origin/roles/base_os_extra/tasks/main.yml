@@ -1,0 +1,26 @@
+---
+
+- name: bash_profile 1
+  lineinfile: >-
+    dest=.bash_profile
+    state=present
+    regexp={{ item.regexp }}
+    line={{ item.content }}
+    backup=yes
+  with_items:
+    - regexp: '^alias ls='
+      content: "alias ls='ls --color=always'"
+    - regexp: '^export TERM='
+      content: 'export TERM=xterm'
+
+- name: bash_profile 2
+  lineinfile: >-
+    dest=.bash_profile
+    state=present
+    regexp={{ item.regexp }}
+    line={{ item.content }}
+    backup=yes
+  with_items:
+    - regexp: '^export KUBECONFIG='
+      content: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+  when: origin.distribution == "k8s"

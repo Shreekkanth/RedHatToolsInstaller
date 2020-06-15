@@ -1,0 +1,20 @@
+---
+# tasks file for ansible_tower
+
+- name: Check if Tower installation archive file exists
+  stat:
+    path: "{{ ansible_tower_dest }}/{{ ansible_tower_archive }}"
+  register: archive_file_check
+
+- name: Get Tower installation archive file
+  get_url:
+    url: "{{ ansible_tower_url }}/{{ ansible_tower_archive }}"
+    dest: "{{ ansible_tower_dest }}"
+#    checksum: "{{ ansible_tower_checksum }}"
+  when: archive_file_check.stat.exists == false
+
+- name: Unarchive Tower installation archive file
+  unarchive: 
+    src: "{{ ansible_tower_dest }}/{{ ansible_tower_archive }}"
+    dest: "{{ ansible_tower_dest }}"
+    copy: no

@@ -1,0 +1,12 @@
+- include: "{{ filename }}.yml"
+  loop_control:
+    loop_var: filename
+  with_items:
+    - password
+    - logging
+    - system
+    - network
+    - resources
+    - encryption
+    - build_specific
+

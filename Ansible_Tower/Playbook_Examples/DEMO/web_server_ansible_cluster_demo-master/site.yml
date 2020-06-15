@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+
+  roles:
+    - { role: sensu, when: "inventory_hostname in groups['sensu']", tags: [ 'sensu' ] }
+    - { role: nginx, when: "inventory_hostname in groups['nginx_cluster']", tags: [ 'nginx' ] }
+    - { role: haproxy, when: "inventory_hostname in groups['haproxy']", tags: [ 'haproxy' ] }
+
+- hosts: all
+  become: true
+  gather_facts: false
+  serial: 1
+
+  roles:
+    - { role: roll_upgrade, when: "inventory_hostname in groups['nginx_cluster']", tags: [ 'roll_upgrade' ] }

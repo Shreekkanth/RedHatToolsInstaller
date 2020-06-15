@@ -1,0 +1,6 @@
+---
+kerberos_yum_pkgs:
+  - python-devel
+  - krb5-devel
+  - krb5-libs
+  - krb5-workstation

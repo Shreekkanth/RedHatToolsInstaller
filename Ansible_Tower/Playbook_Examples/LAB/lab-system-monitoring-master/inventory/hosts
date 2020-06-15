@@ -1,0 +1,11 @@
+[health-check]
+## Hosts specific to Development Environment
+devvm1.srv.cdn.dynetics.com
+gitlab.srv.cdn.dynetics.com
+jenkins.srv.cdn.dynetics.com
+rhelrt2.srv.cdn.dynetics.com
+
+## Hosts specific to Red Hat Virtualization
+manager.srv.cdn.dynetics.com
+rhvh1.srv.cdn.dynetics.com
+rhvh3.srv.cdn.dynetics.com

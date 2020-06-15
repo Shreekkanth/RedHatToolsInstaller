@@ -1,0 +1,13 @@
+- hosts: localhost
+  vars:
+    base_image: "registry.access.redhat.com/rhscl/python-27-rhel7:latest"
+    workshop_image_name: "ansible-workshop-api"
+    workshop_image_tag: "latest"
+    local_exposed_port: 5000
+    image_exposed_port: 5000
+    container_state: "started"
+  tasks:
+    - name: Create Dockerfile
+      template:
+        src: "{{ playbook_dir }}/Dockerfile.j2"
+        dest: "{{ playbook_dir }}/Dockerfile"

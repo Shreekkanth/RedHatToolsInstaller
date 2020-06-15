@@ -1,0 +1,37 @@
+---
+# tasks file for provision_vm
+
+- name: Convert comma-separated hostnames to list
+  set_fact:
+    vm_hostnames: '{{ new_vms.split(",") }}'
+
+# Delegated to localhost because the vmware module doesn't use SSH.
+# errors are ignored because we want to move on to windows configuration if the
+# VM is already created. The playbook will fail at that stage if there was a
+# VMWare error.
+
+- name: Create a VM from Template
+  vmware_guest:
+    hostname: '{{ vmware_host }}'
+    username: '{{ vmware_username }}'
+    password: '{{ vmware_password }}'
+    validate_certs: False
+    datacenter: '{{ host_configuration[item].vmware_datacenter }}'
+    cluster: '{{ host_configuration[item].vmware_cluster }}'
+    folder: '{{ host_configuration[item].vm_folder }}'
+    template: '{{ host_configuration[item].vmware_template }}'
+    name: '{{ item }}'
+    state: poweredon
+    hardware: '{{ host_configuration[item].vm_hardware }}'
+    disk: '{{ host_configuration[item].vm_disk }}'
+    networks: '{{ host_configuration[item].vm_networks }}'
+    customization:
+      domainadmin: '{{ vm_domain_admin_account }}'
+      domainadminpassword: '{{ vm_domain_admin_password }}'
+      joindomain: '{{ host_configuration[item].vm_ad_domain }}'
+      password: '{{ vm_local_admin_password }}'
+      runonce: '{{ host_configuration[item].vm_runonce_tasks }}'
+  delegate_to: localhost
+  register: deploy
+  with_items: '{{ vm_hostnames }}'
+  ignore_errors: True

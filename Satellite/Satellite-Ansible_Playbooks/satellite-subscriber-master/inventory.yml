@@ -1,0 +1,8 @@
+#Sample Inventory
+
+[hostgroup1]
+host1.example.com
+host2.example.com
+
+[hostgroup1:vars]
+activation_key=AK_EXAMPLE

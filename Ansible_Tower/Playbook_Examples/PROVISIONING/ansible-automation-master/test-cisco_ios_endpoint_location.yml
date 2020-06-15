@@ -1,0 +1,17 @@
+---
+- hosts: cisco
+  connection: network_cli
+  gather_facts: false
+
+  tasks:
+    - name: Get available interfaces
+      include_role:
+        name: cisco_ios_endpoint_location
+      vars:
+        # cisco_ios_endpoint_location_ip: 10.248.0.1
+        # cisco_ios_endpoint_location_mac: 00:00:0C:9F:F9:B0
+
+    - name: Debug arp_entries
+      debug:
+        var: arp_entries
+        # verbosity: 1

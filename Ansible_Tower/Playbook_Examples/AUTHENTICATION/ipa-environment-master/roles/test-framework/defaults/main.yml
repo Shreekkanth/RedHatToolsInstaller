@@ -1,0 +1,10 @@
+---
+
+supported_distrobution:
+  RedHat:
+    version: 6.9
+  CentOS:
+    version: 6.9
+
+test_framework_hosting_provider:
+test_framework_hosted_pip_dependencies:

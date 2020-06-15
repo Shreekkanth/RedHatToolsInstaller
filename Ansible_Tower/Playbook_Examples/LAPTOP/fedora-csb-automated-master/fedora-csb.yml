@@ -1,0 +1,303 @@
+---
+- name: install and configure PC to fit CSB requirements
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  become: yes
+  vars_files:
+    - local_vars.yml
+    - vars/auth_vars.yml
+    - credentials.yml
+  pre_tasks:
+    - name: make a complete upgrade of all packages (takes quite some time)
+      dnf:
+        name: "*"
+        state: latest
+    - name: install packages required by default tasks
+      dnf:
+        name:
+        - libselinux-python     # cups
+        - sssd                  # auth
+        - krb5-workstation      # auth
+        - pam_krb5              # auth
+        state: present
+    - name: Setup RHEL 7 CSB repo (disabled)
+      yum_repository:
+        name: rhel7-csb
+        description: RHEL7 CSB packages
+        baseurl: http://hdn.corp.redhat.com/rhel7-csb-stage
+        enabled: no
+        gpgcheck: no
+
+  tasks:
+    - name: install additional_user_packages
+      dnf:
+        name: "{{ additional_user_packages }}"
+        state: present
+    - name: install additional_csb_packages
+      dnf:
+        name: "{{ additional_csb_packages }}"
+        state: present   # latest can be dangerous with rhel7-csb (TODO: make configurable)
+        enablerepo: rhel7-csb
+
+# TODO - doesn't seem to work properly - HWADDR is wrong
+# TODO - seems to depend on /etc/sssd/sssd.conf being present
+#    - name: Install CSB internal wireless config
+#      dnf:
+#        name: redhat-internal-wireless-config
+#        state: present
+#        enablerepo: rhel7-csb
+
+# ## Install OpenVPN ##
+
+# See https://mojo.redhat.com/people/hlin/blog/2016/12/13/configure-open-in-non-csb-rhel7
+# See https://redhat.service-now.com/rh_ess/kb_view.do?sysparm_article=KB0005424
+
+    - name: "Install OpenVPN packages from Fedora"
+      dnf:
+        name:
+        - NetworkManager-openvpn
+        - NetworkManager-openvpn-gnome
+        state: present
+    - name: "Install internal certificate and OpenVPN profiles from CSB"
+      dnf:
+        name:
+        - redhat-internal-cert-install
+        - redhat-internal-NetworkManager-openvpn-profiles
+        state: present   # latest can be dangerous with rhel7-csb (TODO: make configurable)
+        enablerepo: rhel7-csb
+    - debug: msg="Pay attention that VPN as configured works only with your Kerberos user!"
+# TODO consider alternatives from KB0005424:
+#      redhat-internal-NetworkManager-openvpn-profiles-0.1-17.el7.csb.noarch.rpm (Requires NetworkManager and NetworkManager-openvpn-gnome)
+#      redhat-internal-NetworkManager-openvpn-profiles-non-gnome-0.1-17.el7.csb.noarch.rpm (Requires NetworkManager but NOT NetworkManager-openvpn-gnome)
+#      redhat-internal-openvpn-profiles-0.1-17.el7.csb.noarch.rpm (DOES NOT require NetworkManager or NetworkManager-openvpn-gnome)
+
+
+# https://mojo.redhat.com/docs/DOC-16924 - Denis Deitermann / Fedora 19
+# https://mojo.redhat.com/docs/DOC-176591-csb-like-fedora-18
+
+# Install the Red Hat CA certificate: http://password.corp.redhat.com/newca.crt
+# wget https://password.corp.redhat.com/newca.crt -O /etc/openvpn/redhat.crt --no-check-certificate
+#
+# Kerberos setup: https://mojo.redhat.com/docs/DOC-931465
+
+#    - name: "Check if Kerberos/LDAP is already configured."
+#      lineinfile:
+#        dest=/etc/krb5.conf
+#        line="  master_kdc = {{ Kcorp }}"
+#      check_mode: yes
+#      register: krb5_conf_var
+    - name: "Check if override_homedir has been added to sssd.conf"
+      lineinfile:
+        dest: /etc/sssd/sssd.conf
+        create: yes
+        line: "override_homedir = /home/%u"
+        insertafter: "^krb5_realm = REDHAT.COM"
+      check_mode: yes
+      register: sssd_conf_var
+    - name: "Call authconfig for region {{ auth_region }}"
+      command: >
+        authconfig --enableldap --ldapserver=ldap.corp.redhat.com --enablemkhomedir
+        --ldapbasedn="dc=redhat,dc=com" --enablekrb5 --krb5kdc=kerberos.corp.redhat.com
+        --krb5adminserver=kerberos.corp.redhat.com --krb5realm=REDHAT.COM
+        --enablesssd --enablesssdauth --enablecachecreds --update 
+#        authconfig
+#        --ldapserver={{ ldap_servers[auth_region] | join(',') }}
+#        --krb5kdc={{ kerberos_servers[auth_region] | join(',') }}
+#        --enablesssd --enablesssdauth --enableldap --enableldaptls
+#        --ldapbasedn=dc=redhat,dc=com --enablemkhomedir
+#        --ldaploadcacert=https://password.corp.redhat.com/cacert.crt
+#        --enablekrb5 --krb5adminserver={{ Kcorp }}
+#        --krb5realm=REDHAT.COM --enablecachecreds --enablelocauthorize
+#        --update
+      when: sssd_conf_var is changed
+      notify: restart sssd
+#    - name: "Add master_kdc to /etc/krb5.conf"
+#      lineinfile:
+#        dest=/etc/krb5.conf
+#        line="  master_kdc = {{ Kcorp }}"
+#        insertbefore="admin_server = {{ Kcorp }}"
+#      notify: restart network
+    - name: "Add override_homedir to sssd.conf"
+      lineinfile:
+        dest: /etc/sssd/sssd.conf
+        line: "override_homedir = /home/%u"
+        insertafter: "^krb5_realm = REDHAT.COM"
+      notify: restart sssd
+
+# you should be able to do something like
+#    getent passwd {{ kerberos_user }}
+#    id {{ kerberos_user }} # Group-Name must be known!
+# and get the following output
+#    {{ kerberos_user }}:*:4242:4242:First Last:/home/{{ kerberos_user }}:/bin/bash
+# Try klist / kinit
+#
+# TODO: doesn't work as such, need to merge CSB 7 sssd.conf configuration.
+# TODO: following works as well from
+# 	https://mojo.redhat.com/docs/DOC-176591-csb-like-fedora-18
+#	authconfig --enableldap --ldapserver=ldap.corp.redhat.com --ldapbasedn="dc=redhat,dc=com" --enablekrb5 --krb5kdc=kerberos.corp.redhat.com --krb5adminserver=kerberos.corp.redhat.com --krb5realm=REDHAT.COM --enablesssd --enablesssdauth --enablecachecreds --update 
+# TODO: take some ideas from sleggett at https://mojo.redhat.com/docs/DOC-1017803
+# TODO: check PKI settings from https://mojo.redhat.com/docs/DOC-1044614
+#	(but maybe all covered by redhat-internal-cert-install?)
+#
+# Configure FireFox for Kerberos: Browser settings for GSSAPI
+#    Open Firefox (Applications -> Internet -> Firefox)
+#    Type  'about:config' as the web address bar and click the box acknowledging the warranty warning.
+#    Copy and paste the first variable below into the Filter field. Right-click on it and select Modify. Enter .redhat.com into the dialogue box and click Ok. Do the same for the second variable.
+#        network.negotiate-auth.delegation-uris
+#        network.negotiate-auth.trusted-uris
+#    Click Ok then close the about:config page.
+# To allow Google Chrome to use Kerberos negotiated auth, create the following file
+# /etc/opt/chrome/policies/managed/redhat-corp.json
+#    {
+#      "AuthServerWhitelist": "*.redhat.com"
+#    }
+#    Make sure to set the SELinux file contexts, otherwise this will not work on RHEL7:
+#    setenforce 0; chcon -R -t chrome_sandbox_t /etc/opt/chrome; setenforce 1
+# Add https://hdn.corp.redhat.com/proxy.pac ?
+# See also https://mojo.redhat.com/docs/DOC-1044614
+
+# Install Rocket.Chat
+
+    - name: "Install copr xenithorb/rocketchat-dev repository"
+      command: dnf copr -y enable xenithorb/rocketchat-dev
+      args:
+        creates: "/etc/yum.repos.d/_copr_xenithorb-rocketchat-dev.repo"
+        warn: no
+    - name: "Install rocketchat package"
+      dnf: name="rocketchat-desktop" state="present"
+    - debug: msg="Use https://chat.consulting.redhat.com/ as URL for Rocket.Chat and in your web browser for more information."
+
+# https://mojo.redhat.com/docs/DOC-87079 - configure CUPS server
+
+    - name: configure CUPS server(s)
+      lineinfile:
+        dest: /etc/cups/cups-browsed.conf
+        line: "BrowsePoll {{ item }}"
+      with_items: "{{ cups_servers }}"
+      notify:
+        - enable and restart cups-browsed
+# TODO: enable ipp-client in firewall? (according to cups-browsed.conf)
+
+    - name: "Gather current X11 Keymap"
+      command: localectl status
+      register: locale_before
+      changed_when: false
+    - name: "Setup X11 Keymap Locale"
+      command: >
+        localectl set-x11-keymap
+        {{ locale_keymap.layout }} {{ locale_keymap.model }}
+        {{ locale_keymap.variant }} {{ locale_keymap.options }}
+      when: locale_keymap is defined
+      changed_when: false
+    - name: "Verify if new X11 Keymap changed"
+      command: localectl status
+      register: locale_after
+      changed_when: locale_after.stdout != locale_before.stdout
+
+    - name: "Move away unnecessary dictionaries"
+      command: mv "{{ item }}" "{{ item }}~"
+      args:
+        removes: "{{ item }}"
+        creates: "{{ item }}~"
+      with_fileglob:
+        - /usr/share/myspell/*.aff
+        - /usr/share/myspell/*.dic
+        - /usr/share/hyphen/hyph*.dic
+        - /usr/share/mythes/th*.dat
+        - /usr/share/mythes/th*.idx
+      when: not item | search(keep_dicts_langs|join("|"))
+    - name: "Move back necessary dictionaries"
+      command: mv "{{ item }}" "{{ item | regex_replace('~$','') }}"
+      args:
+        removes: "{{ item }}"
+        creates: "{{ item | regex_replace('~$','') }}"
+      with_fileglob:
+        - /usr/share/myspell/*.aff~
+        - /usr/share/myspell/*.dic~
+        - /usr/share/hyphen/hyph*.dic~
+        - /usr/share/mythes/th*.dat~
+        - /usr/share/mythes/th*.idx~
+      when: item | search(keep_dicts_langs|join("|"))
+
+    # tlp doesn't seem to need much configuration effort so let's use it
+    # See http://linrunner.de/en/tlp/docs/tlp-linux-advanced-power-management.html#installation (ThinkPads only)
+    - name: Install necessary inofficial repos for tlp on ThinkPad
+      dnf:
+        name:
+        - http://repo.linrunner.de/fedora/tlp/repos/releases/tlp-release-1.0-0.noarch.rpm
+        - http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-stable.noarch.rpm
+        state: present
+      when: allow_inofficial_free_repos
+    - name: Install (and potentially configure) power saving tools
+      dnf:
+        name:
+        - tlp # Advanced power management tool for Linux
+        - tlp-rdw # Radio Device Wizard for TLP
+        - smartmontools # Tools for monitoring SMART capable hard disks
+        #- powertop # Power consumption monitor
+        #- tuned-utils # Various tuned utilities (powertop2tuned)
+        state: present
+    - name: Install power saving tools for ThinkPad from inofficial repos
+      dnf:
+        name:
+        - akmod-tp_smapi
+        - akmod-acpi_call
+        - kernel-devel
+        state: present
+      when: allow_inofficial_free_repos
+
+  handlers:
+    - name: enable and restart cups-browsed
+      service:
+        name: cups-browsed
+        enabled: yes
+        state: restarted
+    - name: restart sssd
+      service:
+        name: sssd
+        state: restarted
+
+- name: Configure the {{ kerberos_user }} user on this laptop
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  become: yes
+  vars_files:
+    - local_vars.yml
+    - credentials.yml
+  tasks:
+    - name: Add {{ kerberos_user }} to {{ local_group }} group
+      user:
+        name: "{{ kerberos_user }}"
+        groups: "{{ local_group }}"
+        append: yes
+    - name: Add polkit rule to allow libvirt usage by {{ local_group }} group
+      template:
+        src: templates/polkit-libvirt.rules.j2
+        dest: /etc/polkit-1/rules.d/80-libvirt.rules
+        owner: root
+        group: root
+        mode: u=rw,go=r
+    - block:
+      - name: install openssh-server package
+        dnf:
+          name: openssh-server
+          state: present
+      - name: enable and start sshd service
+        service:
+          name: sshd
+          enabled: yes
+          state: started
+      when: ssh_server
+    - name: make Chrome/Chromium fit for Kerberos
+      copy:
+        content: |
+              {
+                "AuthServerWhitelist": "*.redhat.com"
+              }
+        dest: "{{ item }}/redhat-corp.json"
+      with_items:
+        - /etc/opt/chrome/policies/managed
+        - /etc/chromium/policies/managed
+      ignore_errors: yes # FIXME find a better way to ignore if browser isn't installed

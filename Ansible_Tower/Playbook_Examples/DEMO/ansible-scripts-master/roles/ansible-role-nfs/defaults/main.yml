@@ -1,0 +1,3 @@
+---
+# defaults file for roles/ansible-role-nfs
+nfs_exports: [ "/exports/home *(rw,sync,no_root_squash)" ]

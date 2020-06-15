@@ -1,0 +1,14 @@
+---
+#TODO ntp config
+- hosts: capsules
+  vars_files:
+    - ./vars/common.yml
+    - ./vars/capsule-config.yml 
+
+  roles:
+    - satellite-preinstall
+    - rhsm-satellite
+    - update-restart
+    - capsule-install
+    - capsule-populate
+...

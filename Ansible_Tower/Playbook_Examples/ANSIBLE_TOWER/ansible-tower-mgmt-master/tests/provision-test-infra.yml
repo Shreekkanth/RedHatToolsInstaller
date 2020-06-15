@@ -1,0 +1,32 @@
+---
+
+- name: Provision docker-based centOS 7 infrastructure for tower provisioning testing
+  hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Start a container to test Tower Installation
+      docker_container:
+        name: ansible_tower_test
+        image: "{{ tower_docker_image }}"
+        detach: yes
+        hostname: ansible_tower_test
+        published_ports:
+          - "127.0.0.1:80:80"
+          - "127.0.0.1:443:443"
+
+- name: Check connection Ansible Tower Container
+  hosts: ansible_tower_test
+  gather_facts: no
+  tasks:
+    - name: Ping test
+      ping:
+
+    - name: Install required packages for Tower and other utilities
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - initscripts
+

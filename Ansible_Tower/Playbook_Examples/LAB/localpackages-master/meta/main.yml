@@ -1,0 +1,16 @@
+galaxy_info:
+  author: PhatScripts
+  description: Install local packages without the requirement of RHN, repos, etc    
+  
+  license: MIT
+
+  min_ansible_version: 2.4
+  
+  platforms:
+  - name: Redhat
+    versions:
+    - 7.6
+
+  galaxy_tags: yum, packages    
+
+dependencies: []

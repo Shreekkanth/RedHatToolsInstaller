@@ -1,0 +1,52 @@
+## {{ ansible_managed }}
+{% if not central_log_listener %}
+## Log some stuff to central log hosts. TCP/UDP is controlled by hostname.
+## @ for UDP and @@ for TCP
+authpriv.*                                      {{ central_log_host }};RSYSLOG_ForwardFormat
+local0.*                                        {{ central_log_host }};RSYSLOG_ForwardFormat
+*.err                                           {{ central_log_host }};RSYSLOG_ForwardFormat
+
+{% for program in central_log_ship_these_programs %}
+if $programname startswith '{{ program }}' then {{ central_log_host }};RSYSLOG_ForwardFormat
+{% endfor %}
+
+
+$umask 0000
+$FileCreateMode 0644
+$FileGroup admin
+{% endif %}
+
+{% if central_log_listener %}
+# Provides UDP syslog reception
+$ModLoad imudp
+$UDPServerRun 514
+# Provides TCP syslog reception
+$ModLoad imtcp
+$InputTCPServerRun 514
+
+$MaxOpenFiles {{ central_log_maxopenfiles }}
+{% if central_log_extra_settings is defined %}
+{% for log_setting in central_log_extra_settings %}
+{{ log_setting }}
+{% endfor %}
+{% endif %}
+
+{% if central_log_by_function %}
+if $fromhost-ip startswith '10.' then {
+	*.info;mail.none;authpriv.none;cron.none {{ central_logs_directory }}/messages;RSYSLOG_FileFormat
+	authpriv.* {{ central_logs_directory }}/secure;RSYSLOG_FileFormat
+	mail.* {{ central_logs_directory }}/maillog;RSYSLOG_FileFormat
+	cron.* {{ central_logs_directory }}/cron;RSYSLOG_FileFormat
+	stop
+}
+
+{% else %}
+$Template GENERALTEMPLATE,"{{ central_logs_directory }}/%hostname%.log"
+$template LogFmt,"%timereported:::date-rfc3339% %hostname% %syslogseverity-text% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
+
+if $fromhost-ip startswith '10.' then {
+	?GENERALTEMPLATE;LogFmt
+	stop
+}
+{% endif %}
+{% endif %}

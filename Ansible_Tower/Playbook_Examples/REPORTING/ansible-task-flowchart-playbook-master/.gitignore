@@ -1,0 +1,6 @@
+flowchart_specs/*
+pngs/*
+svgs/*
+*.retry
+Session.vim
+roles/*/*

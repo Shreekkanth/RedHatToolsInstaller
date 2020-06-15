@@ -1,0 +1,87 @@
+---
+
+- name: Calculate load critical thresholds
+  set_fact:
+    svc_load_crit: "{{ ansible_processor_vcpus * 100 / 100 }},{{ ansible_processor_vcpus * 90 / 100 }},{{ ansible_processor_vcpus * 80 / 100 }}"
+
+- name: Calculate load warning thresholds
+  set_fact:
+    svc_load_warn: "{{ ansible_processor_vcpus * 90 / 100 }},{{ ansible_processor_vcpus * 80 / 100 }},{{ ansible_processor_vcpus * 70 / 100 }}"
+
+- debug:
+    msg: "CPU CRITICAL: {{ svc_load_crit }} - CPU WARNING: {{ svc_load_warn }}"
+
+# 'dig' module requires python-dns package on ansible node
+- name: Register host in Nagios
+  uri:
+    url: "{{ nagios_api_url }}/config/host?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    body: "host_name={{ ansible_nodename }}&address={{ lookup('dig', ansible_nodename) }}&check_command=check_ping!{{ svc_ping_warn }}!{{ svc_ping_crit }}&max_check_attempts={{ nagios_svc_check_attempts }}&check_period={{ nagios_svc_check_period }}&{{ notification_string }}"
+    status_code: 200
+  register: api_response
+  delegate_to: localhost
+
+- debug:
+    msg: "{{ api_response.json }}"
+
+- name: Add Nagios generic service checks
+  uri:
+    url: "{{ nagios_api_url }}/config/service?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    body: "host_name={{ ansible_nodename }}&{{ item }}"
+    status_code: 200
+  delegate_to: localhost
+  with_items:
+    - "{{ nagios_service_ping }}"
+    - "{{ nagios_service_procs }}"
+    - "{{ nagios_service_load }}"
+    - "{{ nagios_service_mem }}"
+    - "{{ nagios_service_swap }}"
+    - "{{ nagios_service_updates }}"
+
+- name: Add Nagios partition service checks
+  uri:
+    url: "{{ nagios_api_url }}/config/service?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    body: "host_name={{ ansible_nodename }}&service_description=Partition Usage: {{ item.partition }}&{{ check_command=check_nrpe!check_disk!-a '-w {{ item.warn }} -c {{ item.crit }} -p {{ item.partition }}'&{{ svc_check_string }}&{{ notification_string }}"
+    status_code: 200
+  delegate_to: localhost
+  with_items: "{{ partition_list }}"
+
+- name: Add Nagios RHEL7 systemd service checks
+  uri:
+    url: "{{ nagios_api_url }}/config/service?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    body: "host_name={{ ansible_nodename }}&service_description=Service Status: {{ item }}&{{ check_command=check_nrpe!check_systemd_service!-a '{{ item }}'!!!!!!&{{ svc_check_string }}&{{ notification_string }}"
+    status_code: 200
+  delegate_to: localhost
+  with_items: "{{ service_checks }}"
+  when: ansible_distribution_major_version == '7'
+
+- name: Add Ngios RHEL6 init service checks
+  uri:
+    url: "{{ nagios_api_url }}/config/service?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    body: "host_name={{ ansible_nodename }}&service_description=Service Status: {{ item }}&{{ check_command=check_nrpe!check_init_service!-a '{{ item }}'!!!!!!&{{ svc_check_string }}&{{ notification_string }}"
+    status_code: 200
+  delegate_to: localhost
+  with_items: "{{ service_checks }}"
+  when: ansible_distribution_major_version == '6'
+
+- name: Apply Nagios config
+  uri:
+    url: "{{ nagios_api_url }}/system/applyconfig?apikey={{ nagios_api_key }}&pretty=1"
+    method: POST
+    validate_certs: no
+    status_code: 200
+  register: api_response
+  delegate_to: localhost
+  failed_when: "'success' not in api_response.json"
+
+- debug:
+    msg: "{{ api_response.json }}"

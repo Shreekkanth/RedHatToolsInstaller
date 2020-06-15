@@ -1,0 +1,47 @@
+---
+# tasks file for activation_keys
+block:
+  - name: Get Content Views
+    foreman_search_facts:
+      username: "{{ satellite_user }}"
+      password: "{{ satellite_password }}"
+      server_url: "https://{{ satellite_host }}"
+      verify_ssl: false
+      resource: content_views
+    register: cvs
+
+  - name: Get Lifecycle Environments
+    foreman_search_facts:
+      username: "{{ satellite_user }}"
+      password: "{{ satellite_password }}"
+      server_url: "https://{{ satellite_host }}"
+      verify_ssl: false
+      resource: lifecycle_environments
+    register: les
+
+  - name: Create LE/CV-based Activation Keys
+    katello_activation_key:
+      username: "{{ satellite_user }}"
+      password: "{{ satellite_password }}"
+      server_url: "https://{{ satellite_host }}"
+      verify_ssl: false
+      organization: "{{ org_name }}"
+      name: "{{ item[0].name }}-{{ item[1].name }}-AK"
+      lifecycle_environment: "{{ item[0].name }}"
+      content_view: "{{ item[1].name }}"
+      content_overrides: "{{ ak_overrides }}"
+    loop: "{{ les.resources | product(cvs.resources) | list }}"
+when: match_cvs_les == true
+
+- name: Create individual keys
+  katello_activation_key:
+    username: "{{ satellite_user }}"
+    password: "{{ satellite_password }}"
+    server_url: "https://{{ satellite_host }}"
+    verify_ssl: false
+    organization: "{{ org_name }}"
+    name: "{{ item.name }}"
+    lifecycle_environment: "{{ item.le | default(omit) }}"
+    content_view: "{{ item.cv | default(omit) }}"
+    content_overrides: "{{ ak_overrides }}"
+  loop: keys

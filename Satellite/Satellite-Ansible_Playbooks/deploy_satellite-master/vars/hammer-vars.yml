@@ -1,0 +1,54 @@
+---
+# Additional Location name(s)
+location_names:
+  - { location: "homelab" }
+
+# Manifest filename
+manifest_filename: "satellite_manifest.zip"
+
+# Satellite product list
+rhel_products:
+  - { product_name: 'Red Hat Enterprise Linux Server', product_id: '167' }
+  - { product_name: 'Red Hat Gluster Storage Server for On-permise', product_id: '55' }
+  - { product_name: 'Red Hat Openshift Container Platform', product_id: '58' }
+  - { product_name: 'Red Hat CloudForms', product_id: '110' }
+
+# Satellite repository list
+rhel_repositores:
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server (RPMs)', rel: '7Server', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)', rel: '7Server', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server - Supplementary (RPMs)', rel: '7Server', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Enterprise Linux Fast Datapath', name_repo: 'Red Hat Enterprise Linux Fast Datapath (RHEL 7 Server) (RPMs)', rel: '7Server', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Gluster Storage Server for On-premise', name_repo: 'Red Hat Gluster Storage 3 Server (RPMs)', rel: '7Server', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Gluster Storage Server for On-premise', name_repo: 'Red Hat Gluster Storage 3 NFS (RPMs)', rel: '7Server', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server (Kickstart)', rel: '7.5', architecture: 'x86_64'}
+
+rhel_repositories_2:
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Satellite Tools {{ satellite_version }} (for RHEL 7 Server) (RPMs)', architecture: 'x86_64'}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)', architecture: 'x86_64'}
+  - { product_name: 'Red Hat OpenShift Container Platform', name_repo: 'Red Hat OpenShift Container Platform 3.6 (RPMs)', architecture: 'x86_64'}
+  - { product_name: 'Red Hat OpenShift Container Platform', name_repo: 'Red Hat OpenShift Container Platform 3.9 (RPMs)', architecture: 'x86_64'}
+  - { product_name: 'Red Hat CloudForms', name_repo: 'Red Hat CloudForms Management Engine 5.7 (RPMs)', architecture: 'x86_64'}
+
+# Satellite Sync-Plans
+syncronization_plans:
+  - { name: "Weekly Red Hat Server", description: "Red Hat Enterperise Server Weekly Sync", interval: 'weekly', sync_date: "2017-05-04 08:00:00", enable: "true", product_name: "Red Hat Enterprise Linux Server"}
+  - { name: "Weekly OCP", description: "Red Hat OpenShift Container Platform Weekly Sync", interval: 'weekly', sync_date: "2017-05-04 08:30:00", enable: "true", product_name: "Red Hat OpenShift Container Platform"}
+  - { name: "Weekly Fast-Datapath", description: "Red Hat Enterprise Linux Fast Datapath Weekly Sync", interval: 'weekly', sync_date: "2017-05-04 08:30:00", enable: "true", product_name: "Red Hat Enterprise Linux Fast Datapath"}
+  - { name: "Weekly Gluster", description: "Red Hat Gluster Storage Weekly Sync", interval: 'weekly', sync_date: "2017-05-04 08:30:00", enable: "true", product_name: "Red Hat Gluster Storage Server for On-premise"}
+  - { name: "Weekly CloudForms", description: "Red Hat CloudForms Weekly Sync", interval: 'weekly', sync_date: "2017-05-04 08:30:00", enable: "true", product_name: "Red Hat CloudForms"}
+  - { name: "Weekly JBoss", description: "Red Hat JBoss Platform Weekly Sync", interval: 'weekly', sync_date: "2017-05-04 08:30:00", enable: "true", product_name: "JBoss Enterprise Application Platform"}
+
+# Lifecycle Environments
+lifecycle_names:
+  - { name: "development", description: "Development application packages", prior: "Library" }
+  - { name: "staging", description: "Staging application packages", prior: "development" }
+  - { name: "production", description: "Production application packages", prior: "staging" }
+
+# EPEL 7
+epel7_repository:
+  - { product_name: 'EPEL7Server', repo_name: 'Extra Packages for Enterprise Linux 7Server x86_64', architecture: 'x86_64', gpgkey: 'EPEL7 GPG Key', checksum: 'sha256', url: 'https://dl.fedoraproject.org/pub/epel/7Server/x86_64/', plan_name: 'Weekly - EPEL 7', description: 'EPEL 7 Weekly Sync', interval: 'weekly', sync_date: "2017-05-04 08:30:00", enable: "true"}
+
+epel7_gpgkey:
+- { name: 'EPEL7 GPG Key', key: '/root/RPM-GPG-KEY-EPEL-7Server', url: 'https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7Server' } 
+

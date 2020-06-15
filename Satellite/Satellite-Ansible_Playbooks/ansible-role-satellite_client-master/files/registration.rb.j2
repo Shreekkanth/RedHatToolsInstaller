@@ -1,0 +1,104 @@
+#!/usr/bin/env ruby
+
+require 'logger'
+require 'fileutils'
+
+CAPSULE = '{{ satellite_capsule }}'
+ORG = '{{ satellite_org }}'
+ACTIVATIONKEY = '{{ satellite_key }}'
+
+LOG_FILE = '/var/log/sat6_registration.log'
+QUERY_FORMAT = '%{VERSION}-%{RELEASE}\n'
+
+TARGET_CA = "katello-ca-consumer-#{CAPSULE}"
+LATEST_CA_FILE = "/tmp/katello-ca-consumer-latest.noarch.rpm"
+LATEST_CA_URL = "http://#{CAPSULE}/pub/katello-ca-consumer-latest.noarch.rpm"
+
+$logger = Logger.new(LOG_FILE, 5, 1024000)
+$noop = (ARGV.length == 1 and ARGV[0] == '--noop') ? true : false
+
+def run(cmd)
+  $logger.info "running: #{cmd}"
+  system cmd or raise "failed to run: #{cmd}"
+end
+
+def capsule_changed?
+  ! system "rpm -q #{TARGET_CA}"
+end
+
+def registered?
+  #system 'subscription-manager refresh'
+  unless Dir['/etc/pki/entitlement/*'].empty?
+    rhsm = '/etc/rhsm/rhsm.conf'
+    if File.exists?(rhsm) and `grep ^hostname #{rhsm} | awk '{print $3}'`.strip == CAPSULE
+      return true
+    end
+  end
+  false
+end
+
+def backup_systemid
+  systemid = '/etc/sysconfig/rhn/systemid'
+  FileUtils.mv systemid,"#{systemid}_disabled" if File.exist? systemid
+end
+
+def remove_ca
+  # this will fail when no katello-ca-consumer is found, which is fine
+  system 'rpm -qa | grep katello-ca-consumer | xargs rpm -e'
+end
+
+def update_ca
+  system "rpm -Uvh #{LATEST_CA_FILE}"
+end
+
+def register
+  run "subscription-manager register --org='#{ORG}' --activationkey='#{ACTIVATIONKEY}' --force"
+  run "subscription-manager attach --auto"
+end
+
+begin
+  # backup systemid if exists
+  backup_systemid
+
+  # download the latest ca
+  run "wget -q --no-check-certificate #{LATEST_CA_URL} -O #{LATEST_CA_FILE}"
+
+  # check if the assigned capsule's ca is already installed
+  if capsule_changed?
+    exit 1 if $noop
+
+    $logger.info 'capsule changed'
+    remove_ca
+    update_ca
+  else
+    # check if katello-ca-consumer is updated on remote
+    current = `rpm -q --qf '#{QUERY_FORMAT}' #{TARGET_CA}`
+    latest = `rpm -qp --qf '#{QUERY_FORMAT}' #{LATEST_CA_FILE}`
+
+    if current != latest
+      exit 1 if $noop
+
+      $logger.info 'new version of katello-ca-consumer is found'
+      update_ca
+    end
+  end
+
+  # CA files missing after 6.2 upgrade for some reason
+  unless File.exist?('/etc/rhsm/ca/katello-default-ca.pem')
+    $logger.info 'CAs are missing, reinstalling the katello-ca-consumer package'
+    remove_ca
+    update_ca
+  end
+
+  # force registration if not registered already
+  unless registered?
+    exit 1 if $noop
+    register
+  end
+
+rescue => e
+  # make sure the script returns 0 no matter what error appears
+  # as such when the satellite server is unreachable, puppet agent
+  # will not error out in the setup stage
+  $logger.error e.message
+end

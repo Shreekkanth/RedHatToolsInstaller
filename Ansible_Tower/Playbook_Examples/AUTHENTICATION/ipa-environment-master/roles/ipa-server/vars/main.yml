@@ -1,0 +1,11 @@
+---
+# non configurable outside of role
+
+supported_distrobution:
+  RedHat:
+    version: 7.3
+  CentOS:
+    version: 7.3
+
+ipa_server_ca_root_key: /root/cacert.p12
+ipa_server_ca_agent_key: /root/ca-agent.p12

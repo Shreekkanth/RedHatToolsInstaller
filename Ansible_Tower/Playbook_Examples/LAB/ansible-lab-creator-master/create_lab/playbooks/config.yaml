@@ -1,0 +1,32 @@
+---
+
+# Platform level configuration
+working_location: "/root/"
+root_pass: "password"
+SSH_KEY_PATH: "/root/.ssh/id_rsa"
+SSH_USER_HOME_DIR: "/root/"
+ANSIBLE_USER: "root"
+ANSIBLE_GROUP: "root"
+template_name: "rhel7-image"
+image_file_name: "rhel7-image.qcow2"
+libvirt_uri: "qemu:///system"
+KVM_HOST: 192.168.122.1
+ANSIBLE_HOST: 192.168.122.1
+
+idm_server: "rhel7-idm01.kenlab.external" 
+idm_password: "Redhat123"
+idm_reverse_zone_name: '122.168.192.in-addr.arpa'
+
+# Nework Config
+domain_name: "kenlab.external"
+gateway: 192.168.122.1
+dns1: 192.168.122.10
+dns2: 192.168.122.1
+
+# VM Config
+vm_location: "/var/lib/libvirt/images/"
+
+# Red Hat Subscription details. Change to Satellite AK or RHN AK. 
+rh_orgid: 11546460
+rh_ak: build-labs-all
+

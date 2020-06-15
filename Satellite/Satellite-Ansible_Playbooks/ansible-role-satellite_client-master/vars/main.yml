@@ -1,0 +1,5 @@
+---
+# vars file for satellite
+rhn_cert_name: RHN-ORG-TRUSTED-SSL-CERT
+satellite_server: satellite.corp.redhat.com
+satellite_cert: "http://{{ satellite_server }}/pub/{{ rhn_cert_name }}"

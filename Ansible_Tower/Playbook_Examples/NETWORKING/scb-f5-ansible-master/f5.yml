@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+##  connection: local
+
+  tasks:
+    - name: Collect BIG-IP facts
+      bigip_device_facts:
+        gather_subset:
+          - all
+        provider:
+          server: 192.168.0.240
+          server_port: 8443
+          user: admin
+          password: admin
+          validate_certs: no
+    - name: Create a GTM pool
+      bigip_gtm_pool:
+        name: my_pool
+        type: a
+        state: present
+        provider:
+          user: admin
+          server: 192.168.0.240
+          server_port: 8443
+          user: admin
+          password: admin
+          validate_certs: no
+    - name: Create a nameserver
+      bigip_dns_nameserver:
+        name: foo
+        address: 10.10.10.10
+        service_port: 53
+        state: present
+        provider:
+          password: admin
+          server: 192.168.0.240
+          server_port: 8443
+          user: admin
+          validate_certs: no
+     

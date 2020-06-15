@@ -1,0 +1,39 @@
+---
+- name: "Final VM Snapshot"
+  hosts: "localhost"
+  gather_facts: False
+  tasks:
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "../vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+
+    - name: "Wait for VM to shutdown"
+      vmware_guest_facts:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        name: "{{ vctr_vm_template_name }}"
+      register: "vm_powerstate"
+      retries: "5"
+      delay: "30"
+      until: 'vm_powerstate.instance.hw_power_status == "poweredOff"'
+
+    - debug:
+        var: "vm_powerstate"
+        verbosity: "1"
+
+    - name: "Take Final snap-shot"
+      vmware_guest_snapshot:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        folder: "{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        snapshot_name: "{{ vctr_vm_template_post_snap_name }}"
+        description: "{{ vctr_vm_template_post_snap_desc }}"
+        state: "present"
+      no_log: True
+      when: 'vm_powerstate.instance.hw_power_status == "poweredOff"'

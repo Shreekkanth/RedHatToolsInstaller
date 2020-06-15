@@ -1,0 +1,74 @@
+---
+- name: Create tmp Directory for Tower Zip Files
+  file:
+    path: /tmp/ansible_tower/
+    state: directory
+
+- name: Create opt Directory for Unpacked Tower Files
+  file:
+    path: /opt/ansible_tower/
+    state: directory
+
+- name: Check if Tower Files Present
+  stat:
+    path: /tmp/ansible_tower/ansible-tower-setup-latest.tar.gz
+  register: pres_stat_result
+
+- name: Download Ansible Tower Files, if not Present
+  get_url:
+    url: https://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-latest.tar.gz
+    dest: /tmp/ansible_tower/
+  when: pres_stat_result.stat.exists == False
+
+- name: Check if Tower Files Unpacked
+  stat:
+    path: /opt/ansible_tower/ansible-tower-setup-"{{ lookup('env', 'ANSIBLE_TOWER_VERSION') }}"/
+  register: unp_stat_result
+
+- name: Unpack Ansible Tower Files, if Zipped
+  unarchive:
+    src: /tmp/ansible_tower/ansible-tower-setup-latest.tar.gz
+    dest: /opt/ansible_tower/
+    remote_src: yes
+  when: unp_stat_result.stat.exists == false
+
+- name: Check if Release Directory has Been Renamed
+  stat:
+    path: /opt/ansible_tower/ansible-tower-setup-latest
+  register: ren_stat_result
+
+- name: Change Release Directory to Common Name
+  shell: mv /opt/ansible_tower/ansible-tower-setup-"{{ lookup('env', 'ANSIBLE_TOWER_VERSION') }}"/ /opt/ansible_tower/ansible-tower-setup-latest
+  when: ren_stat_result.stat.exists == False
+
+- name: Copy Corrected nginx Task to Server
+  copy:
+    src: "{{ playbook_dir }}/nginx_task_replacement/task.yml"
+    dest: /opt/ansible_tower/ansible-tower-setup-latest/roles/nginx/tasks
+
+- name: Add Passwords to Inventory File
+  replace:
+    dest: /opt/ansible_tower/ansible-tower-setup-latest/inventory
+    regexp: '(?<=_password=).*'
+    replace: "'password'"
+
+- name: Add localhost to hosts.allow
+  become: true
+  lineinfile:
+    state: present
+    path: /etc/hosts.allow
+    line: "sshd: 127.0.0.0/8"
+
+- name: Check if Ansible Tower is on the machine
+  uri:
+    url: https://127.0.0.1/
+    method: GET
+    validate_certs: no
+  ignore_errors: yes
+  register: tower_check
+
+- name: Run Ansible Setup Script (this can take over 10 minutes)
+  become: true
+  when: tower_check.status != 200
+  shell: /opt/ansible_tower/ansible-tower-setup-latest/./setup.sh
+  

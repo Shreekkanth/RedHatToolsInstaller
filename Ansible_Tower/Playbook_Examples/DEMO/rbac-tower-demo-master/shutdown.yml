@@ -1,0 +1,35 @@
+---
+# shutdown.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Shutdown and remove containers
+      docker_container:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - wf_dev_rabbitmq
+        - wf_dev_memcached
+        - wf_dev_awx_web
+        - wf_dev_awx_task
+        - wf_dev_postgres
+        - wf_dev_ldap
+        - wf_dev_ldap_admin
+        - wf_dev_jenkins
+        - wf_dev_centos1
+        - wf_dev_centos2
+        - wf_dev_centos3
+        
+        - wf_prod_rabbitmq
+        - wf_prod_memcached
+        - wf_prod_awx_web
+        - wf_prod_awx_task
+        - wf_prod_postgres
+        - wf_prod_ldap
+        - wf_prod_ldap_admin
+        - wf_prod_jenkins
+        - wf_prod_centos1
+        - wf_prod_centos2
+        - wf_prod_centos3

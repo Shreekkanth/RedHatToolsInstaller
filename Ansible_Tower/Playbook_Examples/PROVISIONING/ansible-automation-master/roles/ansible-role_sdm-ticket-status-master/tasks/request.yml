@@ -1,0 +1,12 @@
+---
+- name: Retrieve ticket status
+  uri:
+    url: "{{ sdm_ticket_status_api_base_url }}/cr/{{ sdm_ticket_status_ticket_id }}/status"
+    method: GET
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    return_content: yes
+    status_code: 200
+  register: ticket_status_result

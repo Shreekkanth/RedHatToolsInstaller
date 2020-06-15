@@ -1,0 +1,8 @@
+---
+# Environment specific site.yml
+  - hosts: all
+    roles:
+      - role: test-framework
+        vars:
+          testframework_virtual_env: /opt/devilhorn/testframework
+        tags: ['tests']

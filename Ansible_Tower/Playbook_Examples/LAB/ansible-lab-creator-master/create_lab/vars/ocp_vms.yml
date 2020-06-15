@@ -1,0 +1,56 @@
+---
+# Set this to true if you want to delete lab before rebuilding
+local_lab_delete: "true"
+
+# Environmental variables
+ocp_ver: 3.11
+vm_location: "/var/lib/libvirt/images/"
+platform_group_name: "ocp_systems"
+
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+  rhel-7-server-extras-rpms:
+    enable: true
+  rhel-7-server-ose-3.11-rpms:
+    enable: true
+  rhel-7-server-ansible-2.6-rpms:
+    enable: true
+
+install_node: "ocp-master001.kenlab.internal"
+glusterconfig: "no"
+loggingconfig: "no"
+
+docker_disk_size: 15
+
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  ocp-master001:
+    mem: 8192 
+    cpus: 4
+    disk: 40
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.21
+    ocp_role: master
+    installer_node: yes
+  ocp-infranode001:
+    mem: 4096 
+    cpus: 4
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.31
+    ocp_role: infranode
+    installer_node: no
+  ocp-appnode001:
+    mem: 8192
+    cpus: 8
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.41
+    ocp_role: appnode
+    installer_node: no
+

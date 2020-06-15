@@ -1,0 +1,19 @@
+---
+# Defaults file for rhit.sat6client
+load_rpm_keys:
+  - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  - /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-git
+
+# base packages that should be installed on all hosts
+base_packages:
+  - vim-enhanced
+  - screen
+  - net-tools
+  - telnet
+
+#katello_agent: "http://sat6capsule.corp.redhat.com/pub/katello-ca-consumer-latest.noarch.rpm"
+katello_agent: "http://sat6cap01.util.phx2.redhat.com/pub/katello-ca-consumer-latest.noarch.rpm"
+sat_org_id: "rhit"
+
+#update all packages when this playbook is executed
+update_all_packages: false

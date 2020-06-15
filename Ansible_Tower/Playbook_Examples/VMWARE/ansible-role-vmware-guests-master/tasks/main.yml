@@ -1,0 +1,41 @@
+---
+- name: Install dependencies
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - pyvmomi
+  delegate_to: localhost
+  connection: local
+  run_once: true
+
+- block:
+  - name: Find IP for the server on IPAM if vm_ip is not defined
+    include_role:
+      name: bluecat-ipam-rest
+    vars:
+      target_hostname: "{{ vm_name }}"
+
+  - name: Get results from IPAM
+    set_fact:
+      vm_ip: "{{ ipAddress}}"
+      vm_netmask: "{{ ipNetmask }}"
+      vm_gateway: "{{ ipGateway }}"
+
+  when:
+    - state == 'present'
+    - use_ipam|bool
+
+- name: Create virtual machine
+  include: create.yml
+  delegate_to: localhost
+  connection: local
+  run_once: true
+  when: state == 'present'
+
+- name: Delete virtual machine
+  include: delete.yml
+  delegate_to: localhost
+  connection: local
+  run_once: true
+  when: state == 'absent'

@@ -1,0 +1,10 @@
+---
+# tasks file for role_nagios_client
+- include: install_nrpe.yml 
+  when: not nagios_register_custom_service
+
+- include: nagios_register.yml
+  when: register_to_nagios and not nagios_register_custom_service
+
+- include: nagios_register_custom.yml
+  when: register_to_nagios and nagios_register_custom_service

@@ -1,0 +1,16 @@
+---
+tower_teams:
+  - name: Team - Ship
+    description: Ship team
+    organization: Default
+    state: present
+
+  - name: Team - Shore
+    description: Shore team
+    organization: Default
+    state: present
+
+  - name: Ops Team
+    description: Ops team
+    organization: Default
+    state: present

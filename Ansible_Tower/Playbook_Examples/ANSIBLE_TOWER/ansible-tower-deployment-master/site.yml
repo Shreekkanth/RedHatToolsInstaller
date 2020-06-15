@@ -1,0 +1,10 @@
+- hosts: tower_servers
+  gather_facts: yes
+  become: true
+  roles:
+#  - base
+#  - certificates
+#  - logrotate
+#  - automation_user
+#  - tower_deploy
+  - tower_config

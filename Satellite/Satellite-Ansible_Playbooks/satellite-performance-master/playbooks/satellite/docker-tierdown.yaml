@@ -1,0 +1,48 @@
+---
+- hosts: docker-hosts
+  remote_user: root
+  gather_facts: no
+  roles:
+  ###  - common
+  tasks:
+    - name: "Clear up ssh known_hosts before killing containers"
+      shell:
+        truncate -s 0 /root/.ssh/known_hosts
+    - name: "Clear docker active network connections(sometimes prevents docker from restarting)"
+      shell:
+        rm -rf /var/lib/docker/network/files/
+    - name: "Restart docker daemon what kills all containers"
+      service:
+        name: docker
+        state: restarted
+    - name: "Count running containers"
+      shell:
+        docker ps -q | wc -l
+      register: docker_ps_wc
+    - name: "There are no runing containers"
+      shell:
+        docker kill $( docker ps -q )
+      when: docker_ps_wc.stdout|int > 0
+    - name: "Count stopped containers"
+      shell:
+        docker ps -qa | wc -l
+      register: docker_psa_wc
+    - name: "There are no images"
+      shell:
+        docker rm $( docker ps -aq )
+      when: docker_psa_wc.stdout|int > 0
+    - name: "Docker daemon is restarted"
+      service:
+        name=docker
+        state=restarted
+    - name: "Container's yum caches are removed"
+      file:
+        name=/tmp/yum-cache
+        state=absent
+    - name: "Empty contailer's yum cache created"
+      file:
+        name=/tmp/yum-cache
+        state=directory
+    - name: "Caches are dropped"
+      shell:
+        echo 3 > /proc/sys/vm/drop_caches

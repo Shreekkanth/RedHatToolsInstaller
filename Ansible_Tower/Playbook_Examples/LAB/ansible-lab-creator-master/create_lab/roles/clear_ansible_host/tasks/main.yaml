@@ -1,0 +1,46 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Update Ansible Hosts file with Openshift systems
+  delegate_to: localhost
+  lineinfile:
+    path: /etc/ansible/hosts
+    regexp: ".*{{ item.key }}.{{ domain_name }}$"
+    line: "{{ item.key }}.{{ domain_name }}"
+    insertafter: "^{{ platform_group_name }}"
+    state: absent
+  with_dict: "{{ guests }}"
+
+- name: Update /etc/hosts from dictionary
+  delegate_to: localhost
+  lineinfile:
+    dest: /etc/hosts
+    regexp: ".*{{ item.key }}$"
+    line: "{{ item.value.ipaddress }} {{ item.key }}.{{ domain_name }} {{ item.key }}"
+    state: absent
+  with_dict: "{{ guests }}"
+
+- name: Refresh inventory
+  meta: refresh_inventory
+
+- name: get port, default 22
+  delegate_to: localhost
+  set_fact:
+    ansible_ssh_port: "{{ hostvars[inventory_hostname]['ansible_ssh_port'] | default('22') }}"
+
+- name: Ensure ssh host key known
+  delegate_to: localhost
+  lineinfile:
+    dest: ~/.ssh/known_hosts
+    create: yes
+    state: absent
+    line: "{{ lookup('pipe', 'ssh-keyscan -trsa -p' + ansible_ssh_port + ' ' + '{{ item.key }}.{{ domain_name }}') }}"
+  with_dict: "{{ guests }}"
+
+- name: Remove {{ platform_group_name }} ansible group
+  delegate_to: localhost
+  lineinfile:
+    path: /etc/ansible/hosts
+    line: "{{ platform_group_name }}"
+    state: absent

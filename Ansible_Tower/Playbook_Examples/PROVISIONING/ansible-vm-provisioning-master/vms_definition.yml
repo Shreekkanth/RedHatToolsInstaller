@@ -1,0 +1,23 @@
+provision_vms:
+- name: "wefali24"
+  fqdn: "wefali24.webfarm.bancaditalia.it"
+  ip: "172.23.225.14"
+  netmask: "255.255.255.0"
+  gw: "172.23.225.1"
+  dns1: "172.22.4.104"
+  dns2: "172.22.4.105"
+  timezone: "Europe/Rome"
+  root_password: "linux2019"
+  rhv_memory: "2GiB"
+  rhv_net_profile: "test_prod"
+  rhv_cluster: "TEST_INFRA_LB"
+  rhv_template: "RHEL7_Satellite6_RHV_1_2"
+  rhv_clone: false #true
+  sat_organization: "Banca_d_Italia_-_Domestico"
+  sat_location: "Webfarm"
+  sat_hostgroup: "bdi/svil/provision"
+  sat_architecture: "x86_64"
+  sat_operatingsystem: "RHEL Server 7.6"
+  sat_subnet: "Wefa_Test"
+  sat_domain: "webfarm.bancaditalia.it"
+  

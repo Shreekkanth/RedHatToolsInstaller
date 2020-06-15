@@ -1,0 +1,31 @@
+---
+# ldap/tasks/build.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Create LDAP container
+  docker_container:
+    name: "{{ env }}_ldap"
+    image: osixia/openldap:latest
+    hostname: "{{ env }}_ldap"
+    networks:
+      - name: wf_net
+        aliases: "{{ env.replace('_', '') }}ldap"
+    ports:
+      - "{{ ports.ldap }}:389"
+      - "{{ ports.ldaps }}:636"
+    env:
+      LDAP_ORGANISATION: "{{ org }}"
+      LDAP_DOMAIN: "{{ domain }}"
+      LDAP_ADMIN_PASSWORD: "{{ ldap_admin_password }}"
+
+- name: Create PhpLdapAdmin container
+  docker_container:
+    name: "{{ env }}_ldap_admin"
+    image: osixia/phpldapadmin:latest
+    hostname: "{{ env }}_ldap_admin"
+    networks:
+      - name: wf_net
+    ports:
+      - "{{ ports.https }}:443"
+    env:
+      PHPLDAPADMIN_LDAP_HOSTS: "{{ env }}_ldap"

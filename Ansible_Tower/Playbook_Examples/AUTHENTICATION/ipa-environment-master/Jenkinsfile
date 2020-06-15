@@ -1,0 +1,84 @@
+pipeline {
+  agent any
+  environment {
+    TF_VAR_friendly_name = 'integration-env'
+    TF_VAR_subscription_id = '0143dcd9-9a97-4eab-bbb8-28c5629653f2'
+    TF_VAR_tenant_id = '9a8533fc-fc1b-4086-958c-307d5644d1bb'
+    TF_VAR_client_id = credentials('client_id')
+    TF_VAR_client_secret = credentials('client_secret')
+  }
+  stages {
+
+    stage ('Syntax Check') {
+      when {
+        anyOf {
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-pr'
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+        }
+      }
+      steps {
+        sh 'make test'
+      }
+    }
+    stage ('Infrastructure') {
+      when {
+        allOf {
+        expression { params.DEPLOY_TO == 'DEVELOP' }
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+        }
+      }
+      steps {
+        sh 'make ENV=integration spin'
+      }
+    }
+    stage ('Test Infrastructure') {
+      when {
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+      }
+      steps {
+        sh 'ansible all -m ping -i integration'
+      }
+    }
+    stage ('Ansible Deploy (master)') {
+      when {
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+      }
+      steps {
+        sh 'git checkout master'
+        sh 'ansible-playbook -i integration site.yml'
+      }
+    }
+    stage ('Ansible Deploy (develop)') {
+      when {
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+      }
+      steps {
+        sh 'git checkout develop'
+        sh 'ansible-playbook -i integration site.yml'
+      }
+    }
+    stage ('Security Compliance'){
+      when {
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+      }
+      steps {
+        sh 'true'
+      }
+    }
+    stage ('Integration Tests'){
+      when {
+        environment name: 'JOB_NAME', value: 'ipa-integration-env-re'
+      }
+      steps {
+        sh 'ansible-playbook -i integration tests/remote.yml'
+      }
+    }
+  }
+ post {
+   always {
+     archive 'results/*-junit.xml'
+     junit 'results/*-junit.xml'
+     sh 'make clean'
+   }
+ }
+}

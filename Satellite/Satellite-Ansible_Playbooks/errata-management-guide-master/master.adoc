@@ -1,0 +1,15 @@
+:toc:
+:toclevels: 3
+:numbered:
+
+//include::topics/templates/document-attributes.adoc[]
+
+:imagesdir: topics/images
+:errata-management-guide-6:
+
+= Errata Management Guide
+//Test line
+include::topics/introduction.adoc[leveloffset=+1]
+include::topics/configuration.adoc[leveloffset=+1]
+include::topics/monthly_patching_example.adoc[leveloffset=+1]
+include::topics/quarterly_patching_example.adoc[leveloffset=+1]

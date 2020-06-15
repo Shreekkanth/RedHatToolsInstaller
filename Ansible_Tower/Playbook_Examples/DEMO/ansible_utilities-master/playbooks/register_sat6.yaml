@@ -1,0 +1,85 @@
+---
+- hosts: clients
+  vars:
+    remote_user: root
+    cap6_fqdn: "satellite.example.com"
+    satellite_version: "6.3"
+    rhel_7_base_os_server_key: "example_activation_key"
+    rhel_7_base_os_workstation_key: ""
+    sat_url: "satellite.example.com"
+    sat_user: "admin"
+    # run ansible-vault encrypt_string "rhn password" --ask-vault-pass to encrypt password -- password is redhat
+    sat_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          61326236316530643262653536666335636466643763353333313463653338333662303730316162
+          3038613337353264336132366633626232336662313738300a656436643835633330653737643465
+          38353935663763626533333562316662373235366234633939353165653638653237363766656165
+          3564316261373964300a326166343661383231613530396365663237333534636333356263356231
+          3862
+          
+    org_name: "RedHat"
+
+  tasks:
+
+    - name: Remove previous katello-ca-consumer-latest.noarch.rpm from {{ ansible_fqdn }}
+      yum:
+        name: katello-ca-consumer-latest.noarch.rpm
+        state: absent
+      ignore_errors: yes
+
+    - name: Install latest katello-ca-consumer-latest.noarch.rpm from {{ cap6_fqdn }}
+      yum:
+        name: http://{{ cap6_fqdn }}/pub/katello-ca-consumer-latest.noarch.rpm
+        state: present
+
+    - name: Check if product version is RHEL Server
+      stat:
+        path: /etc/pki/product/69.pem
+      register: server_product
+
+    - name: Check if product version is RHEL Workstation
+      stat:
+        path: /etc/pki/product/71.pem
+      register: worstation_product
+
+    - name: Get the {{ org_name }} Organization ID
+      uri:
+        url: "https://{{ sat_url }}/katello/api/organizations?search={{ org_name }}"
+        user: "{{ sat_user }}"
+        password: "{{ sat_password }}"
+        force_basic_auth: yes
+        body_format: json
+        return_content: yes
+        validate_certs: no
+        follow_redirects: all
+      register: org_id
+
+    - debug: var=org_id.json.results[0].id
+
+    - name: Register RHEL 7 Server {{ ansible_fqdn }} to {{ cap6_fqdn }}
+      redhat_subscription:
+        state: present
+        activationkey: "{{ rhel_7_base_os_server_key }}"
+        org_id: "{{ org_id.json.results[0].id }}"
+        force_register: yes
+      when: server_product.stat.exists
+
+    - name: Register RHEL 7 Workstation {{ ansible_fqdn }} to {{ cap6_fqdn }}
+      redhat_subscription:
+        state: present
+        activationkey: "{{ rhel_7_base_os_workstation_key }}"
+        org_id: "{{ org_id.json.results[0].id }}"
+        force_register: yes
+      when: worstation_product.stat.exists
+
+    - name: Install Satellite 6 agent on RHEL 7 servers
+      yum:
+        name: katello-agent
+        state: present
+        enablerepo: rhel-7-server-satellite-tools—rpms
+
+    - name: Install Satellite 6 agent on RHEL 7 Workstations
+      yum:
+        name: katello-agent
+        state: present
+        enablerepo: rhel-7-worstation-satellite-tools—rpms

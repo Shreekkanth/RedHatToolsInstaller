@@ -1,0 +1,54 @@
+{
+  "spec": [
+    {
+      "required": true,
+      "min": 0,
+      "default": "",
+      "max": 100,
+      "question_description": "Name of the Ansible Tower Job Template to create.",
+      "choices": "",
+      "new_question": true,
+      "variable": "tower_job_template_name",
+      "question_name": "Enter the Job Template name.",
+      "type": "text"
+    },
+    {
+      "required": false,
+      "min": 0,
+      "default": "",
+      "max": 1024,
+      "question_description": "",
+      "choices": "",
+      "new_question": true,
+      "variable": "tower_jt_desc",
+      "question_name": "Enter a description for the Job Template",
+      "type": "text"
+    },
+    {
+      "required": true,
+      "min": 0,
+      "default": "",
+      "max": 1024,
+      "question_description": "",
+      "choices": "",
+      "new_question": true,
+      "variable": "tower_jt_playbook",
+      "question_name": "Enter the name of the playbook file to attach to the Job Template.",
+      "type": "text"
+    },
+    {
+      "required": true,
+      "min": null,
+      "default": "",
+      "max": null,
+      "question_description": "Where to deploy this job template.  Please note, the playbook must be in the corresponding repository project branch in that environment.",
+      "choices": "{% for env in tower_environments %}{{ env.name }}{% if not loop.last %}\n{% endif %}{% endfor %}",
+      "new_question": true,
+      "variable": "tower_jt_deploy_environments",
+      "question_name": "Choose the Ansible Tower environments to deploy the Job Template to.",
+      "type": "multiselect"
+    }
+  ],
+  "description": "",
+  "name": ""
+}

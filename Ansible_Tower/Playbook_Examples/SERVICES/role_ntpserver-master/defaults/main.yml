@@ -1,0 +1,16 @@
+---
+# Sane defaults file for role-ntpserver
+
+ntpservers:
+  - 0.rhel.pool.ntp.org
+  - 1.rhel.pool.ntp.org
+  - 2.rhel.pool.ntp.org
+
+# Sane defaults for MOTD
+sys_role: NTP Server
+
+# Whether or not to instlal nagios checks
+nagios_ntp_checks: true
+
+# We are delivering a nagios check - if we don't include the nagios role we need this default
+nagios_plugin_directory: /usr/lib64/nagios/plugins

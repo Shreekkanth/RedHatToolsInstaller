@@ -1,0 +1,27 @@
+---
+# defaults/main.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+# Tower Configuration
+# admin_username: "admin"
+# admin_password: "nothing01"
+# tower_config_file: "{{ playbook_dir }}/build/{{ env }}/tower_cli.cfg"
+
+base_dn: "OU=DTC,OU=ENT,DC=ent,DC=wfb,DC=bank,DC=corp"
+ldap_user_search:
+- "OU=Users,{{ base_dn }}"
+- "SCOPE_SUBTREE"
+- "(cn=%(user)s)"
+
+ldap_group_search:
+- "ou=Groups,{{ base_dn }}"
+- "SCOPE_SUBTREE"
+- "(objectClass=posixGroup)"
+
+ldap_user_attr_map:
+  first_name: givenName
+  last_name: sn
+
+ldap_user_flags:
+  is_superuser: "{{ awx_superuser }}"
+  is_system_auditor: "{{ awx_systemauditor }}"

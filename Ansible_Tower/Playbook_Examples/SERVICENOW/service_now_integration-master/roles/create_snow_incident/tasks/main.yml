@@ -1,0 +1,34 @@
+- name: Get VM Data
+  vmware_guest:
+    vmware_guest_facts: true
+#    vcenter_host: "{{ lookup('env', 'VMWARE_HOST') }}"
+#    vcenter_user: "{{ lookup('env', 'VMWARE_USER') }}"
+#    vcenter_pass: "{{ lookup('env', 'VMWARE_PASSWORD') }}"
+     vcenter_hostname: "{{ vcenter_host }}"
+     username: "{{ vcenter_user }}"
+     password: "{{ vcenter_pass }}"
+    guest: "{{ target }}"
+    validate_certs: no
+  register: vmguest_facts
+
+- name: Posting to SNOW API
+  uri:
+    url: https://{{ snow_instance_url }}/api/now/table/incident
+    user: "{{ Username }}"
+    password: "{{ Password }}"
+    method: POST
+    return_content: no
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body: >
+      {"opened_by":"Ansible",
+      "short_description":"{{ snow_short_description }}",
+      "comments":"\n**** SYSTEM INFO ****\nVM Name - {{ vmguest_facts.ansible_facts.hw_name }}\nCPU Count - {{ vmguest_facts.ansible_facts.hw_processor_count }}\nMemory Count - {{ vmguest_facts.ansible_facts.hw_memtotal_mb }}\nOS - {{ vmguest_facts.ansible_facts.hw_guest_full_name }}\nPower State - {{ vmguest_facts.ansible_facts.hw_power_status }}\n\n**** TROUBLE INFO ****\n{{ snow_description }}",
+      "urgency":"{{ snow_urgency }}",
+      "impact":"{{ snow_urgency }}",
+      "priority":"{{ snow_urgency }}"}
+    status_code: 201
+    validate_certs: no
+#  no_log: True
+#  failed_when: false

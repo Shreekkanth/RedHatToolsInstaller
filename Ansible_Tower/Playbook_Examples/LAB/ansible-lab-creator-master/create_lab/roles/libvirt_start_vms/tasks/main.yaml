@@ -1,0 +1,20 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: start vm
+  virt:
+    name: "{{ item.key }}.{{ domain_name }}"
+    state: running
+  with_dict: "{{ guests }}"
+
+- name: Wait at least 10 min for the vms to start before we can configre.
+  wait_for_connection:
+    connect_timeout: 120
+    sleep: 5
+    delay: 5
+    timeout: 600
+
+- pause:
+    minutes: 2

@@ -1,0 +1,29 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Configure ejbtimer
+#
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/configure_ejbtimer.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+/subsystem=ejb3/service=timer-service/database-data-store={{database_data_store_name}}:add(database={{database_vendor_name}},datasource-jndi-name="{{database_jndi_name}}", \
+allow-execution={{database_data_store_allow_execution}},refresh-interval="{{database_data_store_refresh_interval}}",partition="{{database_data_store_partition}}" )
+#
+# Update timer-service
+/subsystem=ejb3/service=timer-service:write-attribute(name=default-data-store,value={{database_data_store_name}})
+
+
+run-batch
+#
+# EOF

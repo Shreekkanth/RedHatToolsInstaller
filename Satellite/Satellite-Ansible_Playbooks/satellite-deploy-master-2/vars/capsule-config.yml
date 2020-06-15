@@ -1,0 +1,46 @@
+---
+
+# satellite-preintall config for capsule server
+data_disk: vdb
+data_vgname: data
+data_lv:
+  - { name: 'pulp', lv_name: 'lv_pulp', lv_size: '70%FREE', mount_dir: '/var/lib/pulp'}
+  - { name: 'mongodb', lv_name: 'lv_mongodb', lv_size: '50%FREE', mount_dir: '/var/lib/mongodb'}
+  - { name: 'pulpcache', lv_name: 'lv_pulpcache', lv_size: '10%FREE', mount_dir: '/var/cache/pulp'}
+data_fs: xfs
+satellite_deployment_fw_ports:
+    - 22/tcp
+    - 80/tcp
+    - 443/tcp
+    - 5646/tcp
+    - 5647/tcp
+    - 5671/tcp
+    - 5674/tcp
+    - 8000/tcp
+    - 8140/tcp
+    - 8443/tcp 
+    - 9090/tcp
+    - 53/udp
+    - 53/tcp
+    - 67/udp
+    - 68/udp
+    - 69/udp
+satellite_deployment_plugin_ports: []
+
+# rhsm-satellite on common.yml
+
+# capsule-install
+capsule_installer_pkg: satellite-capsule   # Satellite 6.2
+cap_puppetca_sat: true
+cap_puppetca_dirs:
+  - { dst_dir: '/var/lib/puppet/ssl/certs', src_file: '/var/lib/puppet/ssl/certs/ca.pem', dst_file: '/var/lib/puppet/ssl/certs/ca.pem'}
+  - { dst_dir: '/var/lib/puppet/ssl/certs', src_file: '/var/lib/puppet/ssl/certs/ca.pem', dst_file: '/var/lib/puppet/ssl/ca/ca_crt.pem'}
+  - { dst_dir: '/var/lib/puppet/ssl/certs', src_file: '/var/lib/puppet/ssl/certs/ca.pem', dst_file: '/var/lib/puppet/ssl/ca/ca_crl.pem'}
+  - { dst_dir: '/var/lib/puppet/ssl/public_keys', src_file: '/var/lib/puppet/ssl/public_keys/{{ inventory_hostname }}.pem', dst_file: '/var/lib/puppet/ssl/public_keys/{{ inventory_hostname }}.pem'}
+  - { dst_dir: '/var/lib/puppet/ssl/private_keys', src_file: '/var/lib/puppet/ssl/private_keys/{{ inventory_hostname }}.pem', dst_file: '/var/lib/puppet/ssl/private_keys/{{ inventory_hostname }}.pem'}
+  - { dst_dir: '/var/lib/puppet/ssl/ca', src_file: '/var/lib/puppet/ssl/ca/signed/{{ inventory_hostname }}.pem', dst_file: '/var/lib/puppet/ssl/certs/{{ inventory_hostname }}.pem'}
+cap_install_options:
+  - '--enable-foreman-proxy-plugin-remote-execution-ssh'
+  - '--foreman-proxy-puppetca                      "false"'
+###  - "--capsule-puppet-ca-proxy                     {{ groups['satellite']|first }}"
+...

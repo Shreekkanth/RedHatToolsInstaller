@@ -1,0 +1,2296 @@
+#
+# --------------------------------- AD.99.1.1 ---------------------------------
+#
+- name: AD.99.1.1 | PATCH_RHEL | BUILD SPECIFIC | Time Zone should be set to UTC
+  timezone:
+    name: UTC
+  ignore_errors: yes
+  when: ad_99_1_1
+  register: __ad_99_1_1
+  tags:
+    - AD.99.1.1
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.1 | AUDIT_RHEL | BUILD SPECIFIC | Time Zone should be set to UTC
+  debug:
+    msg: "{{ __ad_99_1_1 }}"
+  when: 
+    - ad_99_1_1
+    - ansible_check_mode
+    - __ad_99_1_1 | changed
+  tags:
+    - AD.99.1.1
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.2 ---------------------------------
+#
+- name: AD.99.1.2 | PATCH_RHEL | BUILD SPECIFIC | Network Time Protocol (NTP) should be installed
+  yum:
+    name: ntp
+    state: present
+  when: ad_99_1_2
+  register: __ad_99_1_2_installed
+  tags:
+    - AD.99.1.2
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.2 | AUDIT_RHEL | BUILD SPECIFIC | Network Time Protocol (NTP) should be installed
+  debug:
+    msg: "{{ __ad_99_1_2_installed }}"
+  when: 
+    - ad_99_1_2
+    - ansible_check_mode
+    - __ad_99_1_2_installed | changed
+  tags:
+    - AD.99.1.2
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.2 | PATCH_RHEL | BUILD SPECIFIC | Network Time Protocol (NTP) should be enabled
+  service:
+    name: ntpd
+    state: started
+    enabled: yes
+  when: ad_99_1_2
+  register: __ad_99_1_2_enabled
+  tags:
+    - AD.99.1.2
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.2 | AUDIT_RHEL | BUILD SPECIFIC | Network Time Protocol (NTP) should be enabled
+  debug:
+    msg: "{{ __ad_99_1_2_enabled }}"
+  when: 
+    - ad_99_1_2
+    - ansible_check_mode
+    - __ad_99_1_2_enabled | changed
+  tags:
+    - AD.99.1.2
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.3 ---------------------------------
+#
+- name: AD.99.1.3 | PATCH_RHEL | BUILD SPECIFIC | Network Time Protocol (NTP) Servers should be set
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+  notify: restart ntp
+  when: ad_99_1_3
+  register: __ad_99_1_3
+  tags:
+    - AD.99.1.3
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.3 | AUDIT_RHEL | BUILD SPECIFIC | Network Time Protocol (NTP) Servers should be set
+  debug:
+    msg: "{{ __ad_99_1_3 }}"
+  when: 
+    - ad_99_1_3
+    - ansible_check_mode
+    - __ad_99_1_3 | changed
+  tags:
+    - AD.99.1.3
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.4 ---------------------------------
+#
+- name: AD.99.1.4 | PATCH_RHEL | BUILD SPECIFIC | Set DNS Servers
+  template:
+    src=resolv.conf.j2
+    dest=/etc/resolv.conf
+  when:
+    - ad_99_1_4
+  register: __ad_99_1_4
+  tags:
+    - AD.99.1.4
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.4 | AUDIT_RHEL | BUILD SPECIFIC | Set DNS Servers
+  debug:
+    msg: "{{ __ad_99_1_4 }}"
+  when: 
+    - ad_99_1_4
+    - ansible_check_mode
+    - __ad_99_1_4 | changed
+  tags:
+    - AD.99.1.4
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.5 ---------------------------------
+#
+- name: AD.99.1.5 | PATCH_RHEL | BUILD SPECIFIC | DNS Search Order should contain ampf.com and i.ameriprise.com
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '^search '
+    line: 'search ampf.com i.ameriprise.com'
+  when: ad_99_1_5
+  register: __ad_99_1_5
+  tags:
+    - AD.99.1.5
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.5 | AUDIT_RHEL | BUILD SPECIFIC | DNS Search Order should contain ampf.com and i.ameriprise.com
+  debug:
+    msg: "{{ __ad_99_1_5 }}"
+  when: 
+    - ad_99_1_5
+    - ansible_check_mode
+    - __ad_99_1_5 | changed
+  tags:
+    - AD.99.1.5
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.6 ---------------------------------
+#
+- name: AD.99.1.6 | PATCH_RHEL | BUILD SPECIFIC | LDAP service
+  yum:
+    name: openldap-clients
+    state: present
+  when: ad_99_1_6
+  register: __ad_99_1_6
+  tags:
+    - AD.99.1.6
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.6 | AUDIT_RHEL | BUILD SPECIFIC | LDAP service
+  debug:
+    msg: "{{ __ad_99_1_6 }}"
+  when: 
+    - ad_99_1_6
+    - ansible_check_mode
+    - __ad_99_1_6 | changed
+  tags:
+    - AD.99.1.6
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.8 ---------------------------------
+#
+- name: AD.99.1.8 | PATCH_RHEL | BUILD SPECIFIC | IPV6 should be disabled (net.ipv6.conf.all.disable_ipv6)
+  sysctl:
+    name: net.ipv6.conf.all.disable_ipv6
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_8
+  register: __ad_99_1_8_all
+  tags:
+    - AD.99.1.8
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.8 | AUDIT_RHEL | BUILD SPECIFIC | IPV6 should be disabled (net.ipv6.conf.all.disable_ipv6)
+  debug:
+    msg: "{{ __ad_99_1_8_all }}"
+  when: 
+    - ad_99_1_8
+    - ansible_check_mode
+    - __ad_99_1_8_all | changed
+  tags:
+    - AD.99.1.8
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.8 | PATCH_RHEL | BUILD SPECIFIC | IPV6 should be disabled (net.ipv6.conf.default.disable_ipv6)
+  sysctl:
+    name: net.ipv6.conf.default.disable_ipv6
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_8
+  register: __ad_99_1_8_default
+  tags:
+    - AD.99.1.8
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.8 | AUDIT_RHEL | BUILD SPECIFIC | IPV6 should be disabled (net.ipv6.conf.default.disable_ipv6)
+  debug:
+    msg: "{{ __ad_99_1_8_default }}"
+  when: 
+    - ad_99_1_8
+    - ansible_check_mode
+    - __ad_99_1_8_default | changed
+  tags:
+    - AD.99.1.8
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.9 ---------------------------------
+#
+- name: AD.99.1.9 | GATHER_INFO_RHEL | BUILD SPECIFIC | Network - Bonding - LACP On
+  stat:
+    path: /etc/modprobe.d/bond.conf
+  when: ad_99_1_9
+  register: __ad_99_1_9_stat
+  tags:
+    - AD.99.1.9
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.9 | GATHER_INFO_RHEL | BUILD SPECIFIC | Network - Bonding - LACP On
+  shell: cat /etc/modprobe.d/bond.conf | grep "lacp_rate"
+  when:
+    - ad_99_1_9
+    - __ad_99_1_9_stat.stat.exists
+  failed_when: __ad_99_1_9_lcapstat.rc > 1
+  register: __ad_99_1_9_lcapstat
+  check_mode: no
+  tags:
+    - AD.99.1.9
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.9 | AUDIT_RHEL | BUILD SPECIFIC | Network - Bonding - LACP On
+  debug:
+    msg: "{{ __ad_99_1_9_lcapstat }}"
+  when: 
+    - ad_99_1_9
+    - ansible_check_mode
+  tags:
+    - AD.99.1.9
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.9 | PATCH_RHEL | BUILD SPECIFIC | Network - Bonding - LACP On
+  lineinfile:
+    state: present
+    path: /etc/modprobe.d/bond.conf
+    backrefs: yes
+    regexp: '^(.*)(lacp_rate=[0-9])(.*)'
+    line: '\1lacp_rate=1\3'
+  when:
+    - ad_99_1_9
+    - __ad_99_1_9_stat.stat.exists
+    - __ad_99_1_9_lcapstat.stdout != ""
+  register: __ad_99_1_9
+  tags:
+    - AD.99.1.9
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.9 | PATCH_RHEL | BUILD SPECIFIC | Network - Bonding - LACP On
+  lineinfile:
+    state: present
+    path: /etc/modprobe.d/bond.conf
+    backrefs: yes
+    regexp: '^options (.*)'
+    line: 'options \1 lacp_rate=1'
+  when:
+    - ad_99_1_9
+    - __ad_99_1_9_stat.stat.exists
+    - __ad_99_1_9_lcapstat.stdout == ""
+  register: __ad_99_1_9
+  tags:
+    - AD.99.1.9
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.9 | AUDIT_RHEL | BUILD SPECIFIC | Network - Bonding - LACP On
+  debug:
+    msg: "{{ __ad_99_1_9 }}"
+  when: 
+    - ad_99_1_9
+    - ansible_check_mode
+    - __ad_99_1_9 | changed
+    - __ad_99_1_9_stat.stat.exists
+  tags:
+    - AD.99.1.9
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.10 ---------------------------------
+#
+- name: AD.99.1.10 | PATCH_RHEL | BUILD SPECIFIC | Enable Network Autonegotiate
+  lineinfile:
+    state: present
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}
+    line: 'ETHTOOL_OPTS="autoneg on"'
+  when:
+    - ad_99_1_10
+  register: __ad_99_1_10
+  tags:
+    - AD.99.1.10
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.10 | AUDIT_RHEL | BUILD SPECIFIC | Enable Network Autonegotiate
+  debug:
+    msg: "{{ __ad_99_1_10 }}"
+  when: 
+    - ad_99_1_10
+    - ansible_check_mode
+    - __ad_99_1_10 | changed
+  tags:
+    - AD.99.1.10
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.11 ---------------------------------
+#
+- name: AD.99.1.11 | PATCH_RHEL | BUILD SPECIFIC | Shadow passwords
+  file:
+    path: /etc/shadow
+  when:
+    - ad_99_1_11
+  register: __ad_99_1_11
+  tags:
+    - AD.99.1.11
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.11 | AUDIT_RHEL | BUILD SPECIFIC | Shadow passwords
+  debug:
+    msg: "{{ __ad_99_1_11 }}"
+  when: 
+    - ad_99_1_11
+    - ansible_check_mode
+    - __ad_99_1_11 | changed
+  tags:
+    - AD.99.1.11
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.13 ---------------------------------
+#
+- name: AD.99.1.13 | PATCH_RHEL | BUILD SPECIFIC | SNMP should be installed
+  yum:
+    name: net-snmp
+    state: present
+  when: ad_99_1_13
+  register: __ad_99_1_13_installed
+  tags:
+    - AD.99.1.13
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.13 | AUDIT_RHEL | BUILD SPECIFIC | SNMP should be installed
+  debug:
+    msg: "{{ __ad_99_1_13_installed }}"
+  when: 
+    - ad_99_1_13
+    - ansible_check_mode
+    - __ad_99_1_13_installed | changed
+  tags:
+    - AD.99.1.13
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.13 | PATCH_RHEL | BUILD SPECIFIC | SNMP should be enabled
+  service:
+    name: snmpd
+    state: started
+    enabled: yes
+  when: ad_99_1_13
+  register: __ad_99_1_13_enabled
+  tags:
+    - AD.99.1.13
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.13 | AUDIT_RHEL | BUILD SPECIFIC | SNMP should be enabled
+  debug:
+    msg: "{{ __ad_99_1_13_enabled }}"
+  when: 
+    - ad_99_1_13
+    - ansible_check_mode
+    - __ad_99_1_13_enabled | changed
+  tags:
+    - AD.99.1.13
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.14 ---------------------------------
+#
+- name: AD.99.1.14 | PATCH_RHEL | BUILD SPECIFIC | Iptables should be installed
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - iptables
+    - iptables-services
+  when: ad_99_1_14
+  register: __ad_99_1_14_installed
+  tags:
+    - AD.99.1.14
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.14 | AUDIT_RHEL | BUILD SPECIFIC | Iptables should be installed
+  debug:
+    msg: "{{ __ad_99_1_14_installed }}"
+  when: 
+    - ad_99_1_14
+    - ansible_check_mode
+    - __ad_99_1_14_installed | changed
+  tags:
+    - AD.99.1.14
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.14 | PATCH_RHEL | BUILD SPECIFIC | Iptables should be disabled
+  service:
+    name: iptables
+    state: stopped
+    enabled: no
+  when: ad_99_1_14
+  register: __ad_99_1_14_enabled
+  tags:
+    - AD.99.1.14
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.14 | AUDIT_RHEL | BUILD SPECIFIC | Iptables should be disabled
+  debug:
+    msg: "{{ __ad_99_1_14_enabled }}"
+  when: 
+    - ad_99_1_14
+    - ansible_check_mode
+    - __ad_99_1_14_enabled | changed
+  tags:
+    - AD.99.1.14
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.14 | PATCH_RHEL | BUILD SPECIFIC | Ip6tables should be disabled
+  service:
+    name: ip6tables
+    state: stopped
+    enabled: no
+  when: ad_99_1_14
+  register: __ad_99_1_14_6enabled
+  tags:
+    - AD.99.1.14
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.14 | AUDIT_RHEL | BUILD SPECIFIC | Ip6tables should be disabled
+  debug:
+    msg: "{{ __ad_99_1_14_6enabled }}"
+  when: 
+    - ad_99_1_14
+    - ansible_check_mode
+    - __ad_99_1_14_6enabled | changed
+  tags:
+    - AD.99.1.14
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.15 ---------------------------------
+#
+- name: AD.99.1.15 | PATCH_RHEL | BUILD SPECIFIC | Firewalld should be disabled
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: ad_99_1_15
+  register: __ad_99_1_15_enabled
+  tags:
+    - AD.99.1.15
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.15 | AUDIT_RHEL | BUILD SPECIFIC | Firewalld should be disabled
+  debug:
+    msg: "{{ __ad_99_1_15_enabled }}"
+  when: 
+    - ad_99_1_15
+    - ansible_check_mode
+    - __ad_99_1_15_enabled | changed
+  tags:
+    - AD.99.1.15
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.16 ---------------------------------
+#
+- name: AD.99.1.16 | PATCH_RHEL | BUILD SPECIFIC | Selinux should be disabled
+  selinux:
+    state: disabled
+  when: ad_99_1_16
+  register: __ad_99_1_16
+  tags:
+    - AD.99.1.16
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.16 | AUDIT_RHEL | BUILD SPECIFIC | Selinux should be disabled
+  debug:
+    msg: "{{ __ad_99_1_16 }}"
+  when: 
+    - ad_99_1_16
+    - ansible_check_mode
+    - __ad_99_1_16 | changed
+  tags:
+    - AD.99.1.16
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.17 ---------------------------------
+#
+- name: AD.99.1.17 | PATCH_RHEL | BUILD SPECIFIC | biosdevname should be disabled
+  lineinfile:
+    state: present
+    path: /etc/default/grub
+    backrefs: yes
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.*biosdevname)\"[^\"]+)(\".*)'
+    line: '\1 biosdevname=0\2'
+  when: ad_99_1_17
+  register: __ad_99_1_17
+  tags:
+    - AD.99.1.17
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.17 | AUDIT_RHEL | BUILD SPECIFIC | biosdevname should be disabled
+  debug:
+    msg: "{{ __ad_99_1_17 }}"
+  when: 
+    - ad_99_1_17
+    - ansible_check_mode
+    - __ad_99_1_17 | changed
+  tags:
+    - AD.99.1.17
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.18 ---------------------------------
+#
+- name: AD.99.1.18 | PATCH_RHEL | BUILD SPECIFIC | SSSD Service should be disabled
+  service:
+    name: sssd
+    state: stopped
+    enabled: no
+  ignore_errors: True
+  when: ad_99_1_18
+  register: __ad_99_1_18
+  failed_when: "__ad_99_1_18|failed and ('find' not in __ad_99_1_18.msg and 'found' not in __ad_99_1_18.msg)"
+  tags:
+    - AD.99.1.18
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.18 | AUDIT_RHEL | BUILD SPECIFIC | SSSD Service should be disabled
+  debug:
+    msg: "{{ __ad_99_1_18 }}"
+  when: 
+    - ad_99_1_18
+    - ansible_check_mode
+    - __ad_99_1_18 | changed
+  tags:
+    - AD.99.1.18
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.19 ---------------------------------
+#
+- name: AD.99.1.19 | PATCH_RHEL | BUILD SPECIFIC | Telnet Service should be disabled
+  service:
+    name: telnet
+    state: stopped
+    enabled: no
+  ignore_errors: True
+  when: ad_99_1_19
+  register: __ad_99_1_19
+  failed_when: "__ad_99_1_19|failed and ('find' not in __ad_99_1_19.msg and 'found' not in __ad_99_1_19.msg)"
+  tags:
+    - AD.99.1.19
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.19 | AUDIT_RHEL | BUILD SPECIFIC | Telnet Service should be disabled
+  debug:
+    msg: "{{ __ad_99_1_19 }}"
+  when: 
+    - ad_99_1_19
+    - ansible_check_mode
+    - __ad_99_1_19 | changed
+  tags:
+    - AD.99.1.19
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.20 ---------------------------------
+#
+- name: AD.99.1.20 | PATCH_RHEL | BUILD SPECIFIC | IP Forwarding should be disabled
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_20
+  register: __ad_99_1_20
+  tags:
+    - AD.99.1.20
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.20 | AUDIT_RHEL | BUILD SPECIFIC | IP Forwarding should be disabled
+  debug:
+    msg: "{{ __ad_99_1_20 }}"
+  when: 
+    - ad_99_1_20
+    - ansible_check_mode
+    - __ad_99_1_20 | changed
+  tags:
+    - AD.99.1.20
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.21 ---------------------------------
+#                             DUPLICATE OF AD.99.1.44
+
+#
+# --------------------------------- AD.99.1.22 ---------------------------------
+#
+- name: AD.99.1.22 | PATCH_RHEL | BUILD SPECIFIC | FTP Service should be disabled
+  service:
+    name: vsftpd
+    state: stopped
+    enabled: no
+  when: ad_99_1_22
+  register: __ad_99_1_22
+  failed_when: "__ad_99_1_22|failed and ('find' not in __ad_99_1_22.msg and 'found' not in __ad_99_1_22.msg)"
+  tags:
+    - AD.99.1.22
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.22 | AUDIT_RHEL | BUILD SPECIFIC | FTP Service should be disabled
+  debug:
+    msg: "{{ __ad_99_1_22 }}"
+  when: 
+    - ad_99_1_22
+    - ansible_check_mode
+    - __ad_99_1_22 | changed
+  tags:
+    - AD.99.1.22
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.25 ---------------------------------
+#
+- name: AD.99.1.25 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Volume Group)
+  lvg:
+    vg: "{{ mounts.tmp.vg_name }}"
+    pvs: "{{ mounts.tmp.phy_device }}"
+    pesize: "{{ mounts.tmp.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_25
+  register: __ad_99_1_25_vg
+  tags:
+    - AD.99.1.25
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Volume Group)
+  debug:
+    msg: "{{ __ad_99_1_25_vg }}"
+  when: 
+    - ad_99_1_25
+    - ansible_check_mode
+    - __ad_99_1_25_vg | changed
+  tags:
+    - AD.99.1.25
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Logical Volume)
+  lvol:
+    vg: "{{ mounts.tmp.vg_name }}"
+    lv: "{{ mounts.tmp.lv_name }}"
+    size: "{{ mounts.tmp.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_25
+  register: __ad_99_1_25_lv
+  tags:
+    - AD.99.1.25
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Logical Volume)
+  debug:
+    msg: "{{ __ad_99_1_25_lv }}"
+  when: 
+    - ad_99_1_25
+    - ansible_check_mode
+    - __ad_99_1_25_lv | changed
+  tags:
+    - AD.99.1.25
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Filesystem)
+  filesystem:
+    dev: /dev/{{ mounts.tmp.vg_name }}/{{ mounts.tmp.lv_name }}
+    fstype: "{{ mounts.tmp.fstype }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_25
+  register: __ad_99_1_25_fs
+  tags:
+    - AD.99.1.25
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Filesystem)
+  debug:
+    msg: "{{ __ad_99_1_25_fs }}"
+  when: 
+    - ad_99_1_25
+    - ansible_check_mode
+    - __ad_99_1_25_fs | changed
+  tags:
+    - AD.99.1.25
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Mount)
+  mount:
+    path: /tmp
+    src: /dev/{{ mounts.tmp.vg_name }}/{{ mounts.tmp.lv_name }}
+    fstype: ext4
+    state: present
+  ignore_errors: yes
+  when:
+    - ad_99_1_25
+  register: __ad_99_1_25_mnt
+  tags:
+    - AD.99.1.25
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.25 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /tmp (Mount)
+  debug:
+    msg: "{{ __ad_99_1_25_mnt }}"
+  when: 
+    - ad_99_1_25
+    - ansible_check_mode
+    - __ad_99_1_25_mnt | changed
+  tags:
+    - AD.99.1.25
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.26 ---------------------------------
+#
+
+- name: AD.99.1.26 | PATCH_RHEL | BUILD SPECIFIC | Set nodev option for /tmp Partition
+  mount:
+    name: "/tmp"
+    src: "{{ item.device }}"
+    state: mounted
+    fstype: "{{ item.fstype }}"
+    opts: "nodev,nosuid"
+  with_items: "{{ ansible_mounts }}"
+  when:
+    - item.mount == "/tmp"
+    - ad_99_1_26
+  register: __ad_99_1_26
+  tags:
+    - AD.99.1.26
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.26 | AUDIT_RHEL | BUILD SPECIFIC | Set nodev option for /tmp Partition
+  debug:
+    msg: "{{ __ad_99_1_26 }}"
+  when: 
+    - ad_99_1_26
+    - ansible_check_mode
+    - __ad_99_1_26 | changed
+  tags:
+    - AD.99.1.26
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.27 ---------------------------------
+#                           THIS IS COMPLETED IN STEP AD.99.1.26
+
+#
+# --------------------------------- AD.99.1.28 ---------------------------------
+#
+- name: AD.99.1.28 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Volume Group)
+  lvg:
+    vg: "{{ mounts.var.vg_name }}"
+    pvs: "{{ mounts.var.phy_device }}"
+    pesize: "{{ mounts.var.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_28
+  register: __ad_99_1_28_vg
+  tags:
+    - AD.99.1.28
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Volume Group)
+  debug:
+    msg: "{{ __ad_99_1_28_vg }}"
+  when: 
+    - ad_99_1_28
+    - ansible_check_mode
+    - __ad_99_1_28_vg | changed
+  tags:
+    - AD.99.1.28
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Logical Volume)
+  lvol:
+    vg: "{{ mounts.var.vg_name }}"
+    lv: "{{ mounts.var.lv_name }}"
+    size: "{{ mounts.var.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_28
+  register: __ad_99_1_28_lv
+  tags:
+    - AD.99.1.28
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Logical Volume)
+  debug:
+    msg: "{{ __ad_99_1_28_lv }}"
+  when: 
+    - ad_99_1_28
+    - ansible_check_mode
+    - __ad_99_1_28_lv | changed
+  tags:
+    - AD.99.1.28
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Filesystem)
+  filesystem:
+    dev: /dev/{{ mounts.var.vg_name }}/{{ mounts.var.lv_name }}
+    fstype: "{{ mounts.var.fstype }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_28
+  register: __ad_99_1_28_fs
+  tags:
+    - AD.99.1.28
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Filesystem)
+  debug:
+    msg: "{{ __ad_99_1_28_fs }}"
+  when: 
+    - ad_99_1_28
+    - ansible_check_mode
+    - __ad_99_1_28_fs | changed
+  tags:
+    - AD.99.1.28
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Mount)
+  mount:
+    path: /var
+    src: /dev/{{ mounts.var.vg_name }}/{{ mounts.var.lv_name }}
+    fstype: ext4
+    state: present
+  ignore_errors: yes
+  when:
+    - ad_99_1_28
+  register: __ad_99_1_28_mnt
+  tags:
+    - AD.99.1.28
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.28 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var (Mount)
+  debug:
+    msg: "{{ __ad_99_1_28_mnt }}"
+  when: 
+    - ad_99_1_28
+    - ansible_check_mode
+    - __ad_99_1_28_mnt | changed
+  tags:
+    - AD.99.1.28
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.29 ---------------------------------
+#
+- name: AD.99.1.29 | PATCH_RHEL | BUILD SPECIFIC | Bind Mount the /var/tmp directory to /tmp
+  lineinfile:
+    path: /etc/fstab
+    regexp: '/tmp[\s]*/var/tmp'
+    line: '/tmp /var/tmp none bind 0 0'
+  when: ad_99_1_29
+  register: __ad_99_1_29
+  tags:
+    - AD.99.1.29
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.29 | AUDIT_RHEL | BUILD SPECIFIC | Bind Mount the /var/tmp directory to /tmp
+  debug:
+    msg: "{{ __ad_99_1_29 }}"
+  when: 
+    - ad_99_1_29
+    - ansible_check_mode
+    - __ad_99_1_29 | changed
+  tags:
+    - AD.99.1.29
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.30 ---------------------------------
+#
+- name: AD.99.1.30 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Volume Group)
+  lvg:
+    vg: "{{ mounts.var_log_audit.vg_name }}"
+    pvs: "{{ mounts.var_log_audit.phy_device }}"
+    pesize: "{{ mounts.var_log_audit.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_30
+  register: __ad_99_1_30_vg
+  tags:
+    - AD.99.1.30
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Volume Group)
+  debug:
+    msg: "{{ __ad_99_1_30_vg }}"
+  when: 
+    - ad_99_1_30
+    - ansible_check_mode
+    - __ad_99_1_30_vg | changed
+  tags:
+    - AD.99.1.30
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Logical Volume)
+  lvol:
+    vg: "{{ mounts.var_log_audit.vg_name }}"
+    lv: "{{ mounts.var_log_audit.lv_name }}"
+    size: "{{ mounts.var_log_audit.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_30
+  register: __ad_99_1_30_lv
+  tags:
+    - AD.99.1.30
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Logical Volume)
+  debug:
+    msg: "{{ __ad_99_1_30_lv }}"
+  when: 
+    - ad_99_1_30
+    - ansible_check_mode
+    - __ad_99_1_30_lv | changed
+  tags:
+    - AD.99.1.30
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Filesystem)
+  filesystem:
+    dev: /dev/{{ mounts.var_log_audit.vg_name }}/{{ mounts.var_log_audit.lv_name }}
+    fstype: "{{ mounts.var_log_audit.fstype }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_30
+  register: __ad_99_1_30_fs
+  tags:
+    - AD.99.1.30
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Filesystem)
+  debug:
+    msg: "{{ __ad_99_1_30_fs }}"
+  when: 
+    - ad_99_1_30
+    - ansible_check_mode
+    - __ad_99_1_30_fs | changed
+  tags:
+    - AD.99.1.30
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Mount)
+  mount:
+    path: /var/log/audit
+    src: /dev/{{ mounts.var_log_audit.vg_name }}/{{ mounts.var_log_audit.lv_name }}
+    fstype: ext4
+    state: present
+  ignore_errors: yes
+  when:
+    - ad_99_1_30
+  register: __ad_99_1_30_mnt
+  tags:
+    - AD.99.1.30
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.30 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /var/log/audit (Mount)
+  debug:
+    msg: "{{ __ad_99_1_30_mnt }}"
+  when: 
+    - ad_99_1_30
+    - ansible_check_mode
+    - __ad_99_1_30_mnt | changed
+  tags:
+    - AD.99.1.30
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.31 ---------------------------------
+#
+- name: AD.99.1.31 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Volume Group)
+  lvg:
+    vg: "{{ mounts.home.vg_name }}"
+    pvs: "{{ mounts.home.phy_device }}"
+    pesize: "{{ mounts.home.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_31
+  register: __ad_99_1_31_vg
+  tags:
+    - AD.99.1.31
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Volume Group)
+  debug:
+    msg: "{{ __ad_99_1_31_vg }}"
+  when: 
+    - ad_99_1_31
+    - ansible_check_mode
+    - __ad_99_1_31_vg | changed
+  tags:
+    - AD.99.1.31
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Logical Volume)
+  lvol:
+    vg: "{{ mounts.home.vg_name }}"
+    lv: "{{ mounts.home.lv_name }}"
+    size: "{{ mounts.home.size }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_31
+  register: __ad_99_1_31_lv
+  tags:
+    - AD.99.1.31
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Logical Volume)
+  debug:
+    msg: "{{ __ad_99_1_31_lv }}"
+  when: 
+    - ad_99_1_31
+    - ansible_check_mode
+    - __ad_99_1_31_lv | changed
+  tags:
+    - AD.99.1.31
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Filesystem)
+  filesystem:
+    dev: /dev/{{ mounts.home.vg_name }}/{{ mounts.home.lv_name }}
+    fstype: "{{ mounts.home.fstype }}"
+  ignore_errors: yes
+  when:
+    - ad_99_1_31
+  register: __ad_99_1_31_fs
+  tags:
+    - AD.99.1.31
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Filesystem)
+  debug:
+    msg: "{{ __ad_99_1_31_fs }}"
+  when: 
+    - ad_99_1_31
+    - ansible_check_mode
+    - __ad_99_1_31_fs | changed
+  tags:
+    - AD.99.1.31
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | PATCH_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Mount)
+  mount:
+    path: /home
+    src: /dev/{{ mounts.home.vg_name }}/{{ mounts.home.lv_name }}
+    fstype: ext4
+    state: present
+  ignore_errors: yes
+  when:
+    - ad_99_1_31
+  register: __ad_99_1_31_mnt
+  tags:
+    - AD.99.1.31
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.31 | AUDIT_RHEL | BUILD SPECIFIC | Create Separate Partition for /home (Mount)
+  debug:
+    msg: "{{ __ad_99_1_31_mnt }}"
+  when: 
+    - ad_99_1_31
+    - ansible_check_mode
+    - __ad_99_1_31_mnt | changed
+  tags:
+    - AD.99.1.31
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.32 ---------------------------------
+#
+
+- name: AD.99.1.32 | PATCH_RHEL | BUILD SPECIFIC | Set nodev option for /home Partition
+  mount:
+    name: "/home"
+    src: "{{ item.device }}"
+    state: mounted
+    fstype: "{{ item.fstype }}"
+    opts: "nodev"
+  with_items: "{{ ansible_mounts }}"
+  when:
+    - item.mount == "/home"
+    - ad_99_1_32
+  register: __ad_99_1_32
+  tags:
+    - AD.99.1.32
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.32 | AUDIT_RHEL | BUILD SPECIFIC | Set nodev option for /home Partition
+  debug:
+    msg: "{{ __ad_99_1_32 }}"
+  when: 
+    - ad_99_1_32
+    - ansible_check_mode
+    - __ad_99_1_32 | changed
+  tags:
+    - AD.99.1.32
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.33 ---------------------------------
+#
+
+- name: AD.99.1.33 | PATCH_RHEL | BUILD SPECIFIC | Set nodev option for /dev/shm Partition
+  mount:
+    name: "/dev/shm"
+    src: "{{ item.device }}"
+    state: mounted
+    fstype: "{{ item.fstype }}"
+    opts: "nodev"
+  with_items: "{{ ansible_mounts }}"
+  when:
+    - item.mount == "/dev/shm"
+    - ad_99_1_33
+  register: __ad_99_1_33
+  tags:
+    - AD.99.1.33
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.33 | AUDIT_RHEL | BUILD SPECIFIC | Set nodev option for /dev/shm Partition
+  debug:
+    msg: "{{ __ad_99_1_33 }}"
+  when: 
+    - ad_99_1_33
+    - ansible_check_mode
+    - __ad_99_1_33 | changed
+  tags:
+    - AD.99.1.33
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.34 ---------------------------------
+#
+- name: AD.99.1.34 | GATHER_INFO_RHEL | BUILD SPECIFIC | Set Sticky Bit on All World-Writable Directories
+  shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d -perm -0002 2>/dev/null
+  check_mode: no
+  when: ad_99_1_34
+  register: __ad_99_1_34_stat
+  tags:
+    - AD.99.1.34
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.34 | PATCH_RHEL | BUILD SPECIFIC | Set Sticky Bit on All World-Writable Directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "a+t"
+  with_items: "{{ __ad_99_1_34_stat.stdout_lines }}"
+  when:
+    - __ad_99_1_34_stat.stdout_lines is defined
+    - __ad_99_1_34_stat.stdout_lines != ""
+    - ad_99_1_34
+  register: __ad_99_1_34
+  tags:
+    - AD.99.1.34
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.34 | AUDIT_RHEL | BUILD SPECIFIC | Set Sticky Bit on All World-Writable Directories
+  debug:
+    msg: "{{ __ad_99_1_34 }}"
+  when: 
+    - ad_99_1_34
+    - ansible_check_mode
+    - __ad_99_1_34 | changed
+  tags:
+    - AD.99.1.34
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.35 ---------------------------------
+#
+- name: AD.99.1.35 | PATCH_RHEL | BUILD SPECIFIC | Verify that gpgcheck is Globally Activated
+  lineinfile:
+    path: /etc/yum.conf
+    regexp: 'gpgcheck='
+    line: 'gpgcheck=1'
+  when: ad_99_1_35
+  register: __ad_99_1_35
+  tags:
+    - AD.99.1.35
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.35 | AUDIT_RHEL | BUILD SPECIFIC | Verify that gpgcheck is Globally Activated
+  debug:
+    msg: "{{ __ad_99_1_35 }}"
+  when: 
+    - ad_99_1_35
+    - ansible_check_mode
+    - __ad_99_1_35 | changed
+  tags:
+    - AD.99.1.35
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.36 ---------------------------------
+#
+- name: AD.99.1.36 | GATHER_INFO_RHEL | BUILD SPECIFIC | Set User/Group Owner on /etc/grub.conf (stat)
+  stat:
+    path: /etc/grub.conf
+  when: ad_99_1_36
+  register: __ad_99_1_36_stat
+  tags:
+    - AD.99.1.36
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.36 | PATCH_RHEL | BUILD SPECIFIC | Set User/Group Owner on /etc/grub.conf (Symlink)
+  file:
+    state: link
+    src: "{{ __ad_99_1_36_stat.stat.lnk_source }}"
+    path: /etc/grub.conf
+    owner: root
+    group: root
+  when:
+    - ad_99_1_36
+    - __ad_99_1_36_stat.stat.exists
+    - __ad_99_1_36_stat.stat.islnk
+  register: __ad_99_1_36_link
+  tags:
+    - AD.99.1.36
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.36 | PATCH_RHEL | BUILD SPECIFIC | Set User/Group Owner on /etc/grub.conf (File)
+  file:
+    path: /etc/grub.conf
+    owner: root
+    group: root
+  when:
+    - ad_99_1_36
+    - __ad_99_1_36_stat.stat.exists
+    - __ad_99_1_36_stat.stat.islnk == False
+  register: __ad_99_1_36_file
+  tags:
+    - AD.99.1.36
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.36 | AUDIT_RHEL | BUILD SPECIFIC | Set User/Group Owner on /etc/grub.conf (Symlink)
+  debug:
+    msg: "{{ __ad_99_1_36_link }}"
+  when: 
+    - ad_99_1_36
+    - ansible_check_mode
+    - __ad_99_1_36_stat.stat.exists
+    - __ad_99_1_36_link | changed
+    - __ad_99_1_36_stat.stat.islnk
+  tags:
+    - AD.99.1.36
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.36 | AUDIT_RHEL | BUILD SPECIFIC | Set User/Group Owner on /etc/grub.conf (File)
+  debug:
+    msg: "{{ __ad_99_1_36_file }}"
+  when: 
+    - ad_99_1_36
+    - ansible_check_mode
+    - __ad_99_1_36_stat.stat.exists
+    - __ad_99_1_36_file | changed
+    - __ad_99_1_36_stat.stat.islnk == False
+  tags:
+    - AD.99.1.36
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.37 ---------------------------------
+#
+- name: AD.99.1.37 | PATCH_RHEL | BUILD SPECIFIC | Remove telnet-server
+  yum:
+    name: telnet-server
+    state: absent
+  when: ad_99_1_37
+  register: __ad_99_1_37
+  tags:
+    - AD.99.1.37
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.37 | AUDIT_RHEL | BUILD SPECIFIC | Remove telnet-server
+  debug:
+    msg: "{{ __ad_99_1_37 }}"
+  when: 
+    - ad_99_1_37
+    - ansible_check_mode
+    - __ad_99_1_37 | changed
+  tags:
+    - AD.99.1.37
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.38 ---------------------------------
+#
+- name: AD.99.1.38 | PATCH_RHEL | BUILD SPECIFIC | Remove Telnet Clients
+  yum:
+    name: telnet
+    state: absent
+  when: ad_99_1_38
+  register: __ad_99_1_38
+  tags:
+    - AD.99.1.38
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.38 | AUDIT_RHEL | BUILD SPECIFIC | Remove Telnet Clients
+  debug:
+    msg: "{{ __ad_99_1_38 }}"
+  when: 
+    - ad_99_1_38
+    - ansible_check_mode
+    - __ad_99_1_38 | changed
+  tags:
+    - AD.99.1.38
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.39 ---------------------------------
+#
+- name: AD.99.1.39 | PATCH_RHEL | BUILD SPECIFIC | Remove RSH Server
+  yum:
+    name: rsh-server
+    state: absent
+  when: ad_99_1_39
+  register: __ad_99_1_39
+  tags:
+    - AD.99.1.39
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.39 | AUDIT_RHEL | BUILD SPECIFIC | Remove RSH Server
+  debug:
+    msg: "{{ __ad_99_1_39 }}"
+  when: 
+    - ad_99_1_39
+    - ansible_check_mode
+    - __ad_99_1_39 | changed
+  tags:
+    - AD.99.1.39
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.40 ---------------------------------
+#
+- name: AD.99.1.40 | PATCH_RHEL | BUILD SPECIFIC | Remove NIS Client and NIS Server
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - ypbind
+    - ypserv
+  when: ad_99_1_40
+  register: __ad_99_1_40
+  tags:
+    - AD.99.1.40
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.40 | AUDIT_RHEL | BUILD SPECIFIC | Remove NIS Client and NIS Server
+  debug:
+    msg: "{{ __ad_99_1_40 }}"
+  when: 
+    - ad_99_1_40
+    - ansible_check_mode
+    - __ad_99_1_40 | changed
+  tags:
+    - AD.99.1.40
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.41 ---------------------------------
+#
+- name: AD.99.1.41 | PATCH_RHEL | BUILD SPECIFIC | Remove tftp and tftp-server
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - tftp
+    - tftp-server
+  when: ad_99_1_41
+  register: __ad_99_1_41
+  tags:
+    - AD.99.1.41
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.41 | AUDIT_RHEL | BUILD SPECIFIC | Remove tftp and tftp-server
+  debug:
+    msg: "{{ __ad_99_1_41 }}"
+  when: 
+    - ad_99_1_41
+    - ansible_check_mode
+    - __ad_99_1_41 | changed
+  tags:
+    - AD.99.1.41
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.42 ---------------------------------
+#
+- name: AD.99.1.42 | PATCH_RHEL | BUILD SPECIFIC | Remove talk and talk-server
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - talk
+    - talk-server
+  when: ad_99_1_42
+  register: __ad_99_1_42
+  tags:
+    - AD.99.1.42
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.42 | AUDIT_RHEL | BUILD SPECIFIC | Remove talk and talk-server
+  debug:
+    msg: "{{ __ad_99_1_42 }}"
+  when: 
+    - ad_99_1_42
+    - ansible_check_mode
+    - __ad_99_1_42 | changed
+  tags:
+    - AD.99.1.42
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.43 ---------------------------------
+#
+- name: AD.99.1.43 | PATCH_RHEL | BUILD SPECIFIC | Set Daemon umask
+  lineinfile:
+    path: /etc/sysconfig/init
+    regexp: 'umask '
+    line: 'umask 027'
+  when: ad_99_1_43
+  register: __ad_99_1_43
+  tags:
+    - AD.99.1.43
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.43 | AUDIT_RHEL | BUILD SPECIFIC | Set Daemon umask
+  debug:
+    msg: "{{ __ad_99_1_43 }}"
+  when: 
+    - ad_99_1_43
+    - ansible_check_mode
+    - __ad_99_1_43 | changed
+  tags:
+    - AD.99.1.43
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.44 ---------------------------------
+#
+- name: AD.99.1.44 | PATCH_RHEL | BUILD SPECIFIC | Remove X Windows
+  lineinfile:
+    path: /etc/inittab
+    regexp: '^id:[0-9]:initdefault:'
+    line: 'id:3:initdefault:'
+  when: ad_99_1_44
+  register: __ad_99_1_44
+  tags:
+    - AD.99.1.44
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.44 | AUDIT_RHEL | BUILD SPECIFIC | Remove X Windows
+  debug:
+    msg: "{{ __ad_99_1_44 }}"
+  when: 
+    - ad_99_1_44
+    - ansible_check_mode
+    - __ad_99_1_44 | changed
+  tags:
+    - AD.99.1.44
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.45 ---------------------------------
+#
+- name: AD.99.1.45 | PATCH_RHEL | BUILD SPECIFIC | Disable Avahi Server
+  service:
+    name: avahi-daemon
+    state: stopped
+    enabled: no
+  when: ad_99_1_45
+  register: __ad_99_1_45
+  failed_when: "__ad_99_1_45|failed and ('find' not in __ad_99_1_45.msg and 'found' not in __ad_99_1_45.msg)"
+  tags:
+    - AD.99.1.45
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.45 | AUDIT_RHEL | BUILD SPECIFIC | Disable Avahi Server
+  debug:
+    msg: "{{ __ad_99_1_45 }}"
+  when: 
+    - ad_99_1_45
+    - ansible_check_mode
+    - __ad_99_1_45 | changed
+  tags:
+    - AD.99.1.45
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.45 | PATCH_RHEL | BUILD SPECIFIC | Disable Avahi Server (remove ZeroConf)
+  lineinfile:
+    path: /etc/sysconfig/network
+    regexp: 'NOZEROCONF='
+    line: 'NOZEROCONF=yes'
+  when: ad_99_1_45
+  register: __ad_99_1_45_zero
+  tags:
+    - AD.99.1.45
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.45 | AUDIT_RHEL | BUILD SPECIFIC | Disable Avahi Server (remove ZeroConf)
+  debug:
+    msg: "{{ __ad_99_1_45_zero }}"
+  when: 
+    - ad_99_1_45
+    - ansible_check_mode
+    - __ad_99_1_45_zero | changed
+  tags:
+    - AD.99.1.45
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.46 ---------------------------------
+#
+- name: AD.99.1.46 | PATCH_RHEL | BUILD SPECIFIC | Remove DHCP Server
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - dhcp
+  when: ad_99_1_46
+  register: __ad_99_1_46
+  tags:
+    - AD.99.1.46
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.46 | AUDIT_RHEL | BUILD SPECIFIC | Remove DHCP Server
+  debug:
+    msg: "{{ __ad_99_1_46 }}"
+  when: 
+    - ad_99_1_46
+    - ansible_check_mode
+    - __ad_99_1_46 | changed
+  tags:
+    - AD.99.1.46
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.47 ---------------------------------
+#                            DUPLICATE OF AS.99.1.20
+
+#
+# --------------------------------- AD.99.1.48 ---------------------------------
+#
+- name: AD.99.1.48 | PATCH_RHEL | BUILD SPECIFIC | Disable Send Packet Redirects
+  sysctl:
+    name: net.ipv4.conf.all.send_redirects
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_48
+  register: __ad_99_1_48
+  tags:
+    - AD.99.1.48
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.48 | AUDIT_RHEL | BUILD SPECIFIC | Disable Send Packet Redirects
+  debug:
+    msg: "{{ __ad_99_1_48 }}"
+  when: 
+    - ad_99_1_48
+    - ansible_check_mode
+    - __ad_99_1_48 | changed
+  tags:
+    - AD.99.1.48
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.49 ---------------------------------
+#
+- name: AD.99.1.49 | PATCH_RHEL | BUILD SPECIFIC | Disable Source Routed Packet Acceptance
+  sysctl:
+    name: net.ipv4.conf.all.accept_source_route
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_49
+  register: __ad_99_1_49
+  tags:
+    - AD.99.1.49
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.49 | AUDIT_RHEL | BUILD SPECIFIC | Disable Source Routed Packet Acceptance
+  debug:
+    msg: "{{ __ad_99_1_49 }}"
+  when: 
+    - ad_99_1_49
+    - ansible_check_mode
+    - __ad_99_1_49 | changed
+  tags:
+    - AD.99.1.49
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.50 ---------------------------------
+#
+- name: AD.99.1.50 | PATCH_RHEL | BUILD SPECIFIC | Log Suspicious Packets (all)
+  sysctl:
+    name: net.ipv4.conf.all.log_martians
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_50
+  register: __ad_99_1_50_all
+  tags:
+    - AD.99.1.50
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.50 | AUDIT_RHEL | BUILD SPECIFIC | Log Suspicious Packets (all)
+  debug:
+    msg: "{{ __ad_99_1_50_all }}"
+  when: 
+    - ad_99_1_50
+    - ansible_check_mode
+    - __ad_99_1_50_all | changed
+  tags:
+    - AD.99.1.50
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.50 | PATCH_RHEL | BUILD SPECIFIC | Log Suspicious Packets (default)
+  sysctl:
+    name: net.ipv4.conf.default.log_martians
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_50
+  register: __ad_99_1_50_default
+  tags:
+    - AD.99.1.50
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.50 | AUDIT_RHEL | BUILD SPECIFIC | Log Suspicious Packets (default)
+  debug:
+    msg: "{{ __ad_99_1_50_default }}"
+  when: 
+    - ad_99_1_50
+    - ansible_check_mode
+    - __ad_99_1_50_default | changed
+  tags:
+    - AD.99.1.50
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.50 ---------------------------------
+#
+- name: AD.99.1.51 | PATCH_RHEL | BUILD SPECIFIC | Enable TCP SYN Cookies
+  sysctl:
+    name: net.ipv4.tcp_syncookies
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_99_1_51
+  register: __ad_99_1_51
+  tags:
+    - AD.99.1.51
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.51 | AUDIT_RHEL | BUILD SPECIFIC | Enable TCP SYN Cookies
+  debug:
+    msg: "{{ __ad_99_1_51 }}"
+  when: 
+    - ad_99_1_51
+    - ansible_check_mode
+    - __ad_99_1_51 | changed
+  tags:
+    - AD.99.1.51
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.52 ---------------------------------
+#
+- name: AD.99.1.52 | PATCH_RHEL | BUILD SPECIFIC | Enable anacron Daemon
+  yum:
+    name: cronie-anacron
+    state: present
+  when: ad_99_1_52
+  register: __ad_99_1_52
+  tags:
+    - AD.99.1.52
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.52 | AUDIT_RHEL | BUILD SPECIFIC | Enable anacron Daemon
+  debug:
+    msg: "{{ __ad_99_1_52 }}"
+  when: 
+    - ad_99_1_52
+    - ansible_check_mode
+    - __ad_99_1_52 | changed
+  tags:
+    - AD.99.1.52
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.53 ---------------------------------
+#
+- name: AD.99.1.53 | PATCH_RHEL | BUILD SPECIFIC | Enable crond Daemon
+  service:
+    name: crond
+    state: started
+    enabled: yes
+  when: ad_99_1_53
+  register: __ad_99_1_53
+  tags:
+    - AD.99.1.53
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.53 | AUDIT_RHEL | BUILD SPECIFIC | Enable crond Daemon
+  debug:
+    msg: "{{ __ad_99_1_53 }}"
+  when: 
+    - ad_99_1_53
+    - ansible_check_mode
+    - __ad_99_1_53 | changed
+  tags:
+    - AD.99.1.53
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.54 ---------------------------------
+#
+- name: AD.99.1.54 | PATCH_RHEL | BUILD SPECIFIC | Set SSH Protocol to 2 
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: 'Protocol '
+    line: 'Protocol 2'
+  when: ad_99_1_54
+  notify: restart ssh
+  register: __ad_99_1_54
+  tags:
+    - AD.99.1.54
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.54 | AUDIT_RHEL | BUILD SPECIFIC | Set SSH Protocol to 2 
+  debug:
+    msg: "{{ __ad_99_1_54 }}"
+  when: 
+    - ad_99_1_54
+    - ansible_check_mode
+    - __ad_99_1_54 | changed
+  tags:
+    - AD.99.1.54
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.55 ---------------------------------
+#
+- name: AD.99.1.55 | PATCH_RHEL | BUILD SPECIFIC | Set SSH LogLevel to INFO
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: 'LogLevel '
+    line: 'LogLevel INFO'
+  when: ad_99_1_55
+  notify: restart ssh
+  register: __ad_99_1_55
+  tags:
+    - AD.99.1.55
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.55 | AUDIT_RHEL | BUILD SPECIFIC | Set SSH LogLevel to INFO
+  debug:
+    msg: "{{ __ad_99_1_55 }}"
+  when: 
+    - ad_99_1_55
+    - ansible_check_mode
+    - __ad_99_1_55 | changed
+  tags:
+    - AD.99.1.55
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.56 ---------------------------------
+#
+- name: AD.99.1.56 | PATCH_RHEL | BUILD SPECIFIC | Disable SSH X11 Forwarding
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^X11Forwarding '
+    line: 'X11Forwarding no'
+  when: ad_99_1_56
+  notify: restart ssh
+  register: __ad_99_1_56
+  tags:
+    - AD.99.1.56
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.56 | AUDIT_RHEL | BUILD SPECIFIC | Disable SSH X11 Forwarding
+  debug:
+    msg: "{{ __ad_99_1_56 }}"
+  when: 
+    - ad_99_1_56
+    - ansible_check_mode
+    - __ad_99_1_56 | changed
+  tags:
+    - AD.99.1.56
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.57 ---------------------------------
+#
+- name: AD.99.1.57 | PATCH_RHEL | BUILD SPECIFIC | Set SSH IgnoreRhosts to Yes
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: 'IgnoreRhosts '
+    line: 'IgnoreRhosts yes'
+  when: ad_99_1_57
+  notify: restart ssh
+  register: __ad_99_1_57
+  tags:
+    - AD.99.1.57
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.57 | AUDIT_RHEL | BUILD SPECIFIC | Set SSH IgnoreRhosts to Yes
+  debug:
+    msg: "{{ __ad_99_1_57 }}"
+  when: 
+    - ad_99_1_57
+    - ansible_check_mode
+    - __ad_99_1_57 | changed
+  tags:
+    - AD.99.1.57
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.58 ---------------------------------
+#
+- name: AD.99.1.58 | PATCH_RHEL | BUILD SPECIFIC | Set SSH PermitEmptyPasswords to No
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: 'PermitEmptyPasswords '
+    line: 'PermitEmptyPasswords no'
+  when: ad_99_1_58
+  notify: restart ssh
+  register: __ad_99_1_58
+  tags:
+    - AD.99.1.58
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.58 | AUDIT_RHEL | BUILD SPECIFIC | Set SSH PermitEmptyPasswords to No
+  debug:
+    msg: "{{ __ad_99_1_58 }}"
+  when: 
+    - ad_99_1_58
+    - ansible_check_mode
+    - __ad_99_1_58 | changed
+  tags:
+    - AD.99.1.58
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.59 ---------------------------------
+#
+- name: AD.99.1.59 | PATCH_RHEL | BUILD SPECIFIC | Use Only Approved Cipher in Counter Mode
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Ciphers '
+    line: 'Ciphers aes128-ctr,aes192-ctr,aes256-ctr'
+  when: ad_99_1_59
+  notify: restart ssh
+  register: __ad_99_1_59
+  tags:
+    - AD.99.1.59
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.59 | AUDIT_RHEL | BUILD SPECIFIC | Use Only Approved Cipher in Counter Mode
+  debug:
+    msg: "{{ __ad_99_1_59 }}"
+  when: 
+    - ad_99_1_59
+    - ansible_check_mode
+    - __ad_99_1_59 | changed
+  tags:
+    - AD.99.1.59
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.60 ---------------------------------
+#
+- name: AD.99.1.60 | PATCH_RHEL | BUILD SPECIFIC | Upgrade Password Hashing Algorithm to SHA-512
+  lineinfile:
+    path: /etc/login.defs
+    regexp: '^ENCRYPT_METHOD '
+    line: 'ENCRYPT_METHOD SHA512'
+  when: ad_99_1_60
+  notify: restart ssh
+  register: __ad_99_1_60
+  tags:
+    - AD.99.1.60
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.60 | AUDIT_RHEL | BUILD SPECIFIC | Upgrade Password Hashing Algorithm to SHA-512
+  debug:
+    msg: "{{ __ad_99_1_60 }}"
+  when: 
+    - ad_99_1_60
+    - ansible_check_mode
+    - __ad_99_1_60 | changed
+  tags:
+    - AD.99.1.60
+    - audit
+    - build_specific
+    - B
+
+#
+# --------------------------------- AD.99.1.61 ---------------------------------
+#                             DUPLICATE OF AD.1.1.4.1
+
+#
+# --------------------------------- AD.99.1.62 ---------------------------------
+#
+- name: AD.99.1.62 | GATHER_INFO_RHEL | BUILD SPECIFIC | Disable anonymous FTP
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_99_1_62
+  register: __ad_99_1_62_stat
+  tags:
+    - AD.99.1.62
+    - audit
+    - build_specific
+    - B
+
+- name: AD.99.1.62 | PATCH_RHEL | BUILD SPECIFIC | Disable anonymous FTP
+  lineinfile:
+    path: /etc/vsftpd/vsftpd.conf
+    regexp: '^anonymous_enable='
+    line: 'anonymous_enable=NO'
+  when:
+    - ad_99_1_62
+    - __ad_99_1_62_stat.stat.exists
+  register: __ad_99_1_62
+  tags:
+    - AD.99.1.62
+    - patch
+    - build_specific
+    - B
+
+- name: AD.99.1.62 | AUDIT_RHEL | BUILD SPECIFIC | Disable anonymous FTP
+  debug:
+    msg: "{{ __ad_99_1_62 }}"
+  when: 
+    - ad_99_1_62
+    - ansible_check_mode
+    - __ad_99_1_62_stat.stat.exists
+    - __ad_99_1_62 | changed
+  tags:
+    - AD.99.1.62
+    - audit
+    - build_specific
+    - B
+
+

@@ -1,0 +1,13 @@
+---
+pkg_list: 
+  - httpd
+  - firewalld
+  - mod_ssl
+  - php
+svcs: 
+  - httpd
+  - firewalld
+fw_type: firewalld
+fw_services:
+  - http
+  - https

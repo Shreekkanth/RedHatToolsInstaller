@@ -1,0 +1,8 @@
+.DS_Store
+.vagrant
+.pydevproject
+.project
+.swp
+.idea
+.git
+./tower-backup-*.gz

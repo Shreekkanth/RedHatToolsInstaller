@@ -1,0 +1,30 @@
+---
+# tasks file for roles/ansible-role-phpipam
+
+- name: Installing supporting PHP IPAM packages
+  yum:  
+    name: {{ item }}
+    state: installed
+  with_items:
+    - httpd 
+    - mariadb-server 
+    - php 
+    - php-cli 
+    - php-gd 
+    - php-common 
+    - php-ldap 
+    - php-pdo 
+    - php-pear 
+    - php-snmp 
+    - php-xml 
+    - php-mysql 
+    - php-mbstring 
+    - git
+
+- name: Copying httpd.conf file
+  copy:
+    src: httpd.conf
+    dest: /etc/httpd/conf.d/httpd.conf
+
+
+

@@ -1,0 +1,178 @@
+---
+# setup.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- hosts: all
+  gather_facts: false
+  # Specific to Wells Fargo
+  vars:
+    ldap_users:
+      # GIDs start at 501+
+      user1:
+        firstname: User
+        lastname: One
+        gidnumber: 501
+        uidnumber: 1001
+      user2:
+        firstname: User
+        lastname: Two
+        gidnumber: 502
+        uidnumber: 1002
+      user3:
+        firstname: User
+        lastname: Three
+        gidnumber: 503
+        uidnumber: 1003
+      user4:
+        firstname: User
+        lastname: Four
+        gidnumber: 504
+        uidnumber: 1004
+  tasks:
+    ###########################
+    # Wells Fargo
+    # Pre-Build Tasks
+    ###########################
+    - include_role:
+        name: pre-build
+      vars:
+        envs:
+          - wf_dev
+          - wf_prod
+
+    ###########################
+    # Wells Fargo
+    # Development Environment
+    ###########################
+    - include_role:
+        name: ldap
+      vars:
+        env: "wf_dev"
+        org: "Wells Fargo"
+        domain: "dev.wellsfargo.com"
+        ports: {
+          "ldap": 389,
+          "ldaps": 636,
+          "https": 6443
+        }
+        ldap_groups: {
+            "DTCA_EIT_MW_DEV_ANSBL_ADMIN": {
+              users: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+              name: "System Admin",
+              organization: "{{ org }}"
+            },
+            "DTCA_EIT_MW_DEV_ANSBL_AUDIT": {
+              users: "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+              name: "System Auditor",
+              organization: "{{ org }}"
+            },
+            "DTCA_EIT_MW_DEV_ANSBL_DEV": {
+              users: "cn=DTCA_EIT_MW_DEV_ANSBL_DEV,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+              name: "Ansible Tower Developer",
+              organization: "{{ org }}"
+            },
+            "DTCA_EIT_MW_DEV_ANSBL_EXE": {
+              users: "cn=DTCA_EIT_MW_DEV_ANSBL_EXE,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+              name: "Operation Executor",
+              organization: "{{ org }}"
+            },
+            "DTCA_EIT_MW_DEV_ANSBL_INVMGR": {
+              users: "cn=DTCA_EIT_MW_DEV_ANSBL_INVMGR,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+              name: "Inventory Manager",
+              organization: "{{ org }}"
+            }
+        }
+
+    - include_role:
+        name: awx
+      vars:
+        env: wf_dev
+        domain: "dev.wellsfargo.com"
+        org: "Wells Fargo"
+        ports: {
+          "http": 80
+        }
+        awx_superuser: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+        awx_systemauditor: "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+        awx_org_admin: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+        awx_org_user_groups: [
+          "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+          "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+          "cn=DTCA_EIT_MW_DEV_ANSBL_DEV,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+          "cn=DTCA_EIT_MW_DEV_ANSBL_EXE,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+          "cn=DTCA_EIT_MW_DEV_ANSBL_INVMGR,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+        ]
+
+    ###########################
+    # Wells Fargo
+    # Production Environment
+    ###########################
+    # - include_role:
+    #     name: ldap
+    #   vars:
+    #     env: "wf_prod"
+    #     org: "Wells Fargo"
+    #     domain: "prod.wellsfargo.com"
+    #     ports: {
+    #       "ldap": 390,
+    #       "ldaps": 637,
+    #       "https": 6444
+    #     }
+    #     ldap_groups: {
+    #       "DTCA_EIT_ANSBL_PROD_SYS_ADMIN": {
+    #         users: "cn=DTCA_EIT_ANSBL_PROD_SYS_ADMIN,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #         name: "System Administrator",
+    #         organization: "{{ org }}"
+    #       },
+    #       "DTCA_EIT_ANSBL_PROD_SYS_AUDIT": {
+    #         users: "cn=DTCA_EIT_ANSBL_PROD_SYS_AUDIT,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #         name: "System Auditor",
+    #         organization: "{{ org }}"
+    #       },
+    #       "DTCA_EIT_ANSBL_PROD_SYS_EXE": {
+    #         users: "cn=DTCA_EIT_ANSBL_PROD_SYS_EXE,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #         name: "Operation Executor",
+    #         organization: "{{ org }}"
+    #       },
+    #       "DTCA_EIT_ANSBL_PROD_SYS_INVMGR": {
+    #         users: "cn=DTCA_EIT_ANSBL_PROD_SYS_INVMGR,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #         name: "Inventory Manager",
+    #         organization: "{{ org }}"
+    #       }
+    #     }
+
+    # - include_role:
+    #     name: awx
+    #   vars:
+    #     env: wf_prod
+    #     domain: "prod.wellsfargo.com"
+    #     org: "Wells Fargo"
+    #     ports: {
+    #       "http": 81
+    #     }
+    #     awx_superuser: "cn=DTCA_EIT_ANSBL_PROD_SYS_ADMIN,ou=Groups,dc=prod,dc=wellsfargo,dc=com"
+    #     awx_systemauditor: "cn=DTCA_EIT_ANSBL_PROD_SYS_AUDIT,ou=Groups,dc=prod,dc=wellsfargo,dc=com"
+    #     awx_org_admin: "cn=DTCA_EIT_ANSBL_PROD_SYS_ADMIN,ou=Groups,dc=prod,dc=wellsfargo,dc=com"
+    #     awx_org_user_groups: [
+    #       "cn=DTCA_EIT_ANSBL_PROD_SYS_ADMIN,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #       "cn=DTCA_EIT_ANSBL_PROD_SYS_AUDIT,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #       "cn=DTCA_EIT_ANSBL_PROD_SYS_EXE,ou=Groups,dc=prod,dc=wellsfargo,dc=com",
+    #       "cn=DTCA_EIT_ANSBL_PROD_SYS_EXE,ou=Groups,dc=prod,dc=wellsfargo,dc=com"
+    #     ]
+
+    ###########################
+    # Wells Fargo
+    # Jenkins CI/CD
+    ###########################
+    - include_role:
+        name: jenkins
+
+    ###########################
+    # Wells Fargo
+    # Ansible CentOS Target Nodes
+    ###########################
+    #
+    # @anthonyloukinas - Didn't get time to make these work. 
+    #
+    # - include_role:
+    #     name: awx-target-nodes

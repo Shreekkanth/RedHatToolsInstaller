@@ -1,0 +1,25 @@
+---
+# tasks file for tower_inventory_sources
+
+- name: Tower inventory sources
+  tower_inventory_source:
+    credential: "{{ item.credential }}"
+    description: "{{ item.description }}"
+    group_by: "{{ item.group_by }}"
+    instance_filters: "{{ item.instance_filters }}"
+    inventory: "{{ item.inventory }}"
+    name: "{{ item.name }}"
+    overwrite: "{{ item.overwrite }}"
+    overwrite_vars: "{{ item.overwrite_vars }}"
+    source: "{{ item.source }}"
+    source_path: "{{ item.source_path }}"
+    source_project: "{{ item.source_project }}"
+    source_regions: "{{ item.source_regions }}"
+    source_script: "{{ item.source_script }}"
+    source_vars: "{{ item.source_vars }}"
+    state: "{{ item.state }}"
+    timeout: "{{ item.timeout | int }}"
+    tower_verify_ssl: "{{ check_ssl }}"
+    update_cache_timeout: "{{ item.update_cache_timeout }}"
+    update_on_launch: "{{ item.update_on_launch }}"
+    update_on_project_update: "{{ item.update_on_project_update }}"

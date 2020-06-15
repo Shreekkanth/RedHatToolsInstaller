@@ -1,0 +1,29 @@
+--
+-- Dumping data for table `icingaweb2_group`
+--
+
+LOCK TABLES `icingaweb_group` WRITE;
+/*!40000 ALTER TABLE `icingaweb_group` DISABLE KEYS */;
+INSERT INTO `icingaweb_group` VALUES (1,'{{icingaweb2_admin_group}}',NULL,'2017-01-01 01:00:00',NULL);
+/*!40000 ALTER TABLE `icingaweb_group` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `icingaweb_group_membership`
+--
+
+LOCK TABLES `icingaweb_group_membership` WRITE;
+/*!40000 ALTER TABLE `icingaweb_group_membership` DISABLE KEYS */;
+INSERT INTO `icingaweb_group_membership` VALUES (1,'{{icingaweb2_admin_user}}','2017-01-01 01:00:00',NULL);
+/*!40000 ALTER TABLE `icingaweb_group_membership` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `icingaweb_user`
+--
+
+LOCK TABLES `icingaweb_user` WRITE;
+/*!40000 ALTER TABLE `icingaweb_user` DISABLE KEYS */;
+INSERT INTO `icingaweb_user` VALUES ('{{icingaweb2_admin_user}}',1,'{{icingaweb2_admin_password | password_hash('md5') }}','2017-01-01 01:00:00',NULL);
+/*!40000 ALTER TABLE `icingaweb_user` ENABLE KEYS */;
+UNLOCK TABLES;

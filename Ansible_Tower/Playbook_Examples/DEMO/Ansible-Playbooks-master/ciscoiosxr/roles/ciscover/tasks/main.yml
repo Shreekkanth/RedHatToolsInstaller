@@ -1,0 +1,7 @@
+---
+- name: Show Version and Show interfaces
+  iosxr_command:
+    commands:
+      - show version
+      - show run
+    provider: '{{ cli }}'

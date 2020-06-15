@@ -1,0 +1,33 @@
+---
+# file: roles/provisioning/tasks/undercloud.yml
+- fail: RedHat VPN should be started to continu...
+  when: ansible_local.vpn.user == 'present' and ansible_local.vpn.status == 'started' and provisioning_redhat_network == false
+  tags:
+    - provisioning
+    - provisioning-undercloud
+
+- name: Installing rhos-release package
+  yum:
+    name={{ rhos_pkg }}
+    state=present
+  tags:
+    - provisioning
+    - provisioning-undercloud-rhos
+
+- name: Enabling rhos-release version
+  shell: sudo /bin/rhos-release {{ provisioning_director_version }}
+  become: yes
+  become_user: stack
+  tags:
+    - provisioning
+    - provisioning-undercloud
+    - provisioning-undercloud-rhos
+
+- name: Installing instack-undercloud package
+  yum:
+    name=instack-undercloud
+    state=latest
+  tags:
+    - provisioning
+    - provisioning-undercloud
+    - provisioning-undercloud-instack

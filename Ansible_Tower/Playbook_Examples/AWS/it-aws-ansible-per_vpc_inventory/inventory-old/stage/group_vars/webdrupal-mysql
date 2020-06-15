@@ -1,0 +1,7 @@
+---
+nagios_host: nagios1.prod.a2.vary.redhat.com
+admin_host: admin1.prod.a2.vary.redhat.com
+admin_host_secondary: admin2.prod.a2.vary.redhat.com
+elbs:
+  - ELB-CmsMysqlLoadBalancer
+stunnel_server: true

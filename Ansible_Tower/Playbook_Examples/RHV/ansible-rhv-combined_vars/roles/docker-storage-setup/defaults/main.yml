@@ -1,0 +1,8 @@
+---
+# defaults file for docker-storage-setup
+docker_package_name: docker
+docker_package_version: present
+docker_storage_setup_path: "/etc/sysconfig/docker-storage-setup"
+docker_storage_device: "/dev/vdb"
+docker_storage_volume_group: "dockervg"
+docker_wipe_signatures: "true"

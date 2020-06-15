@@ -1,0 +1,28 @@
+---
+# file: roles/provisioning/tasks/facts.yml
+- file:
+    path=/etc/ansible/facts.d
+    recurse=yes
+    state=directory
+  tags:
+    - provisioning
+    - provisioning-openvpn
+    - provisioning-ssh
+
+- copy:
+    src=etc/ansible/facts.d/vpn.fact
+    dest=/etc/ansible/facts.d
+    mode=0755
+    owner=root
+    group=root
+  tags:
+    - provisioning
+    - provisioning-openvpn
+    - provisioning-ssh
+
+- setup:
+    filter=ansible_local
+  tags:
+    - provisioning
+    - provisioning-openvpn
+    - provisioning-ssh

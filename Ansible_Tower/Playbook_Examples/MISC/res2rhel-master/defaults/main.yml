@@ -1,0 +1,6 @@
+---
+res2rhel_mode: verify
+
+res2rhel_satellite_fqdn: satellite.example.com
+res2rhel_satellite_org: Default
+res2rhel_satellite_activationkey: Default

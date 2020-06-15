@@ -1,0 +1,15 @@
+---
+# tasks file for roles/haproxy
+- name: Install haproxy package
+  yum:
+    name: haproxy
+    state: present
+- name: Generate haproxy config
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+- name: Start and enable haproxy
+  systemd:
+    name: haproxy
+    state: restarted
+    enabled: yes

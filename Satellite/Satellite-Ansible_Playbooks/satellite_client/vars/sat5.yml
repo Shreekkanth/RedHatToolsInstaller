@@ -1,0 +1,8 @@
+# defaults file for satellite 5
+---
+rhn_cert_name: RHN-ORG-TRUSTED-SSL-CERT
+satellite_key: 1-rhit-aws
+satellite_server: satellite.corp.redhat.com
+satellite_proxy: "satproxy.{{ area }}.vary.redhat.com"
+satellite_gpg_key: "http://{{ satellite_server }}/RPM-GPG-KEY-redhat-git"
+satellite_cert: "http://{{ satellite_server }}/pub/{{ rhn_cert_name }}"

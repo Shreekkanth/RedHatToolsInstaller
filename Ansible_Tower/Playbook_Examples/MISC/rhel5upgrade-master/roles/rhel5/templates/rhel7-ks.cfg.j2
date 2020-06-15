@@ -1,0 +1,48 @@
+
+
+auth --enableshadow --passalgo=sha512
+harddrive --dir=/ --partition=disk/by-uuid/{{ sdb_uuid.stdout }}
+text
+keyboard --vckeymap=us --xlayouts='us'
+lang en_US.UTF-8
+
+# Network information
+%include /tmp/network.inc
+
+rootpw --iscrypted $6$F0Y3z5N/4A5yLh1a$hbHn3Q9t9guLx628dxqxEMkRuEEtqpogyZ2Zyx3ckIkeA/g7sCnMquxyUGaU7PRIn2stj2Rt7p42K/EsD8AZS/
+services --enabled="chronyd"
+timezone America/Chicago --isUtc
+bootloader --append=" crashkernel=auto" --location=mbr
+autopart --type=lvm
+# Partition clearing information
+# automatically ignores any drives that are used for installation
+clearpart --initlabel --all 
+reboot
+
+%pre
+
+touch /tmp/network.inc
+# turn the command-line options into variables
+set -- `cat /proc/cmdline`
+for I in $*; do case "$I" in *=*) eval $I;; esac; done
+echo "network --device=$ksdevice --bootproto=static --ip=$ip --netmask=$netmask --gateway=$gateway --nameserver=$nameserver --hostname=$hostname --activate" >>/tmp/network.inc
+
+%end
+
+%packages
+@^minimal
+@core
+chrony
+kexec-tools
+
+%end
+
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+
+%end
+
+%anaconda
+pwpolicy root --minlen=6 --minquality=50 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=50 --notstrict --nochanges --notempty
+pwpolicy luks --minlen=6 --minquality=50 --notstrict --nochanges --notempty
+%end

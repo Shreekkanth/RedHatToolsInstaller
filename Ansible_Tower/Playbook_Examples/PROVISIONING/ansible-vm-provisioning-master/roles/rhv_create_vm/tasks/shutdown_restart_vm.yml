@@ -1,0 +1,20 @@
+- name: Shutdown RHV VM
+  delegate_to: rhvm
+  ovirt_vm:
+    timeout: 600
+    auth: "{{ ovirt_auth }}"
+    state: "stopped"
+    wait: true
+    name: "{{ hostinfo.name }}-rhv"
+  when: rhvmcreate is changed
+  register: rhvmshutdown
+
+- name: Start RHV VM
+  delegate_to: rhvm
+  ovirt_vm:
+    timeout: 600
+    auth: "{{ ovirt_auth }}"
+    state: "running"
+    wait: true
+    name: "{{ hostinfo.name }}-rhv"
+  when: rhvmshutdown is changed

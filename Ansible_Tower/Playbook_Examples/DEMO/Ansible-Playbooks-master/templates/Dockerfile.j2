@@ -1,0 +1,10 @@
+FROM satellite-01.rich.sea.com:5000/sea-osp13_containers-cinder-volume:latest
+USER root
+ADD storops_rpms.tar.gz /tmp
+RUN yum localinstall -y /tmp/*.rpm
+
+# Fix rpm verification issue
+# Reference: https://bugzilla.redhat.com/show_bug.cgi?id=1560019
+RUN chmod 0600 /etc/selinux/targeted/active/users_extra
+
+USER cinder

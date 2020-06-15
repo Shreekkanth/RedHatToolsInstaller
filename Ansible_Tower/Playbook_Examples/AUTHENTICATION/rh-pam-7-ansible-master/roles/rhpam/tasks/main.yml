@@ -1,0 +1,202 @@
+---
+#
+# tasks file for rhpam role
+#
+#### Include vars files
+- include_vars:
+    file: vars_secret.yml
+  tags:
+    - always
+
+- include_vars:
+    file: users.yml
+  tags:
+    - always
+
+- include_vars:
+    file: datasources.yml
+  tags:
+    - always
+
+- include_vars:
+    file: quartz-props.yml
+  tags:
+    - always
+
+- include_vars:
+    file: rhpam.yml
+  tags:
+    - always
+
+#
+# MySQL Facts
+#
+- name: Set MySQL Facts
+  set_fact:
+    mysql_group:       "{{ mysql_user }}"
+    mysql_artifact:    "{{ base_dir_download + mysql_tar_gz_filename }}"
+    mysql_server_dest: "{{ base_dir_install  + 'mysql/' }}"
+    mysql_base_name:   "{{ mysql_tar_gz_filename[0:-7] }}"
+    mysql_base_runtime: 'mysql-files/'
+  tags:
+    - always
+
+- name: Set MySQL Base Facts
+  set_fact:
+    mysql_server_base:   "{{ mysql_server_dest + mysql_base_name }}"
+    mysql_last_dist:     "{{ mysql_server_dest + mysql_user }}"
+    mysql_conf_base:     "{{ mysql_server_dest + mysql_base_runtime + 'conf/' }}"
+    mysql_data_base:     "{{ mysql_server_dest + mysql_base_runtime + 'data/' }}"
+    mysql_logs_base:     "{{ mysql_server_dest + mysql_base_runtime + 'logs/' }}"
+    mysql_run_base:      "{{ mysql_run_path_base }}"
+    mysql_tmpfiles_conf: "{{ mysql_conf_tmpfiles_d }}"
+  tags:
+    - always
+
+- name: Set MySQL Facts
+  set_fact:
+    mysql_tmp_dir:                "{{ base_dir_working + 'mysql/tmp/' }}"
+    mysql_conf_file:              "{{ mysql_conf_base + mysql_configurations[0].name + '.cnf' }}"
+    mysql_dev_service_name:       'mysql_dev.service'
+  tags:
+    - always
+
+- name: Set MySQL Home
+  set_fact:
+    mysql_home:                "{{ mysql_last_dist + '/' }}"
+    mysql_tmp_systemd:         "{{ mysql_tmp_dir }}"
+  tags:
+    - always
+
+#### Set Facts JBoss EAP
+- name: Set JBoss EAP Install Facts
+  set_fact:
+    jboss_eap_artifact:     "{{ base_dir_download + jboss_eap_artifact_name_7_1 }}"
+    jboss_eap_base:         "{{ base_dir_install }}"
+    jboss_eap_base_name:    "{{ 'jboss-eap-' + jboss_eap_base_version }}"
+    jboss_eap_patch_dest:   "{{ base_dir_working }}"
+    jboss_eap_patches_list: "{{ jboss_eap_patches_7_1 }}"
+    user_lib_systemd:       "/usr/lib/systemd/system/"
+    etc_sysconfig:          "/etc/sysconfig/"
+  tags:
+    - always
+
+- name: Set JBoss EAP Home Facts
+  set_fact:
+    jboss_eap_home:               "{{ jboss_eap_base + jboss_eap_base_name + '/' }}"
+    jboss_eap_home_without_slash: "{{ jboss_eap_base + jboss_eap_base_name }}"
+    jboss_admin_home:             "{{ jboss_eap_base + 'admin' }}"
+  tags:
+    - always
+
+- name: Set JBoss EAP Standalone Facts
+  set_fact:
+    jboss_eap_version_txt_path:     "{{ jboss_eap_home + 'version.txt' }}"
+    jboss_eap_standalone_conf_file: "{{ jboss_eap_home + 'bin/standalone.conf' }}"
+    jboss_eap_conf:                 "{{ jboss_eap_home + 'bin/init.d/' + jboss_name_to_conf + '.conf'}}"
+    jboss_eap_deployments:          "{{ jboss_eap_home + 'standalone/deployments/' }}"
+  tags:
+    - always
+
+#### Set Facts RH PAM
+- name: Set RHPAM Directories
+  set_fact:
+    rhpam_work_dir:                 "{{ base_dir_working + 'rhpam/'}}"
+    rhpam_business_central_war:     "{{ jboss_eap_home + 'standalone/deployments/business-central.war' }}"
+    rhpam_kieserver_war:            "{{ jboss_eap_home + 'standalone/deployments/kie-server.war' }}"
+    rhpam_business_central_WEB_INF: "{{ jboss_eap_home + 'standalone/deployments/business-central.war/WEB-INF/' }}"
+    rhpam_kieserver_WEB_INF:        "{{ jboss_eap_home + 'standalone/deployments/kie-server.war/WEB-INF/' }}"
+  tags:
+    - always
+
+- name: Set RHPAM Deployable
+  set_fact:
+    rhpam_patch_dest:                  "{{ rhpam_work_dir }}"
+    rhpam_patches_list:                "{{ rhpam_patches_7_1 }}"
+    rhpam_business_central_deployable: "{{ rhpam_work_dir + 'rhpam-' + rhpam_version + '-business-central-eap7-deployable/' + jboss_eap_base_dir_7_1  }}"
+    rhpam_kie_server_base_deployable:  "{{ rhpam_work_dir + 'rhpam-' + rhpam_version + '-kie-server-ee7/' }}"
+    rhpam_kie_server_deployable:       "{{ rhpam_work_dir + 'rhpam-' + rhpam_version + '-kie-server-ee7/kie-server.war' }}"
+    rhpam_controller_base_deployable:  "{{ rhpam_work_dir + 'rhpam-' + rhpam_version + '-add-ons/rhpam-7.1-controller-ee7/' }}"
+    rhpam_controller_deployable:       "{{ rhpam_work_dir + 'rhpam-' + rhpam_version + '-add-ons/rhpam-7.1-controller-ee7/controller.war' }}"
+    rhpam_runtime_path_base:           "{{ base_dir_install + 'rhpam/' }}"
+    jboss_eap_config_cli:              "{{ rhpam_work_dir + 'cli/' }}"
+    rhpam_business_central_webinf_lib: "{{ rhpam_business_central_WEB_INF + 'lib' }}"
+    rhpam_kieserver_webinf_lib:        "{{ rhpam_kieserver_WEB_INF + 'lib' }}"
+    rhpam_extra_libs_dir:              "files/"
+  tags:
+    - always
+
+- name: "Set kie server controller url {{kie_server_controller_url_ws}}"
+  set_fact:
+    kie_server_controller_url: "{{kie_server_controller_url_ws}}"
+  when: rhpam_bc_install
+  tags:
+    - always
+
+- name: "Set kie server controller url {{kie_server_controller_url_controller}}"
+  set_fact:
+    kie_server_controller_url: "{{kie_server_controller_url_controller}}"
+  when: rhpam_controller_install
+  tags:
+    - always
+
+- name: "Set Oracle parameters"
+  set_fact:
+    rhpam_jdbc_lib_list:                 "{{rhpam_jdbc_lib_list_oracle}}"
+    module_name:                         "{{ module_name_oracle }}"
+    driver_module_name:                  "{{ driver_module_name_oracle }}"
+    module_resources:                    "{{ module_resources_oracle }}"
+    driver_xa_datasource_class_name:     "{{ driver_xa_datasource_class_name_oracle }}"
+    valid_connection_checker_class_name: "{{ ds_valid_connection_checker_class_name_oracle }}"
+    exception_sorter_class_name:         "{{ ds_exception_sorter_class_name_oracle }}"
+    stale_connection_checker_class_name: "{{ ds_stale_connection_checker_class_name_oracle }}"
+    kieserver_connection_url:            "jdbc:oracle:thin:@localhost:1521:KIESERVER"
+    ejbtimer_connection_url:             "jdbc:oracle:thin:@localhost:1521:EJBTMER"
+  when: is_oracle_ds
+  tags:
+    - always
+
+####
+- name: Set Mysql RH PAM
+  set_fact:
+    mysql_create_rhpam_db_sql:    "{{ mysql_tmp_dir + 'create_db.sql' }}"
+    mysql_create_ejbtimer_db_sql: "{{ mysql_tmp_dir + 'create_db_ejbtimer.sql' }}"
+    mysql_ddl_scripts_mysql5_dir: "{{ rhpam_work_dir + 'rhpam-' + rhpam_version + '-add-ons/rhpam-7.0-migration-tool/rhpam-7.0-migration-tool/ddl-scripts/mysql5/' }}"
+  tags:
+    - always
+
+####
+- name: "Create the Base Destination"
+  become: true
+  file:
+    path:  "{{ jboss_eap_base }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - always
+
+#### Create User Account "mysql"
+- import_tasks: mysql_user.yml
+
+#### Create MySQL BD & Systemctl Service
+- import_tasks: mysql_install.yml
+
+#### Install JBoss EAP
+- import_tasks: jboss_eap_install.yml
+
+#### Install RHPAM
+- import_tasks: rhpam_install.yml
+
+#### Install .bash_profile_ext
+- import_tasks: config_bash_profile.yml
+
+####
+- import_tasks: rhpam_kieserver_libs.yml
+
+###
+- import_tasks: rhpam_uninstall.yml
+
+#
+# EOF

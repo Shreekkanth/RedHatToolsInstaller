@@ -1,0 +1,14 @@
+---
+
+- name: disable selinux
+  shell: setenforce 0
+
+- name: disable selinux config
+  lineinfile: >-
+    dest=/etc/selinux/config
+    state=present
+    regexp='^SELINUX='
+    line='SELINUX=permissive'
+    backup=yes
+
+

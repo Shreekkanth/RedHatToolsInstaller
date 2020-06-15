@@ -1,0 +1,134 @@
+---
+- name: Get authentication key
+  uri:
+    url: "{{ cmdb_add_ci_api_base_url }}/rest_access"
+    method: POST
+    headers:
+      Accept: application/json
+      Authorization: "Basic {{ cmdb_add_ci_api_key }}"
+      Content-Type: application/json
+    body:
+      rest_access:
+    body_format: json
+    return_content: yes
+    status_code: 201
+  register: auth_key_result
+# - name: Debug auth_key_result
+#   debug:
+#     var: auth_key_result
+#     verbosity: 1
+
+- name: Query for existence of server
+  uri:
+    url: "{{ cmdb_add_ci_api_base_url }}/nr?WC=name%3D'{{ cmdb_add_ci_server_name }}'"
+    method: GET
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    return_content: yes
+  register: server_name_query
+# - name: Debug server_name_query
+#   debug:
+#     var: server_name_query
+#     verbosity: 1
+
+- block:
+  - name: Query for assignment group UUID
+    uri:
+      url: "{{ cmdb_add_ci_api_base_url }}/cnt?WC=last_name%3D'{{ cmdb_add_ci_assign_group | replace(' ', '%20') }}'"
+      method: GET
+      headers:
+        Accept: application/json
+        Content-Type: application/xml;charset=UTF-8
+        X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+      return_content: yes
+    register: assignment_group_query
+  # - name: Debug assignment_group_query
+  #   debug:
+  #     var: assignment_group_query
+  #     verbosity: 1
+
+  - name: Query requestor UUID
+    uri:
+      url: "{{ cmdb_add_ci_api_base_url }}/cnt?WC=userid%3D'{{ cmdb_add_ci_requestor_id }}'"
+      method: GET
+      headers:
+        Accept: application/json
+        Content-Type: application/xml;charset=UTF-8
+        X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+      return_content: yes
+    register: requestor_query
+  # - name: Debug requestor_query
+  #   debug:
+  #     var: requestor_query
+  #     verbosity: 1
+
+  - name: Query manager UUID
+    uri:
+      url: "{{ cmdb_add_ci_api_base_url }}/cnt?WC=userid%3D'{{ cmdb_add_ci_manager_id }}'"
+      method: GET
+      headers:
+        Accept: application/json
+        Content-Type: application/xml;charset=UTF-8
+        X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+      return_content: yes
+    register: manager_query
+  # - name: Debug manager_query
+  #   debug:
+  #     var: manager_query
+  #     verbosity: 1
+
+  - name: Create new CI
+    uri:
+      url: "{{ cmdb_add_ci_api_base_url }}/nr"
+      method: POST
+      headers:
+        Accept: application/json
+        Content-Type: application/xml;charset=UTF-8
+        X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+      body: "{{ lookup('template', 'create_ci.j2') }}"
+      return_content: yes
+      status_code: 201
+    register: create_ci_result
+  # - name: Debug create_ci_result
+  #   debug:
+  #     var: create_ci_result
+  #     verbosity: 1
+
+  - block:
+    - name: Update server CI with additional data
+      uri:
+        url: "{{ cmdb_add_ci_api_base_url }}/har_comp/{{ create_ci_result.json.nr['@id'] }}"
+        method: PUT
+        headers:
+          Accept: application/json
+          Content-Type: application/xml;charset=UTF-8
+          X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+        body: "{{ lookup('template', 'update_server_ci.j2') }}"
+        return_content: yes
+        status_code: 200
+      register: update_ci_result
+    # - name: Debug update_ci_result
+    #   debug:
+    #     var: update_ci_result
+    #     verbosity: 1
+    when: cmdb_add_ci_class_name == 'Server'
+
+  when: server_name_query.json.collection_nr['@COUNT'] == '0'
+
+- name: Delete access key
+  uri:
+    url: "{{ cmdb_add_ci_api_base_url }}/rest_access/{{ auth_key_result.json.rest_access['@id'] }}"
+    method: DELETE
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    return_content: yes
+    status_code: 204
+  register: delete_access_key_result
+# - name: Debug delete_access_key_result
+#   debug:
+#     var: delete_access_key_result
+#     verbosity: 1

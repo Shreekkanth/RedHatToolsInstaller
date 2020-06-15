@@ -1,0 +1,77 @@
+rhel_osp_version: 10
+verbose: true
+debug: false
+user_name: demo
+project_name: "{{ user_name }}"
+password: redhat
+redeploy: false
+
+# Networks
+cluster_id: "{{ hostvars[groups['controller'][0]]['ansible_' + mgmt_interface].ipv4.address.split('.').3 }}"
+private_network: 192.168.{{ cluster_id }}.0/24
+tunnel_network: 172.16.{{ cluster_id }}.0/24
+floating_pool_start: 10.11.171.160
+floating_pool_end: 10.11.171.189
+external_interface: provisioning
+external_network: 10.11.171.0/24
+external_dns: 10.11.169.2
+external_gateway: 10.11.171.254
+external_shared: yes
+provider_type: vlan
+provider_network: physnet1
+provider_vlan: 123
+
+# nfs storage for cinder backend
+nfs_export_host: 10.11.169.15
+nfs_export: /exports/osp/{{ rhel_osp_version }}
+nfs_mount_options: ''
+
+#images
+image_is_public: true
+
+# cirros image
+cirros_image_url: http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+# dynamic name based on url, set statically if desired
+cirros_image_name: "{{ cirros_image_url.split('/').4.split('-').0 + '-' + cirros_image_url.split('/').4.split('-').1 }}"
+
+# windows cloudbase-init image
+windows_image_url: /fileshare/images/windows_server_2012_r2_standard_eval_kvm_20140607.qcow2
+# dynamic name based on url, set statically if desired
+#windows_image_name: $(echo ${windows_image_url} | cut -d'/' -f 4 | awk -f. '{print $1}' | cut -d'_' -f 1-4)
+windows_image_name: "{{ windows_image_url.split('/').3.split('_').0 + '_' + windows_image_url.split('/').3.split('_').1 + '_' + windows_image_url.split('/').3.split('_').2 + '_' + windows_image_url.split('/').3.split('_').3 }}"
+# set the following to 'true' to enable windows builds
+windows_build: false
+
+# set the following to 'true' to enable downloading the latest rhel image
+rhel_image_install_latest: false
+# this is the location of an existing image to use instead of downloading the latest. if rhel_image_install_latest is set to 'true', this will be ignored - but is still used to generate the rhel_image_name dynamically, so if this is changed make sure to check the next variable as well
+rhel_image_url: /fileshare/images/rhel-guest-image-7.2-20160219.1.x86_64.qcow2
+# this will be the image name used in glance
+#rhel_image_name: $(echo ${rhel_image_url} | cut -d'/' -f 4 | cut -d'-' -f 1-4)
+rhel_image_name: "{{ rhel_image_url.split('/').3.split('-').0 + '-' + rhel_image_url.split('/').3.split('-').1 + '-' + rhel_image_url.split('/').3.split('-').2 + '-' + rhel_image_url.split('/').3.split('-').3 }}"
+
+#openstack services - use 'y' or 'n' to enable or disable a service from being installed
+#the following services are optional
+cinder_install: y
+ceilometer_install: n
+manila_install: n
+swift_install: n
+sahara_install: n
+heat_install: n
+trove_install: n
+ironic_install: n
+nagios_install: n
+lbaas_install: n
+neutron_fwaas: n
+neutron_metering_agent_install: n
+heat_cloudwatch_install: n
+heat_cfn_install: n
+provision_demo: n
+
+#the following services should be considered required
+mariadb_install: y
+glance_install: y
+nova_install: y
+neutron_install: y
+horizon_install: y
+client_install: y

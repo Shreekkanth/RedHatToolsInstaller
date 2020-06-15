@@ -1,0 +1,95 @@
+# tasks for role-vmware snapshot 
+- name: creating a snapshot before patching
+  vmware_guest_snapshot:
+    hostname: "{{ vmware_snapshot_vcenter_hostname }}"
+    username: "{{ vmware_snapshot_vcenter_username }}"
+    password: "{{ vmware_snapshot_vcenter_password }}"
+    datacenter: "{{ vmware_snapshot_datacenter_name }}"
+    folder: "/{{ vmware_snapshot_datacenter_name }}/vm/"
+    name: "{{ item }}"
+    state: present
+    snapshot_name: "ANSIBLE TOWER snapshot"
+    description: NEW snapshot from Ansible Tower
+    validate_certs: no
+  delegate_to: localhost
+  loop: "{{ groups[survey_app_group] | upper }}"
+  when: patching_status == "started"
+
+- name: gathering facts about current snapshots for deletion OR revert
+  vmware_guest_snapshot_facts:
+    hostname: "{{ vmware_snapshot_vcenter_hostname }}"
+    username: "{{ vmware_snapshot_vcenter_username }}"
+    password: "{{ vmware_snapshot_vcenter_password }}"
+    datacenter: "{{ vmware_snapshot_datacenter_name }}"
+    folder: "/{{ vmware_snapshot_datacenter_name }}/vm/"
+    name: "{{ item }}"
+    validate_certs: no
+  delegate_to: localhost
+  loop: "{{ groups[survey_app_group] | upper }}"
+  when:  (linux_patching_status == "complete" and windows_patching_status == "complete") or
+         (linux_patching_status == "failed" or windows_patching_status == "failed")
+  register: vmware_snapshot_facts
+
+- name: debug vmware snapshot facts
+  debug:
+    msg: "{{ vmware_snapshot_facts.results }}"
+
+- name: SUCCESS Deleting Snapshots
+  vmware_guest_snapshot:
+    hostname: "{{ vmware_snapshot_vcenter_hostname }}"
+    username: "{{ vmware_snapshot_vcenter_username }}"
+    password: "{{ vmware_snapshot_vcenter_password }}"
+    datacenter: "{{ vmware_snapshot_datacenter_name }}"
+    folder: "/{{ vmware_snapshot_datacenter_name }}/vm/"
+    name: "{{ item._ansible_item_label | upper }}"
+    state: absent
+    snapshot_name: "{{ item.guest_snapshots.snapshots[0].name }}"
+    validate_certs: no
+  delegate_to: localhost
+  when: 
+    - linux_patching_status == "complete"
+    - windows_patching_status == "complete"
+    - '"ANSIBLE" in item.guest_snapshots.snapshots[0].name'
+  loop: "{{ vmware_snapshot_facts.results }}"
+
+- name: FAILED ... changing snapshot description to FAILED
+  vmware_guest_snapshot:
+    hostname: "{{ vmware_snapshot_vcenter_hostname }}"
+    username: "{{ vmware_snapshot_vcenter_username }}"
+    password: "{{ vmware_snapshot_vcenter_password }}"
+    datacenter: "{{ vmware_snapshot_datacenter_name }}"
+    folder: "/{{ vmware_snapshot_datacenter_name }}/vm/"
+    name: "{{ item }}"
+    state: present
+    snapshot_name: "ANSIBLE TOWER snapshot"
+    new_description: OS PATCHING FAILED
+    validate_certs: no
+  delegate_to: localhost
+  loop: "{{ groups[survey_app_group] | upper }}"
+  when: linux_patching_status == "failed" or windows_patching_status == "failed"
+
+- name: FAILED ... REVERTING snapshot
+  vmware_guest_snapshot:
+    hostname: "{{ vmware_snapshot_vcenter_hostname }}"
+    username: "{{ vmware_snapshot_vcenter_username }}"
+    password: "{{ vmware_snapshot_vcenter_password }}"
+    datacenter: "{{ vmware_snapshot_datacenter_name }}"
+    folder: "/{{ vmware_snapshot_datacenter_name }}/vm/"
+    name: "{{ item }}"
+    state: revert
+    new_snapshot_name: "ANSIBLE TOWER snapshot - REVERTED"
+    new_description: OS PATCHING FAILED - SNAPSHOT REVERTED
+    validate_certs: no
+  delegate_to: localhost
+  loop: "{{ groups[survey_app_group] | upper }}"
+  when: linux_patching_status == "failed" or windows_patching_status == "failed"
+
+# - name: Set Stat to snapshot failed if snapshots fail
+#   set_stats:
+#     data:
+#       vmware_snapshot_status: "failed"
+#     aggregate: no
+#     per_host: no
+#   when: 
+#     - vmware_snapshot_facts.results != ""
+#     - patching_status == "started"

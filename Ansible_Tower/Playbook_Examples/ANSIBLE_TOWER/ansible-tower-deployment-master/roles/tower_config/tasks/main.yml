@@ -1,0 +1,128 @@
+---
+- name: Import Ansible Tower License
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/config/"
+    method: POST
+    validate_certs: no
+    body: "{{ ansible_tower_license }}"
+    body_format: json
+    status_code: 200
+    user: admin
+    password: password
+
+- name: Update job execution path
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/settings/jobs/"
+    method: PATCH
+    return_content: yes
+    validate_certs: no
+    body: {"\"AWX_PROOT_BASE_PATH\":\"{{ tower_execution_path }}\""}
+    body_format: json
+    status_code: 200
+    user: admin
+    password: password
+
+- name: Import Ansible Tower LDAP Integration
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/settings/ldap/"
+    method: PUT
+    validate_certs: no
+    body: "{{ ansible_tower_ldap_config }}"
+    body_format: json
+    status_code: 200
+    user: admin
+    password: password
+
+- name: Create Organizations
+  tower_organization:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default('') }}"
+    state: present
+    tower_host: "{{ ansible_tower }}"
+    tower_username: admin
+    tower_password: password
+    tower_verify_ssl: False
+  with_items: "{{ ansible_organizations }}"
+
+- name: Create Inventories
+  tower_inventory:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default('') }}"
+    organization: "{{ item.organization }}"
+    state: present
+    tower_host: "{{ ansible_tower }}"
+    tower_username: admin
+    tower_password: password
+    tower_verify_ssl: False
+  with_items: "{{ ansible_tower_inventories }}"
+
+- name: Add hosts to inventory
+  tower_host:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default('') }}"
+    inventory: "{{ item.inventory }}"
+    state: present
+    tower_host: "{{ ansible_tower }}"
+    tower_username: admin
+    tower_password: password
+    tower_verify_ssl: False
+  with_items: "{{ ansible_hosts }}"
+
+- include_tasks: create_inventory_scripts.yml inventory_script={{ item }}
+  with_items: "{{ ansible_tower_inventory_script }}"
+
+- include_tasks: create_credentials.yml credentials={{ item }}
+  with_items: "{{ ansible_credentials }}"
+
+- name: Create projects
+  tower_project:
+    tower_host: "{{ ansible_tower }}"
+    tower_username: admin
+    tower_password: password
+    tower_verify_ssl: False
+    name: "{{ item.name }}"
+    description: "{{ item.description | default('') }}"
+    organization: "{{ item.organization }}"
+    state: present
+    scm_credential: "{{ item.scm_credential }}"
+    scm_branch: "{{ item.scm_branch | default('') }}"
+    scm_clean: "{{ item.scm_clean | default(True) }}"
+    scm_delete_on_update: "{{ item.scm_delete_on_update | default(True) }}"
+    scm_type: "{{ item.scm_type }}"
+    scm_update_on_launch: "{{ item.scm_update_on_launch | default(True) }}"
+    scm_url: "{{ item.scm_url }}"
+  with_items: "{{ ansible_projects }}"
+
+- name: Wait for project to populate
+  wait_for:
+    timeout: 10
+
+- include_tasks: create_inventory_sources.yml inventory_source={{ item }}
+  with_items: "{{ ansible_tower_inventory_sources }}"
+
+- include_tasks: create_project_inventory_sources.yml project_inventory_source={{ item }}
+  with_items: "{{ ansible_tower_project_inventory_sources }}"
+
+- name: Create Job Templates
+  tower_job_template:
+    tower_host: "{{ ansible_tower }}"
+    tower_username: admin
+    tower_password: password
+    tower_verify_ssl: False
+    name: "{{ item.name }}"
+    description: "{{ item.description | default('') }}"
+    playbook: "{{ item.playbook }}"
+    project: "{{ item.project }}"
+    state: present
+    become_enabled: "{{ item.become_enabled | default(False) }}"
+    forks: "{{ item.forks | default(0) }}"
+    inventory: "{{ item.inventory }}"
+    job_type: "{{ item.job_type }}"
+    limit: "{{ item.limit | default('') }}"
+    cloud_credential: "{{ item.cloud_credential | default('') }}"
+    machine_credential: "{{ item.machine_credential | default('') }}"
+    network_credential: "{{ item.network_credential | default ('') }}"
+  with_items: "{{ ansible_job_templates }}"
+
+- include_tasks: create_job_schedules.yml schedule={{ item }}
+  with_items: "{{ ansible_job_schedules }}"

@@ -1,0 +1,74 @@
+---
+satellite_env_vars:
+  satellite_url: "https://sat6.homelab.work"
+  satellite_katello_rpm_path: "pub/katello-ca-consumer-latest.noarch.rpm"
+  satellite_katello_rpm_version: "present"
+  satellite_activation_key: "openshift-3.9"
+  satellite_org_id: "homelab_infra"
+  satellite_register_ignore_errors: "true"
+
+ovirt_environment_vars: &server_opts
+  ovirt_wait: True
+  ovirt_cluster: "Default"
+  ovirt_domain_name: "homelab.work"
+  ovirt_rhv_template: rhel-7-6-20190517-cloud
+  ovirt_dns_search: "homelab.work"
+  ovirt_nic_boot_protocol: "static"
+  ovirt_nic_netmask: "255.255.255.0"
+  ovirt_nic_gateway: "192.168.2.1"
+  ovirt_nic_name: "eth0"
+  ovirt_nic_on_boot: true
+  openshift_cpu_cores: 2
+  openshift_memory: 4096MiB
+  ovirt_vm_disk_storage_domain: "nas-1tbssd"
+  docker_service_name: "docker.service"
+  container_storage_setup_name: "container-storage-setup"
+  docker_storage_file_path: "/etc/sysconfig/docker-storage"
+  docker_var_storage_path: "/var/lib/docker"
+  docker_containers_mount: "var-lib-docker-containers.mount"
+  docker_default_vg: "dockervg"
+  docker_default_lv: "docker-pool"
+  ovirt_vm_docker_disk_name: "docker"
+  docker_origin_storage_device: "/dev/vdb"
+  ovirt_vm_docker_disk_size: "20GiB"
+  ovirt_vm_etcd_disk_name: "etcd"
+  docker_etcd_storage_device: "/dev/vdc"
+  ovirt_vm_etcd_disk_size: "40GiB"
+  openshift_etcd_storage_vg_name: "etcd-vg"
+  openshift_etcd_storage_lv_name: "etcd-lv"
+  openshift_etcd_storage_lv_size: "100%VG"
+  openshift_etcd_storage_lv_path: "/dev/mapper/etcd--vg-etcd--lv"
+  openshift_etcd_storage_mount_path: "/var/lib/etcd"
+  openshift_etcd_storage_fstab_regexp: "etcd"
+  openshift_origin_storage_vg_name: "origin-vg"
+  openshift_origin_storage_lv_name: "origin-lv"
+  openshift_origin_storage_lv_size: "100%VG"
+  openshift_origin_storage_lv_path: "/dev/mapper/origin--vg-origin--lv"
+  openshift_origin_storage_mount_path: "/var/lib/origin"
+  openshift_origin_storage_fstab_regexp: "origin"
+
+masters:
+    <<: *server_opts
+    ovirt_name: "rhv-ocp-master"
+
+master_servers:
+    - '192.168.2.221'
+    - '192.168.2.231'
+
+infras:
+    <<: *server_opts
+    ovirt_name: "rhv-ocp-infra"
+
+infra_servers:
+    - '192.168.2.222'
+    - '192.168.2.232'
+
+apps:
+    <<: *server_opts
+    ovirt_name: "rhv-ocp-app"
+
+app_servers:
+    - '192.168.2.223'
+    - '192.168.2.233'
+
+...

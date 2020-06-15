@@ -1,0 +1,12 @@
+---
+# tasks file for tower_hosts
+
+- name: Add hosts to Tower
+  tower_host:
+    description: "{{ item.description }}"
+    enabled: "{{ item.enabled }}"
+    inventory: "{{ item.inventory }}"
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    tower_verify_ssl: "{{ check_ssl }}"
+    variables: "{{ item.variables }}"

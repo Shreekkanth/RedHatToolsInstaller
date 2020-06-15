@@ -1,0 +1,49 @@
+---
+# Set this to true if you want to delete lab before rebuilding
+local_lab_delete: "true"
+
+# Environmental variables
+at_ver: 3.4
+platform_group_name: "tower"
+
+# Tower passwords to override. 
+#admin_password: "password"
+#pg_password: "password"
+#rabbitmq_password: "password"
+
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+  rhel-7-server-extras-rpms:
+    enable: true
+  rhel-7-server-ansible-2.6-rpms:
+    enable: true
+
+# Tower installation files location to download from
+#webserver: "http://192.168.122.191/pub"
+#tower_download_file: "ansible-tower-setup-bundle-latest.el7.tar.gz"
+#tower_extracted_dir: "ansible-tower-setup-bundle-3.4.1-1.el7" 
+
+# Tower License information
+tower_license_company_name: "Red Hat" 
+tower_license_email: "ken.d.hitchcock@gmail.com"
+tower_license_contact_name: "Ken Hitchcock"
+tower_license_hostname: "9efa2f93bde74a57ac77eda0103138ed"
+tower_license_instance_count: 10
+tower_license_date: 2118064323
+tower_license_license_key: "e86a3fb1ce2d4b609f1ef4f4f2b0c34523c4f59911dd350dcb9031e1eb6e6e04"
+tower_license_license_type: "basic"
+tower_license_subscription_name: "Red Hat Ansible Tower, Self-Support (10 Managed Nodes)"
+
+# Virtual Machine details for build roles
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  rhel7-ansibletower01:
+    mem: 16384 
+    cpus: 4
+    disk: 40
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.201
+

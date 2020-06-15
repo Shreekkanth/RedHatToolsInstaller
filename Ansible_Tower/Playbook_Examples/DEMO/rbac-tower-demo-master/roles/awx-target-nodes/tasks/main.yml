@@ -1,0 +1,9 @@
+---
+# awx-target-nodes/tasks/main.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- include_tasks: prebuild.yml
+
+- include_tasks: build.yml
+
+- include_tasks: postbuild.yml

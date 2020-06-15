@@ -1,0 +1,4 @@
+ldap_groups:
+  - Infrastructure
+  - Support
+  - Middleware

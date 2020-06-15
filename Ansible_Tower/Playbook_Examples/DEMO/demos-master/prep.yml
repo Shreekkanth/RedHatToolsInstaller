@@ -1,0 +1,39 @@
+---
+- name: Prep for class
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Install packages
+      yum: name={{ item }} state=latest
+      with_items:
+        - python-setuptools
+        - python-devel
+        - gcc
+        - git
+        - openssh
+      become: true
+    - name: Install pip
+      easy_install: name=pip
+      become: true
+    - name: remove already installed deps
+      yum: name=python-crypto state=absent
+      become: true
+    - name: Install ansible deps
+      pip: name={{ item }} state=latest
+      with_items:
+        - paramiko
+        - pycrypto
+        - PyYAML
+        - Jinja2
+        - httplib2
+        - six
+        - ansible
+      become: true
+    - name: checkout playbook repo
+      git: repo=git@github.com:thaumos/soluteTraining.git
+           dest=~/soluteTraining
+           key_file=~/.ssh/id_rsa
+           accept_hostkey=yes
+           force=yes
+    - name: Remove old playbook repo
+      file: dest=~/ansible-demo-examples state=absent

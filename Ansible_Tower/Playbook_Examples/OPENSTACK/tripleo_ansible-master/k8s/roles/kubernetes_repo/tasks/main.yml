@@ -1,0 +1,6 @@
+---
+
+- name: setup repo
+  template: src=kubernetes.repo dest=/etc/yum.repos.d/kubernetes.repo
+
+

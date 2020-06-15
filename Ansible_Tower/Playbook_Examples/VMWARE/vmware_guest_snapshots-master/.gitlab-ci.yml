@@ -1,0 +1,103 @@
+---
+before_script:
+  - . ~/molecule_venv/bin/activate
+
+stages:
+  - lint
+  - lint_cleanup
+  - lint_destroy
+  - dependency
+  - syntax
+  - create
+  - prepare
+  - converge
+  - idempotence
+  - side_effect
+  - verify
+  - final_cleanup
+  - final_destroy
+
+.molecule_template: &molecule_definition
+  tags:
+    - ansible
+
+.cleanup_template: &cleanup_definition
+  <<: *molecule_definition
+  script:
+    - molecule cleanup
+
+.destroy_template: &destroy_definition
+  <<: *molecule_definition
+  script:
+    - molecule destroy
+
+lint:
+  <<: *molecule_definition
+  stage: lint
+  script:
+    - molecule lint
+
+lint:cleanup:
+  <<: *cleanup_definition
+  stage: lint_cleanup
+
+lint:destroy:
+  <<: *destroy_definition
+  stage: lint_destroy
+dependency:
+  <<: *molecule_definition
+  stage: dependency
+  script:
+    - molecule dependency
+
+syntax:
+  <<: *molecule_definition
+  stage: syntax
+  script:
+    - molecule syntax
+
+create:
+  <<: *molecule_definition
+  stage: create
+  script:
+    - molecule create
+
+prepare:
+  <<: *molecule_definition
+  stage: prepare
+  script:
+    - molecule prepare
+
+converge:
+  <<: *molecule_definition
+  stage: converge
+  script:
+    - molecule converge
+
+idempotence:
+  <<: *molecule_definition
+  stage: idempotence
+  script:
+    - molecule idempotence
+
+side_effect:
+  <<: *molecule_definition
+  stage: side_effect
+  script:
+    - molecule side-effect
+
+verify:
+  <<: *molecule_definition
+  stage: verify
+  script:
+    - molecule verify
+
+final:cleanup:
+  <<: *cleanup_definition
+  stage: final_cleanup
+  when: always
+
+final:destroy:
+  <<: *destroy_definition
+  stage: final_destroy
+  when: always

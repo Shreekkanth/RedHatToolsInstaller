@@ -1,0 +1,42 @@
+---
+- name: Create Smartlis tower group
+  tower_group:
+    inventory: Taller
+    name: Smartlis
+    state: present
+    tower_host: poc-1094492804.eu-central-1.elb.amazonaws.com
+    tower_username: admin
+    tower_password: "{{ tower_pass }}"
+
+- name: Create slservers tower group by vm role
+  tower_group:
+    inventory: Taller
+    name: "{{ item.value.group }}"
+    state: present
+    tower_host: poc-1094492804.eu-central-1.elb.amazonaws.com
+    tower_username: admin
+    tower_password: "{{ tower_pass }}"
+  loop: "{{ vmware_vms_cluster_deployment|dict2items }}"
+
+    
+- name: Add sl servers to group
+  tower_host:
+    tower_host: poc-1094492804.eu-central-1.elb.amazonaws.com
+    tower_username: admin
+    tower_password: "{{ tower_pass }}"
+    name: "{{ item.key }}"
+    groups: "{{ item.value.group }}"
+    inventory: Taller
+    state: present
+  loop: "{{ vmware_vms_cluster_deployment|dict2items }}"
+  
+- name: Add sl servers to Smartlis group
+  tower_host:
+    tower_host: poc-1094492804.eu-central-1.elb.amazonaws.com
+    tower_username: admin
+    tower_password: "{{ tower_pass }}"
+    name: "{{ item.key }}"
+    groups: Smartlis
+    inventory: Taller
+    state: present
+  loop: "{{ vmware_vms_cluster_deployment|dict2items }}"

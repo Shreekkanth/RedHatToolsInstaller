@@ -1,0 +1,31 @@
+---
+confluence_user_name: confluence
+confluence_group_name: confluence
+confluence_service_name: confluence
+confluence_provide_root_environment: false
+confluence_start_on_boot: true
+
+confluence_perform_installation: true
+confluence_start_after_installation: true
+confluence_installation_archive_url: https://www.atlassian.com/software/confluence/downloads/binary/atlassian-confluence-6.9.1.tar.gz
+confluence_installation_archive_checksum: sha1:a9d4a020cc2c0d4b59c83557022054d061025318
+confluence_installation_archive_name: atlassian-confluence-6.9.1
+confluence_installation_jdbc_driver_jar_source_path: ""
+
+confluence_config_jre_directory: ""
+confluence_config_software_directory: /opt/atlassian/confluence
+confluence_config_home_directory: /var/atlassian/application-data/confluence
+confluence_config_jvm_heap_size: 1024m
+confluence_config_jvm_opts: ""
+confluence_config_tomcat_context_path: ""
+confluence_config_tomcat_connectors:
+    standalone:
+        enabled: true
+        type: standalone
+        listening_port: 8090
+    reverse_proxy:
+        enabled: false
+        type: proxy
+        listening_port: 8091
+        proxied_hostname: jira.example.org
+        proxied_port: 443

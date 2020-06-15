@@ -1,0 +1,48 @@
+---
+- name: Ensure we are using RHEL 7.7 or higher
+  assert:
+    that:
+      - "'{{ ansible_distribution }}' == 'RedHat'"
+      - "{{ ansible_distribution_version }} >= 7.7"
+
+- name: Subscribe with RHSM
+  redhat_subscription:
+    state: present
+    username: "{{ rhn_user }}"
+    password: "{{ rhn_pass }}"
+    pool_ids: "{{ pool_id }}"
+
+- name: Enable RHEL repositories
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  loop: "{{ sat_server_repos }}"
+
+- name: Enable and start firewalld
+  service:
+    name: firewalld
+    enabled: true
+    state: started
+
+- name: Enable various firewalld rules
+  firewalld:
+    port: "{{ item.port }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: '{{ sat_firewalld }}'
+  notify: restart firewalld
+
+- meta: flush_handlers
+
+- name: Install recommended packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ extra_packages }}"
+
+- name: Enable chronyd
+  service:
+    name: chronyd
+    enabled: true
+    state: started

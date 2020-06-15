@@ -1,0 +1,25 @@
+---
+# file: 03-s2i-tasks.yml
+
+- name: create rules s2i build
+  command: "oc new-app rhpam71-prod-immutable-kieserver -p APPLICATION_NAME=hr -p IMAGE_STREAM_NAMESPACE={{ pam_demo_project }} -p SOURCE_REPOSITORY_URL=https://gitlab.consulting.redhat.com/uki-sa/pam-demo/hr-workflows.git -p MAVEN_MIRROR_URL=http://nexus:8081/repository/maven-all-public/ -p KIE_SERVER_HTTPS_SECRET=kieserver-app-secret -p KIE_SERVER_CONTAINER_DEPLOYMENT=onboarding_1.0.0-SNAPSHOT=com.rhdemo.hr:onboarding:1.0.0-SNAPSHOT -n {{ pam_demo_project }}"
+
+- name: remove any routes created by the rule template
+  command: 'oc delete route -l application=hr'
+
+- name: expose rules service
+  command: 'oc expose service/hr-kieserver --name=kieserver-cors --hostname={{ pam_demo_route_base }} --path=/services -n {{ pam_demo_project }}'
+
+- name: create dashboard s2i build
+  command: "oc new-app jboss-eap71-openshift:latest~https://gitlab.consulting.redhat.com/uki-sa/pam-demo/client-app.git --build-env KIESERVER_HOST=http://{{ pam_demo_route_base }} --build-env MAVEN_MIRROR_URL=http://nexus:8081/repository/maven-all-public/ --build-env MAVEN_ARGS='clean package -Dbuild.finalName=dashboard' --name=dashboard -n {{ pam_demo_project }}"
+
+- name: expose dashboard service
+  command: 'oc expose service/dashboard --name=dashboard-cors --hostname={{ pam_demo_route_base }} --path=/dashboard -n {{ pam_demo_project }}'
+  
+- name: get dashboard route
+  command: 'oc get route dashboard-cors --template=\{\{.spec.host\}\}\{\{.spec.path\}\} -n {{ pam_demo_project }}'
+  register: dashboard_route
+
+- debug:
+    msg: 'dashboard will be available at http://{{ dashboard_route.stdout }} when builds complete'
+  

@@ -1,0 +1,16 @@
+- name: NTP package
+  yum:
+    name: "{{ machine_ntp_package | default(common_ntp_package) | default('ntpd') }}"
+    state: present
+
+- name: Generate ntp.conf file
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+  register: ntp_config
+
+- name: Restart ntp
+  service:
+    name: "{{ machine_ntp_daemon | default(common_ntp_daemon) | default(ntpd) }}"
+    state: restarted
+  when: ntp_config is changed

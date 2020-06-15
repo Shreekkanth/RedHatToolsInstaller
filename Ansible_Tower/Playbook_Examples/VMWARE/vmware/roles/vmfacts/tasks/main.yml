@@ -1,0 +1,9 @@
+---
+- vsphere_guest:
+    vcenter_hostname: 192.168.1.207
+    username: administrator@vsphere.local
+    password: "{{ vcenter_password }}"
+    guest: "{{ vm_name }}"
+    vmware_guest_facts: yes
+
+- local_action: wait_for port=22 host="{{ ansible_ssh_host | default(inventory_hostname) }}" search_regex=OpenSSH delay=20

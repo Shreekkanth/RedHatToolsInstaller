@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.driver = "kvm"
+    libvirt.storage_pool_name = "default"
+    libvirt.qemu_use_session = false
+  end
+
+  config.vm.define "sat6" do |sat6|
+    sat6.vm.box = "rhel7"
+    sat6.vm.hostname = "sat6.example.com"
+    sat6.vm.provider :libvirt do |domain|
+      domain.memory = 8192
+      domain.cpus = 2
+      domain.storage :file, :size => '40G'
+    end
+  end
+  
+  if Vagrant.has_plugin?('vagrant-registration')
+    config.registration.skip = true
+    config.registration.unregister_on_halt = false
+  end
+
+  if Vagrant.has_plugin?("vagrant-cachier")
+    config.cache.scope = :box
+    config.cache.synced_folder_opts = {
+      type: :nfs,
+      mount_options: ['rw', 'vers=4', 'tcp', 'nolock']
+    }
+  end
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.verbose = "v"
+    ansible.tags = ENV['ANSIBLE_TAGS'] ||= "all"
+    ansible.playbook = "site.yml"
+    ansible.compatibility_mode = "2.0"
+  end
+end

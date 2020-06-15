@@ -1,0 +1,34 @@
+---
+- name: get api access token
+  uri:
+    url: "{{ spn_auth_url }}"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      grant_type: client_credentials
+      resource: "{{ spn_resource }}"
+      client_id: "{{ spn_client_id }}"
+      client_secret: "{{ spn_client_secret }}"
+  register: oauth_token_response
+  delegate_to: localhost
+  run_once: true
+
+- name: get server name
+  uri:
+    url: "{{ snapi_url }}"
+    method: POST
+    body_format: json
+    headers:
+      access_token: "{{ oauth_token_response.json.access_token }}"
+    body:
+      environment: "{{ deloitte_env_prefix }}"
+      system: "{{ ''.join([subscription_id, resource_group, inventory_hostname, snapi_uuid]) | hash('sha256') }}"
+      vmAllocationRequest:
+      - componentKey: "{{ inventory_hostname }}"
+        numberServers: 1
+  register: server_name_response
+  delegate_to: localhost
+
+- name: set machine hostname
+  set_fact:
+    ansible_hostname: "{{ server_name_response.json.components[0].servers[0] }}"

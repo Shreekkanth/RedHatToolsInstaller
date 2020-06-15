@@ -1,0 +1,16 @@
+---
+cmdb_add_ci_api_base_url:
+cmdb_add_ci_api_key:
+cmdb_add_ci_server_name:
+cmdb_add_ci_assign_group:
+cmdb_add_ci_requestor_id:
+cmdb_add_ci_manager_id:
+cmdb_add_ci_class_name: Server
+cmdb_add_ci_is_ci: true
+cmdb_add_ci_is_asset: false
+cmdb_add_ci_delete_flag: false
+cmdb_add_ci_server_state:
+cmdb_add_ci_server_application:
+cmdb_add_ci_server_core_count: 4
+cmdb_add_ci_server_patch_group: "{{ server_state_map[cmdb_add_ci_server_state | lower].patch_group }}"
+cmdb_add_ci_z_is_backup: true

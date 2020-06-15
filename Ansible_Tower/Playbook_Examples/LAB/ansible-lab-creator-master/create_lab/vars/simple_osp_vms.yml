@@ -1,0 +1,147 @@
+---
+osp_ver: 13 
+osp_version: "osp13"
+bootifFix: false
+goAnsible: true
+create_local_registry: false
+run_undercloud_install: true
+director_hostname: undercloud.kenlab.external
+nable_ssl: true
+create_local_registry: false
+ceph_docker: false
+
+
+config-undercloud-management-ipv4: 192.168.122.51/26
+config-undercloud-management-gw4: 192.168.122.1
+
+platform_group_name: "osp_systems"
+local_lab_delete: "true"
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+  rhel-7-server-extras-rpms:
+    enable: true
+  rhel-7-server-rh-common-rpms:
+    enable: true
+  rhel-7-server-satellite-tools-6.3-rpms:
+    enable: true
+  rhel-ha-for-rhel-7-server-rpms:
+    enable: true
+  rhel-7-server-openstack-13-rpms:
+    enable: true
+  rhel-7-server-rhceph-3-osd-rpms:
+    enable: true
+  rhel-7-server-rhceph-3-mon-rpms:
+    enable: true
+  rhel-7-server-rhceph-3-tools-rpms:
+    enable: true
+  rhel-7-server-nfv-rpms:
+    enable: true
+
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  undercloud:
+    vmname: "undercloud"
+    vmtype: "rhel7"
+    vmtemplate: "na"
+    cluster: "na"
+    vmnics:
+      - nic:
+          vmnicstate: present
+          vmnic_name: eth1
+          vmnic_boot_protocol: static
+          vmnic_ip_address:
+          vmnic_netmask:
+          vmnic_gateway:
+          vmnic_interface: virtio
+          vmnic_profile:
+          vmnic_network: 
+    user_name: root
+    state: present
+    vmmem: 32768
+    vmcores: 8
+    vmsockets: 1
+    vmgrowdisk: 90
+    vmdisks:
+      - disk:
+          vmdiskname: na
+          vmdisksize: na
+          vmdiskformat: na
+          vmdiskinterface: na
+          vmdisksd: na
+          vmdiskstate: absent
+    vmos_type: rhel7
+    vmfile_type: qcow2
+    ipaddress: 192.168.122.51
+    osp_role: undercloud
+  osp-ctr01:
+    vmname: "osp-ctrl01"
+    vmtype: "emptyvm"
+    vmtemplate: "na"
+    cluster: "na"
+    vmnics:
+      - nic:
+          vmnicstate: absent
+          vmnic_name: eth1
+          vmnic_boot_protocol: static
+          vmnic_ip_address:
+          vmnic_netmask:
+          vmnic_gateway:
+          vmnic_interface: virtio
+          vmnic_profile:
+          vmnic_network:
+    user_name: root
+    state: present
+    vmmem: 8192
+    vmcores: 2
+    vmsockets: 1
+    vmgrowdisk: 40
+    vmdisks:
+      - disk:
+          vmdiskname: na
+          vmdisksize: na
+          vmdiskformat: na
+          vmdiskinterface: na
+          vmdisksd: na
+          vmdiskstate: absent
+    vmos_type: rhel7
+    vmfile_type: qcow2
+    ipaddress: 192.168.122.61
+    osp_role: ctrl
+    installer_node: no
+  osp-compute01:
+    vmname: "osp-computel01"
+    vmtype: "emptyvm"
+    vmtemplate: "na"
+    cluster: "na"
+    vmnics:
+      - nic:
+          vmnicstate: absent
+          vmnic_name: eth1
+          vmnic_boot_protocol: static
+          vmnic_ip_address:
+          vmnic_netmask:
+          vmnic_gateway:
+          vmnic_interface: virtio
+          vmnic_profile:
+          vmnic_network:
+    user_name: root
+    state: present
+    vmmem: 8192
+    vmcores: 2
+    vmsockets: 1
+    vmgrowdisk: 40
+    vmdisks:
+      - disk:
+          vmdiskname: na
+          vmdisksize: na
+          vmdiskformat: na
+          vmdiskinterface: na
+          vmdisksd: na
+          vmdiskstate: absent
+    vmos_type: rhel7
+    vmfile_type: qcow2
+    ipaddress: 192.168.122.65
+    osp_role: compute
+    installer_node: no

@@ -1,0 +1,42 @@
+{
+    "asset_relation": {
+        "group": [], 
+        "host": [
+            {
+                "name": "localhost", 
+                "variables": "ansible_connection: local"
+            }
+        ], 
+        "inventory_source": [], 
+        "roles": [
+            {
+                "name": "Ad Hoc", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Admin", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Read", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Use", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Update", 
+                "team": [], 
+                "user": []
+            }
+        ]
+    }, 
+    "asset_type": "inventory", 
+    "name": "Demo Inventory", 
+    "organization": "Default"
+}

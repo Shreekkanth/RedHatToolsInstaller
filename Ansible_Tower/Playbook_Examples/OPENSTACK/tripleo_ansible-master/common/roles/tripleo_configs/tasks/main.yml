@@ -1,0 +1,74 @@
+---
+
+#- name: git clone
+#  git:
+#    repo=ssh://git@gitlab.consulting.redhat.com:2222/ori/tripleo_configs.git
+#    dest=~/tripleo_configs
+#    accept_hostkey=yes
+
+- name: check if triplo_configs exists
+  shell: test -d ~/tripleo_configs
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: git clone
+  git:
+    repo=git@github.com:orimanabu/tripleo_configs.git
+    version=RHOSP10/isolated_predictable
+    dest=~/tripleo_configs
+    accept_hostkey=yes
+  when: result|failed
+
+
+- name: create symlink - templates
+  file: state=link src=~/tripleo_configs dest=~/templates
+ 
+- name: extra-config.yaml
+  template: src=extra-config.yaml.j2 dest=~/tripleo_configs/extra-config.yaml
+
+- name: fencing.yaml
+  template: src=fencing.yaml.j2 dest=~/tripleo_configs/fencing.yaml
+
+- name: firstboot-environment.yaml
+  template: src=firstboot-environment.yaml.j2 dest=~/tripleo_configs/firstboot-environment.yaml
+
+- name: firstboot-config.yaml
+  template: src=firstboot-config.yaml.j2 dest=~/tripleo_configs/firstboot-config.yaml
+
+- name: tripleo_config/hook_scripts directory
+  file: path=~/tripleo_configs/hook_scripts state=directory
+
+- name: hook_scripts/firstboot.sh
+  template: src=hook_scripts/firstboot.sh.j2 dest=~/tripleo_configs/hook_scripts/firstboot.sh mode=0755
+
+- name: hostname.yaml
+  template: src=hostname.yaml.j2 dest=~/tripleo_configs/hostname.yaml
+
+- name: ip-address.yaml
+  template: src=ip-address.yaml.j2 dest=~/tripleo_configs/ip-address.yaml
+
+- name: network-environment.yaml
+  template: src=network-environment.yaml.j2 dest=~/tripleo_configs/network-environment.yaml
+
+- name: node-replacement.yaml
+  template: src=node-replacement.yaml.j2 dest=~/tripleo_configs/node-replacement.yaml
+
+- name: rabbitmq.yaml
+  template: src=rabbitmq.yaml.j2 dest=~/tripleo_configs/rabbitmq.yaml
+
+- name: storage-environment.yaml
+  template: src=storage-environment.yaml.j2 dest=~/tripleo_configs/storage-environment.yaml
+
+- name: swap.yaml
+  template: src=swap.yaml.j2 dest=~/tripleo_configs/swap.yaml
+
+- name: timezone.yaml
+  template: src=timezone.yaml.j2 dest=~/tripleo_configs/timezone.yaml
+
+- name: tripleo_config/scripts directory
+  file: path=~/tripleo_configs/scripts state=directory
+
+- name: nat.sh
+  template: src=nat.sh.j2 dest=~/tripleo_configs/scripts/nat.sh mode=0755

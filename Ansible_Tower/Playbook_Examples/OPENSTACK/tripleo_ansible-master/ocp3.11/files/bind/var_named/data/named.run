@@ -1,0 +1,814 @@
+managed-keys-zone: loaded serial 0
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone localhost.localdomain/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone localhost/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+all zones loaded
+running
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: journal file is out of date: removing journal file
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone example.com/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone localhost.localdomain/IN: loaded serial 0
+zone osetest.local/IN: loaded serial 17062201
+all zones loaded
+running
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+all zones loaded
+running
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: No valid trust anchors for '.'!
+managed-keys-zone: 0 key(s) revoked, 2 still pending
+managed-keys-zone: All queries to '.' will fail
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone example.com/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+all zones loaded
+running
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+validating @0x7f9d2c118fd0: . DNSKEY: unable to find a DNSKEY which verifies the DNSKEY RRset and also matches a trusted key for '.'
+validating @0x7f9d2c118fd0: . DNSKEY: please check the 'trusted-keys' for '.' in named.conf.
+error (no valid KEY) resolving './DNSKEY/IN': 10.64.255.25#53
+validating @0x7f9d3458dd00: . DNSKEY: unable to find a DNSKEY which verifies the DNSKEY RRset and also matches a trusted key for '.'
+validating @0x7f9d3458dd00: . DNSKEY: please check the 'trusted-keys' for '.' in named.conf.
+error (no valid KEY) resolving './DNSKEY/IN': 10.68.5.26#53
+error (broken trust chain) resolving 'com/DS/IN': 10.68.5.26#53
+error (no valid DS) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d3458b060: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34591d00: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.68.5.26#53
+  validating @0x7f9d34593d10: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345949a0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34593d10: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345969b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c11a350: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c11bc70: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c1156a0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c11a350: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345969b0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d345982d0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d345982d0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c11afe0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c11bc70: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.68.5.26#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.68.5.26#53
+validating @0x7f9d2c11f000: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'arpa/DS/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'arpa/DNSKEY/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'ip6.arpa/DS/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'ip6.arpa/DNSKEY/IN': 10.64.255.25#53
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving '3.8.f.6.7.7.a.c.f.0.6.8.3.1.4.3.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa/PTR/IN': 10.64.255.25#53
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving '3.8.f.6.7.7.a.c.f.0.6.8.3.1.4.3.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa/PTR/IN': 10.64.255.25#53
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c124940: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving '7.2.3.a.0.d.a.5.b.8.6.a.d.7.8.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa/PTR/IN': 10.64.255.25#53
+        *validating @0x7f9d3459af70: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d3459af70: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d3459af70: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving '7.2.3.a.0.d.a.5.b.8.6.a.d.7.8.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa/PTR/IN': 10.64.255.25#53
+  validating @0x7f9d2c1156a0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c123cb0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c1156a0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c123cb0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c141e50: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c142ae0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34599650: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+        *validating @0x7f9d3459cf80: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d3459cf80: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d3459cf80: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving '3.8.f.6.7.7.a.c.f.0.6.8.3.1.4.3.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa/PTR/IN': 10.64.255.25#53
+        *validating @0x7f9d2c15fbf0: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c15fbf0: arpa DS: bad cache hit (./DNSKEY)
+        *validating @0x7f9d2c15fbf0: arpa DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving '3.8.f.6.7.7.a.c.f.0.6.8.3.1.4.3.0.0.0.0.0.0.0.0.0.0.0.0.0.8.e.f.ip6.arpa/PTR/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34599650: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15e2d0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15bd20: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15c9b0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15d640: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d2c15ef60: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'debugs.nrt.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d2c15e9c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d2c15e9c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d2c15e9c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d2c15e9c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f9d345989c0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34599650: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f9d34599650: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f9d3459a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.68.5.26#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.68.5.26#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f9d34597d30: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: No valid trust anchors for '.'!
+managed-keys-zone: 0 key(s) revoked, 2 still pending
+managed-keys-zone: All queries to '.' will fail
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone example.com/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+all zones loaded
+running
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+validating @0x7fdac0004eb0: . DNSKEY: unable to find a DNSKEY which verifies the DNSKEY RRset and also matches a trusted key for '.'
+validating @0x7fdac0004eb0: . DNSKEY: please check the 'trusted-keys' for '.' in named.conf.
+error (no valid KEY) resolving './DNSKEY/IN': 10.64.255.25#53
+validating @0x7fdac8692cc0: . DNSKEY: unable to find a DNSKEY which verifies the DNSKEY RRset and also matches a trusted key for '.'
+validating @0x7fdac8692cc0: . DNSKEY: please check the 'trusted-keys' for '.' in named.conf.
+error (no valid KEY) resolving './DNSKEY/IN': 10.68.5.26#53
+error (broken trust chain) resolving 'com/DS/IN': 10.68.5.26#53
+error (no valid DS) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7fdac8696cc0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.68.5.26#53
+  validating @0x7fdac8698cd0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: No valid trust anchors for '.'!
+managed-keys-zone: 0 key(s) revoked, 2 still pending
+managed-keys-zone: All queries to '.' will fail
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+all zones loaded
+running
+zone example.com/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: No valid trust anchors for '.'!
+managed-keys-zone: 0 key(s) revoked, 2 still pending
+managed-keys-zone: All queries to '.' will fail
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone localhost/IN: loaded serial 0
+zone osetest.local/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+all zones loaded
+running
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys-zone: No valid trust anchors for '.'!
+managed-keys-zone: 0 key(s) revoked, 2 still pending
+managed-keys-zone: All queries to '.' will fail
+managed-keys-zone: loaded serial 2
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone osetest.local/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone localhost/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+all zones loaded
+running
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+validating @0x7f69780053c0: . DNSKEY: unable to find a DNSKEY which verifies the DNSKEY RRset and also matches a trusted key for '.'
+validating @0x7f69780053c0: . DNSKEY: please check the 'trusted-keys' for '.' in named.conf.
+error (no valid KEY) resolving './DNSKEY/IN': 10.64.255.25#53
+validating @0x7f6980691d20: . DNSKEY: unable to find a DNSKEY which verifies the DNSKEY RRset and also matches a trusted key for '.'
+validating @0x7f6980691d20: . DNSKEY: please check the 'trusted-keys' for '.' in named.conf.
+error (no valid KEY) resolving './DNSKEY/IN': 10.68.5.26#53
+error (broken trust chain) resolving 'com/DS/IN': 10.64.255.25#53
+error (no valid DS) resolving 'www.google.com/A/IN': 10.68.5.26#53
+  validating @0x7f6980695d20: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'www.google.com/A/IN': 10.64.255.25#53
+  validating @0x7f6978013c90: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f6978016930: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f6978015ca0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+    validating @0x7f6978016930: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock01.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f69806989c0: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f698069a2e0: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+  validating @0x7f6978018940: com DS: bad cache hit (./DNSKEY)
+    validating @0x7f697801a260: com DS: bad cache hit (./DNSKEY)
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/A/IN': 10.64.255.25#53
+error (broken trust chain) resolving 'clock02.util.phx2.redhat.com/AAAA/IN': 10.64.255.25#53
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys.bind.jnl: create: permission denied
+managed-keys-zone: sync_keyzone:dns_journal_open -> unexpected error
+managed-keys-zone: unable to synchronize managed keys: unexpected error
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone localhost/IN: loaded serial 0
+all zones loaded
+running
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+  validating @0x7fd1d411a520: com SOA: verify failed due to bad signature (keyid=5528): RRSIG validity period has not begun
+  validating @0x7fd1d411a520: com SOA: no valid signature found
+    validating @0x7fd1dc58ecb0: com SOA: verify failed due to bad signature (keyid=5528): RRSIG validity period has not begun
+    validating @0x7fd1dc58ecb0: com SOA: no valid signature found
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys.bind.jnl: create: permission denied
+managed-keys-zone: sync_keyzone:dns_journal_open -> unexpected error
+managed-keys-zone: unable to synchronize managed keys: unexpected error
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+all zones loaded
+running
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys.bind.jnl: create: permission denied
+managed-keys-zone: sync_keyzone:dns_journal_open -> unexpected error
+managed-keys-zone: unable to synchronize managed keys: unexpected error
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+all zones loaded
+running
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys.bind.jnl: create: permission denied
+managed-keys-zone: sync_keyzone:dns_journal_open -> unexpected error
+managed-keys-zone: unable to synchronize managed keys: unexpected error
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone osetest.local/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+all zones loaded
+running
+zone example.com/IN: sending notifies (serial 17062201)
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)
+  validating @0x7f56706a5a60: com SOA: verify failed due to bad signature (keyid=5528): RRSIG validity period has not begun
+  validating @0x7f56706a5a60: com SOA: no valid signature found
+    validating @0x7f5668005120: com SOA: verify failed due to bad signature (keyid=5528): RRSIG validity period has not begun
+    validating @0x7f5668005120: com SOA: no valid signature found
+received control channel command 'stop'
+shutting down: flushing changes
+stopping command channel on 127.0.0.1#953
+stopping command channel on ::1#953
+no longer listening on 127.0.0.1#53
+no longer listening on 10.0.1.11#53
+no longer listening on 172.16.99.11#53
+no longer listening on ::1#53
+exiting
+managed-keys.bind.jnl: create: permission denied
+managed-keys-zone: sync_keyzone:dns_journal_open -> unexpected error
+managed-keys-zone: unable to synchronize managed keys: unexpected error
+zone 0.in-addr.arpa/IN: loaded serial 0
+zone 1.0.10.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 99.16.172.in-addr.arpa/IN: loaded serial 17062201
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone example.com/IN: loaded serial 17062201
+zone localhost.localdomain/IN: loaded serial 0
+zone osetest.local/IN: loaded serial 17062201
+zone localhost/IN: loaded serial 0
+all zones loaded
+running
+zone osetest.local/IN: sending notifies (serial 17062201)
+zone example.com/IN: sending notifies (serial 17062201)
+zone 99.16.172.in-addr.arpa/IN: sending notifies (serial 17062201)
+zone 1.0.10.in-addr.arpa/IN: sending notifies (serial 17062201)

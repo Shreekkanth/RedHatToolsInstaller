@@ -1,0 +1,37 @@
+<%#
+kind: ptable
+name: BDI bare-metal partitioning layout
+oses:
+- RedHat 7
+%>
+# Minimal partition layout for bare metal systems. 
+# Provides enough room for new filesystems like /opt and others, if needed.
+# The system_disk var can be defined as a host parameter i.e. system_disk = /dev/sda
+# This is useful on blade systems where a kickstart unattended installation may cause existing 
+# data on other LUNs to be completely erased.
+
+# By default, use first multipath device.
+<% systemdisk = (@host.params['system_disk'] or "/dev/sda") -%>
+
+ignoredisk --only-use=<%= systemdisk %>
+
+bootloader --location=mbr --append="nofb transparent_hugepage=never" 
+
+clearpart --all --drives=<%= systemdisk %>
+
+
+part /boot --fstype=xfs --size=512 --ondrive=<%= systemdisk %>
+part pv.008002 --grow --size=100 --ondrive=<%= systemdisk %>
+volgroup rootvg --pesize=4096 pv.008002
+logvol /home --fstype=xfs --name=lv_home --vgname=rootvg --size=1024
+logvol /opt --fstype=xfs --name=lv_opt --vgname=rootvg --size=512
+logvol / --fstype=xfs --name=lv_root --vgname=rootvg --size=6144
+logvol swap --name=lv_swap --vgname=rootvg --size=16384
+logvol /tmp --fstype=xfs --name=lv_tmp --vgname=rootvg --size=2048
+logvol /var --fstype=xfs --name=lv_var --vgname=rootvg --size=2048
+logvol /var/log --fstype=xfs --name=lv_var_log --vgname=rootvg --size=10240
+logvol /var/log/audit --fstype=xfs --name=lv_var_log_audit --vgname=rootvg --size=1024
+logvol /var/tmp --fstype=xfs --name=lv_var_tmp --vgname=rootvg --size=1024
+logvol /var/crash --fstype=xfs --name=lv_var_crash --vgname=rootvg --size=2048
+
+logvol /u01 --fstype=xfs --name=lv_u01 --vgname=rootvg --size=512000

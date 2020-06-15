@@ -1,0 +1,3 @@
+DEVICE=br-storagemgmt
+TYPE=Bridge
+ONBOOT=yes

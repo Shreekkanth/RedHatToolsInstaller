@@ -1,0 +1,18 @@
+---
+
+# OVERVIEW
+#   TODO
+#
+# VARS
+#   TODO
+#
+
+- name: Satellite Capsule Servers
+  hosts: capsule-servers
+  roles:
+    - role: satellite_capsule_prerequests
+
+- name: Satellite Configuration Capsule Serviers
+  hosts: config-capsule-servers
+  roles:
+    - role: satellite_storage

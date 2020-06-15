@@ -1,0 +1,8 @@
+- win_updates:
+    category_names: "{{ categories }}"
+  register: update_result
+
+- win_reboot:
+    shutdown_timeout_sec: 3600
+    reboot_timeout_sec: 3600
+  when: update_result.reboot_required and reboot_server

@@ -1,0 +1,35 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Remove DataSources non-XA & XA
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/remove_datasources.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+# Remove DataSources:
+{% for item in kie_ds_conf_list %}
+
+data-source remove --name={{item.name}}
+
+{% endfor %}
+
+{% for item in kie_ds_xa_conf_list %}
+
+xa-data-source remove --name={{item.name}}
+
+{% endfor %}
+
+
+run-batch
+#
+# EOF

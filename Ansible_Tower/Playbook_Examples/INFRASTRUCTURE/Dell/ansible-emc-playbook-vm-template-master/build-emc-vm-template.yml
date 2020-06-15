@@ -1,0 +1,279 @@
+---
+- name: "Create EMC VM template"
+  hosts: "localhost"
+  gather_facts: False
+  vars_prompt:
+    - name: "vctr_datacenter_input"
+      prompt: "Enter the datacenter where you would like to create the VM template.  Choices are 'hoppoc', 'duprd3'"
+      default: "hoppoc"
+      private: False
+    - name: "vctr_user_input"
+      prompt: "Enter the vCenter admin username"
+      default: "openadmin@vsphere.local"
+      private: False
+    - name: "vctr_pass_input"
+      prompt: "Enter the vCenter admin user's password"
+      private: True
+    - name: "vm_build_type_input"
+      prompt: "Which type of VM template build, 'bios' or 'efi'"
+      default: "bios"
+      private: False
+    - name: "vctr_vm_template_ip_input"
+      prompt: "Enter the VM IP address defined in the kickstart config"
+      default: "10.253.132.100"
+      private: False
+    - name: "vctr_vm_template_name_input"
+      prompt: "Enter the name of the VM template to create"
+      default: "zzz-rob-tst02"
+      private: False
+    - name: "satellite_sub_mgmt_version_input"
+      prompt: "Do you want to prepare the template for Satellite 'sat5' or 'sat6'?"
+      default: "sat5"
+      private: False
+    - name: "vctr_update_vm_iso"
+      prompt: "Do you want to update the VM template build ISO from the source to the datastore"
+      default: "no"
+      private: False
+    - name: "ks_iso_path_prompt"
+      prompt: "Enter the fully-qualified path to the kickstart ISO"
+      default: "/apps/data/built_iso/rhel7.6_emc_ks_bios.iso"
+      private: False
+    - name: "win_export_user_input"
+      prompt: "Enter the Windows username with access to the template export share"
+      private: False
+    - name: "win_export_pass_input"
+      prompt: "Enter the Windows password with access to the template export share"
+      private: True
+    - name: "win_export_domain_input"
+      prompt: "Enter the Windows domain for the Windows template export username"
+      private: False
+  tasks:
+    - name: "Ensure provided input variables are available across plays"
+      set_fact:
+        vctr_user: "{{ vctr_user_input }}"
+        vctr_pass: "{{ vctr_pass_input }}"
+        vctr_vm_template_ip: "{{ vctr_vm_template_ip_input }}"
+        vctr_vm_template_name: "{{ vctr_vm_template_name_input }}"
+        vctr_datacenter_name: "{{ vctr_datacenter_input }}"
+        satellite_sub_mgmt_version: "{{ satellite_sub_mgmt_version_input }}"
+        vm_build_type: "{{ vm_build_type_input | lower }}"
+        win_export_user: "{{ win_export_user_input }}"
+        win_export_pass: "{{ win_export_pass_input }}"
+        win_export_domain: "{{ win_export_domain_input }}"
+        vctr_iso_source_path: "{{ ks_iso_path_prompt }}"
+      no_log: True
+      tags:
+        - "always"
+
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+      tags:
+        - "always"
+
+    - name: "Include common variables"
+      include_vars: "vars/common.yml"
+      tags:
+        - "always"
+
+    - name: "Ensure no existing devices exist on kickstart IP address"
+      block:
+        - name: "Ensure xfreerdp is installed to test for RDP connections"
+          package:
+            name: "xfreerdp"
+            state: "installed"
+
+        - name: "Ensure no existing devices exist on kickstart IP address | RDP"
+          command: "/usr/bin/xfreerdp --ignore-certificate --authonly -u fakeuser -p fakepass {{ vctr_vm_template_ip }}"
+          register: "rdp_test"
+          failed_when: "'Authentication failure, check credentials.' in rdp_test.stdout_lines"
+          changed_when: False
+
+        - name: "Ensure no existing devices exist on kickstart IP address | SSH"
+          wait_for_connection:
+            timeout: "10"
+          register: "ssh_test"
+          failed_when: "'Permission denied' in ssh_test.msg"
+          delegate_to: "{{ vctr_vm_template_ip }}"
+
+        - name: "Ensure no existing devices exist on kickstart IP address | ICMP"
+          command: "/usr/bin/ping {{ vctr_vm_template_ip }} -c 5"
+          register: "ping_test"
+          failed_when: "('Destination Host Unreachable' not in ping_test.stdout) or ('100% packet loss' not in ping_test.stdout)"
+          changed_when: False
+      tags:
+        - "vm_exist_check"
+        - "vm_create"
+
+    - name: "Ensure VM ISO exists in vCenter"
+      vsphere_copy:
+        host: "{{ vctr_hostname }}"
+        login: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        datastore: "{{ vctr_iso_datastore }}"
+        src: "{{ vctr_iso_source_path }}"
+        path: "{{ vctr_iso_path }}"
+      when: "vctr_update_vm_iso | bool"
+      no_log: True
+
+    - name: "Ensure VM Folder exists in vCenter"
+      vcenter_folder:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        folder_name: "{{ vctr_vm_template_folder }}"
+        folder_type: "vm"
+        state: "present"
+      register: "vm_folder_result"
+      tags:
+        - "vm_create"
+        - "vm_folder"
+
+    - debug:
+        var: "vm_folder_result"
+        verbosity: "1"
+      tags:
+        - "vm_create"
+        - "vm_folder"
+
+    - name: "Create new VM in vCenter"
+      vmware_guest:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        cluster: "{{ vctr_cluster }}"
+        folder: "{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        guest_id: "{{ vctr_vm_template_os_type }}"
+        cdrom: "{{ vctr_vm_template_cdrom }}"
+        disk: "{{ vctr_vm_template_disks }}"
+        networks: "{{ vctr_vm_template_networks }}"
+        hardware: "{{ vctr_vm_template_hardware }}"
+        state: "poweredon"
+      register: "vm_create_result"
+      no_log: True
+      tags:
+        - "vm_create"
+
+    - debug:
+        var: "vm_create_result"
+        verbosity: "1"
+      tags:
+        - "vm_create"
+
+    - name: "Set VM UUID"
+      set_fact:
+        vm_uuid: "{{ vm_create_result.instance.hw_product_uuid }}"
+      tags:
+        - "vm_create"
+
+    - debug:
+        var: "vm_uuid"
+        verbosity: "1"
+      tags:
+        - "vm_create"
+
+    # Ensure we can connect to the built VM
+    - name: "Add new VM IP to temporary inventory"
+      add_host:
+        name: "{{ vctr_vm_template_ip }}"
+        groups:
+          - "new_template"
+        ansible_user: "root"
+      tags:
+        - "always"
+      register: "inventory_result"
+
+    - debug:
+        var: "inventory_result"
+        verbosity: "1"
+
+    - debug:
+        msg: "Installing OS from kickstart ISO, please wait for SSH to become available on the new VM template"
+
+- name: "Wait for new VM to become available"
+  import_playbook: "playbooks/wait_for_connection.yml"
+  tags:
+    - "vm_create"
+    - "seed_snapshot"
+    - "postconfig"
+
+- name: "Create seed snapshot"
+  import_playbook: "playbooks/vm_seed_snapshot.yml"
+  tags:
+    - "seed_snapshot"
+
+- name: "Post-provisioning"
+  import_playbook: "playbooks/post_provisioning.yml"
+  tags:
+    - "postconfig"
+
+- name: "Finalize VM Settings"
+  import_playbook: "playbooks/vm_finalize_configuration.yml"
+  tags:
+    - "postconfig"
+    - "finalize_vm_config"
+
+- name: "Wait for new VM to become available"
+  import_playbook: "playbooks/wait_for_connection.yml"
+  tags:
+    - "cleanup"
+    - "vmware_tools"
+
+- name: "VMWare Tools Mount"
+  import_playbook: "playbooks/vmware_tools_mount.yml"
+  tags:
+    - "vmware_tools"
+    - "vmware_tools_mount"
+
+- name: "VMWare Tools Copy"
+  import_playbook: "playbooks/vmware_tools_copy.yml"
+  tags:
+    - "vmware_tools"
+    - "vmware_tools_copy"
+
+- name: "VMWare Tools Unmount"
+  import_playbook: "playbooks/vmware_tools_unmount.yml"
+  tags:
+    - "vmware_tools"
+    - "vmware_tools_unmount"
+
+- name: "Install VMWare Tools"
+  import_playbook: "playbooks/vmware_tools_install.yml"
+  tags:
+    - "vmware_tools"
+    - "vmware_tools_install"
+
+- name: "Cleanup VM Operating System prior to template conversion"
+  import_playbook: "playbooks/vm_cleanup.yml"
+  tags:
+    - "cleanup"
+
+- name: "Shutdown clean VM"
+  import_playbook: "playbooks/vm_shutdown.yml"
+  tags:
+    - "vm_shutdown"
+    - "wrap_up"
+
+- name: "Create final snapshot"
+  import_playbook: "playbooks/vm_final_snapshot.yml"
+  tags:
+    - "final_snapshot"
+    - "wrap_up"
+
+- name: "Convert VM to template"
+  import_playbook: "playbooks/vm_convert_to_template.yml"
+  tags:
+    - "vm_convert_to_template"
+    - "wrap_up"
+
+- name: "Export VM to OVF and Convert to OVA"
+  import_playbook: "playbooks/vm_export_to_ovf.yml"
+  tags:
+    - "vm_export_to_ovf"
+    - "wrap_up"

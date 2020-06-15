@@ -1,0 +1,36 @@
+---
+- hosts: "{{ device_name }}"
+  connection: network_cli
+  gather_facts: false
+  become: true
+  become_method: enable
+
+  vars:
+    switchport: GigabitEthernet1/38
+
+  tasks:
+    - name: Disable port
+      include_role:
+        name: cisco_ios_set_port_enable_state
+      vars:
+        cisco_ios_set_port_enable_state_switchport: "{{ switchport }}"
+        cisco_ios_set_port_enable_state_enabled: true
+
+    - name: Delete scheduled job
+      include_role:
+        name: delete_scheduled_job
+      vars:
+        delete_scheduled_job_template_id: 14
+        delete_scheduled_job_name: "{{ device_name }}|{{ switchport }}"
+    # - name: Schedule enable port
+    #   uri:
+    #     user: "{{ tower_username }}"
+    #     password: "{{ tower_password }}"
+    #     validate_certs: no
+    #     force_basic_auth: true
+    #     url: "https://{{ tower_host }}/api/v2/job_templates/{{ template_id }}/schedules/"
+    #     method: POST
+    #     body: "{{ payload }}"
+    #     body_format: json
+    #     return_content: yes
+    #   register: return_value

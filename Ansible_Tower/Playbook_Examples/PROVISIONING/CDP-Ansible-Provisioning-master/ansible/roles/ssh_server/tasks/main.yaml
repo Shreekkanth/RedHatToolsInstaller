@@ -1,0 +1,26 @@
+
+- name: Configure SSH server
+  lineinfile:
+    path: "{{ sshd_config_file }}"
+    regexp: "^#?UseDNS"
+    line: "UseDNS no"
+  register: sshd_config
+
+- name: Remove old ssh host keys
+  file:
+    path: "{{ sshd_config_dir }}/{{ item }}"
+    state: absent
+  with_items:
+  - ssh_host_ecdsa_key
+  - ssh_host_ecdsa_key.pub
+  - ssh_host_ed25519_key
+  - ssh_host_ed25519_key.pub
+  - ssh_host_rsa_key
+  - ssh_host_rsa_key.pub
+  when: sshd_config is changed
+
+- name: Restart sshd
+  systemd:
+    name: sshd
+    state: restarted
+  when: sshd_config is changed

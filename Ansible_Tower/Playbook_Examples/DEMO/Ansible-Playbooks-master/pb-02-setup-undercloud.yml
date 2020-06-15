@@ -1,0 +1,425 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: prompt_env
+      prompt: Confirm the environment to target
+      private: no
+  tasks:
+    - assert:
+        that:
+          - prompt_env == named_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not {{ named_env }}"
+        success_msg: "Targeting {{ prompt_env }} environment"
+
+  tags:
+    - always
+
+
+
+- hosts: director
+  name: Check variables
+  gather_facts: no
+  tasks:
+    - assert:
+        that:
+          - named_env is defined
+          - undercloud is defined
+          - overcloud is defined
+
+  tags:
+    - always
+
+
+
+# The following steps are taken from https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/director_installation_and_usage/
+- hosts: director
+  name: 4.1 Creating the stack user
+  tasks:
+    - name: Create stack user
+      user:
+        name: stack
+        password: "{{ undercloud.stack_user_password }}"
+        state: present
+
+    - name: password-less sudo
+      copy:
+        dest: /etc/sudoers.d/stack
+        content: "stack ALL=(root) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: 0644
+
+  tags:
+    - '4.1'
+
+
+
+- hosts: director
+  name: 4.2 Creating directories for templates and images
+  become: yes
+  become_user: stack
+  tasks:
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      with_items:
+        - ~/images
+        - ~/templates
+
+  tags:
+    - '4.2'
+
+
+
+- hosts: director
+  name: 4.3 Setting the undercloud hostname
+  tasks:
+    - name: Set hostname
+      hostname:
+        name: "{{ director.hostname | mandatory }}"
+
+  tags:
+    - '4.3'
+
+
+
+- hosts: director
+  name: 4.4 Registering and updating your undercloud
+  vars:
+    activation_key: "{{ redhat_satellite_director_ak }}"
+  tasks:
+    - name: Subscribe the system
+      include_role:
+        name: subscribe
+
+    - name: Disable all repositories
+      rhsm_repository:
+        name: "*"
+        state: disabled
+
+    - name: Enable the needed repositories
+      rhsm_repository:
+        name:
+          - rhel-7-server-rpms
+          - rhel-7-server-extras-rpms
+          - rhel-7-server-rh-common-rpms
+          - rhel-ha-for-rhel-7-server-rpms
+          - rhel-7-server-openstack-13-rpms
+          - rhel-7-server-satellite-tools-6.3-rpms
+        state: enabled
+
+    - name: Find out if python-tripleoclient installed
+      shell: "rpm -q python-tripleoclient"
+      args:
+        warn: false
+      register: rpm_query
+      changed_when: false
+      failed_when: false
+
+    # yum update is only ran during the initial install
+    # IF python-tripleoclient is not installed: yum update
+    # ELSE: skip these steps
+    - name: yum update
+      yum:
+        name: '*'
+        state: latest
+      register: yum_update
+      when: rpm_query.rc == 1
+
+    - name: Reboot
+      reboot:
+      when: yum_update.changed
+
+  tags:
+    - '4.4'
+
+
+
+- hosts: director
+  name: Customization of user environment
+  tasks:
+    - name: Install useful packages
+      yum:
+        name: "{{ packages }}"
+        state: installed
+      vars:
+        packages:
+          - tmux
+          - tree
+          - vim
+          - libguestfs-tools
+          - libguestfs-xfs
+
+    - name: Add useful aliases for openstack and tmux
+      become: yes
+      become_user: stack
+      lineinfile:
+        path: ~/.bashrc
+        regexp: "^{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+          - { regexp: '^alias os=',  line: 'alias os="openstack"' }
+          - { regexp: '^alias osp=',  line: 'alias osp="openstack"' }
+          - { regexp: '^alias tlst=', line: 'alias tlst="tmux ls"' }
+          - { regexp: '^alias tmat=', line: 'alias tmat="tmux attach -t"' }
+          - { regexp: '^alias tnew=', line: 'alias tnew="tmux new -s"' }
+  tags:
+    - customize
+
+
+
+- hosts: director
+  name: 4.5. Installing the director packages
+  tasks:
+    - name: Install python-tripleoclient
+      yum:
+        name: python-tripleoclient
+        state: present
+
+  tags:
+    - '4.5'
+
+
+
+- hosts: director
+  name: 4.6. Installing ceph-ansible
+  tasks:
+    - name: Enable the Ceph Tools repository
+      rhsm_repository:
+        name:
+          - rhel-7-server-rhceph-3-tools-rpms
+        state: enabled
+      when: overcloud.ceph == true
+
+    - name: Install ceph-ansible
+      yum:
+        name: ceph-ansible
+        state: present
+      when: overcloud.ceph == true
+
+  tags:
+    - '4.6'
+
+
+
+- hosts: localhost
+  connection: local
+  name: 4.7/4.8. Configuring the director (locally)
+  vars:
+    input_folder: "{{ path_stack_templates }}"
+    output_folder: "debug/{{ named_env }}"
+  tasks:
+    - name: Generate Undercloud and Overcloud templates on the local filesystem
+      include_role:
+        name: template_overcloud
+
+  tags:
+    - '4.7-localhost'
+    - '4.8-localhost'
+    - '4.7'
+    - '4.8'
+
+
+
+- hosts: director
+  name: 4.7/4.8. Configuring the director
+  become: yes
+  become_user: stack
+  vars:
+    input_folder: "{{ path_stack_templates }}"
+    output_folder: "~"
+  tasks:
+    - name: Generate Undercloud and Overcloud templates on the Director filesystem
+      include_role:
+        name: template_overcloud
+
+  tags:
+    - '4.7-director'
+    - '4.8-director'
+    - '4.7'
+    - '4.8'
+
+
+
+- hosts: director
+  name: Trust overcloud cert from the undercloud
+  tasks:
+    - name: Copy certs to ca-trust
+      copy:
+        src: "{{ item }}"
+        dest: /etc/pki/ca-trust/source/anchors/
+        remote_src: yes
+      with_items:
+        - "/home/stack/files/ca.crt.pem"
+
+    - name: update-ca-trust
+      shell: update-ca-trust extract
+      changed_when: false
+
+  tags:
+    - 'A.7'
+
+
+
+- hosts: director
+  name: 4.9. Installing the director
+  become: yes
+  become_user: stack
+  tasks:
+    - name: Run undercloud install
+      shell: openstack undercloud install
+
+  tags:
+    - '4.9'
+
+
+
+- hosts: director
+  name: 4.10. Obtaining images for overcloud nodes
+  become: yes
+  become_user: stack
+  tasks:
+    - name: Install packages
+      become: yes
+      become_user: root
+      yum:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+          - rhosp-director-images
+          - rhosp-director-images-ipa
+
+    - name: Make ~/images directory
+      file:
+        path: ~/images
+        state: directory
+        mode: 0755
+
+    - name: Untar images
+      unarchive:
+        src: /usr/share/rhosp-director-images/overcloud-full-latest-13.0.tar
+        remote_src: yes
+        dest: ~/images
+
+    - name: Untar images
+      unarchive:
+        src: /usr/share/rhosp-director-images/ironic-python-agent-latest-13.0.tar
+        remote_src: yes
+        dest: ~/images
+
+    - name: Set root password for Overcloud image
+      shell: "virt-customize -a ~/images/overcloud-full.qcow2 --root-password password:root123"
+
+    - name: Upload images to Glance
+      shell: source ~/stackrc; openstack overcloud image upload --image-path ~/images/ --update-existing
+
+  tags:
+    - '4.10'
+
+
+
+- hosts: director
+  name: 4.11. Setting a nameserver for the control plane
+  become: yes
+  become_user: stack
+  tasks:
+    - name: Set nameserver
+      shell: source ~/stackrc; openstack subnet set --dns-nameserver {{ undercloud.undercloud_nameservers }} ctlplane-subnet
+      # The shell command will:
+      # - Fail if the DNS server is already set
+      # - Succeed if DNS server is added or changed
+      # So, let's just ignore errors and always try to set it
+      failed_when: false
+  tags:
+    - '4.11'
+
+
+
+# overcloud_images.yaml comes from static templates for now
+# - hosts: director
+#   name: 5.6 Generate overcloud-images.yaml
+#   become: yes
+#   become_user: stack
+#   tasks:
+#     - name: openstack overcloud container image prepare
+#       shell: "source ~/stackrc; ~/scripts/image-prepare.sh"
+
+#   tags:
+#     - '5.6'
+
+
+
+- hosts: kvm
+  name: Grab controller domain information for instackenv.yaml
+  become: yes
+  become_user: root
+  tasks:
+    - name: Grab MAC address of br-provision NIC
+      shell: virsh dumpxml controller-{{ named_env }} | grep -B4 br-provision | grep mac | cut -d "'" -f2
+      register: shell_output
+
+    - name: Add host variable for controller
+      add_host:
+        name: controller-domain
+        mac: "{{ shell_output.stdout }}"
+
+  tags:
+    - vbmc
+
+
+
+- hosts: director
+  name: Place controller provisioning NIC MAC into instackenv.yaml
+  become: yes
+  become_user: stack
+  tasks:
+    - name: Copy sample instackenv.yaml file
+      copy:
+        src: ~/instackenv.yaml.sample
+        dest: ~/instackenv.yaml
+        remote_src: yes
+
+    - name: Replace MAC address for controller in instackenv.yaml
+      replace:
+        path: ~/instackenv.yaml
+        regexp: '\[dummy\]'
+        replace: "['{{ hostvars['controller-domain']['mac'] }}']"
+
+  tags:
+    - vbmc
+
+
+
+- hosts: director
+  name: 6.1. Registering Nodes for the Overcloud
+  become: yes
+  become_user: stack
+  tasks:
+    # Now we get the roles, names, passwords and IPs from our instackenv.yaml file, but since we didn't specify the mac
+    # we don't get the port in neutron that we need for later on
+    - name: openstack overcloud node import ~/instackenv.yaml
+      shell: "source ~/stackrc; openstack overcloud node import ~/instackenv.yaml"
+
+  tags:
+    - '6.1'
+
+
+
+- hosts: director
+  name: 6.2. Inspecting the Hardware of Nodes
+  become: yes
+  become_user: stack
+  tasks:
+    # Now we use the introspection process to get the ports created and get a detailed inventory of the nodes
+    - name: openstack overcloud node introspect --all-manageable
+      shell: "source ~/stackrc; openstack overcloud node introspect --all-manageable"
+
+    - name: openstack overcloud node provide --all-manageable
+      shell: "source ~/stackrc; openstack overcloud node provide --all-manageable"
+
+  tags:
+    - '6.2'

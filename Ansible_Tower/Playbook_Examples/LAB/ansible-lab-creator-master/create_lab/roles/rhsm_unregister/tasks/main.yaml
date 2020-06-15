@@ -1,0 +1,10 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Register with Red Hat
+  redhat_subscription:
+    state: absent 
+    activationkey: "{{ rh_ak }}"
+    org_id: "{{ rh_orgid }}"
+

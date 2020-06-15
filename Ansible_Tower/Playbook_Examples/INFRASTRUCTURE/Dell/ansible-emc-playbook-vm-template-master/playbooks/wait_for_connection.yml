@@ -1,0 +1,8 @@
+---
+- name: "Validate OS is built and available"
+  hosts: "new_template"
+  gather_facts: False
+  tasks:
+    - name: "Ensure VM is available"
+      wait_for_connection:
+        timeout: "1200"

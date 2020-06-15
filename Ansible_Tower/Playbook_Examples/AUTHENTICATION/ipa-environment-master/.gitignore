@@ -1,0 +1,89 @@
+### Ansible Role Dependencies ###
+# Make sure external roles are not committed to this repo.
+.roles_cache/
+.infra
+
+### Environments ###
+development/inventory
+integration/inventory
+
+### Externally hosted Environments ###
+qa/
+prod/
+laptop/
+
+# Script used inside for deploying roles
+get_roles.sh
+
+### Linux ###
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+### macOS ###
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+# Files that might appear in the root of a volume
+
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Vim ###
+# swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+# session
+Session.vim
+# temporary
+.netrwhist
+# auto-generated tag files
+tags
+
+### Terraform ###
+# Compiled files
+*.tfstate*
+
+# Module directory
+.terraform/
+
+# secrests file
+secrets.tf
+
+# Utilities
+ssh_config
+terraform_ansible_inventory
+
+# junit test results
+results/
+
+# deployment artefact recovery
+recovery/

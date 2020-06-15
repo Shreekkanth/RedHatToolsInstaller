@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.soap.usm.ca.com">
+<soapenv:Header/>
+<soapenv:Body>
+<ser:logIn soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<userID xsi:type="xsd:string">{{ sc_close_ticket_api_username }}</userID>
+<password xsi:type="xsd:string">{{ sc_close_ticket_api_password }}</password>
+<businessunit xsi:type="xsd:string"></businessunit>
+</ser:logIn>
+</soapenv:Body>
+</soapenv:Envelope>

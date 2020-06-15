@@ -1,0 +1,35 @@
+---
+galaxy_info:
+  author: Scott Miller
+  description: Updates all packages for most Linux distributions
+  license: license (MIT)
+  min_ansible_version: 1.9
+  github_branch: master
+  platforms:
+  - name: EL
+    versions:
+    - 6
+    - 7
+  - name: GenericUNIX
+    versions:
+    - all
+  - name: Fedora
+    versions:
+    - all
+  - name: Amazon
+    versions:
+    - all
+  - name: Ubuntu
+    versions:
+    - all
+  - name: GenericLinux
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+
+  galaxy_tags:
+  - packaging
+  - system
+dependencies: []

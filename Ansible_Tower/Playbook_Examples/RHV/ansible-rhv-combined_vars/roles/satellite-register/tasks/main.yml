@@ -1,0 +1,17 @@
+---
+# tasks file for satellite-register
+
+- name: Download Satellite bootstrap
+  yum:
+    name: "{{ satellite_url }}/{{ satellite_katello_rpm_path }}"
+    state: "{{ satellite_katello_rpm_version }}"
+
+- name: SATELLITE 6 | Execute katello-rhsm-consumer
+  shell: katello-rhsm-consumer
+
+- name: Register to the Satellite
+  redhat_subscription:
+    state: present
+    activationkey: "{{ satellite_activation_key }}"
+    org_id: "{{ satellite_org_id }}"
+  ignore_errors: "{{ satellite_register_ignore_errors }}"

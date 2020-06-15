@@ -1,0 +1,28 @@
+---
+- hosts: rhv-ocp-ansible.homelab.work
+  vars_files:
+    - vault.yml
+  gather_facts: no
+  become: yes
+  tasks:
+
+  - name: "Provision Satellite 6 Hosts"
+    include_role:
+      name: "sat6-create-hosts"
+    vars:
+      sat6_hosts:
+        #VM
+        - name: "{{ item.name }}"
+          host_group: "ose-rhel-7-5"
+          location: "leier"
+          ipv4: "{{ item.ipv4 }}"
+          domain: "homelab.work"
+          comment: "{{ item.comment }}"
+          compute_resource: "rhv.homelab.work"
+          compute_profile: "ose-node"
+          force_host_update: False
+          manage_host: True
+    with_items:
+      - { name: rhv-ocp-master-1, ipv4: 192.168.2.221, comment: "OCP Master 1" }
+      - { name: rhv-ocp-infra-1, ipv4: 192.168.2.222, comment: "OCP Infra 1" }
+      - { name: rhv-ocp-app-1, ipv4: 192.168.2.223, comment: "OCP App 1" }

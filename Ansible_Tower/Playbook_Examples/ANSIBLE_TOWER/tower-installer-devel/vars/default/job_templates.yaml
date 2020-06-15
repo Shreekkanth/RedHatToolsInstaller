@@ -1,0 +1,28 @@
+---
+- name: Backup network device configurations
+  playbook: backup_config.yaml
+  project: Ansible Network
+  inventory: Network Inventory
+  job_type: run
+  credential: Network Device Service Vault
+
+  teams:
+    - name: Network Engineering
+      role: execute
+    - name: Network Administrators
+      role: admin
+
+- name: Check network device configuration backup
+  playbook: backup_config.yaml
+  project: Ansible Network
+  inventory: Network Inventory
+  job_type: check
+  credential: Network Device Service Vault
+
+  teams:
+    - name: Network Operations
+      role: execute
+    - name: Network Engineering
+      role: execute
+    - name: Network Administrators
+      role: admin

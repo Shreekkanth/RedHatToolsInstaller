@@ -1,0 +1,15 @@
+---
+
+- name: install kubelet
+  yum: name={{ item }} state=present validate_certs=no
+  with_items:
+#    - kubelet-1.7.0-0.x86_64
+    - kubelet
+#    - kubeadm-1.7.0-0.x86_64
+    - kubeadm
+#    - kubernetes-cni-0.5.1-0.x86_64
+    - kubernetes-cni
+
+
+- name: start kubelet
+  service: name=kubelet state=started enabled=true

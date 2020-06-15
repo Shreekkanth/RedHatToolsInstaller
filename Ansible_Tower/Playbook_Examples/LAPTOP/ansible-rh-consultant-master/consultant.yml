@@ -1,0 +1,8 @@
+---
+- name: setup a consultant's laptop
+  hosts: localhost
+  connection: local
+  become: true
+
+  roles:
+    - role: ansible-rh-consultant

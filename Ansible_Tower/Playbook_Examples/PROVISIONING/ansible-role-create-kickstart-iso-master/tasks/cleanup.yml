@@ -1,0 +1,15 @@
+---
+- name: "Cleanup temporary build directory"
+  block:
+    - name: "Unmount source installation media"
+      command: "umount {{ ks_iso_build_dir.path }}/mnt"
+
+    - name: "Remove Temporary build directory"
+      file:
+        path: "{{ ks_iso_build_dir.path }}"
+        state: "absent"
+      when: "ks_iso_is_tmp_dir"
+      
+  when: "ks_iso_cleanup_build"
+  become: True
+  tags: "ks_iso_cleanup"

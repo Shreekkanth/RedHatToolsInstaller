@@ -1,0 +1,56 @@
+---
+
+- name: Build VMs
+  hosts: kvm
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: libvirt_build_vms
+
+    - include_role:
+        name: libvirt_start_vms
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible_host_configure
+
+- name: Configure VM for IDM
+  hosts: idm
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: extend_vm_disks
+
+    - include_role:
+        name: rhsm_register
+
+- name: Install IDM server
+  hosts: idm
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: config-idm-server 
+
+      vars: 
+        idm_master_hostname: rhel7-idm01.kenlab.external
+        idm_domain: kenlab.external
+        idm_realm: KENLAB.EXTERNAL
+        idm_dm_password: password
+        idm_admin_password: password
+        idm_dns: 'yes'
+        idm_forwarder: 192.168.122.1

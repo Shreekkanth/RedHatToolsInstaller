@@ -1,0 +1,69 @@
+# Must be changed
+ORG=ACME
+ARCH="x86_64"
+LC_ENVS="Testing Production"
+
+# Change to match the current product release or to your desire
+CV_PRODUCT="rhv4u2"
+CV_DESCRIPTION='"Red Hat Virtualization 4.2"'
+
+# Change to your desire, refer to the 10 steps refarch
+CV_TYPE="virt"
+CCV_TYPE="infra"
+
+# Change if not RHEL7
+releasever="7Server"
+
+# This constructs the CV and CCV names
+if [ "$CV_TYPE" != "os" ];
+then
+    ROLE=$(echo ${CV_PRODUCT} | tr '[:upper:]' '[:lower:]')
+else
+    ROLE=$(echo ${CV_PRODUCT}-${releasever}-${ARCH} | tr '[:upper:]' '[:lower:]')
+fi
+
+CV="cv-${CV_TYPE}-${ROLE}"
+CCV="ccv-${CCV_TYPE}-${CV_PRODUCT}"
+
+# Create content view
+create_cv=yes
+
+# should this be a composit content view
+# if yes, make sure to change composite_cv with the correct CVs
+create_ccv=no
+composite_cv='cv-os-rhel-7server cv-app-rhv'
+
+# Should we publish and promote CV
+# yes - publish if changes to CV
+# force = always publish
+publish_promote=yes
+
+create_reposets=yes
+REPOSITORY_SETS=$(mktemp)
+cat > $REPOSITORY_SETS <<EOF
+Red Hat Virtualization Manager v4.2 (RHEL 7 Server) (RPMs)
+Red Hat Virtualization Manager 4 Tools (RHEL 7 Server) (RPMs), $releasever
+Red Hat Virtualization Host 7 (RPMs)
+Red Hat Virtualization 4 Management Agents for RHEL 7 (RPMs), $releasever
+JBoss Enterprise Application Platform 7.2 (RHEL 7 Server) (RPMs)
+EOF
+
+# Add repositories to content views
+add_cv_repos=yes
+CV_REPOS_TO_ENABLE=$(mktemp)
+cat > $CV_REPOS_TO_ENABLE <<EOF
+Red Hat Enterprise Linux OpenStack Platform ${PRODUCT_VER} for RHEL 7 RPMs x86_64 7Server
+EOF
+
+# should activationkeys be created
+create_activationkey=no
+ACTKEY_REPOS="$(mktemp)"
+cat > $ACTKEY_REPOS << EOF
+rhel-7-server-satellite-tools-${SAT_VER}-rpms
+rhel-7-server-ansible-2.6-rpms
+EOF
+
+SUBSCRIPTIONS="$(mktemp)"
+cat > $SUBSCRIPTIONS <<EOF
+Red Hat OpenStack Platform with Smart Management, Premium (2-sockets); 15
+EOF

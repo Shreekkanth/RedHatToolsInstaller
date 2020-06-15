@@ -1,0 +1,25 @@
+---
+- name: Ensure nginx is installed
+  yum:
+    name: nginx
+    state: present
+
+- name: Configure nginx using our template
+  template:
+    src: default.conf
+    dest: /etc/nginx/conf.d/default.conf
+  notify: restart nginx
+
+- name: Ensure firewalld rule for open port for nginx http
+  firewalld:
+    port: "{{ nginx_port }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: yes
+  ignore_errors: yes
+
+- name: Ensure that Nginx is enabled and started
+  service:
+    name: nginx
+    state: started
+    enabled: yes

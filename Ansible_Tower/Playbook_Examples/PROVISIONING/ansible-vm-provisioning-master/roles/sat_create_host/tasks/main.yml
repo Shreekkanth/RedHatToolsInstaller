@@ -1,0 +1,76 @@
+---
+# tasks file for sat_create_host
+- name: Look for existing Satellite Host
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/hosts/{{ hostinfo.fqdn }}"
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+    - 404
+  register: searchsathost
+
+- when: 'searchsathost.status == 404'
+  block:
+
+  - name: Gather Satellite object IDs
+    include_tasks: gather_satellite_ids.yml
+
+  - name: Create Satellite Host
+    delegate_to: localhost
+    uri:
+      url: "{{ satellite_auth.url }}/api/v2/hosts"
+      user: "{{ satellite_auth.username }}"
+      password: "{{ satellite_auth.password }}"
+      validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+      force_basic_auth: true
+      method: "POST"
+      body_format: "json"
+      body:
+        host:
+          name: "{{ hostinfo.name }}"
+          organization_id: "{{ satorg.json.results | map(attribute='id') | first }}"
+          location_id: "{{ satloc.json.results | map(attribute='id') | first }}"
+          hostgroup_id: "{{ sathgrp.json.results | map(attribute='id') | first }}"
+          architecture_id: "{{ satarch.json.results | map(attribute='id') | first }}"
+          operatingsystem_id: "{{ satopsys.json.results | map(attribute='id') | first }}"
+          build: false
+          enabled: true
+          provision_method: "build"
+          managed: false
+          interfaces_attributes:
+          - identifier: "eth0"
+            type: "interface"
+            managed: true
+            primary: true
+            provision: true
+            virtual: false
+            ip: "{{ hostinfo.ip }}"
+            subnet_id: "{{ satsubnet.json.results | map(attribute='id') | first }}"
+            domain_id: "{{ satdomain.json.results | map(attribute='id') | first }}"
+      timeout: 600
+      return_content: true
+      status_code:
+      - 201
+    register: createsathost
+
+  - name: Add capsule info to host
+    changed_when: false
+    add_host:
+      name: "{{ inventory_hostname }}"
+      satinfo: "{{ createsathost.json }}"
+
+
+- name: Add capsule info to host
+  changed_when: false
+  add_host:
+    name: "{{ inventory_hostname }}"
+    satinfo: "{{ searchsathost.json }}"
+  when: 'searchsathost.status == 200'
+

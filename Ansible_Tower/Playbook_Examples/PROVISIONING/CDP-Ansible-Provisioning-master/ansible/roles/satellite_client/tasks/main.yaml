@@ -1,0 +1,57 @@
+- name: Install Katello CA
+  yum:
+    name: "{{ satellite_katello_ca_rpm_url }}"
+    state: present
+
+- name: Register host to satellite
+  redhat_subscription:
+    activationkey: "{{ satellite_added_actkeys }},{{ activation_keys | default (omit) }}"
+    org_id: "{{ machine_organization_id | default (satellite_organization_id) }}"
+    state: present
+  ignore_errors: true
+
+- name: Enable Satellite Tools repository
+  command: subscription-manager repos --enable rhel-7-server-satellite-tools-*-rpms
+  # rhsm_repository:
+  #   name: rhel-7-server-satellite-tools-*-rpms
+  #   state: enabled
+  ignore_errors: true
+
+- name: Install katello agent
+  yum:
+    name: katello-agent
+
+- name: Add Foreman ssh key to Ansible user
+  authorized_key:
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0L4e0UxU9ZC+rULS65KGf2wpxuY6bJRGuqfqjXfVQO4pASjXocbO03gETk7BzmM5sKK361slob3amkWFM5aDktDaXLxS/5a9R8DIVp/egZh7IHCo7o+ck78YAmMQbA+/xxlMLuRiYyDUI3zf4Ts+VqijvZ3ybi0LzIoQLm7USmv1rvvT8T86DJT4iYnXRVP50aAsJq1lrQh9UCF5tWm1CCfcOTaKjYKBuDI/EI8UORejwDK5JgXy50eJK8D6ok1eOiRRUAFmgYfgWN5IC7DgNHuDe1bglIJjzspPa6LWUze91eM+hwd/RdnlERxuL4QGLrSZko0N3GdokshBa+XHN foreman-proxy@cdprh33"
+    user: ansible
+
+
+- block:
+
+  - name: Install puppet
+    yum:
+      name: puppet
+
+  - name: Configure puppet
+    ini_file:
+      section: agent
+      option: server
+      value: "{{ machine_puppet_server | default(satellite_puppet_server) | default(omit) }}"
+      path: /etc/puppet/puppet.conf
+    register: puppet_config
+
+  - name: Restart puppet if config has changed
+    systemd:
+      name: puppet
+      state: restarted
+    when: puppet_config is changed
+
+  - name: ensure puppet is started and enabled anyway
+    systemd:
+      name: puppet
+      state: started
+      enabled: true
+
+  when:
+  - register_to_puppet | default(false)

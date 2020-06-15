@@ -1,0 +1,130 @@
+---
+# defaults file for rhdm role
+jboss_eap_user:  quicklab
+jboss_eap_group: quicklab
+jboss_eap_uid:   1100
+jboss_eap_gui:   1100
+jboss_eap_user_home: "/home/{{jboss_eap_user}}"
+#
+base_dir_download: "/home/user1/Downloads/software/"
+base_dir_install:  "/rhdm/"
+base_dir_working:  "{{ base_dir_install  + 'work/' }}"
+#
+prompt_bash:      LAB
+environment_code: lab
+#### JBoss
+jboss_eap_artifact_name_7_1: jboss-eap-7.1.0.zip
+jboss_eap_base_version:      '7.1'
+#jboss_eap_patches_7_1:       ["jboss-eap-7.1.1-patch.zip", "jboss-eap-7.1.2-patch.zip", "jboss-eap-7.1.3-patch.zip", "jboss-eap-7.1.4-patch.zip", "jboss-eap-7.1.5-patch.zip"]
+jboss_eap_patches_7_1:       ["jboss-eap-7.1.1-patch.zip", "jboss-eap-7.1.2-patch.zip", "jboss-eap-7.1.3-patch.zip", "jboss-eap-7.1.4-patch.zip"]
+jboss_name_to_conf:          jboss-eap-extra
+jboss_eap_base_dir:          jboss-eap-7.1
+jboss_config_mode:           standalone-full.xml
+jboss_socket_binding_port_offset:   1000
+jboss_port_offset_enabled:          false
+marker_standalone_conf:      '# The JAVA_OPTS to this custom installation.'
+rhdm_service_name:           rhdm.service
+rhdm_service_conf_name:      rhdm_service.conf
+#
+bind_address:                "{{inventory_hostname}}"
+bind_address_management:     "{{inventory_hostname}}"
+#
+java_home:           /usr/bin/java
+java_home_real_path: /usr/java/default/
+#java_home_real_path: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.171-7.b10.el7.x86_64/
+#java_home_real_path: /usr/lib/jvm/java/
+#
+jboss_eap_scripts_cli_templates_list:
+    - add_loggers.j2
+    - add_node_identifier.j2
+    - add_system_properties.j2
+    - configure_handler.j2
+    - configure-elytron-http-login.j2
+    - remove_system_properties.j2
+    - remove_configure_handler.j2
+    - remove_node_identifier.j2
+    - tuning_pro.j2
+#
+jboss_eap_scripts_cli_list:
+  - add_node_identifier.cli
+  - add_system_properties.cli
+  - configure_handler.cli
+  - tuning_pro.cli
+  - configure-elytron-http-login.cli
+
+#### JBoss Flags
+jboss_eap_apply_patches:    true
+jboss_eap_patch_remove:     true
+jboss_service_install:      true
+jboss_eap_user_create:      false
+jboss_eap_user_remove:      false
+jboss_eap_sudoers:          false
+temporal_dir_delete:        false
+jboss_deploy_oam:           true
+jboss_import_certs:         false
+jboss_remove_certs:         false
+rhdm_create_users_training: true
+mysql_service_requires:     false
+jboss_iam_dev:              true
+home_config_bash_profile:   true
+#
+jboss_cli_config_original:  false
+jboss_cli_port_native: 9999
+#
+jboss_eap_bind_web_interface:        true
+jboss_eap_bind_management_interface: false
+#
+jboss_tx_node_id: "{{'tx_' + inventory_hostname.split('.')[1] | regex_replace('-', '_') }}"
+#jboss_tx_node_id: "{{'tx_' + inventory_hostname | regex_replace('-', '_') }}"
+#jboss_tx_node_id: "{{'tx_node_' + inventory_hostname[6:inventory_hostname | length] }}"
+#
+#
+#### RHDM
+rhdm_dc_install:         true
+rhdm_kie_install:        true
+rhdm_controller_install: false
+rhdm_create_users:       true
+deploy_extra_lib:        false
+rhdm_uninstall:          false
+rhhm_apply_patches:      true
+rhdm_remove_patch:       true
+rhdm_deploy_brandinc_bc: true
+rhdm_controller_propocol_ws: true
+
+rhdm_version: "7.1.1"
+rhdm_files_7_1_1:
+  - rhdm-7.1.1-add-ons.zip
+  - rhdm-7.1.1-decision-central-eap7-deployable.zip
+  - rhdm-7.1.1-kie-server-ee7.zip
+
+rhdm_files: "{{rhdm_files_7_1_1}}"
+#
+rhdm_patches_7_1:          []
+#
+#
+add_loggers:
+  - {logger: org.hibernate.loader.Loader, level: ERROR}
+
+add_loggers_debug:
+  - {logger: org.jboss.as.domain.http.api,         level: TRACE}
+  - {logger: org.jboss.as.domain.management,       level: TRACE}
+  - {logger: org.jboss.jca.core.connectionmanager, level: TRACE}
+
+#
+#############################
+periodic_size_rotating_handler_name: PERIODIC_SIZE
+periodic_handler_max_backup_index:   100
+periodic_autoflush:                  true
+periodic_suffix:                     .yyyy-MM-dd
+periodic_rotate_size:                65000000
+periodic_path:                       server.log
+periodic_relative_to:                jboss.server.log.dir
+periodic_append:                     true
+periodic_named_formatter:            PATTERN_01
+####
+# Configuration Certs
+certs_import_truststore_list: []
+
+#
+#
+# EOF

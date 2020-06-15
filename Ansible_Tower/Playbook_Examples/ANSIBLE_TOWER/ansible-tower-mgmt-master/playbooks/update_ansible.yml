@@ -1,0 +1,16 @@
+---
+
+- name: Update the ansible package to latest on Tower Nodes
+  hosts: all
+  vars:
+    redhat_ansible_repo: 'rhel-7-server-extras-rpms'
+  tasks:
+
+    - name: Enable extras repo via subscription manager
+      command: "/usr/sbin/subscription-manager repos --enable {{ redhat_ansible_repo }}"
+
+    - name: Update Ansible Package
+      yum:
+        name: ansible
+        state: latest
+

@@ -1,0 +1,39 @@
+- name: Get Inventory
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/inventories/?search={{ project_inventory_source.inventory_name }}"
+    method: GET
+    validate_certs: no
+    user: admin
+    password: password
+  register: inv
+
+- name: Get Credential
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/credentials/?search={{ project_inventory_source.credential_name }}"
+    method: GET
+    validate_certs: no
+    user: admin
+    password: password
+  register: cred
+
+- name: Get Project
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/projects/?search={{ project_inventory_source.source_project }}"
+    method: GET
+    validate_certs: no
+    user: admin
+    password: password
+  register: project
+
+- name: Create Project Inventory Sources
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/inventory_sources/"
+    method: POST
+    validate_certs: no
+    body: {"name": "{{ project_inventory_source.name }}", "source": "scm", "inventory": "{{ inv.json.results[0].id }}", "source_project": "{{ project.json.results[0].id }}", "credential": "{{ cred.json.results[0].id }}", "overwrite": "{{ project_inventory_source.overwrite }}", "update_on_launch": "{{ project_inventory_source.update_on_launch }}", "overwrite_vars": true, "source_vars": "{{ project_inventory_source.source_vars }}", "source_path": "{{ project_inventory_source.source_path }}" }
+    body_format: json
+    status_code: 201
+    user: admin
+    password: password
+  register: create_response
+  failed_when: "create_response.status != 201 and 'already exists' not in create_response.content"

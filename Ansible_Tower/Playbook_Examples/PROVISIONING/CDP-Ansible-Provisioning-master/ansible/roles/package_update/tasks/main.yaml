@@ -1,0 +1,31 @@
+- name: Full package update
+  yum:
+    name: "*"
+    state: latest
+
+- name: Check for reboot
+  shell: if [ $(rpm -q kernel|tail -n 1) != kernel-$(uname -r) ]; then echo 'reboot'; else echo 'no'; fi
+  ignore_errors: true
+  changed_when: false
+  register: reboot_hint
+
+- name: Reboot
+  shell: sleep 2 && shutdown -r now "Reboot required for updated kernel"
+  async: 60
+  poll: 0
+  ignore_errors: true
+  when: reboot_hint.stdout.find("reboot") != -1
+  register: rebooting
+
+- name: Wait for rebooted servers to come back
+  delegate_to: localhost
+  become: false
+  wait_for: 
+    host: "{{ ansible_host | default(inventory_hostname) }}"
+    port: 22
+    search_regex: OpenSSH
+    timeout: 600
+    sleep: 5
+    delay: 30
+  when: rebooting is changed
+

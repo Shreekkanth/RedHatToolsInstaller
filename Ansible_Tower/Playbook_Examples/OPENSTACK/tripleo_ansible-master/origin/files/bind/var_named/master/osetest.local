@@ -1,0 +1,25 @@
+$TTL 60
+
+@                       IN              SOA     osetest.local. root.osetest.local. (
+                                        17062201        ; Serial
+                                        3600            ; Refresh
+                                        900             ; Retry
+                                        3600000         ; Expire
+                                        3600            ; Minimum
+                                )
+                        IN      NS      ns.osetest.local.
+
+ns			IN	A	10.0.1.11
+
+ocp36-lb1			IN	A	10.0.1.18
+ocp36-lb2			IN	A	10.0.1.19
+ocp36-lb			IN	A	10.0.1.20
+ocp36-master1			IN	A	10.0.1.21
+ocp36-master2			IN	A	10.0.1.22
+ocp36-master3			IN	A	10.0.1.23
+ocp36-infra1			IN	A	10.0.1.31
+ocp36-infra2			IN	A	10.0.1.32
+ocp36-node1			IN	A	10.0.1.41
+ocp36-node2			IN	A	10.0.1.42
+
+*.app			IN	A	10.0.1.30

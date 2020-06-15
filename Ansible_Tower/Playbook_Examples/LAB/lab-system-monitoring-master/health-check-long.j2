@@ -1,0 +1,108 @@
+{#
+#
+#title           :health-check-long.j2
+#description     :template for expansive health-check status within development
+#included tools  :reference playbook health-check.yml
+#author		 :todd penn
+#date            :20190118
+#version         :0.1    
+#usage		 :template module has lookup function from yaml parser in ansible
+#notes           :current release includes specific hosts used in development
+                   - devvm1
+                   - gitlab
+                   - jenkins
+                   - ocp
+                   - rhev cluster
+                   - rocketchat
+#TODO		 :determine additional resources and specific checks for monitoring
+#=======================================================================================
+#}
+{{ ansible_managed | regex_replace('\s', '\t\t\t') }}
+{{ ansible_date_time.iso8601 | regex_replace('T', '\t\t') }}	
+
+SYSTEM                  STATUS
+
+
+{% for inventory_hostname in groups['health-check'] %}
+
+<--	{{ inventory_hostname | regex_search('(^\w+[^\.])') | upper }}	-->
+   {% if hostvars[inventory_hostname]['ansible_all_ipv4_addresses'] is defined %}
+
+   CHECK PING|SSH:
+   Host is reachable
+   {% else %}
+
+   CHECK PING|SSH:
+   --> HOST IS UNREACHABLE <--
+
+   {% endif %}
+   {% if hostvars[inventory_hostname]['ansible_all_ipv4_addresses'] is defined %}
+   {% if hostvars[inventory_hostname]['get_uptime'] is defined and hostvars[inventory_hostname]['get_uptime']['stdout']|length %}
+
+   CHECK UPTIME: 
+   {{  hostvars[inventory_hostname]['get_uptime']['stdout_lines'][0] | default('None')  }}
+   {% endif %}
+   {% if hostvars[inventory_hostname]['low_disk_space'] is defined and hostvars[inventory_hostname]['low_disk_space']['stdout']|length %}
+
+   CHECK FILESYSTEMS OVER 80% CAPACITY: 
+   --> 
+   {{  hostvars[inventory_hostname]['low_disk_space']['stdout'] | default('None')  }}
+   <--
+   {% else %}
+
+   CHECK FILESYSTEMS OVER 80% CAPACITY: 
+   None
+   {% endif %}
+
+   {% if hostvars[inventory_hostname]['ansible_memory_mb'] is defined and hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] <= 512 %}
+
+   CHECK MEMORY BELOW 512 MB FREE:
+   --> {{ hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] | default('None') }} <--
+   {% else %}
+
+   CHECK MEMORY BELOW 512 MB FREE:
+   None
+   {% endif %}
+   {% if hostvars[inventory_hostname]['ansible_hostname'] is defined and hostvars[inventory_hostname]['ansible_hostname'] == 'gitlab' %}
+
+   CHECK URL http://{{ gitlab.fqdn}} :	
+   {{ get_gitlab_url.msg }}
+
+   CHECK SERVICE HEALTH PROBES :
+   {{ get_gitlab_probe.msg }}
+   {{ gitlab_health }}
+   {{ gitlab_ready }}
+   {{ gitlab_live }}
+   {% endif %}
+   {% if hostvars[inventory_hostname]['ansible_hostname'] is defined and hostvars[inventory_hostname]['ansible_hostname'] == 'jenkins' %}
+
+   CHECK SYSTEM SERVICE:	
+   {{ jenkins_svc.stdout_lines[0] | regex_search('(jenkins.*$)') }}
+{{ jenkins_svc.stdout_lines[2] }}
+
+   CHECK URL http://{{ jenkins.fqdn }} :	
+   {{ get_jenkins_url.msg }}
+
+   CHECK TEST JOB EXECUTION at {{ get_jenkins_job.url | regex_search('(^http[\:\w+\.\/\-]+check)')  }} :
+   {{ get_jenkins_job.msg }}
+   {% endif %}
+   {% if hostvars[inventory_hostname]['ansible_hostname'] is defined and hostvars[inventory_hostname]['ansible_hostname'] == ocp.name %}
+
+   CHECK OCP NODES
+   {{ get_nodes.stdout }}
+   {% endif %}
+
+   {% endif %}
+{% endfor %}
+   {% if get_rocketchat_url and get_rocketchat_check is defined %}
+
+<--	{{ rchat.fqdn | regex_search('(^\w+[^\.])') | upper }}	-->
+   CHECK URL http://{{ rchat.fqdn }} :
+   {{ get_rocketchat_url.msg }}
+
+   CHECK TEST POST CHAT at http://{{ rchat.fqdn }} :
+   {{ get_rocketchat_check.msg }}
+
+   {% else %}
+
+   {% endif %}

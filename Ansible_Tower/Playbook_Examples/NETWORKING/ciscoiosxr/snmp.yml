@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: False
+  connection: local
+
+  roles:
+   - { role: ciscosnmp, when: "device_os == 'iosxr'" }
+

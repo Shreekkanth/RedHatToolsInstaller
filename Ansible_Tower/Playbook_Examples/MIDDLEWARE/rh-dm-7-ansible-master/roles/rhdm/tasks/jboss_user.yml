@@ -1,0 +1,71 @@
+---
+##
+# Refer to JBoss EAP documentation
+# https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.1/html-single/installation_guide/#configuring_jboss_eap_to_run_as_a_service
+#
+# https://access.redhat.com/solutions/25404 ---- What are the maximum UID and GID values in Red Hat Enterprise Linux?
+# https://access.redhat.com/solutions/2683411 -- Why do new users added in RHEL 7 start at UID of 1000, and not 500?
+# https://access.redhat.com/solutions/221403 --- How to generate a SHA-2 (sha256 or sha512) hashed password compatible with /etc/shadow
+# https://serversforhackers.com/c/create-user-in-ansible
+#
+#### Remove "rhdm" user
+- name: "Remove user {{ jboss_eap_user }}"
+  become: true
+  user:
+    name:   "{{ jboss_eap_user }}"
+    state:  absent
+    remove: yes
+  tags:
+    - jboss_eap_user_remove
+  when: jboss_eap_user_remove == true
+
+####
+- name: "Ensure {{ jboss_eap_group }} group exists"
+  become: true
+  group:
+    name:  "{{ jboss_eap_group }}"
+    state: absent
+  tags:
+    - jboss_eap_user_remove
+  when: jboss_eap_user_remove == true
+
+####
+- name: "Create {{ jboss_eap_group }} Group"
+  become: true
+  group:
+    name:  "{{jboss_eap_group}}"
+    state: present
+    gid:   "{{jboss_eap_gui}}"
+  tags:
+    - jboss_eap_user
+  when: jboss_eap_user_create == true
+
+####
+- name: "Create the {{jboss_eap_user}} User"
+  become: true
+  user:
+    name:     "{{ jboss_eap_user }}"
+    comment:  "JBoss EAP User"
+    uid:      "{{jboss_eap_uid}}"
+    group:    "{{ jboss_eap_group }}"
+    home:     "{{ jboss_eap_user_home }}"
+    shell:    "/bin/bash"
+    password: "{{ jboss_eap_user_pwd }}"
+  tags:
+    - jboss_eap_user
+  when: jboss_eap_user_create == true
+
+#### Add sudoers
+- name: "Add sudoers users to wheel group"
+  become: true
+  user:
+    name:   "{{ jboss_eap_user }}"
+    groups: wheel
+    append: yes
+    state:  present
+  tags:
+    - sudoers
+  when: jboss_eap_sudoers == true
+
+#
+# EOF

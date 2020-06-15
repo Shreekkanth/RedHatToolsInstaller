@@ -1,0 +1,50 @@
+---
+- name: Ensure satellite name resolves from VM
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ sat_ip }} {{ sat_hostname }}"
+
+- name: Download katello-ca-consumer-latest from satellite
+  get_url:
+    url: "{{ sat_url }}/pub/katello-ca-consumer-latest.noarch.rpm"
+    dest: /tmp/katello-ca-consumer-latest.noarch.rpm
+    validate_certs: no
+  register: get_url_result
+  until: get_url_result is succeeded
+  retries: 10
+  delay: 1
+  ignore_errors: yes
+
+- name: Install katello-ca-consumer-latest
+  yum:
+    name: /tmp/katello-ca-consumer-latest.noarch.rpm
+    validate_certs: no
+    state: present
+
+- name: Register to satellite
+  redhat_subscription:
+    activationkey: "{{ sat_ak }}"
+    org_id: "{{ sat_org }}"
+    state: present
+
+- name: Install some packages
+  yum:
+    name:
+      - httpd
+      - systemtap
+    state: latest
+
+# Make other customizations
+# - name: ...
+
+- name: Unregister
+  redhat_subscription:
+    state: absent
+
+# Seal the VM
+# - name: ...
+#
+#
+# Shutdown
+# 
+...

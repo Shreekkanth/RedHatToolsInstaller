@@ -1,0 +1,48 @@
+---
+
+- name: "Environment"
+  debug: msg="Deploying to {{ env_name }} environment"
+  run_once: true
+
+  # We cannot include role dependencies via meta/dependencies as it only
+  # skips on a task level. In some environments, the included role may not
+  # be avaiable. We need to ensure we skip at the role level.
+- name: Common Dependencies
+  include_role:
+    name: development-alteration
+  when: >
+    env_name == 'development' or
+    env_name == 'intergration'
+
+- name: Control if the role is supported on this system
+  assert:
+    that: >
+          {% for key, value in supported_distrobution.iteritems() -%}
+            ( ansible_distribution == "{{ key }}" and ansible_distribution_version | float >= {{ value.version }}){% if not loop.last %} or {% endif %}
+          {%- endfor %}
+    msg: >
+          This play is only supported on the following operating systems:
+          {% for key, value in supported_distrobution.iteritems() -%}
+            {{ key }} {{ value.version }}{% if not loop.last %}, {% endif %}
+          {%- endfor %}
+
+- name: Include OS specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include: install.yml
+- include: secrets.yml
+- include: resolvconf.yml
+- include: hostsconf.yml
+
+# This needs to be handled better in the future.
+- name: Disable firewalld
+  service: name=firewalld enabled=false state=stopped
+  when: ansible_distribution_major_version == "7"
+
+- block:
+  - name: Disable iptables
+    service: name=iptables enabled=false state=stopped
+
+  - name: Disable ip6tables
+    service: name=ip6tables enabled=false state=stopped
+  when: ansible_distribution_major_version == "6"

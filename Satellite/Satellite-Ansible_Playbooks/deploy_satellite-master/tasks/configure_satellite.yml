@@ -1,0 +1,34 @@
+---
+# These tasks are to install Satellite through the CLI including answer files.
+
+- name: SATELLITE | configure satellite | Load Satellite answer file varriables
+  include_vars: file=vars/answer-file.yml
+
+- name: SATELLITE | configure satellite | install_satellite | Verify Foreman exists
+  stat:
+    path: /etc/init.d/foreman
+  register: foreman_location
+
+- name: Show satellite version
+  debug:
+    var: '{{ satellite_version }}'
+
+- name: SATELLITE | configure satellite | install_satellite | Create satellite answers file
+  template:
+    src: 'satellite-{{ satellite_version }}-answers.j2'
+    dest: /etc/foreman-installer/scenarios.d/custom-sat-answers.yaml
+    owner: root
+    group: root
+    mode: 0644
+
+- name: SATELLITE | configure satellite | Change default satellite answers file location to custom-sat-answers.yaml
+  replace: 
+    dest: /etc/foreman-installer/scenarios.d/satellite.yaml 
+    regexp: 'satellite-answers.yaml' 
+    replace: custom-sat-answers.yaml
+  when: foreman_location.stat.exists
+
+- name: SATELLITE | configure satellite | Configure and start Satellite
+  command: /usr/sbin/satellite-installer --scenario "{{ satellite_scenario }}"
+  when: foreman_location.stat.exists
+

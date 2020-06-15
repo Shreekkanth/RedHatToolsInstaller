@@ -1,0 +1,8 @@
+/var/log/health-check-ansible.log {
+    hourly
+    rotate 8
+    dateext
+    datehourago
+    addextension .log
+    missingok
+}

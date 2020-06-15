@@ -1,0 +1,270 @@
+---
+- hosts: "all"
+  tasks:
+    - name: Kernel tuning for RHEL5/6
+      block:
+        - name: Set vm.swapiness | Bare metal
+          sysctl:
+            name: "vm.swapiness"
+            value: "0"
+            state: "present"
+          when: ansible_virtualization_role != "guest"
+
+        - name: Set kernel.sem
+          sysctl:
+            name: "kernel.sem"
+            value: "250 32000 200 128"
+            state: "present"
+
+        - name: Set fs.file-max
+          sysctl:
+            name: "fs.file-max"
+            value: "65536"
+            state: "present"
+
+        - name: Set fs.aio-max-nr
+          sysctl:
+            name: "fs.aio-max-nr"
+            value: "1048576"
+            state: "present"
+
+        - name: Set net.ipv4.ip_local_port_range
+          sysctl:
+            name: "net.ipv4.ip_local_port_range"
+            value: "1024 65000"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            path: "/etc/sysctl.conf"
+            insertafter: "^net.ipv4.ip_local_port_range."
+            line: "## TCP IP Window Sizes, recieve and send"
+            regexp: "## TCP IP Window Sizes, recieve and send"
+            state: "present"
+
+        - name: Set net.core.rmem_default
+          sysctl:
+            name: "net.core.rmem_default"
+            value: "8388608"
+            state: "present"
+
+        - name: Set net.core.rmem_max
+          sysctl:
+            name: "net.core.rmem_max"
+            value: "8388608"
+            state: "present"
+
+        - name: Set net.core.wmem_default
+          sysctl:
+            name: "net.core.wmem_default"
+            value: "8388608"
+            state: "present"
+
+        - name: Set net.core.wmem_max
+          sysctl:
+            name: "net.core.wmem_max"
+            value: "8388608"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            insertafter: "^net.core.wmem_max."
+            line: "## Some more TCP tunes"
+            regexp: "## Some more TCP tunes"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            insertafter: "^## Some more TCP tunes"
+            line: "#How often to send keep alive packets when a connection is unused"
+            regexp: "#How often to send keep alive packets when a connection is unused"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_keepalive_time
+          sysctl:
+            name: "net.ipv4.tcp_keepalive_time"
+            value: "10"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            insertafter: "^net.ipv4.tcp_keepalive_time."
+            line: "#How long the kernel waits in between probes"
+            regexp: "#How long the kernel waits in between probes"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_keepalive_intvl
+          sysctl:
+            name: "net.ipv4.tcp_keepalive_intvl"
+            value: "1"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            insertafter: "^net.ipv4.tcp_keepalive_intvl."
+            line: "#How many probes are sent before a connection is considered broken"
+            regexp: "#How many probes are sent before a connection is considered broken"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_keepalive_probes
+          sysctl:
+            name: "net.ipv4.tcp_keepalive_probes"
+            value: "200"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            insertafter: "^net.ipv4.tcp_keepalive_probes."
+            line: "#How many times to retry before killing the connection"
+            regexp: "#How many times to retry before killing the connection"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_retries2
+          sysctl:
+            name: "net.ipv4.tcp_retries2"
+            value: "3"
+            state: "present"
+
+        - name: Add comment to /etc/sysctl.conf
+          lineinfile:
+            insertafter: "^net.ipv4.tcp_retries2."
+            line: "#How many times to retry transmitting the syn packet"
+            regexp: "#How many times to retry transmitting the syn packet"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_syn_retries
+          sysctl:
+            name: "net.ipv4.tcp_syn_retries"
+            value: "2"
+            state: "present"
+
+        - name: Set kernel.randomize_va_space
+          sysctl:
+            name: "kernel.randomize_va_space"
+            value: "1"
+            state: "present"
+
+        - name: Set net.ipv4.conf.all.send_redirects
+          sysctl:
+            name: "net.ipv4.conf.all.send_redirects"
+            value: "0"
+            state: "present"
+
+        - name: Set net.ipv4.conf.default.send_redirects
+          sysctl:
+            name: "net.ipv4.conf.default.send_redirects"
+            value: "0"
+            state: "present"
+
+        - name: Set net.ipv4.conf.default.accept_redirects
+          sysctl:
+            name: "net.ipv4.conf.default.accept_redirects"
+            value: "0"
+            state: "present"
+
+        - name: Set net.ipv4.conf.default.secure_redirects
+          sysctl:
+            name: "net.ipv4.conf.default.secure_redirects"
+            value: "0"
+            state: "present"
+
+        - name: Set net.ipv4.icmp_echo_ignore_broadcasts
+          sysctl:
+            name: "net.ipv4.icmp_echo_ignore_broadcasts"
+            value: "1"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_syncookies
+          sysctl:
+            name: "net.ipv4.tcp_syncookies"
+            value: "1"
+            state: "present"
+
+        - name: Set net.ipv4.conf.all.rp_filter
+          sysctl:
+            name: "net.ipv4.conf.all.rp_filter"
+            value: "1"
+            state: "present"
+
+        - name: Set net.ipv4.conf.default.rp_filter
+          sysctl:
+            name: "net.ipv4.conf.default.rp_filter"
+            value: "1"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_timestamps
+          sysctl:
+            name: "net.ipv4.tcp_timestamps"
+            value: "0"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_sack
+          sysctl:
+            name: "net.ipv4.tcp_sack"
+            value: "1"
+            state: "present"
+
+        - name: Set net.ipv4.tcp_window_scaling
+          sysctl:
+            name: "net.ipv4.tcp_window_scaling"
+            value: "1"
+            state: "present"
+
+        - name: Set net.core.netdev_max_backlog
+          sysctl:
+            name: "net.core.netdev_max_backlog"
+            value: "10000"
+            state: "present"
+
+        - name: VM Tuning
+          block:
+            - name: Set vm.swappiness
+              sysctl:
+                name: "vm.swappiness"
+                value: "60"
+                state: "present"
+
+            - name: Set vm.dirty_background_ratio
+              sysctl:
+                name: "vm.dirty_background_ratio"
+                value: "3"
+                state: "present"
+
+            - name: Set vm.dirty_ratio
+              sysctl:
+                name: "vm.dirty_ratio"
+                value: "15"
+                state: "present"
+
+            - name: Set vm.dirty_expire_centisecs
+              sysctl:
+                name: "vm.dirty_expire_centisecs"
+                value: "500"
+                state: "present"
+
+            - name: Set vm.dirty_writeback_centisecs
+              sysctl:
+                name: "vm.dirty_writeback_centisecs"
+                value: "100"
+                state: "present"
+          when: ansible_virtualization_role == "guest"
+
+        - name: Set kernel.shmmax
+          sysctl:
+            name: "kernel.shmmax"
+            value: "{{ ansible_memtotal_mb | int * 1024 * 1024 * 75 / 100 }}"
+            state: "present"
+
+        - name: Get huge page size
+          shell: "grep Hugepagesize /proc/meminfo | awk '{print $2}'"
+          register: huge_page_size
+
+      # Convert totmem in MB to byte * 75/100 / huge page size
+        - name: Set kernel.shmall
+          sysctl:
+            name: "kernel.shmall"
+            value: "{{ ansible_memtotal_mb | int * 1024 * 1024 * 75 / 100 / huge_page_size.stdout | int }}"
+            state: "present"
+      when:
+        - ansible_system == "Linux"
+        - (ansible_distribution_major_version == "6") or (ansible_distribution_major_version == "5")

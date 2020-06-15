@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Graphical-Start
+GenericName=Trigger systemd start
+Comment=Used to trigger user-graphical-login.target
+Exec=/home/bexelbie/bin/graphical-start
+Terminal=false
+Type=Application
+StartupNotify=false
+X-GNOME-Autostart-enabled=true

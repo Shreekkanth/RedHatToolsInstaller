@@ -1,0 +1,5 @@
+services:
+  - name: SQL Server
+    service: mssqlserver
+  - name: SQL Server Agent
+    service: sqlserveragent

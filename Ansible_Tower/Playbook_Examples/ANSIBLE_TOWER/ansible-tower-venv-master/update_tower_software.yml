@@ -1,0 +1,17 @@
+---
+- name: Update software on tower servers
+  hosts: tower
+  gather_facts: false
+  tasks:
+    - include_role:
+        name: tower
+        tasks_from: software.yml
+      tags:
+        - install_python
+        - install_tower_cli
+
+    - include_role:
+        name: tower
+        tasks_from: post_software.yml
+      tags:
+        - symlink_ansible

@@ -1,0 +1,168 @@
+---
+####
+- name: Create JBoss EAP RHDM Resources Directory
+  file:
+    path:  "{{ rhpam_runtime_path_base + item }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode: "0775"
+  tags:
+    - rhpam_install
+  with_items:
+    - git
+    - git-hooks
+    - index
+    - repo
+    - maven
+    - m2repo
+    - security
+
+- name: Create RHPAM CLI work directory
+  file:
+    path:  "{{ jboss_eap_config_cli }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - rhpam_install
+
+- name: Create RHPAM work directory
+  file:
+    path:  "{{ rhpam_work_dir + item[0:-4] }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - rhpam_install
+  with_items: "{{ rhpam_files }}"
+
+####
+- name: Extract RHPAM EAP Libraries
+  unarchive:
+    src:        "{{ base_dir_download + item }}"
+    dest:       "{{ rhpam_work_dir  + item[0:-4] }}"
+    remote_src: no
+    owner:      "{{ jboss_eap_user }}"
+    group:      "{{ jboss_eap_group }}"
+  tags:
+    - rhpam_install
+  with_items: "{{ rhpam_files }}"
+
+#### Find *.zip from RH PAM Software
+- name: "Find *.zip from RH PAM Software"
+  find:
+    paths:     "{{ rhpam_work_dir + rhpam_files[0][0:-4] }}"
+    patterns:  "*.zip"
+    file_type: file
+  register:    rhpam_zip_files
+  tags:
+    - rhpam_install
+
+- name: Create RHPAM Software directory. Each ZIP has a directory
+  file:
+    path:  "{{ item.path[0:-4] }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - rhpam_install
+  with_items: "{{ rhpam_zip_files.files }}"
+
+#### unarchive the *.zip
+- name: Unarchive the *.zip
+  unarchive:
+    src:        "{{ item.path }}"
+    dest:       "{{ item.path[0:-4] }}"
+    remote_src: yes
+    owner:      "{{ jboss_eap_user }}"
+    group:      "{{ jboss_eap_group }}"
+  tags:
+    - rhpam_install
+  with_items: "{{ rhpam_zip_files.files }}"
+
+####
+- import_tasks: rhpam_mysql_create_model.yml
+
+#### Deploy RH PAM business-central.war
+- name: Applying RH PAM business-central over JBoss EAP 7
+  command: "cp -a {{ rhpam_business_central_deployable + '/.'}} {{ jboss_eap_home }}"
+  tags:
+    - rhpam_install
+  when: rhpam_bc_install
+
+#### Deploy RH PAM kie-server.war
+- name: Applying RH PAM kie-server over JBoss EAP 7
+  command: "cp  -a {{ rhpam_kie_server_deployable }} {{ jboss_eap_deployments }}"
+  tags:
+    - rhpam_install
+  when: rhpam_kie_install
+
+- name: Applying RH PAM 7 Deployable over JBoss EAP 7
+  command: "cp  -a {{ rhpam_kie_server_base_deployable + 'SecurityPolicy/.' }} {{ jboss_eap_home + 'bin/'}}"
+  tags:
+    - rhpam_install
+  when: rhpam_kie_install
+
+- name: "Copy kie-server.war.dodeploy"
+  copy:
+    src:        "files/kie-server.war.dodeploy"
+    dest:       "{{ jboss_eap_deployments }}"
+    remote_src: no
+    mode:       0644
+    owner:      "{{ jboss_eap_user }}"
+    group:      "{{ jboss_eap_group }}"
+  tags:
+    - rhpam_install
+  when: rhpam_kie_install
+
+#### Deploy RH PAM controller.war
+- name: Applying RH PAM controller over JBoss EAP 7
+  command: "cp -a {{ rhpam_controller_deployable }} {{ jboss_eap_deployments }}"
+  tags:
+    - rhpam_install
+  when: rhpam_controller_install
+
+- name: Applying RH PAM 7 controller SecurityPolicy over JBoss EAP 7
+  command: "cp  -a {{ rhpam_controller_base_deployable + 'SecurityPolicy/.' }} {{ jboss_eap_home + 'bin/'}}"
+  tags:
+    - rhpam_install
+  when: rhpam_controller_install
+
+- name: "Copy controller.war.dodeploy"
+  copy:
+    src:        "files/controller.war.dodeploy"
+    dest:       "{{ jboss_eap_deployments }}"
+    remote_src: no
+    mode:       0644
+    owner:      "{{ jboss_eap_user }}"
+    group:      "{{ jboss_eap_group }}"
+  tags:
+    - rhpam_install
+  when: rhpam_controller_install
+
+#### Apply Patches: RHPAM
+- name: Applying the RHPAM Patches
+  include_tasks: rhpam_patches.yml
+  vars:
+    patch: "{{ item }}"
+  with_items:    "{{ rhpam_patches_list | default([]) }}"
+  when: rhpam_apply_patches == true
+  tags:
+    - rhpam_patch
+
+#### Create CLI scripts
+- import_tasks: jboss_eap_create_cli_scripts.yml
+
+#### Config RHPAM
+- import_tasks: rhpam_config.yml
+
+#### Config JBoss Systemd Service
+- import_tasks: jboss_eap_config_service.yml
+
+
+#
+# EOF

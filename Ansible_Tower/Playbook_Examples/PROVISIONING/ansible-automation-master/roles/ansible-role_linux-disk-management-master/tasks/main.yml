@@ -1,0 +1,35 @@
+---
+- name: Create a volume group
+  lvg:
+    vg: "{{ linux_disk_management_vg_name }}"
+    pvs: "{{ linux_disk_management_disk_name }}"
+    pesize: '4'
+
+- name: Extend the logical volume to consume all remaining space in the volume group
+  lvol:
+    vg: "{{ linux_disk_management_vg_name }}"
+    lv: "{{ linux_disk_management_volume_name }}"
+    size: +100%FREE
+  register: extend_result
+
+- name: Debug extend_result
+  debug:
+    var: extend_result
+    verbosity: 1
+
+- name: Create a filesystem on new volume group
+  filesystem:
+    fstype: "{{ linux_disk_management_filesystem_type }}"
+    dev: "/dev/{{ linux_disk_management_vg_name }}/{{ linux_disk_management_volume_name }}"
+
+- name: Verify mount point exists
+  file:
+    path: "{{ linux_disk_management_mount_point }}"
+    state: directory
+
+- name: Mount new filesystem
+  mount:
+    path: "{{ linux_disk_management_mount_point }}"
+    src: "/dev/{{ linux_disk_management_vg_name }}/{{ linux_disk_management_volume_name }}"
+    fstype: "{{ linux_disk_management_filesystem_type }}"
+    state: mounted

@@ -1,0 +1,55 @@
+  - @custom-environment # Basic building block for a custom Fedora system.
+  - @minimal-environment # Basic functionality.
+  - @server-product-environment # An integrated, easier to manage server.
+  - @workstation-product-environment # Fedora Workstation is a user friendly desktop system for laptops and PCs.
+  - @cloud-server-environment # A server install with components needed to run in a cloud environment.
+  - @kde-desktop-environment # The KDE Plasma Workspaces, a highly-configurable graphical user interface which includes a panel, desktop, system icons and desktop widgets, and many powerful KDE applications.
+  - @xfce-desktop-environment # A lightweight desktop environment that works well on low end machines.
+  - @lxde-desktop-environment # LXDE is a lightweight X11 desktop environment designed for computers with low hardware specifications like netbooks, mobile devices or older computers.
+  - @hawaii-desktop-environment # Hawaii is a fast, lightweight, intuitive and user friendly Wayland desktop environment that adapts to desktop and mobile devices.
+  - @lxqt-desktop-environment # LXQt is a lightweight X11 desktop environment designed for computers with low hardware specifications like netbooks, mobile devices or older computers.
+  - @cinnamon-desktop-environment # Cinnamon provides a desktop with a traditional layout, advanced features, easy to use, powerful and flexible.
+  - @mate-desktop-environment # MATE Desktop is based on GNOME 2 and provides a powerful graphical user interface for users who seek a simple easy to use traditional desktop interface.
+  - @sugar-desktop-environment # A software playground for learning about learning.
+  - @sugar-desktop # A software playground for learning about learning.
+  - @developer-workstation-environment # Workstation for software, hardware, graphics, or content development.
+  - @web-server-environment # Server for serving static and dynamic internet content.
+  - @infrastructure-server-environment # Server for operating network infrastructure services.
+  - @basic-desktop-environment # X Window System with a choice of window manager.
+  - @basic-desktop # Basic X Window System with a choice of window manager.
+  - @3d-printing # 3D printing software
+  - @admin-tools # This group is a collection of graphical administration tools for the system, such as for managing user accounts and configuring system hardware.
+  - @ansible-node # This group contains packages necessary for the system to be controlled by Ansible.
+  - @audio # Various tools for audio synthesis and music production.
+  - @authoring-and-publishing # These tools allow you to create documents in the DocBook format and convert them into HTML, PDF, Postscript, and text.
+  - @books # Books and Guides for Fedora users and developers
+  - @c-development # These tools include core development tools such as automake, gcc and debuggers.
+  - @cloud-infrastructure # Infrastructure packages for cloud computing.
+  - @cloud-management # Software to manage servers and system images that run in "cloud" environments
+  - @container-management # Tools for managing Linux containers
+  - @d-development # These include development tools and libraries such as ldc, and geany-tag.
+  - @design-suite # These packages are targeted towards professional designers, and are related to graphics, web and animation.
+  - @development-tools # These tools include general development tools such as git and CVS.
+  - @domain-client # Support for joining a FreeIPA or Active Directory Domain
+  - @eclipse # Integrated Development Environments based on Eclipse.
+  - @editors # Sometimes called text editors, these are programs that allow you to create and edit text files. This includes Emacs and Vi.
+  - @education # Educational software for learning
+  - @electronic-lab # Design and simulation tools for hardware engineers
+  - @engineering-and-scientific # This group includes packages for performing mathematical and scientific computations and plotting, as well as unit conversion.
+  - @freeipa-server # Provides central directory services for identity, policy management and auditing.
+  - @games # Various ways to relax and spend your free time.
+  - @headless-management # Tools for managing the system without an attached graphical console.
+  - @libreoffice # LibreOffice Productivity Suite
+  - @mate-applications # Applications for the MATE Desktop.
+  - @mate-compiz # This package group adds Compiz and Emerald to MATE desktop
+  - @medical # This is a group of applications related to health care.
+  - @milkymist # Toolchain for Milkymist hardware engineers.
+  - @network-server # These packages include network-based servers such as DHCP, Kerberos and NIS.
+  - @office # The applications include office suites, PDF viewers, and more.
+  - @robotics-suite # Suite of packages for robotics development
+  - @rpm-development-tools # These tools include core development tools such rpmbuild.
+  - @security-lab # Tools for security auditing, forensics, system rescue, and teaching security testing methodologies.
+  - @sound-and-video # From CD recording to playing audio CDs and multimedia files, this package group allows you to work with sound and video on the system.
+  - @system-tools # This group is a collection of various tools for the system, such as the client for connecting to SMB shares and tools to monitor network traffic.
+  - @text-internet # This group includes text-based email, web, and chat clients. These applications do not require the X Window System.
+  - @window-managers # Simple window managers that aren't part of a larger desktop environment.

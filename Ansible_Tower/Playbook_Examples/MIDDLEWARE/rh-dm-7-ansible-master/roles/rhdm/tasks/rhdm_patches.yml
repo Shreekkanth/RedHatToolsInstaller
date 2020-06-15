@@ -1,0 +1,59 @@
+---
+#### Check Existence JBoss EAP Patch ZIP
+- name: "Check Existence of Libraries RHDM: {{patch}}"
+  stat:
+    path: "{{ rhdm_patch_dest + patch }}"
+  register: rhdm_patch_exists
+  tags:
+    - rhdm_patch
+
+#### Copy RHDM Patch
+- name: "Copy RHDM Patch: {{patch}}"
+  copy:
+    src: "{{ base_dir_download + patch }}"
+    dest: "{{ rhdm_patch_dest }}"
+  tags:
+    - rhdm_patch
+  when: rhdm_apply_patches and rhdm_patch_exists.stat.exists == false
+
+#### Extract RHDM Patches Libraries
+- name: "Extract RHDM Patch: {{patch}}"
+  unarchive:
+    src:   "{{ base_dir_download + patch }}"
+    dest:  "{{ rhdm_patch_dest }}"
+    remote_src: no
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+  tags:
+    - rhdm_patch
+  when: rhdm_apply_patches
+
+#### Patch JBoss BPM
+- name: "apply-updates RHDM: {{patch}}"
+  shell:  "./apply-updates.sh  {{rhdm_business_central_war}} rhdm-business-central-eap7-deployable"
+  args:
+    chdir: "{{ rhdm_patch_dest + patch[0:-4] }}"
+  tags:
+    - rhdm_patch
+  when: rhdm_apply_patches
+
+#### Patch JBoss BPM
+- name: "apply-updates RHDM: {{patch}}"
+  shell:  "./apply-updates.sh  {{rhdm_kieserver_war}}  rhdm-kie-server-ee7"
+  args:
+    chdir: "{{ rhdm_patch_dest + patch[0:-4] }}"
+  tags:
+    - rhdm_patch
+  when: rhdm_apply_patches
+
+#### Remove the ZIP
+- name: "Remove the RHDM Patch ZIP: {{patch}}"
+  file:
+    path: "{{ rhdm_patch_dest + patch }}"
+    state: "absent"
+  tags:
+    - rhdm_patch
+  when: rhdm_remove_patch
+
+#
+# EOF

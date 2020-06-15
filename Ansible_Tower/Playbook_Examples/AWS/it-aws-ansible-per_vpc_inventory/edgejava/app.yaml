@@ -1,0 +1,52 @@
+---
+- hosts: edgejava-app-all
+
+  gather_facts: true
+
+  serial: 2
+
+  pre_tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=60 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: disable puppet
+      shell: service puppet stop
+      tags:
+        - puppet
+
+    - name: pausing to push puppet or application code
+      pause: prompt="Push puppet and/or code changes now... press enter when ready to continue"
+      tags:
+        - verification
+
+  tasks:
+    - name: stop jboss
+      service: name=jbossas state=stopped
+      tags: roll
+
+    - name: start puppet
+      shell: service puppet start
+      tags:
+        - puppet
+
+    - name: enabling puppet
+      shell: puppet agent --enable
+      tags:
+        - puppet
+
+    - name: Run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes
+      tags:
+        - puppet
+
+    - name: start jboss
+      service: name=jbossas state=started
+      tags: roll
+
+    - name: verify that updated nodes are good
+      pause: prompt="Ensure that the three nodes you just updated have started correctly..."
+      tags:
+        - verification

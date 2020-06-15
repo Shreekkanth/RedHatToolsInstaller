@@ -1,0 +1,4 @@
+[edgejava-app-all]
+edgejavaapp[1:6].prod.a4.vary.redhat.com
+[edgejava-app-all:vars]
+nagios_host=nagios0.prod.a4.vary.redhat.com

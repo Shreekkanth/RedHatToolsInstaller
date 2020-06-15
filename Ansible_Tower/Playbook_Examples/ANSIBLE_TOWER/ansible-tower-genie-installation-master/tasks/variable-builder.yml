@@ -1,0 +1,52 @@
+---
+- pause:
+    prompt: "Would you like to ensure tower-cli is installed (True/False)"
+  register: prerequisites
+
+- name: Source Control Variable Collection
+  block:
+    - pause:
+        prompt: "Which type of source control system do you want to create new Team repositories in? (gitlab, github, bitbucket) **Gitlab only right now**"
+      register: scm_type
+
+    - pause:
+        prompt: "Enter the base URL to your Source Control system"
+      register: scm_url
+
+    - pause:
+        prompt: "Enter a username with API access to create new repositories and orgs/groups in your source control system"
+      register: scm_user
+
+    - pause:
+        prompt: "Enter the password for your source control user with API access"
+        echo: False
+      register: scm_pass
+
+    - pause:
+        prompt: "Enter the impersonation token for your source control user with API access"
+        echo: False
+      register: scm_token
+      when: scm_type.user_input | lower == "gitlab"
+
+    - pause:
+        prompt: "Enter the name of the org/group you want to create your new repositories in when performing platform onboarding (e.g. Ansible)"
+      register: scm_org
+
+    - pause:
+        prompt: "How many branches do you want to create in your new repositories? (typically 1-to-1 mapping for Ansible Tower environments such as master for Production or dev for Developemnt environment)"
+      register: branch_count
+
+    # Get branches loop
+    - name: Get Source Control Branch Information
+      include_tasks: "tasks/scm-branches.yml"
+      with_items: "{{ range(1, branch_count.user_input | int + 1, 1) | list }}"
+      loop_control:
+        loop_var: branch_loop
+
+  when: onboard_in_scm
+
+- name: Build Tower onboarding variables
+  include_tasks: "tasks/tower-environments.yml"
+  with_items: "{{ range(1, env_count | int + 1, 1) | list }}"
+  loop_control:
+    loop_var: env_loop

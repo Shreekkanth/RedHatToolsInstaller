@@ -1,0 +1,54 @@
+---
+# Ensure requirements are in place for role.
+
+- name: Check if control node is Ansible Tower host
+  stat:
+    path: "{{ tower_ansible_virtualenv }}"
+  delegate_to: localhost
+  run_once: yes
+  register: tower_install
+
+- name: Inform that Tower is not detected
+  debug:
+    msg: "Did not detect Ansible Tower on control node"
+  delegate_to: localhost
+  run_once: yes
+  when: not tower_install.stat.exists | bool
+
+- name: Inform that Tower is detected
+  debug:
+    msg: "Detected Ansible Tower on control node"
+  delegate_to: localhost
+  run_once: yes
+  when: tower_install.stat.exists | bool
+
+- name: Install python requirements on Ansible control node
+  pip:
+    name: "{{ item }}"
+    state: present
+  delegate_to: localhost
+  run_once: yes
+  register: python_requirements
+  loop: "{{ tower_ansible_py_modules }}"
+  when: not tower_install.stat.exists | bool
+
+- name: Check python requirements on Ansible Tower Instance in Ansible virtualenv
+  pip:
+    virtualenv: "{{ tower_ansible_virtualenv }}"
+    name: "{{ item }}"
+    state: present
+  check_mode: true
+  delegate_to: localhost
+  run_once: yes
+  register: python_requirements
+  loop: "{{ tower_ansible_py_modules }}"
+  when: tower_install.stat.exists | bool
+  changed_when: False
+
+- name: Fail when control node is Tower and python requirements are not installed
+  fail:
+    msg: "Detected Ansible Tower on control node; and python module pyvmomi is missing - please install it."
+  when: (tower_install.stat.exists | bool) and ("pyvmomi" not in python_requirements.results[0].stdout)
+  delegate_to: localhost
+  run_once: yes
+  loop: "{{ tower_ansible_py_modules }}"

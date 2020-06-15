@@ -1,0 +1,8 @@
+[aws_ec2:children]
+aws_instances
+
+[aws_instances:children]
+efs-target
+
+[efs-target]
+localhost

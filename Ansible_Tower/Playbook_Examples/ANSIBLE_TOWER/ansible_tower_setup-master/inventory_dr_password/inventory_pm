@@ -1,0 +1,38 @@
+[tower]
+towervm1 ansible_ssh_host="10.26.10.50"
+
+[database]
+towerdb1 ansible_ssh_host="10.26.10.20"
+
+[database_replica]
+towerdb2 ansible_host="10.26.10.21" pgsqlrep_type=remote
+
+[database_all:children]
+database
+database_replica
+
+[database_all:vars]
+pgsqlrep_password=password4
+
+[all:vars]
+ansible_user = 'vagrant'
+ansible_password = 'vagrant'
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+#ansible_become=true
+admin_password='password1'
+
+pg_host='10.26.10.20'
+pg_port='5432'
+
+pg_database='awx'
+pg_username='awx'
+pg_password='password3'
+
+rabbitmq_port=5672
+rabbitmq_vhost=tower
+rabbitmq_username=tower
+rabbitmq_password='password2'
+rabbitmq_cookie=cookiemonster
+
+# Needs to be true for fqdns and ip addresses
+rabbitmq_use_long_name=true

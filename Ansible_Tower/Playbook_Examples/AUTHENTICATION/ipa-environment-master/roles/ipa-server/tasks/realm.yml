@@ -1,0 +1,14 @@
+---
+
+- name: HBAC allow_all
+  ipa_hbacrule:
+    name: allow_all
+    description: Allow all users to access any host from any host
+    hostcategory: all
+    servicecategory: all
+    usercategory: all
+    state: "{{ ipa_server_no_hbac_allow_all | ternary('absent', 'enabled') }}"
+    ipa_host: "{{ ansible_fqdn }}"
+    ipa_user: admin
+    ipa_pass: "{{ ipa_server_admin_secret }}"
+  run_once: true

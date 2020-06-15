@@ -1,0 +1,15 @@
+---
+
+- hosts: undercloud
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - test_yum
+
+#- hosts: undercloud
+#  remote_user: stack
+#  vars_files:
+#    - ../common/vars/common.yml
+#  roles:
+#    - download_discovered_data

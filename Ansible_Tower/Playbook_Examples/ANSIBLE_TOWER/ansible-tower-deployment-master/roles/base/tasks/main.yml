@@ -1,0 +1,7 @@
+- name: Load tasks file for RHEL 7
+  include_tasks: 'RedHat7.yml'
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7
+
+- name: Load tasks file for Ubuntu
+  include_tasks: 'Ubuntu.yml'
+  when: ansible_os_family == 'Ubuntu' 

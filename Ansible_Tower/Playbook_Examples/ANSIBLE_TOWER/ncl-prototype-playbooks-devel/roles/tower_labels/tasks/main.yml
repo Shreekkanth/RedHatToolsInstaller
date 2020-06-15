@@ -1,0 +1,9 @@
+---
+# tasks file for tower_labels
+
+- name: Add labels to Tower
+  tower_label:
+    name: "{{ item.name }}"
+    organization: "{{ item.organization }}"
+    state: "{{ item.state }}"
+    tower_verify_ssl: "{{ check_ssl }}"

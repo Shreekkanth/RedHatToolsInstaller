@@ -1,0 +1,66 @@
+[masters]
+rhv-ocp-master-1.homelab.work
+
+[etcd]
+rhv-ocp-master-1.homelab.work
+
+[nodes]
+rhv-ocp-master-1.homelab.work openshift_node_group_name="node-config-master"
+rhv-ocp-infra-1.homelab.work openshift_node_group_name="node-config-infra" 
+rhv-ocp-app-1.homelab.work openshift_node_group_name="node-config-compute"
+
+## Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+etcd
+
+[OSEv3:vars]
+osm_etcd_image=registry.redhat.io/rhel7/etcd:3.2.22
+ansible_user=root
+openshift_deployment_type=openshift-enterprise
+openshift_release="3.11"
+openshift_disable_check=memory_availability
+#oreg_url=registry.access.redhat.com/openshift3/ose-${component}:${version}
+openshift_examples_modify_imagestreams=true
+
+### Load Balancer Settings
+# This is your DNS wildcard that will be load balanced to your routers
+openshift_master_default_subdomain=apps.homelab.work
+openshift_master_cluster_hostname=rhv-ocp-master-1.homelab.work
+openshift_master_cluster_public_hostname=rhv-ocp-master-1.homelab.work
+
+### Container scheduling helpers
+openshift_hosted_manage_registry=true
+openshift_hosted_manage_router=true
+openshift_hosted_manage_registry_console=true
+
+### Networking - The default network plugin is the wild west and switching this requires a reinstall. So lets start with the good one!
+#os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+## Don't change these unless they overlap a network that already exists on-site
+#osm_cluster_network_cidr=10.128.0.0/14
+#openshift_portal_net=172.30.0.0/16
+
+## Who wants to use 8443? I always change it to 443
+openshift_master_api_port=443
+openshift_master_console_port=443
+
+### Helpful extras
+openshift_hostname_check=true
+
+### Change this to point at a real LDAP later
+#openshift_master_identity_providers=[{'name': 'allow_all', 'login': 'true', 'challenge': 'true', 'kind': 'AllowAllPasswordIdentityProvider'}]
+openshift_master_identity_providers=[{'name': '{{ldap_auth_name}}', 'challenge': '{{ldap_challenge}}', 'login': '{{ldap_login}}', 'kind': '{{ldap_kind}}', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'bindDN': '{{ldap_bind_dn}}', 'bindPassword': '{{bind_password}}', 'ca': '{{ca_crt}}', 'insecure': '{{ldap_insecure}}', 'url': '{{ldap_url_1}}'}]
+
+openshift_master_ldap_ca_file=/etc/ipa/ca.crt
+### Save these for later (Most of these will need storage configured as well when they are enabled)
+#openshift_install_examples=true
+#openshift_docker_blocked_registries=docker.io
+#openshift_metrics_install_metrics=true
+#openshift_logging_install_logging=true
+#openshift_enable_service_catalog=true
+#template_service_broker_install=true
+
+## Cool new option to add the customer CA. Possibly not required to install but it will help if you start running into certificate issues.
+#openshift_additional_ca=/path/to/additional-ca.crt

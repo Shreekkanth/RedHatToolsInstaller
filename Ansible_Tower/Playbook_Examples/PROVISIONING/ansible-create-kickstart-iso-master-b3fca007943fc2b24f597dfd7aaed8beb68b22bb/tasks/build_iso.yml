@@ -1,0 +1,93 @@
+---
+- name: "Ensure build ISO filesystem exists"
+  file:
+    path: "{{ ks_iso_build_dir.path }}/{{ item }}"
+    state: "directory"
+  with_items: "{{ ks_iso_paths }}"
+  become: True
+
+- debug:
+    msg:
+      - "Mounted Filesystems:"
+      - "{{ ansible_mounts | json_query('[*].mount') }}"
+    verbosity: "1"
+
+- name: "Mount source install media"
+  command: "mount -o ro -t iso9660 {{ ks_iso_install_media_path }} {{ ks_iso_build_dir.path }}/mnt"
+  when: "ks_iso_build_dir.path + '/mnt' not in ansible_mounts | json_query('[*].mount')"
+  become: True
+  tags: "ks_iso_mount_source"
+
+- name: "Get comps.xml"
+  find:
+    file_type: "any"
+    follow: False
+    paths: "{{ ks_iso_build_dir.path }}/mnt/repodata/"
+    patterns: "*comps*.xml"
+  register: "ks_iso_comps"
+
+- debug:
+    var: "ks_iso_comps"
+    verbosity: "1"
+
+- name: "Copy source files to ISO Build Directory"
+  synchronize:
+    src: "{{ item.src }}"
+    dest: "{{ ks_iso_build_dir.path }}{{ item.dest }}"
+    recursive: True
+  with_items:
+    - "{{ ks_iso_source_paths }}"
+    - src: "{{ ks_iso_comps.files[0].path }}"
+      dest: "/comps.xml"
+  delegate_to: "{{ inventory_hostname }}"
+  become: True
+  tags: "ks_iso_copy_source"
+
+- name: "Create repodata"
+  command: 'createrepo -g {{ ks_iso_build_dir.path }}/comps.xml {{ ks_iso_build_dir.path }}/isolinux'
+  register: "ks_iso_createrepo_results"
+  become: True
+  tags: "ks_iso_create_repodata"
+
+- debug:
+    var: "ks_iso_createrepo_results"
+    verbosity: "1"
+
+- name: "Copy kickstart file to ISO build directory"
+  copy:
+    src: "{{ ks_iso_kickstart_file }}"
+    dest: "{{ ks_iso_build_dir.path }}/isolinux/ks/ks.cfg"
+  become: True
+  tags: "ks_iso_update_ks"
+
+- name: "Configure isolinux.cfg"
+  block:
+    - name: "Set ISO isolinux.cfg boot timeout"
+      lineinfile:
+        path: "{{ ks_iso_build_dir.path }}/isolinux/isolinux.cfg"
+        regex: "^timeout.*$"
+        line: "timeout {{ ks_iso_boot_timeout }}"
+        state: "present"
+
+    - name: "Set ISO isolinux.cfg boot totaltimeout"
+      lineinfile:
+        path: "{{ ks_iso_build_dir.path }}/isolinux/isolinux.cfg"
+        line: "totaltimeout {{ ks_iso_boot_total_timeout }}"
+        insertafter: "^timeout.*$"
+        state: "present"
+
+    - name: "Update ISO isolinux.cfg to boot kickstart"
+      lineinfile:
+        path: "{{ ks_iso_build_dir.path }}/isolinux/isolinux.cfg"
+        line: "{{ ks_iso_isolinux_boot_line }}"
+        insertafter: "^totaltimeout.*$"
+        state: "present"
+  become: True
+  tags: "ks_iso_update_isolinux"
+
+- name: "Build ISO Image"
+  command: 'mkisofs -o {{ ks_iso_built_path }}/{{ ks_iso_built_filename }} -b isolinux.bin -c boot.cat -no-emul-boot -V "{{ ks_iso_volume_id }}" -boot-load-size 4 -boot-info-table -R -J -v -T isolinux/'
+  args:
+    chdir: "{{ ks_iso_build_dir.path }}"
+  become: True
+  tags: "ks_iso_build_iso"

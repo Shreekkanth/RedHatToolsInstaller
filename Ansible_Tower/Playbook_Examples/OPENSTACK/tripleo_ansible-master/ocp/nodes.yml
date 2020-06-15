@@ -1,0 +1,40 @@
+---
+
+- hosts: lb
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - yum_repository
+    - ../common/roles/ntp
+    - base_os
+
+- hosts: masters
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - yum_repository
+    - ../common/roles/ntp
+    - base_os
+    - ../k8s/roles/docker
+
+- hosts: infra
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - yum_repository
+    - ../common/roles/ntp
+    - base_os
+    - ../k8s/roles/docker
+
+- hosts: ose_nodes
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - yum_repository
+    - ../common/roles/ntp
+    - base_os
+    - ../k8s/roles/docker

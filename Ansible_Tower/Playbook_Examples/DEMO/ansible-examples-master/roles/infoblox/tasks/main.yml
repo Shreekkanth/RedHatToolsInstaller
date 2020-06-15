@@ -1,0 +1,34 @@
+---
+# tasks file for roles/infoblox
+#
+- debug:
+    msg: "{{ action }}"
+
+- block:
+    - import_tasks: get-newip.yml
+    - import_tasks: add-record.yml
+  when: "'new-host' in action"
+
+- block:
+    - import_tasks: add-record.yml
+  when: "'add-record' in action"
+
+- block:
+    - import_tasks: del-record.yml
+  when: "'del-record' in action"
+
+- block:
+    - import_tasks: add-cname.yml
+  when: "'add-cname' in action"
+
+- block:
+    - import_tasks: del-cname.yml
+  when: "'del-cname' in action"
+
+- block:
+    - import_tasks: create-network.yml
+  when: "'create-network' in action"
+
+- block:
+    - import_tasks: del-network.yml
+  when: "'del-network' in action"

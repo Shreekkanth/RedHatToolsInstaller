@@ -1,0 +1,29 @@
+---
+groups:
+  - name: "sgs-scan"
+    gid: "60002"
+    system: False
+  - name: "ssn"
+    gid: "60000"
+    system: False
+  - name: "uiqrsync"
+    gid: "60003"
+    system: False
+  - name: "ssnsupport"
+    gid: "500"
+    system: False
+  - name: "netmgr"
+    gid: "60005"
+    system: False
+  - name: "bacmon"
+    gid: "501"
+    system: False
+  - name: "uc4user"
+    gid: "60004"
+    system: False
+  - name: "dba"
+    gid: "602"
+    system: False
+  - name: "unixsa"
+    gid: "666"
+    system: False

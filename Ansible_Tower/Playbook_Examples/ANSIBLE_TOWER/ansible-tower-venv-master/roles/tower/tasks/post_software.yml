@@ -1,0 +1,70 @@
+- name: Query RPM for installed ansible packages
+  shell: "rpm -qa | grep 'ansible-[0-9]' | grep -v tower"
+  args:
+    warn: false
+  register: output
+  failed_when: output.rc > 1
+
+# we have to do nodeps on the Tower server because ansible-tower-server has a dependency on
+# the ansible rpm itself. So uninstalling the RPM on a Tower server will remove Tower itself.
+- name: "Unnstall Ansible (if installed) without dependencies"
+  command: "rpm -e --nodeps {{ output.stdout_lines[0] }}"
+  args:
+    warn: false
+  when: output.stdout_lines | length == 1
+
+- name: Make /etc/ansible
+  file:
+    path: /etc/ansible
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Install /etc/ansible files
+  copy:
+    src: "files/{{ item }}"
+    dest: "/etc/ansible/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - ansible.cfg
+
+- name: Change perms on /etc/ansible/roles
+  file:
+    path: /etc/ansible/roles
+    state: directory
+    owner: awx
+    group: awx
+    mode: 0755
+
+- name: Symlink ansible files
+  file:
+    src: "{{ ansible_venv }}/bin/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    state: link
+  loop:
+    - ansible-playbook
+    - ansible-doc
+    - ansible-galaxy
+    - ansible-vault
+    - ansible-lint
+  tags:
+    - symlink_ansible
+
+- name: Symlink ansible itself if we are on a tower server
+  file:
+    src: "{{ ansible_venv }}/bin/ansible"
+    dest: "/usr/bin/ansible"
+    state: link
+  tags:
+    - symlink_ansible
+  when: tower_url is defined
+  
+- name: Create ansible-activate
+  copy:
+    dest: "/etc/profile.d/ansible.sh"
+    content: 'alias ansible-activate="source {{ ansible_venv }}/bin/activate"'
+    owner: root
+    group: root
+    mode: 0644

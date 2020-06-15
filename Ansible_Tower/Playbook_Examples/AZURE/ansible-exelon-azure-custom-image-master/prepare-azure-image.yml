@@ -1,0 +1,28 @@
+---
+- hosts: "localhost"
+  tasks:
+    # Kick off new VM build in vSphere via Sat6 API and kickstart (auto-attach boot disk process for pxeless booting)
+
+    # Check state of new VM in vSphere until it's powered off
+
+    # Create temp directory
+
+    # Download the VMDK out of vSphere
+    # fetch:
+    # Ensure qemu-img >= 2.6 installed
+
+    # Convert vmdk to raw format
+    #qemu-img convert -f vmdk -O raw rhel-7.4.vmdk rhel-7.4.raw
+
+    # Ensure size of raw image is aligned with 1MB otherwise round up to 1MB
+    # MB=$((1024*1024))
+    # size=$(qemu-img info -f raw --output json "rhel-7.4.raw" | \
+    #  gawk 'match($0, /"virtual-size": ([0-9]+),/, val) {print val[1]}')
+    # rounded_size=$((($size/$MB + 1)*$MB))
+    # qemu-img resize rhel-7.4.raw $rounded_size
+
+    #Convert the raw disk to fixed size VHD
+    #qemu-img convert -f raw -o subformat=fixed,force_size -O vpc rhel-7.4.raw rhel-7.4.vhd
+
+    # Upload image
+    # include_tasks: "azure-upload-custom-image.yml"

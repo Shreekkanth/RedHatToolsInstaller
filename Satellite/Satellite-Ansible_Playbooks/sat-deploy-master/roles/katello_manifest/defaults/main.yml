@@ -1,0 +1,3 @@
+katello_manifest_url: http://file.rdu.redhat.com/~rjerrido/manifests/RHCI_Subs_Only_Latest.zip
+katello_manifest_file: /tmp/RHCI_Subs_Only_Latest.zip
+katello_manifest_remote: True

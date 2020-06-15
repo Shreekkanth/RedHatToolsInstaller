@@ -1,0 +1,20 @@
+#Execute Ansible Playbook for Health Check in Development Environment
+HEALTH_YML=/root/work/lab-system-monitoring/health-check.yml
+ANSIBLE_CONFIG=/root/work/lab-system-monitoring/ansible.cfg
+ANSIBLE_LOG_PATH=/var/log/health-check-ansible.log
+DEVVM=devvm1.srv.cdn.dynetics.com
+RSYNC_SRC=/var/01-health-checks/
+RSYNC_DEST=/data/01-health-checks/
+
+
+# Execute ansible playbook to perform system health check and send report to health-check channel in RocketChat (weekday every 4 hours between 0800 - 2000)
+0 8-20/4 * * 1-5  root /usr/bin/ansible-playbook --skip-tags 'never, debug' ${HEALTH_YML} &> /dev/null
+
+# Execute ansible playbook to perform system health check and save report in local directory -- Ref RSYNC_SRC (weekend every 6 hours between 0000 - 2300)
+0 0-23/6 * * 6-7  root /usr/bin/ansible-playbook --skip-tags 'never, debug, send_report_chat, send_report_email' ${HEALTH_YML} &> /dev/null
+
+# Rsync directories from bastion to devvm1 to archive health check reports in remote directory -- Ref RSYNC_DEST (daily every 4 hours between 0000 - 2300)
+5 0-23/4 * * *  root /usr/bin/rsync -a --delete ${RSYNC_SRC} ${DEVVM}:${RSYNC_DEST} &> /dev/null
+
+# Archive previous month health check reports in previous calendar month directory -- Ref RSYNC_SRC (1st of every month)
+0 0 1 * * root /usr/bin/cd ${RSYNC_SRC} && /usr/bin/mkdir $(/usr/bin/date +'\%m-\%^b') && /usr/bin/cp -a status-$(/usr/bin/date +'\%Y\%m')* $(/usr/bin/date +'\%m-\%^b') && /usr/bin/rm -f status-$(/usr/bin/date +'\%Y\%m')*

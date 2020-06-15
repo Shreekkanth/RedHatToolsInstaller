@@ -1,0 +1,14 @@
+---
+nagios_host: nagios1.prod.a2.vary.redhat.com
+admin_host: admin1.prod.a2.vary.redhat.com
+admin_host_secondary: admin2.prod.a2.vary.redhat.com
+update_node: cmsapp1.prod.a2.vary.redhat.com
+elb_name: CmsAppLoadBalancer
+elbs:
+  - ELB-CmsAdminLoadBalancer
+  - ELB-CmsAppLoadBalancer
+  - ELB-CmsInternalLoadBalancer
+  - ELB-CmsPublicLoadBalancer
+price_hack_id: i-58087751
+price_hack_elb: ProdCmsPriceEditingHack
+git_branch: prod

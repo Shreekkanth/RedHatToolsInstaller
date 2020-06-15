@@ -1,0 +1,11 @@
+[Unit]
+Description=Mount GoCryptFS Volumes
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/home/bexelbie/bin/gocryptfs-setup mount
+ExecStop=/home/bexelbie/bin/gocryptfs-setup unmount
+
+[Install]
+WantedBy=user-graphical-login.target

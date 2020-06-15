@@ -1,0 +1,5 @@
+---
+
+- src: https://github.com/A-Beck/ansible-tower-downloader 
+  version: master
+  name: ansible-tower-downloader

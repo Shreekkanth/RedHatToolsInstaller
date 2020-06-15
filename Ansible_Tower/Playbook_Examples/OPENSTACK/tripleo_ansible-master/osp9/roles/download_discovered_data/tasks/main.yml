@@ -1,0 +1,25 @@
+---
+
+- name: get inspector password
+  become: yes
+  shell: crudini --get /etc/ironic-inspector/inspector.conf swift password
+  changed_when: false
+  check_mode: no
+  register: password
+- debug: msg={{ password.stdout }}
+
+- name: create output directory
+  file: path={{ undercloud.discovered_data_path }} state=directory
+
+- name: get node list
+  shell: . ~/stackrc && openstack baremetal list -c UUID -c Name -f json
+  changed_when: false
+  check_mode: node
+  register: node_list
+- debug: msg={{ node_list.stdout }}
+
+- name: download discovered data
+  shell: . ~/stackrc && swift -U service:ironic -K {{ password.stdout }} download ironic-inspector inspector_data-{{ item.UUID }} -o {{ undercloud.discovered_data_path }}/inspector_data-{{ item.Name }}.txt
+  changed_when: false
+  check_mode: node
+  with_items: "{{ node_list.stdout }}"

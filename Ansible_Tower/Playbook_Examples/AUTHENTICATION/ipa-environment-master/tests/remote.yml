@@ -1,0 +1,177 @@
+---
+
+  - hosts: ipa-server
+    become: true
+    vars:
+      testframework_virtual_env: /opt/devilhorn/testframework
+      invoke: "*.py"
+      identityParcel: &TESTDATA
+        owner: Devil Horn Test Data
+        description: "Test Auth Parcel"
+        resource_pools:
+          - name: my_infra
+            description: my infrastructure hosts
+            members:
+              - app-7-001.ipa.def.ic.com.au
+        authorisation_roles:
+          - name: my_admins
+            members:
+              - dkelly
+        authorisation_vectors:
+          - name: Allow Administrators access to infrastructure
+            enabled: true
+            type: hbac
+            authorisation_roles:
+                - my_admins
+            resource_pools:
+                - my_infra
+            service:
+              - sudo
+              - sshd
+          - name: Allow Administrators access to privileged commands
+            enabled: true
+            type: sudo
+            runasuser:
+              - root
+            authorisation_roles:
+                - my_admins
+            resource_pools:
+                - my_infra
+            commands:
+              - /bin/sudo -l
+              - /bin/ls -la *
+              - /bin/who
+              - ALL
+
+    tasks:
+      - block:
+        #scaffold tasks
+        - name: generate auth token
+          uri:
+            url: "https://{{ ansible_nodename }}/ipa/session/login_password"
+            method: POST
+            validate_certs: False
+            headers:
+              Content-Type: "application/x-www-form-urlencoded"
+              referer: "https://{{ ansible_nodename }}/ipa"
+              Accept: "text/plain"
+            status_code: 200
+            body: "user=admin&password={{ ipa_server_admin_secret }}"
+          register: _auth_token
+
+        - name: create trust
+          uri:
+            url: "https://{{ ansible_nodename }}/ipa/json"
+            method: POST
+            return_content: yes
+            validate_certs: False
+            body_format: json
+            headers:
+              Cookie: "{{ _auth_token.set_cookie }}"
+              referer: "https://{{ ansible_nodename }}/ipa"
+              Content-Type: application/json
+              Accept: application/json
+            body: >
+             {
+                "id": 0,
+                "method": "trust_add/1",
+                "params": [
+                  [ "{{ identity_parcel_remote_realm }}" ],
+                  {
+                    "range_type": "ipa-ad-trust-posix",
+                    "realm_admin": "cloud-user",
+                    "realm_passwd": "1800RedHat",
+                    "version": "2.228"
+                  }
+                ]
+             }
+
+
+        - name: set domain resolution order
+          uri:
+            url: "https://{{ ansible_nodename }}/ipa/json"
+            method: POST
+            return_content: yes
+            validate_certs: False
+            body_format: json
+            headers:
+              Cookie: "{{ _auth_token.set_cookie }}"
+              referer: "https://{{ ansible_nodename }}/ipa"
+              Content-Type: application/json
+              Accept: application/json
+            body: >
+             {
+                "id": 0,
+                "method": "config_mod/1",
+                "params": [
+                  [],
+                  {
+                    "ipadomainresolutionorder": "{{ identity_parcel_remote_realm }}:{{ realm_name | lower }}",
+                    "version": "2.228"
+                  }
+                ]
+             }
+
+
+        - name: restart sssd
+          service:
+            name: sssd
+            state: restarted
+
+
+        - name: Deploy test auth parcel
+          include_role:
+            name: provider-identity-parcel
+          vars:
+            <<: *TESTDATA
+            identity_parcel_ipa_server: "{{ ansible_fqdn }}"
+            identity_parcel_ipa_user: admin
+            identity_parcel_ipa_pass: "{{ ipa_server_admin_secret }}"
+            identity_parcel_directory_manager_secret: "{{ ipa_server_ds_secret}}"
+            identity_parcel_validate_certs: false
+
+        when: env_name == 'development'
+        # Closing block
+
+      - block:
+        - name: Push development Testcases
+          copy:
+            src: "{{ item }}"
+            dest: "{{ testframework_virtual_env }}"
+            owner: root
+            group: root
+            mode: 0755
+          with_fileglob:
+            - ../roles/test-framework/files/*.py
+
+        - name: Execute test cases
+          command: "{{ testframework_virtual_env}}/testrunner.sh {{invoke}}"
+          environment:
+            PYTEST_ADDOPTS: "\"-m {% for group in vars.group_names %}{{group | regex_replace('-', '')}}{% if not loop.last %} or {%endif%}{%endfor%}\""
+          ignore_errors: true
+          register: results
+
+        - name: print stdout
+          debug:
+            var: results.stdout_lines
+
+        - name: print stderr
+          debug:
+            var: results.stderr_lines
+        when: env_name == 'development'
+
+      - block:
+        - name: Execute test cases
+          command: "{{ testframework_virtual_env}}/testrunner.sh"
+          environment:
+            PYTEST_ADDOPTS: "\"-m {% for group in vars.group_names %}{{group | regex_replace('-', '')}}{% if not loop.last %} or {%endif%}{%endfor%}\""
+          ignore_errors: true
+          register: results
+
+        - name: Return test results
+          fetch:
+            src: "{{ testframework_virtual_env }}/results.xml"
+            dest: "../results/{{ inventory_hostname }}-junit.xml"
+            flat: yes
+            fail_on_missing: no
+        when: env_name != 'development'

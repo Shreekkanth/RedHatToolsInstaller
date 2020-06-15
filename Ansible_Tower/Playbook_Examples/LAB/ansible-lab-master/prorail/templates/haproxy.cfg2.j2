@@ -1,0 +1,48 @@
+global
+    log         127.0.0.1 local2 
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        root
+    group       root
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats level admin
+
+defaults
+    mode                    {{ mode }}
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option                  forwardfor
+    retries                 3
+    timeout http-request    5s
+    timeout queue           1m
+    timeout connect         5s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+frontend main {{ keepalived_vip }}:80
+    acl {{ app2 }} hdr_beg(host) app2.
+    use_backend {{ bck_app2 }} if {{ app2 }} 
+    default_backend www
+
+backend www
+    balance     {{ balance }}
+    option redispatch
+    {% for host in groups.app1 %}
+        server {{ host }} {{ hostvars[host]['ansible_' + iface].ipv4.address }}:{{ httpd_port }} check
+    {% endfor %}
+
+backend {{ bck_app2 }}
+    balance {{ bck_app2_balance }}
+    option redispatch
+    {% for host in groups.app2 %}
+        server {{ host }} {{ hostvars[host]['ansible_' + iface].ipv4.address }}:{{ httpd_port }} check
+    {% endfor %}
+ 

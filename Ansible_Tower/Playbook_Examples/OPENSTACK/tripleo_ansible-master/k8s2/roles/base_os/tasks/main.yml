@@ -1,0 +1,54 @@
+---
+
+#- name: set hostname for sure
+#  shell: hostnamectl set-hostname {{ hostname_fqdn }} && hostnamectl set-hostname --transient {{ hostname_fqdn }}
+#  changed_when: false
+
+- name: dot files (root)
+  unarchive: src=dotfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: ssh files (root)
+  unarchive: src=sshfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+#- name: get short hostname
+#  shell: hostname -s
+#  changed_when: false
+#  check_mode: no
+#  register: hostname_short
+#
+#- name: get fqdn hostname
+#  shell: hostname -f
+#  changed_when: false
+#  check_mode: no
+#  register: hostname_fqdn
+#
+#- debug: msg='{{ hostname_short.stdout }} {{ hostname_fqdn.stdout }}'
+#
+#- name: check if loopback line in /etc/hosts contains hostname
+#  shell: grep {{ hostname_short.stdout }} /etc/hosts
+#  changed_when: false
+#  check_mode: no
+#  ignore_errors: yes
+#  register: hosts_contains_hostname
+#
+#- name: update /etc/hosts
+#  lineinfile: >-
+#    dest=/etc/hosts
+#    state=present
+#    regexp={{ item.regexp }}
+#    line={{ item.line }}
+#    backrefs=yes
+#    backup=yes
+#  with_items:
+#    - regexp: '^(127.0.0.1\s+)(localhost.*)$'
+#      line: '\1{{ hostname_fqdn.stdout }} {{ hostname_short.stdout }} \2'
+#  when: hosts_contains_hostname|failed
+
+- name: install common packages
+  yum: name={{ item }} state=latest
+  with_items: "{{ common_packages }}"
+
+#- name: install ose packages
+#  yum: name={{ item }} state=latest
+#  with_items: "{{ ose_packages }}"
+

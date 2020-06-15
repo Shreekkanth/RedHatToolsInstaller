@@ -1,0 +1,15 @@
+---
+# defaults file for configure_host
+register_to_satellite: true
+base_repositories: 
+- rhel-7-server-rpms
+- rhel-7-server-satellite-tools-6.3-rpms
+- rhel-7-server-satellite-tools-6.3-puppet4-rpms
+- Banca_d_Italia_-_Domestico_Custom_Bdi_rhel7_x86_64
+update_all_system: true
+install_katello_agent: true
+install_puppet: true
+install_ipaclient: true
+execute_satellite_jobs: true
+partitioning_job_name: "Add Custom File System"
+hardening_job_name: "Run Hardening RHEL7 - CIS Review"

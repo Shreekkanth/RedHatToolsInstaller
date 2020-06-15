@@ -1,0 +1,287 @@
+---
+# Can be re-generated and replaced by running and copy output:
+#   openssl passwd -salt `openssl rand -base64 6` -1 'desiredpassword here'
+encrypted_root_pw: "$1$PURHRduW$BuzLglKZdOPxiMru65eRX."
+
+# if changed in the kickstart file update here so that it gets removed in cleanup
+ks_template_ssh_pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwpC8TV2hAZH4v2okUl99WzYICZ+CRYKCWTTjY1ZHawX+RuF+4kbHoHx69n7Zm2gtIZuWAMgVSs9fkGAKtYhuptprIROJSrIcTssh2592niTm4WwFIL8K5AryVH8ZFGCRayLFkMNYrZ5jWGDx/IEaFn/Jf0qOwsW4VjVlduV8CjFE5nVyDheNbMT5DVMHRc5k/ZX8DBXlKVEOMy2zxWvYtqZNnYPpoIV54oZbYJ49R1e0lrfgzCO0id2ZeTdiXbvwX1aTLRtXhG4t8wWVPC2Fh9rXV6utybNZN7QD6llRJFhBaLkZDeWxUCmvqTSwbyx9ftz+A2F6W2Z+dCASa2QSt"
+
+# DNS - /etc/resolv.conf
+resolv_nameservers:
+  - "10.106.228.237"
+  - "10.254.140.22"
+resolv_search:
+  - "isus.emc.com"
+  - "lss.emc.com"
+  - "corp.emc.com"
+  - "emc.com"
+  - "us.dell.com"
+
+# Sat6 registration
+sat6_org: "Dell_IT"
+sat6_srv: "rhnsat6prd01.isus.emc.com"
+sat6_ak: "ak_dev_vm_template"
+sat6_hg: "non-prod_RHEL_7_virtual"
+sat6_loc: "Catchall"
+
+# Repos to enable after Sat6 Registration
+sat6_repos:
+  - "rhel-7-server-rpms"
+  - "rhel-7-server-extras-rpms"
+  - "Dell_IT_Red_Hat_Enterprise_Linux_7_Server_RPMs_x86_64_EPEL_Red_Hat_Enterprise_Linux_7_Server_RPMs_x86_64_EPEL"
+  - "rhel-7-server-satellite-tools-6.4-rpms"
+  - "rhel-7-server-rhn-tools-rpms"
+
+# Kernel adjustments
+kernel_params:
+  - name: "net.ipv6.conf.all.disable_ipv6"
+    value: "1"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "kernel.randomize_va_space"
+    value: "2"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "fs.suid_dumpable"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "kernel.dmesg_restrict"
+    value: "1"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.tcp_timestamps"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.conf.default.send_redirects"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.conf.all.send_redirects"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.conf.all.accept_redirects"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.icmp_echo_ignore_broadcasts"
+    value: "1"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.tcp_syncookies"
+    value: "1"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.conf.default.secure_redirects"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.conf.all.secure_redirects"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+  - name: "net.ipv4.conf.default.accept_redirects"
+    value: "0"
+    file: "/etc/sysctl.d/99-sysctl.conf"
+
+# modprobe.d settings
+modprobe_settings:
+  - name: "sctp.conf"
+    value: "install sctp /bin/true"
+  - name: "dccp.conf"
+    value: "install dccp /bin/true"
+
+# message of the day
+motd: |
+  ================================ WARNING ===============================
+  ========================================================================
+  This system is solely for the use of authorized personnel. Individuals
+  using this system are subject to having some or all of their activities
+  monitored and recorded. Anyone using this system expressly consents to
+  such monitoring and is advised that any unauthorized or improper use of
+  this system may result in disciplinary action up to and including
+  termination of employment. Violators may also be subject to civil and/or
+  criminal penalties.
+  ========================================================================
+
+yp_pkgs:
+  - "ypbind"
+  - "yp-tools"
+
+nis_users_groups:
+  - "+@itunix::::::"
+  - "+@itbr::::::"
+  - "+::::::/sbin/nologin"
+
+# sshd_config settings
+sshd_root_settings:
+  - find: "^#PermitRootLogin yes"
+    replace: "PermitRootLogin yes"
+  - find: "^#PermitEmptyPasswords no"
+    replace: "PermitEmptyPasswords no"
+
+sshd_ciphers: "Ciphers aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,arcfour,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"
+
+sshd_macs: "MACs hmac-sha1-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-ripemd160-etm@openssh.com,hmac-sha1,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-ripemd160"
+
+# /etc/sudoers and /etc/sudoers.d settings
+sudoers_rules_intigua: |
+  # Intigua agent manager of agents
+  Defaults:intigua !requiretty
+  intigua ALL=NOPASSWD: /tmp/vmware-*/vlink_installer*
+  intigua ALL=NOPASSWD: /tmp/vlink_installer_linux*
+
+sudoers_rules_snow: |
+  # Service Now discovery service
+  User_Alias SNOWACT = snowdscv
+  SNOWACT ALL=NOPASSWD: SNOWCMDS
+  Cmnd_Alias SNOWCMDS = /usr/sbin/dmidecode, /sbin/fdisk -l *, /bin/multipath -ll, /usr/sbin/lsof -iTCP -n -P -F pcnfT
+
+sudoers_rules_avamar: |
+  # BRS folks can administer / troubleshoot NetWorker & Avamar
+  User_Alias BRSADMINS = +itbr
+  BRSADMINS ALL=NOPASSWD:BKPS
+  Cmnd_Alias BKPS=/usr/sbin/nsr*, /usr/sbin/jb*, /usr/sbin/mm*, /usr/bin/nw*, /usr/bin/nsr*, /etc/init.d/networker, /etc/init.d/avagent, /usr/local/avamar/bin/avregister, /bin/rpm, /usr/bin/yum, /usr/bin/kill
+
+securetty_conf: |
+  console
+  tty1
+
+snmp_pkgs:
+  - "net-snmp"
+  - "net-snmp-agent-libs"
+  - "net-snmp-libs"
+
+snmpd_conf: |
+  syscontact Sys-App-Unix
+  rocommunity emc-it 10.254.20.0/24
+  rocommunity emc-it 128.221.22.0/24
+  rocommunity emc-it 10.12.11.0/24
+  rocommunity emc-it 152.62.140.0/24
+  rocommunity emc-it 10.106.21.0/24
+  rocommunity emc-it 137.69.227.0/24
+  trapsink 10.254.20.149 emc-it
+  trapsink 10.106.21.36 emc-it
+  trapsink 128.221.22.25 emc-it
+  trapsink 10.254.20.25 emc-it
+  skipNFSInHostResources 1
+  smuxpeer .1.3.6.1.4.1.674.10892.1
+
+fw_ports:
+  - "28001-28002/tcp"
+  - "10050/tcp"
+  - "80/tcp"
+  - "443/tcp"
+  - "161/udp"
+
+addl_pkgs:
+  - "telnet"
+  - "psmisc"
+  - "dos2unix"
+  - "ksh"
+  - "libsemanage-python"
+
+emc_ca_file: "EMCSSLCA-Chain.pem"
+
+ntp_conf: |
+  server nsdrm-vip.isus.emc.com
+  disable auth
+  driftfile /var/lib/ntp/drift
+  disable monitor
+  restrict default kod nomodify notrap nopeer noquery
+  restrict -6 default kod nomodify notrap nopeer noquery
+
+autofs_pkgs:
+  - "autofs"
+  - "nfs-utils"
+
+autofs_conf: |
+  /net -hosts
+  +dir:/etc/auto.master.d
+  /net /etc/auto.net
+  /emc yp:auto.emc -nobrowse
+  /disks yp:auto.disks -nobrowse
+
+logrotate_updates:
+  - search: "^dateext"
+    replace: "#dateext"
+  - search: "^#compress"
+    replace: "compress"
+
+selinux_troubleshoot_recipients: "selinux.alerts@emc.com"
+
+se_restorecon_paths:
+  - "/etc"
+
+firewalld_cork_ntp_rich_rules:
+  - "rule family=ipv4 source address=10.73.242.40 accept"
+  - "rule family=ipv4 source address=10.73.242.41 accept"
+
+postfix_lines: |
+  relayhost =  mailhub.lss.emc.com
+  mydomain = isus.emc.com
+
+rhn_pkgs:
+  - "rhn-setup"
+  - "rhn-check"
+  - "rhn-client-tools"
+
+clean_log_paths:
+  - "/var/log/messages"
+  - "/var/log/grubby"
+  - "/var/log/cron"
+  - "/var/log/wtmp"
+  - "/var/log/secure"
+  - "/var/log/maillog"
+  - "/var/log/up2date"
+  - "/var/log/lastlog"
+  - "/var/log/boot.log"
+  - "/var/log/yum.log"
+  - "/var/log/dmesg"
+  - "/var/log/audit/audit.log"
+
+etc_hosts:
+  - hostname: "{{ ansible_hostname }}"
+    domain: "{{ ansible_domain }}"
+    ip_addr: "{{ ansible_default_ipv4.address }}"
+  - hostname: "mdcVRASVRPROD02"
+    domain: "us.dell.com"
+    ip_addr: "10.175.99.51"
+    comment: "For vRA agent"
+  - hostname: "mdcVRASVRPROD03"
+    domain: "us.dell.com"
+    ip_addr: "10.175.99.52"
+  - hostname: "mdcVRASVRPROD01"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.53"
+  - hostname: "mdcVRAIWSPROD02"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.54"
+  - hostname: "mdcVRAIWSPROD03"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.55"
+  - hostname: "mdcVRAIWSPROD01"
+    domain: "us.dell.com"
+    ip_addr: "10.175.99.56"
+  - hostname: "mdcVRAIMSPROD02"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.57"
+  - hostname: "mdcVRAIMSPROD03"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.58"
+  - hostname: "mdcVRAIMSPROD01"
+    domain: "us.dell.com"
+    ip_addr: "10.175.99.59"
+  - hostname: "mdcVRADEMPROD01"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.60"
+  - hostname: "mdcVRADEMPROD02"
+    domain: "aus.amer.dell.com"
+    ip_addr: "10.175.99.61"
+  - hostname: "durvcprod01"
+    domain: "us.dell.com"
+    ip_addr: "10.186.136.33"
+
+vra_agent_install:
+  temp_dir: "/tmp/vra-agent"
+  install_script_url: "https://mdcvrasvrprod01.us.dell.com/software/download/prepare_vra_template.sh"
+  jre_url: "https://mdcvrasvrprod01.us.dell.com/software/download/jre-1.8.0_161-lin64.zip"
+  jre_extract_dest: "/opt/vmware-jre"
+  appliance_server: "mdcVRASVRPROD01.us.dell.com"
+  mgr_svc_host: "mdcVRAIMSPROD01.us.dell.com"
+  mgr_finger_print: "B0:D1:7C:DD:17:A5:B6:78:3B:FE:7E:24:72:9C:D2:DC:0C:63:8D:90"
+  appliance_finger_print: "B0:D1:7C:DD:17:A5:B6:78:3B:FE:7E:24:72:9C:D2:DC:0C:63:8D:90"
+  gugent_home: "/usr/share/gugent"
+  gugent_lvm_extensions_src: "/net/nasheng203.corp.emc.com/mnt_0334/nasgis/nasgis/Data/Software/vmware/Atlas FEHC Folder/vra agents/linux/lvm/v1.20170201/release/extensions"
+  gugent_lvm_extension_src: "/extensions/30_DiskSetupLVM-custom.sh"
+  gugent_lvm_extension_dest: "/site/CustomizeOS/"

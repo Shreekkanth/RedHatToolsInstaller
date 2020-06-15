@@ -1,0 +1,47 @@
+---
+- name: "install rpm build rpms"
+  yum:
+    name:
+     - "rpm-build"
+     - "@Development Tools"
+    state: "present"
+  become: yes
+
+- name: "create rpm build dirs"
+  file:
+    state: "directory"
+    path: "{{ ansible_user_dir }}/rpmbuild/{{ item }}"
+  loop:
+    - "BUILD"
+    - "RPMS"
+    - "SOURCES"
+    - "SPECS"
+    - "SRPMS"
+
+- name: "copy source archive"
+  copy:
+    src: "{{ src_archive }}"
+    dest: "{{ ansible_user_dir }}/rpmbuild/SOURCES/"
+
+- name: "copy spec file"
+  copy:
+    content: "{{ lookup('template', template_path) }}"
+    dest: "{{ ansible_user_dir }}/rpmbuild/SPECS/{{ (template_path|basename)[:-3] }}"
+
+- name: "build rpm"
+  command: >-
+     rpmbuild -ba
+     {{ ansible_user_dir }}/rpmbuild/SPECS/{{ (template_path|basename)[:-3] }}
+  args:
+    creates: "{{ ansible_user_dir }}/rpmbuild/RPMS/{{ rpm_name }}"
+
+- name: "pull rpm"
+  fetch:
+    src: "{{ ansible_user_dir }}/rpmbuild/{{ item }}"
+    dest: "output/"
+    flat: "yes"
+    fail_on_missing: "yes"
+  loop:
+    - "RPMS/{{ pkg_arch }}/{{ rpm_name }}"
+    - "SRPMS/{{ srpm_name }}"
+

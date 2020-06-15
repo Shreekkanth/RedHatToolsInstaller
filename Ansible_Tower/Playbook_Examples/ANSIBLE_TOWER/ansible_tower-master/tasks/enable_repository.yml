@@ -1,0 +1,13 @@
+---
+# tasks file for ansible_tower
+
+- name: Disable all repositories
+  shell: |
+    subscription-manager repos --disable='*'
+  tags: enable_repository
+
+- name: Enable requisite repositories
+  shell: |
+    subscription-manager repos --enable="{{ item }}"
+  with_items: "{{ ansible_tower_requisite_repositories }}"
+  tags: enable_repository

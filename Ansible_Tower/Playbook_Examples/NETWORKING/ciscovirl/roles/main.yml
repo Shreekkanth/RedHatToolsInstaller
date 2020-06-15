@@ -1,0 +1,8 @@
+---
+- name: Show Version and Show interfaces
+  ios_command:
+    host: "{{ inventory_hostname }}"
+    commands:
+      - show version
+      - show ip int br
+      - show run

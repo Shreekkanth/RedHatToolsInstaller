@@ -1,0 +1,37 @@
+---
+
+# OVERVIEW
+#   Registers the given hosts with the given Satellite 6 instance in the given org with the given activation key.
+#
+# VARS
+#   satellite6_url: The URL to the Satellite 6 instance to register against.
+#   satellite6_org: The organization within Satellite 6 to register against.
+#   satellite6_key: The activation key to use when registering with Satellite 6
+
+- name: Register with Satellite 6
+  hosts: all
+
+  vars:
+    satellite6_url: satellite6-master-0.rhc-lab.iad.redhat.com
+    satellite6_org: rhc-lab
+    satellite6_key: "Red Hat Enterprise Linux 7 (Production)"
+
+  tasks:
+  - name: Clean Subscription Manager
+    command: subscription-manager clean
+
+  - name: Install Satellite CA Certificate
+    package:
+      state: present
+      name: "http://{{ satellite6_url }}/pub/katello-ca-consumer-latest.noarch.rpm"
+
+  - name: Register
+    redhat_subscription:
+      state: present
+      org_id: "{{ satellite6_org }}"
+      activationkey: "{{ satellite6_key }}"
+
+  - name: Install katello-agent
+    yum:
+      state: present
+      name: katello-agent

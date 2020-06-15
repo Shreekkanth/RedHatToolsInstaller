@@ -1,0 +1,67 @@
+---
+
+- name: Build VMs Ready for Openshift 
+  hosts: kvm
+  become: true
+  vars_files:
+    - ../vars/ocp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/libvirt_build_vms
+
+    - include_role:
+        name: ../roles/ocp_add_vm_disks
+
+    - include_role:
+        name: ../roles/libvirt_start_vms
+
+- name: Add DNS records
+  hosts: idm
+  become: true
+  vars_files:
+    - ../vars/ocp_vms.yml
+
+  tasks:
+    - include_vars: "{{ playbook_dir }}/config.yaml"
+    - include_role:
+        name: ../roles/config-dnsenv
+      vars:
+         dns_record_state: present
+
+- name: Configure Ansible Host with Openshift Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - ../vars/ocp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/ansible_host_configure
+
+    - include_role:
+        name: ../roles/ocp_update_inventory
+      vars:
+        - oreg_user: "11546460|openshift-deployer"
+        - oreg_token: "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJjNjYyODZhYzM3OWQ0ZTk2YmVhYWRjOWM0NWI3NTUwZCJ9.sFq8iMibyaPfhhprhKC0xCzZPdZdfl4-cwdbAjycRvzIJMBQ68TJbXVmFbKifQCbT-R2R7AyzTGlaifElZGmn_AlZO_ZZm4Dm3Jvfh0mmEbEDHHJ7TW5ZB9y06zGnu0eyJCf-_zDmpoYORhMExumhnDh6b4faK8WeWtDVkgfC2KOn4FHqNms8FV0L-CNuygpIbfUNN8_mKHKZFa122U_2cwKg1GlFza31MEIUtYRUGlozt43mTPI-MtkUtQ-KY6AJwEOPB0-xxB3zjaL_eIyh9nX5X9iv-9yVVo5WvI-p8xoQ8RlRnQnAXxFLThqMpapOWovbvDCb1D1KdyOBN02qa9ykifkfRB-S-91uVCZC6Iv_ZM-_VJmlNqCTAa-586Yw832gcF0tsB0Kc0ZZ4DOLygu8ugyQoSq-I1KUE35noAvoceOLqPvCaYpKDZO9gWhKB12pp3zOiNjmbTq4Z4aj8BEIngv20vRJOXLNdhRTENAYud0EAvE-fHxVl9PudMkMNkOghBrJbqZVQAwqPIli2D8zYHvGkDS3WaOzrV1ta7Ov60aheVYVeTdXwlqACmTdj9psZTbWifI0bQ25NeYsF_yui6JOnHIpdbakwivQ7i0-Mro4Su7c5UJqI1DtibrQvFjC5SJ964FDbyS3QhgX6so757mf0Z32tQwK7wjqUw"
+
+
+- name: Configure Openshift systems 
+  hosts: ocp_systems 
+  become: true
+  vars_files:
+    - ../vars/ocp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/extend_vm_disks
+
+    - include_role:
+        name:
+              ../roles/rhsm_register
+
+    - include_role:
+        name: ../roles/ocp_prereqs
+    
+    - include_role:
+        name: ../roles/ocp_configure_installer_node

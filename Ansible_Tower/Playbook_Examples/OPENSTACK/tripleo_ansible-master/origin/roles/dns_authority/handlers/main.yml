@@ -1,0 +1,7 @@
+---
+
+- name: restart bind
+  service: name=named state=restarted enabled=yes
+
+- name: save iptables config
+  shell: iptables-save > /etc/sysconfig/iptables

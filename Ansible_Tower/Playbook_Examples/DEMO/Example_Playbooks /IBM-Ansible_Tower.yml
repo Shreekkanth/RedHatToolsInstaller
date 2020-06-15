@@ -1,0 +1,65 @@
+---
+- hosts: all
+#  remote_user: root
+  become: root
+#ansible all -m command -a "subscription-manager register --username={{rhn_username}} --password={{rhn_password}}$ --force"
+#ansible all -m command -a "subscription-manager unregister "
+
+# in tower you will use a survy function to prompt users for information  to accomplish the prompts https://<YourTower>/#/templates/job_template/5
+#  vars_prompt:
+#    - name: "rhn_username"
+#      prompt: "Enter Red Hat Network username"
+#    - name: "rhn_password"
+#      prompt: "Enter Red Hat Networt password"
+#      private: yes
+   
+  tasks:
+    - name: Registering nodes to Red Hat Network with username "{{ rhn_username }}"
+      redhat_subscription: state=present username="{{rhn_username}}" password="{{rhn_password}}" pool="^Employee SKU" autosubscribe=true
+
+    - name: Disabling all repos
+      command: yum-config-manager --disable '*' 
+
+    - name: Enabling RHEL 6 needed repos on nodes
+      command: subscription-manager repos --enable rhel-6-server-rpms
+      when: (ansible_distribution == "RedHat" and ansible_distribution_major_version == "6")
+
+    - name: Enabling RHEL 7 needed repos on nodes
+      command: subscription-manager repos --enable rhel-7-server-rpms
+      when: (ansible_distribution == "RedHat" and ansible_distribution_major_version == "7")
+
+    - name: Install required packages module
+      yum: package={{ item }}  update_cache=yes
+      with_items:
+        - yum-utils
+        - net-tools
+        - gnome-terminal
+
+    - name: Applying latest patches on nodes 
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Setting selinux to permissive
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: install firewalld
+      when: ansible_hostname != 'node05' 
+      yum: name=firewalld state=present
+
+    - name: ensure that firewalld is started and enable at boot
+      when: ansible_hostname != 'node05'
+      service: name=firewalld enabled=yes state=started
+
+    - name: open up port 80 for tcp
+      when: ansible_hostname != 'node05'
+      firewalld: port=80/tcp permanent=yes state=enabled
+      notify: restart firewalld
+
+  handlers:
+    - name: restart firewalld
+      service: name=firewalld state=restarted
+
+

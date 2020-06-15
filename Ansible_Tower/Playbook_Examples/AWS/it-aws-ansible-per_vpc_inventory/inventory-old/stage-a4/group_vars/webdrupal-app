@@ -1,0 +1,14 @@
+---
+nagios_host: nagios1.prod.a4.vary.redhat.com
+admin_host: admin0.prod.a4.vary.redhat.com
+admin_host_secondary: admin1.prod.a4.vary.redhat.com
+update_node: cmsapp1.stage.a4.vary.redhat.com
+elb_name: CMSStageAppELB
+elbs:
+  - ELB-CMSStageAdminELB
+  - ELB-CMSStageAppELB
+  - ELB-CMSStageInternalELB
+  - ELB-CMSStagePublicELB
+price_hack_id: 
+price_hack_elb:
+git_branch: stage

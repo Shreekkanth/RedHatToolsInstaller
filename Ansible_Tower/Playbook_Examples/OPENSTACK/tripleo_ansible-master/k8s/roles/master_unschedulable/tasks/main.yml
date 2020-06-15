@@ -1,0 +1,10 @@
+---
+
+- name: make master nodes unschedulable
+  shell: >
+    kubectl patch node {{ item }} -p '{"spec":{"unschedulable":true}}'
+  with_items:
+    - k8s-master1.k8stest.local
+    - k8s-master2.k8stest.local
+    - k8s-master3.k8stest.local
+  when: inventory_hostname == groups['masters'][0]

@@ -1,0 +1,29 @@
+---
+# file: roles/provisioning/tasks/repos.yml
+- name: Disabling all repositories
+  shell: /usr/bin/subscription-manager repos --disable=*
+  when: provisioning_disable_repos and provisioning_disable_repos == true
+  tags:
+    - provisioning
+    - provisioning-repos
+    - provisioning-disable-repos
+
+- name: Enabling RHEL repositories
+  shell: /usr/bin/subscription-manager repos --enable "{{ item }}"
+  with_items: rhn_repos
+  when: rhn_repos and rhn_repos|length > 0
+  tags:
+    - provisioning
+    - provisioning-repos
+    - provisioning-rhel-repos
+
+- name: Installing EPEL repository
+  yum:
+    name="{{ epel_pkg }}"
+    state=present
+    update_cache=yes
+  when: provisioning_enable_epel and provisioning_enable_epel == true
+  tags:
+    - provisioning
+    - provisioning-repos
+    - provisioning-epel-repos

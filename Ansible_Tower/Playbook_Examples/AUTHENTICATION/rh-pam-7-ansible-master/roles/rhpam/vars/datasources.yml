@@ -1,0 +1,73 @@
+---
+# http://in.relation.to/2017/02/20/mysql-dialect-refactoring/
+env_hibernate_dialect_class_mysql:  org.hibernate.dialect.MySQLDialect
+#env_hibernate_dialect_class_mysql:  org.hibernate.dialect.MySQL5InnoDBDialect
+#
+# https://access.redhat.com/solutions/3224141 -- ORA-02014: cannot select FOR UPDATE from view with DISTINCT, GROUP BY, etc. on BPMS 6.4
+#env_hibernate_dialect_class_oracle: org.jbpm.persistence.jpa.hibernate.DisabledFollowOnLockOracle10gDialect
+# Hibernate 4 hibernate-core-4.2.24.Final-redhat-1.jar
+env_hibernate_dialect_class_oracle: org.hibernate.dialect.Oracle10gDialect
+# The  Oracle12cDialect is in the hibernate-core-5.0.9.Final-redhat-1.jar (it does't working to BPM 6.4
+#env_hibernate_dialect_class_oracle: org.hibernate.dialect.Oracle12cDialect
+#
+#
+quartz_mysql_delegate:  org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+quartz_oracle_delegate: org.quartz.impl.jdbcjobstore.oracle.OracleDelegate
+
+#
+oracle_quartz_version:       1.8.5
+oracle_quartz_artifact_name: "{{ 'quartz-oracle-' + oracle_quartz_version + '.jar' }}"
+oracle_quartz_artifact_src:  "{{ base_dir_download + oracle_quartz_artifact_name }}"
+#
+oracle_jdbc_java_version:  12.2.0.1
+oracle_jdbc_artifact_name: "{{ 'ojdbc8-' + oracle_jdbc_java_version + '.jar' }}"
+oracle_jdbc_artifact_src: "{{ base_dir_download + oracle_jdbc_artifact_name }}"
+#
+oracle_jdbc_i18n_artifact_name: "{{ 'orai18n-' + oracle_jdbc_java_version + '.jar' }}"
+oracle_jdbc_i18n_artifact_src: "{{ base_dir_download + oracle_jdbc_i18n_artifact_name }}"
+#
+mysql_jdbc_version:       5.1.45
+mysql_jdbc_artifact_name: "{{ 'mysql-connector-java-' + mysql_jdbc_version + '.jar' }}"
+mysql_jdbc_artifact_src:  "{{ base_dir_download + mysql_jdbc_artifact_name }}"
+
+#
+rhpam_jdbc_lib_list_oracle:
+  - "{{oracle_jdbc_artifact_src}}"
+  - "{{oracle_jdbc_i18n_artifact_src}}"
+
+rhpam_jdbc_lib_list_mysql:
+  - "{{mysql_jdbc_artifact_src}}"
+
+#
+module_dependencies: javax.api,javax.transaction.api
+
+module_name_oracle: oracle
+module_name_mysql:  mysql
+
+driver_module_name_oracle: com.oracle
+driver_module_name_mysql:  com.mysql
+
+module_resources_mysql:  "{{ rhpam_work_dir + mysql_jdbc_artifact_name }}"
+module_resources_oracle: "{{ rhpam_work_dir + oracle_jdbc_artifact_name + ':' + rhpam_work_dir + oracle_jdbc_i18n_artifact_name }}"
+#
+driver_xa_datasource_class_name_mysql:  com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+driver_xa_datasource_class_name_oracle: oracle.jdbc.xa.client.OracleXADataSource
+#
+# http://www.ironjacamar.org/doc/userguide/1.2/en-US/html/apc.html#ex_datasources_oracle
+ds_valid_connection_checker_class_name_oracle: org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker
+ds_exception_sorter_class_name_oracle:         org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter
+ds_stale_connection_checker_class_name_oracle: org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker
+#
+# http://www.ironjacamar.org/doc/userguide/1.2/en-US/html/apc.html#ex_datasources_mysql
+#ds_valid_connection_checker_class_name_mysql: com.mysql.jdbc.integration.jboss.MysqlValidConnectionChecker
+#ds_exception_sorter_class_name_mysql:         com.mysql.jdbc.integration.jboss.ExtendedMysqlExceptionSorter
+ds_valid_connection_checker_class_name_mysql: org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker
+ds_exception_sorter_class_name_mysql:         org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter
+ds_stale_connection_checker_class_name_mysql: org.jboss.jca.adapters.jdbc.StaleConnectionChecker
+
+database_vendor_mysql:      mysql
+database_vendor_postgresql: postgresql
+database_vendor_oracle:     oracle
+#
+#
+# EOF

@@ -1,0 +1,4 @@
+---
+
+testframework_virtual_env: /opt/devilhorn/testframework
+testframework_python_root: /opt/rh/python27

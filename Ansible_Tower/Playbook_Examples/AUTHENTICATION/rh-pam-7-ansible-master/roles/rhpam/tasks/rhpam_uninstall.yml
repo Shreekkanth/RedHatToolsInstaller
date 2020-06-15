@@ -1,0 +1,74 @@
+---
+#
+#### Uninstall JBoss Systemd Service
+- name: Stop JBoss service
+  become: true
+  systemd:
+    name:  "{{rhpam_service_name}}"
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  tags:
+    - rhpam_uninstall
+  when: rhpam_uninstall == true
+
+#### Remove JBoss Base Directory
+- name: Remove JBoss Base Directory
+  file:
+    path:  "{{ jboss_eap_home }}"
+    state: absent
+  tags:
+    - rhpam_uninstall
+  when: rhpam_uninstall == true
+
+#### Remove Red Hat PAM Directory
+- name: Remove RHPAM Configuration
+  file:
+    path:  "{{ rhpam_runtime_path_base }}"
+    state: absent
+  tags:
+    - rhpam_uninstall
+  when: rhpam_uninstall == true
+
+#### Remove JBoss EAP working Directory
+- name: Remove JBoss Work Directory
+  file:
+    path:  "{{ base_dir_working }}"
+    state: absent
+  tags:
+    - always
+  when: temporal_dir_delete == true
+
+#### Remove OA&M Directory
+- name: "Remove OA&M Directory"
+  file:
+    path:  "{{ jboss_admin_home }}"
+    state: absent
+  tags:
+    - always
+  when: temporal_dir_delete == true
+
+#### Remove JBoss systemd service file
+- name: Remove JBoss service file
+  become: true
+  file:
+    path:  "{{ user_lib_systemd + rhpam_service_name }}"
+    state: absent
+  tags:
+    - rhpam_uninstall
+  when: rhpam_uninstall == true
+
+#### Remove JBoss systemd configuration file
+- name: Remove JBoss service configuration file
+  become: true
+  file:
+    path:  "{{ etc_sysconfig + rhpam_service_conf_name }}"
+    state: absent
+  tags:
+    - rhpam_uninstall
+  when: rhpam_uninstall == true
+  notify:
+    - reload systemd
+
+#
+# EOF

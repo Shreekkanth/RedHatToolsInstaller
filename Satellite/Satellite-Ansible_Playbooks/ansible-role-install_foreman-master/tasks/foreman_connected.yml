@@ -1,0 +1,6 @@
+---
+- name: "FOREMAN CONNECTED | Install the repos"
+  package:
+    name: "{{ item['package'] }}"
+    state: present
+  loop: "{{ install_foreman_repos[install_foreman_version | string] | flatten(levels=1) }}"

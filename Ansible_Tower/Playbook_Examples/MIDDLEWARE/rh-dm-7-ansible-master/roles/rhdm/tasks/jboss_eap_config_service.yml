@@ -1,0 +1,109 @@
+---
+#### Generate JBoss service systemd File
+- name: Generate JBoss Systemd Service File
+  template:
+    src:  jboss/jboss_service.j2
+    dest: "{{ base_dir_working + rhdm_service_name }}"
+    mode: 0644
+  tags:
+    - jboss_eap_service
+  when: jboss_service_install == true
+
+#### Generate JBoss service configuration file
+- name: Generate JBoss Systemd Service Configuration File
+  template:
+    src:  jboss/jboss@service_conf.j2
+    dest: "{{ base_dir_working + rhdm_service_conf_name }}"
+    mode: 0644
+  tags:
+    - jboss_eap_service
+  when: jboss_service_install == true
+
+####
+- name: Set JBoss admin-only
+  set_fact:
+    disable_admin_only:   false
+    disable_bind_address: true
+  tags:
+    - always
+
+#### Generate JBoss Configuration File with "admin-only"
+- name: Generate JBoss Configuration File with "admin-only"
+  template:
+    src:  jboss/jboss-eap-extra.conf.j2
+    dest: "{{ jboss_eap_conf }}"
+    mode: 0644
+  tags:
+    - jboss_eap_service
+  when: jboss_service_install == true
+
+#### Copy JBoss service systemd File
+- name: Copy JBoss Systemd Service File
+  become: true
+  copy:
+    src:  "{{ base_dir_working + rhdm_service_name }}"
+    dest: "{{ user_lib_systemd }}"
+    remote_src: true
+    mode: 0644
+  tags:
+    - jboss_eap_service
+  when: jboss_service_install == true
+
+#### Copy JBoss service configuration file
+- name: Copy JBoss Systemd Service Configuration File
+  become: true
+  copy:
+    src:        "{{ base_dir_working + rhdm_service_conf_name }}"
+    dest:       "{{ etc_sysconfig }}"
+    remote_src: true
+    mode: 0644
+  tags:
+    - jboss_eap_service
+  when: jboss_service_install == true
+  notify:
+    - reload systemd
+    - enable jboss service
+    - start jboss service
+
+#### Force the handlers
+- name: Force the handlers
+  meta: flush_handlers
+  tags:
+    - jboss_eap_service
+
+#### We wait while the server is starting
+- pause:
+    seconds: 10
+    prompt: "We wait while the server is starting"
+  tags:
+    - jboss_eap_service
+
+#### Apply JBoss Scripts CLI
+- name: Execute the JBoss CLI Scripts
+  command: "{{ jboss_eap_home }}bin/jboss-cli.sh --connect --file={{ jboss_eap_config_cli + item }}"
+  tags:
+    - jboss_eap_config_cli
+  with_items: "{{ jboss_eap_scripts_cli_list }}"
+
+####
+- name: Set JBoss disable admin-only
+  set_fact:
+    disable_admin_only:   true
+    disable_bind_address: false
+  tags:
+    - jboss_eap_service
+
+#### Generate JBoss Configuration File
+- name: Generate JBoss Configuration File without admin-only
+  template:
+    src:  jboss/jboss-eap-extra.conf.j2
+    dest: "{{ jboss_eap_conf }}"
+    mode: 0644
+  tags:
+    - jboss_eap_service
+  when: jboss_service_install == true
+  notify:
+    - restart jboss service
+
+#
+# EOF

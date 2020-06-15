@@ -1,0 +1,35 @@
+---
+# vars file for rhv-ocp
+rhv_template: rrhel-7-6-20190517-cloud
+domain_name: homelab.work
+storage_domain: nas-1tbssd
+ldap_server: ipa1.homelab.work
+
+# Ansible host
+ansible_bastion_name: rhv-ocp-ansible
+ansible_bastion_cpu_cores: 2
+ansible_bastion_memory: 4096MiB
+
+# Masters
+master_name: rhv-ocp-master
+master_cpu_cores: 2
+master_memory: 8192MiB
+master_count: 1
+master_docker_disk_size: 20GiB
+master_etcd_disk_size: 40GiB
+
+# Infra
+infra_name: rhv-ocp-infra
+infra_cpu_cores: 2
+infra_memory: 8192MiB
+infra_count: 1
+infra_docker_disk_size: 20GiB
+infra_origin_disk_size: 40GiB
+
+# Nodes
+appnode_name: rhv-ocp-app
+appnode_cpu_cores: 2
+appnode_memory: 8192MiB
+appnode_count: 1
+appnode_docker_disk_size: 20GiB
+appnode_origin_disk_size: 40GiB

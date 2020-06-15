@@ -1,0 +1,12 @@
+# Partially derived from
+# https://fedoramagazine.org/automate-backups-with-restic-and-systemd/ and the role provided by Fredrik Rambris in the comments
+
+[Unit]
+Description=Restic backup service
+
+[Service]
+Type=simple
+ExecStart=/home/bexelbie/bin/backup
+RestartSec=60
+Restart=on-failure
+IOSchedulingClass=idle

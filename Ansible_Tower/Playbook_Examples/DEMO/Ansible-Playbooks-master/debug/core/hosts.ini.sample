@@ -1,0 +1,29 @@
+[undercloud]
+dir  ansible_connection=local
+
+###
+###
+###
+
+[overcloud:children]
+compute
+controller
+
+[compute]
+cpt-0 ansible_host=10.56.50.61
+cpt-1 ansible_host=10.56.50.66
+cpt-2 ansible_host=10.56.50.53
+cpt-3 ansible_host=10.56.50.68
+
+[controller]
+ctl-0 ansible_host=10.56.50.47
+
+###
+###
+###
+
+[all:vars]
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+
+[overcloud:vars]
+ansible_user=heat-admin

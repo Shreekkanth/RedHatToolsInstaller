@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  gather_facts: yes
+  connection: local
+  become: yes
+  become_user: root
+  roles:
+    - ansicloud_core
+  tasks:
+    - name: Create EFS Volumes
+      include_role:
+        name: aws_efs
+      with_dict: "{{ efs | default([]) }}"
+    - name: Get EFS Facts
+      include_role:
+        name: aws_efs
+      with_dict: "{{ efs_facts | default([]) }}"

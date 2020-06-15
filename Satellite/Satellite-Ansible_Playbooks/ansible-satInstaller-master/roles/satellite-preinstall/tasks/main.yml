@@ -1,0 +1,141 @@
+---
+  # Check root permission on remote host
+- name: "Check root permission on remote host"
+  command: "ls -lrt /root"
+
+  # Check internet conectivity from localhost
+- name: "Check internet conectivity from localhost"
+  uri:
+    url: http://www.google.com
+#  environment:
+#    - http_proxy: "http://192.168.122.1:13128"
+#    - https_proxy: "http://192.168.122.1:13128"
+  delegate_to: localhost
+
+  # Check internet conectivity from Satellite / Capsules
+  #- name: "Check internet conectivity from Satellite / Capsules"
+  #uri:
+    #  url: http://www.google.com
+  
+###  # Check no_proxy connectivity to *.mercadona.es from localhost
+###- name: "Check no_proxy connectivity to *.mercadona.es from localhost"
+###  get_url:
+###    url: "http://pv0il0345.cc0.mercadona.es/pub/util/jq"
+###    dest: "/tmp/jq"
+###    force: yes
+###  delegate_to: localhost
+  # Install packages required from cloud image 
+  # Check Download latest satapi release
+  #- name: " Check Download latest satapi release"
+  #unarchive:
+    #  src: https://github.com/soukron/satapi/archive/master.zip
+    #dest: "/tmp"
+    # remote_src: True
+#  environment:
+#    - http_proxy: "http://192.168.122.1:13128"
+#    - https_proxy: "http://192.168.122.1:13128"
+# delegate_to: localhost
+
+- pause: seconds=120
+
+  # Disk partition / LV config
+- name: "Check that data_disk  is not partitioned | DO NOT WORRY IF IT FAILS, ITS JUST A TEST"
+  command:
+    test -b /dev/{{ data_disk }}1
+  register: "disk_partition"
+  ignore_errors: yes
+
+  # lvmetadata.rc > 0 -> there is not lvmetadata on disk
+- name: "Check that the entire disk has not LV metadata | DO NOT WORRY IF IT FAILS, ITS JUST A TEST"
+  command:
+    pvck /dev/{{ data_disk }}
+  register: "disk_lvmetadata"
+  ignore_errors: yes
+
+  # diskfs.rc > 0  ->  there is not a FS on entire disk
+- name: "Check that the entire disk has not a FS | DO NOT WORRY IF IT FAILS, ITS JUST A TEST"
+  command:
+    blkid /dev/{{ data_disk }}
+  register: "disk_fs"
+  ignore_errors: yes
+
+  # Generate partitionate_disk fact from previous disk checking conditions
+- name: "Generate partitionate_disk fact from disk checking conditions"
+  set_fact:
+    partitionate_disk: True
+  when: disk_partition.rc > 0 and disk_lvmetadata.rc > 0 and disk_fs.rc > 0
+
+- name: Create disk partition
+  command: >
+    creates="/dev/{{ data_disk }}1"
+    parted --script "/dev/{{ data_disk }}" mklabel msdos mkpart primary 0% 100% set 1 lvm on
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Create Volume Group
+  lvg:
+    vg: "{{ data_vgname }}"
+    force: yes
+    pvs: /dev/{{ data_disk }}1
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Create custom logical volume
+  lvol:
+    lv: '{{ item.lv_name }}'
+    vg: '{{ data_vgname }}'
+    state: present
+    size: '{{ item.lv_size }}'
+  ignore_errors: yes
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Create FS for custom lvs
+  filesystem:
+    fstype: '{{ data_fs }}'
+    dev: '/dev/mapper/{{ data_vgname }}-{{ item.lv_name }}'
+    opts: '-L {{ item.name }}'
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Ensure mount points are created
+  file:
+    path: '{{ item.mount_dir }}'
+    state: directory
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Config mount points in fstab
+  mount:
+    name: '{{ item.mount_dir }}'
+    src: 'LABEL={{ item.name }}'
+    fstype: '{{ data_fs }}'
+    dump: 0
+    passno: 0
+    opts: defaults
+    state: mounted
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+#Install firewalld and enable it
+- name: "Install firewalld"
+  yum:
+    name: "firewalld"
+    state: "present"
+  ignore_errors: yes
+
+- name: "Enable Firewalld"
+  service:
+    enabled: "yes"
+    name: "firewalld"
+    state: "started"
+
+#Opening firewall ports
+- name: "Firewall and hostname | Opening Firewalld ports"
+  firewalld:
+    permanent: "yes"
+    immediate: "yes"
+    port: "{{ item }}"
+    state: "enabled"
+  with_items: "{{ satellite_deployment_fw_ports +
+    satellite_deployment_plugin_ports }}"
+  ignore_errors: yes
+...

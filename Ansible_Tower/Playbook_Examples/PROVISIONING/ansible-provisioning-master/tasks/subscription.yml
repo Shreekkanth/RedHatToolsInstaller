@@ -1,0 +1,28 @@
+---
+# file: roles/provisioning/tasks/subscription.yml
+- name: Unsubscribing and unregistering the server to RHN
+  shell:
+    /usr/bin/subscription-manager unsubscribe --all;
+    /usr/bin/subscription-manager unregister;
+    /usr/bin/subscription-manager clean
+  when: provisioning_rhn_unregister and provisioning_rhn_unregister == true
+  tags:
+    - provisioning
+    - provisioning-unsubscription
+
+- name: Registering the server to RHN
+  redhat_subscription:
+    username={{ rhn_username }}
+    password={{ rhn_password }}
+    state=present
+  tags:
+    - provisioning
+    - provisioning-subscription
+    - provisioning-register
+
+- name: Subscribing the server to a pool
+  shell: /usr/bin/subscription-manager subscribe --pool {{ rhn_pool_id }}
+  tags:
+    - provisioning
+    - provisioning-subscription
+    - provisioning-subscribe

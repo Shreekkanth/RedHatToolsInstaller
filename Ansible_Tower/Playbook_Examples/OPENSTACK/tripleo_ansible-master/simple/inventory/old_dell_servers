@@ -1,0 +1,3 @@
+[dell-server]
+anemonefish.nrt.redhat.com ansible_ssh_user=root ansible_ssh_private_key_file=~/.ssh/id_dsa
+firegoby.nrt.redhat.com ansible_ssh_user=root ansible_ssh_private_key_file=~/.ssh/id_dsa

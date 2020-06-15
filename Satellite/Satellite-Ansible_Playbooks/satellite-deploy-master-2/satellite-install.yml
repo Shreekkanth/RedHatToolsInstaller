@@ -1,0 +1,14 @@
+---
+# TODO ntp config
+- hosts: satellite
+  vars_files:
+    - ./vars/common.yml
+    - ./vars/satellite-config.yml 
+
+  roles:
+    - satellite-preinstall
+    - rhsm
+    - update-restart
+    - satellite-install
+    - satellite-populate
+...

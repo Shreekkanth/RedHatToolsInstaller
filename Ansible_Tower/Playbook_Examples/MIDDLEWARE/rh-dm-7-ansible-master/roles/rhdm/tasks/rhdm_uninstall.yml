@@ -1,0 +1,74 @@
+---
+#
+#### Uninstall JBoss Systemd Service
+- name: Stop JBoss service
+  become: true
+  systemd:
+    name:  "{{rhdm_service_name}}"
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  tags:
+    - rhdm_uninstall
+  when: rhdm_uninstall
+
+#### Remove JBoss Base Directory
+- name: Remove JBoss Base Directory
+  file:
+    path:  "{{ jboss_eap_home }}"
+    state: absent
+  tags:
+    - rhdm_uninstall
+  when: rhdm_uninstall
+
+#### Remove Red Hat Decision Manager Directory
+- name: Remove RHDM Configuration
+  file:
+    path:  "{{ rhdm_runtime_path_base }}"
+    state: absent
+  tags:
+    - rhdm_uninstall
+  when: rhdm_uninstall
+
+#### Remove JBoss EAP working Directory
+- name: Remove JBoss Work Directory
+  file:
+    path:  "{{ base_dir_working }}"
+    state: absent
+  tags:
+    - always
+  when: temporal_dir_delete == true
+
+#### Remove OA&M Directory
+- name: "Remove OA&M Directory"
+  file:
+    path:  "{{ jboss_admin_home }}"
+    state: absent
+  tags:
+    - always
+  when: temporal_dir_delete == true
+
+#### Remove JBoss systemd service file
+- name: Remove JBoss service file
+  become: true
+  file:
+    path:  "{{ user_lib_systemd + rhdm_service_name }}"
+    state: absent
+  tags:
+    - rhdm_uninstall
+  when: rhdm_uninstall
+
+#### Remove JBoss systemd configuration file
+- name: Remove JBoss service configuration file
+  become: true
+  file:
+    path:  "{{ etc_sysconfig + rhdm_service_conf_name }}"
+    state: absent
+  tags:
+    - rhdm_uninstall
+  when: rhdm_uninstall == true
+  notify:
+    - reload systemd
+
+#
+# EOF

@@ -1,0 +1,28 @@
+---
+- assert:
+    that: kdc_domain is defined
+    msg: " kdc_domain variable is not defined"
+
+- assert:
+    that: kdc_server_name is defined
+    msg: "kdc_server_name variable is not defined"
+
+- name: Install Kerberos YUM Dependencies
+  yum: name="{{item}}"
+  with_items: "{{ kerberos_yum_pkgs }}"
+
+- name: update krb5.conf file
+  template:
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf.d/adserver.conf
+    mode: 0644
+    group: root
+    owner: root
+
+- name: ensure that pywinrm with kerberos dependencies is installed
+  pip:
+    name: "pywinrm[kerberos]"
+    virtualenv: /var/lib/awx/venv/ansible
+    virtualenv_command: /var/lib/awx/venv/ansible/bin/activate
+  become: yes
+  become_user: awx

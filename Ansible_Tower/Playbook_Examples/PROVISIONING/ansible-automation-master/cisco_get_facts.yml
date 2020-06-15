@@ -1,0 +1,14 @@
+---
+- hosts: cisco
+  connection: network_cli
+  gather_facts: false
+
+  tasks:
+    - name: Gather facts from device
+      ios_facts:
+        gather_subset: all
+      register: switch_facts
+
+    - name: Debug switch_facts
+      debug:
+        var: switch_facts

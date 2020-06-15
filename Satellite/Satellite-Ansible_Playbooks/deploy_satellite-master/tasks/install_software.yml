@@ -1,0 +1,13 @@
+---
+- name: DEPLOY SATELLITE | install software | Install Satellite
+  yum:
+    name: "satellite"
+    state: present
+
+- name: DEPLOY SATELLITE | install software | Install Additional Packages
+  yum:
+    name: '{{ item }}'
+    state: latest
+  with_items:
+    - '{{ package_list }}'
+

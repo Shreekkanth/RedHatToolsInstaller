@@ -1,0 +1,43 @@
+---
+- name: Register to CCI Satellite
+  yum:
+    name: http://satellite6-ops.rhev-ci-vms.eng.rdu2.redhat.com/pub/katello-ca-consumer-latest.noarch.rpm
+
+- name: Register with subscription manager
+  redhat_subscription:
+    state: present
+    org_id: Global_CI
+    activationkey: satellite-clone-test
+    auto_attach: true
+    pool_ids:
+      - 8aac849563564a0801635a132bec2ce8
+
+- name: Ensure NFS utilities are installed.
+  package: name=nfs-utils state=present
+
+- name: Ensure rpcbind is running.
+  service: name=rpcbind state=started enabled=yes
+
+- name: Ensure /backup directory exists
+  file:
+    path: /backup
+    state: directory
+
+- name: Mount backup
+  mount:
+    state: mounted
+    name: /backup
+    src: "{{backup_nfs}}"
+    fstype: nfs
+
+- name: Get files in a folder
+  find:
+    paths: "/backup"
+    file_type: directory
+    patterns: 'katello-backup*'
+    use_regex: true
+  register: found_files
+
+- name: Get latest backup
+  set_fact:
+    latest_backup: "{{ found_files.files | sort(attribute='mtime',reverse=true) | first }}"

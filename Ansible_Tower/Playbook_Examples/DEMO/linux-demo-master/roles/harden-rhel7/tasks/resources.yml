@@ -1,0 +1,2212 @@
+#
+# --------------------------------- AD.1.8.2.1 ---------------------------------
+#
+- name: AD.1.8.2.1 | PATCH_RHEL | OSR | Creating root/.rhosts file
+  file:
+    path: /root/.rhosts
+    state: touch
+    mode: 0600
+  when: ad_1_8_2_1
+  register: __ad_1_8_2_1
+  tags:
+    - AD.1.8.2.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.2.1 | AUDIT_RHEL | OSR | Creating root/.rhosts file
+  debug:
+    msg: "{{ __ad_1_8_2_1 }}"
+  when: 
+    - ad_1_8_2_1
+    - ansible_check_mode
+    - __ad_1_8_2_1 | changed
+  tags:
+    - AD.1.8.2.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.2.2 ---------------------------------
+#
+- name: AD.1.8.2.2 | PATCH_RHEL | OSR | Creating root/.netrc file
+  file:
+    path: /root/.netrc
+    state: touch
+    mode: 0600
+  when: ad_1_8_2_2
+  register: __ad_1_8_2_2
+  tags:
+    - AD.1.8.2.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.2.2 | AUDIT_RHEL | OSR | Creating root/.netrc file
+  debug:
+    msg: "{{ __ad_1_8_2_2 }}"
+  when: 
+    - ad_1_8_2_2
+    - ansible_check_mode
+    - __ad_1_8_2_2 | changed
+  tags:
+    - AD.1.8.2.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.3.1 ---------------------------------
+#
+- name: AD.1.8.3.1 | PATCH_RHEL | OSR | Read Execute Other permissions on / directory
+  file:
+    path: /
+    state: directory
+    recurse: no
+    mode: 0555
+  when: ad_1_8_3_1
+  register: __ad_1_8_3_1
+  tags:
+    - AD.1.8.3.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.3.1 | AUDIT_RHEL | OSR | Read Execute Other permissions on / directory
+  debug:
+    msg: "{{ __ad_1_8_3_1 }}"
+  when: 
+    - ad_1_8_3_1
+    - ansible_check_mode
+    - __ad_1_8_3_1 | changed
+  tags:
+    - AD.1.8.3.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.3.2 ---------------------------------
+#
+- name: AD.1.8.3.2 | PATCH_RHEL | OSR | r-x Other permissions on /usr directory
+  file:
+    path: /usr
+    state: directory
+    recurse: no
+    mode: 0755
+  when: ad_1_8_3_2
+  register: __ad_1_8_3_2
+  tags:
+    - AD.1.8.3.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.3.2 | AUDIT_RHEL | OSR | r-x Other permissions on /usr directory
+  debug:
+    msg: "{{ __ad_1_8_3_2 }}"
+  when: 
+    - ad_1_8_3_2
+    - ansible_check_mode
+    - __ad_1_8_3_2 | changed
+  tags:
+    - AD.1.8.3.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.3.3 ---------------------------------
+#
+- name: AD.1.8.3.3 | PATCH_RHEL | OSR | r-x Other permissions on /etc directory
+  file:
+    path: /etc
+    state: directory
+    recurse: no
+    mode: 0755
+  when: ad_1_8_3_3
+  register: __ad_1_8_3_3
+  tags:
+    - AD.1.8.3.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.3.3 | AUDIT_RHEL | OSR | r-x Other permissions on /etc directory
+  debug:
+    msg: "{{ __ad_1_8_3_3 }}"
+  when: 
+    - ad_1_8_3_3
+    - ansible_check_mode
+    - __ad_1_8_3_3 | changed
+  tags:
+    - AD.1.8.3.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.4.1 ---------------------------------
+#
+- name: AD.1.8.4.1 | PATCH_RHEL | OSR | Setting permissions on /etc/security/passwd file
+  file:
+    path: /etc/security/passwd
+    state: touch
+    mode: 0600
+  when: ad_1_8_4_1
+  register: __ad_1_8_4_1
+  tags:
+    - AD.1.8.4.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.4.1 | AUDIT_RHEL | OSR | Setting permissions on /etc/security/passwd file
+  debug:
+    msg: "{{ __ad_1_8_4_1 }}"
+  when: 
+    - ad_1_8_4_1
+    - ansible_check_mode
+    - __ad_1_8_4_1 | changed
+  tags:
+    - AD.1.8.4.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.4.2 ---------------------------------
+#
+- name: AD.1.8.4.2 | GATHER_INFO_RHEL | OSR | Setting permissions on /etc/shadow file
+  stat:
+    path: /etc/shadow
+  when: ad_1_8_4_2
+  register: __ad_1_8_4_2_stat
+  tags:
+    - AD.1.8.4.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.4.2 | PATCH_RHEL | OSR | Setting permissions on /etc/shadow file
+  file:
+    path: /etc/shadow
+    mode: "{% if __ad_1_8_4_2_stat.stat.gid < 1000 and __ad_1_8_4_2_stat.stat.gid > 100 %}0660{% else %}0600{% endif %}"
+  when: ad_1_8_4_2
+  register: __ad_1_8_4_2
+  tags:
+    - AD.1.8.4.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.4.2 | AUDIT_RHEL | OSR | Setting permissions on /etc/shadow file
+  debug:
+    msg: "{{ __ad_1_8_4_2 }}"
+  when: 
+    - ad_1_8_4_2
+    - ansible_check_mode
+    - __ad_1_8_4_2 | changed
+  tags:
+    - AD.1.8.4.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.5.1 ---------------------------------
+#
+- name: AD.1.8.5.1 | PATCH_RHEL | OSR | r-x Other permissions on /var directory
+  file:
+    path: /var
+    state: directory
+    recurse: no
+    mode: 0755
+  when: ad_1_8_5_1
+  register: __ad_1_8_5_1
+  tags:
+    - AD.1.8.5.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.5.1 | AUDIT_RHEL | OSR | r-x Other permissions on /var directory
+  debug:
+    msg: "{{ __ad_1_8_5_1 }}"
+  when: 
+    - ad_1_8_5_1
+    - ansible_check_mode
+    - __ad_1_8_5_1 | changed
+  tags:
+    - AD.1.8.5.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.5.2 ---------------------------------
+#
+- name: AD.1.8.5.2 | PATCH_RHEL | OSR | r-x Other permissions on /var/log directory
+  file:
+    path: /var/log
+    state: directory
+    recurse: no
+    mode: 0755
+  when: ad_1_8_5_2
+  register: __ad_1_8_5_2
+  tags:
+    - AD.1.8.5.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.5.2 | AUDIT_RHEL | OSR | r-x Other permissions on /var/log directory
+  debug:
+    msg: "{{ __ad_1_8_5_2 }}"
+  when: 
+    - ad_1_8_5_2
+    - ansible_check_mode
+    - __ad_1_8_5_2 | changed
+  tags:
+    - AD.1.8.5.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.6.1 ---------------------------------
+#
+- name: AD.1.8.6.1 | PATCH_RHEL | OSR | Setting permissions on /var/log/faillog file
+  file:
+    path: /var/log/faillog
+    state: touch
+    mode: 0600
+  when: ad_1_8_6_1
+  register: __ad_1_8_6_1
+  tags:
+    - AD.1.8.6.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.6.1 | AUDIT_RHEL | OSR | Setting permissions on /var/log/faillog file
+  debug:
+    msg: "{{ __ad_1_8_6_1 }}"
+  when: 
+    - ad_1_8_6_1
+    - ansible_check_mode
+    - __ad_1_8_6_1 | changed
+  tags:
+    - AD.1.8.6.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.6.2 ---------------------------------
+#
+- name: AD.1.8.6.2 | PATCH_RHEL | OSR | Setting permissions on /var/log/tallylog file
+  file:
+    path: /var/log/tallylog
+    state: touch
+    mode: 0600
+  when: ad_1_8_6_2
+  register: __ad_1_8_6_2
+  tags:
+    - AD.1.8.6.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.6.2 | AUDIT_RHEL | OSR | Setting permissions on /var/log/tallylog file
+  debug:
+    msg: "{{ __ad_1_8_6_2 }}"
+  when: 
+    - ad_1_8_6_2
+    - ansible_check_mode
+    - __ad_1_8_6_2 | changed
+  tags:
+    - AD.1.8.6.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.7.1 ---------------------------------
+#
+- name: AD.1.8.7.1 | PATCH_RHEL | OSR | Setting permissions on /var/log/messages file
+  file:
+    path: /var/log/messages
+    state: touch
+    mode: 0600
+  when: ad_1_8_7_1
+  register: __ad_1_8_7_1
+  tags:
+    - AD.1.8.7.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.7.1 | AUDIT_RHEL | OSR | Setting permissions on /var/log/messages file
+  debug:
+    msg: "{{ __ad_1_8_7_1 }}"
+  when: 
+    - ad_1_8_7_1
+    - ansible_check_mode
+    - __ad_1_8_7_1 | changed
+  tags:
+    - AD.1.8.7.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.7.2 ---------------------------------
+#
+- name: AD.1.8.7.2 | PATCH_RHEL | OSR | Setting permissions on /var/log/wtmp file
+  file:
+    path: /var/log/wtmp
+    state: touch
+    mode: 0600
+  when: ad_1_8_7_2
+  register: __ad_1_8_7_2
+  tags:
+    - AD.1.8.7.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.7.2 | AUDIT_RHEL | OSR | Setting permissions on /var/log/wtmp file
+  debug:
+    msg: "{{ __ad_1_8_7_2 }}"
+  when: 
+    - ad_1_8_7_2
+    - ansible_check_mode
+    - __ad_1_8_7_2 | changed
+  tags:
+    - AD.1.8.7.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.8 ---------------------------------
+#
+- name: AD.1.8.8 | PATCH_RHEL | OSR | Setting permissions on /var/log/secure file
+  file:
+    path: /var/log/secure
+    state: touch
+    mode: 0600
+  when: ad_1_8_8
+  register: __ad_1_8_8
+  tags:
+    - AD.1.8.8.8
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.8 | AUDIT_RHEL | OSR | Setting permissions on /var/log/secure file
+  debug:
+    msg: "{{ __ad_1_8_8 }}"
+  when: 
+    - ad_1_8_8
+    - ansible_check_mode
+    - __ad_1_8_8 | changed
+  tags:
+    - AD.1.8.8
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.9 ---------------------------------
+#
+- name: AD.1.8.9 | PATCH_RHEL | OSR | Setting permissions on /tmp directory
+  file:
+    path: /tmp
+    state: directory
+    recurse: no
+    mode: 1777
+  when: ad_1_8_9
+  register: __ad_1_8_9
+  tags:
+    - AD.1.8.9
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.9 | AUDIT_RHEL | OSR | Setting permissions on /tmp directory
+  debug:
+    msg: "{{ __ad_1_8_9 }}"
+  when: 
+    - ad_1_8_9
+    - ansible_check_mode
+    - __ad_1_8_9 | changed
+  tags:
+    - AD.1.8.9
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.10 ---------------------------------
+#
+- name: AD.1.8.10 | PATCH_RHEL | OSR | Setting permissions on snmpd.conf
+  file:
+    path: "{{ item }}"
+    mode: 0640
+  with_items:
+    - /etc
+    - /etc/snmp
+    - /etc/snmpd
+  when:
+    - ad_1_8_10
+    - item|exists
+  register: __ad_1_8_10
+  tags:
+    - AD.1.8.10
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.10 | AUDIT_RHEL | OSR | Setting permissions on snmpd.conf
+  debug:
+    msg: "{{ __ad_1_8_10 }}"
+  when: 
+    - ad_1_8_10
+    - ansible_check_mode
+    - __ad_1_8_10 | changed
+  tags:
+    - AD.1.8.10
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.11 ---------------------------------
+#
+- name: AD.1.8.11 | PATCH_RHEL | OSR | Setting permissions on /var/tmp directory
+  file:
+    path: /var/tmp
+    state: directory
+    recurse: no
+    mode: 1777
+  when: ad_1_8_11
+  register: __ad_1_8_11
+  tags:
+    - AD.1.8.11
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.11 | AUDIT_RHEL | OSR | Setting permissions on /var/tmp directory
+  debug:
+    msg: "{{ __ad_1_8_11 }}"
+  when: 
+    - ad_1_8_11
+    - ansible_check_mode
+    - __ad_1_8_11 | changed
+  tags:
+    - AD.1.8.11
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.12.1.1 ---------------------------------
+#
+- name: AD.1.8.12.1.1 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/faillog directory
+  shell: grep '^auth' /etc/pam.d/* | grep pam_tally2.so
+  when: ad_1_8_12_1_1
+  failed_when: __ad_1_8_12_1_1_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_12_1_1_shell
+  tags:
+    - AD.1.8.12.1.1
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.1.1 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/faillog directory
+  stat:
+    path: /var/log/faillog
+  when:
+    - ad_1_8_12_1_1
+  register: __ad_1_8_12_1_1_stat
+  tags:
+    - AD.1.8.12.1.1
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.1.1 | PATCH_RHEL | OSR | Setting permissions on /var/log/faillog directory
+  file:
+    path: /var/log/faillog
+    mode: "{% if __ad_1_8_12_1_1_stat.stat.gid < 1000 and __ad_1_8_12_1_1_stat.stat.gid > 100 %}g+w{% else %}g-w{% endif %}"
+  when:
+    - ad_1_8_12_1_1
+    - __ad_1_8_12_1_1_stat.stat.exists
+    - __ad_1_8_12_1_1_shell.stdout != ""
+  register: __ad_1_8_12_1_1
+  tags:
+    - AD.1.8.12.1.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.12.1.1 | AUDIT_RHEL | OSR | Setting permissions on /var/log/faillog directory
+  debug:
+    msg: "{{ __ad_1_8_12_1_1 }}"
+  when: 
+    - ad_1_8_12_1_1
+    - ansible_check_mode
+    - __ad_1_8_12_1_1 | changed
+  tags:
+    - AD.1.8.12.1.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.12.1.2 ---------------------------------
+#
+- name: AD.1.8.12.1.2 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/tallylog directory
+  shell: grep '^auth' /etc/pam.d/* | grep pam_tally2.so
+  when: ad_1_8_12_1_2
+  failed_when: __ad_1_8_12_1_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_12_1_2_shell
+  tags:
+    - AD.1.8.12.1.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.1.2 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/tallylog directory
+  stat:
+    path: /var/log/tallylog
+  when:
+    - ad_1_8_12_1_2
+  register: __ad_1_8_12_1_2_stat
+  tags:
+    - AD.1.8.12.1.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.1.2 | PATCH_RHEL | OSR | Setting permissions on /var/log/tallylog directory
+  file:
+    path: /var/log/tallylog
+    mode: "{% if __ad_1_8_12_1_2_stat.stat.gid < 1000 and __ad_1_8_12_1_2_stat.stat.gid > 100 %}g+w{% else %}g-w{% endif %}"
+  when:
+    - ad_1_8_12_1_2
+    - __ad_1_8_12_1_2_stat.stat.exists
+    - __ad_1_8_12_1_2_shell.stdout != ""
+  register: __ad_1_8_12_1_2
+  tags:
+    - AD.1.8.12.1.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.12.1.2 | AUDIT_RHEL | OSR | Setting permissions on /var/log/tallylog directory
+  debug:
+    msg: "{{ __ad_1_8_12_1_2 }}"
+  when: 
+    - ad_1_8_12_1_2
+    - ansible_check_mode
+    - __ad_1_8_12_1_2 | changed
+  tags:
+    - AD.1.8.12.1.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.12.2 ---------------------------------
+#
+- name: AD.1.8.12.2 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/messages directory
+  shell: grep '^auth' /etc/pam.d/* | grep pam_tally2.so
+  when: ad_1_8_12_2
+  failed_when: __ad_1_8_12_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_12_2_shell
+  tags:
+    - AD.1.8.12.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.2 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/messages directory
+  stat:
+    path: /var/log/messages 
+  when:
+    - ad_1_8_12_2
+  register: __ad_1_8_12_2_stat
+  tags:
+    - AD.1.8.12.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.2 | PATCH_RHEL | OSR | Setting permissions on /var/log/messages directory
+  file:
+    path: /var/log/messages 
+    mode: "{% if __ad_1_8_12_2_stat.stat.gid < 1000 and __ad_1_8_12_2_stat.stat.gid > 100 %}g+w{% else %}g-w{% endif %}"
+  when:
+    - ad_1_8_12_2
+    - __ad_1_8_12_2_stat.stat.exists
+    - __ad_1_8_12_2_shell.stdout != ""
+  register: __ad_1_8_12_2
+  tags:
+    - AD.1.8.12.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.12.2 | AUDIT_RHEL | OSR | Setting permissions on /var/log/messages directory
+  debug:
+    msg: "{{ __ad_1_8_12_2 }}"
+  when: 
+    - ad_1_8_12_2
+    - ansible_check_mode
+    - __ad_1_8_12_2 | changed
+  tags:
+    - AD.1.8.12.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.12.3 ---------------------------------
+#
+- name: AD.1.8.12.3 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/wtmp directory
+  shell: grep '^auth' /etc/pam.d/* | grep pam_tally2.so
+  when: ad_1_8_12_3
+  failed_when: __ad_1_8_12_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_12_3_shell
+  tags:
+    - AD.1.8.12.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.3 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/wtmp directory
+  stat:
+    path: /var/log/wtmp 
+  when:
+    - ad_1_8_12_3
+  register: __ad_1_8_12_3_stat
+  tags:
+    - AD.1.8.12.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.3 | PATCH_RHEL | OSR | Setting permissions on /var/log/wtmp directory
+  file:
+    path: /var/log/wtmp 
+    mode: "{% if (__ad_1_8_12_3_stat.stat.gid < 1000 and __ad_1_8_12_3_stat.stat.gid > 100) or __ad_1_8_12_3_stat.stat.gid == 22 %}g+w{% else %}g-w{% endif %}"
+  when:
+    - ad_1_8_12_3
+    - __ad_1_8_12_3_stat.stat.exists
+    - __ad_1_8_12_3_shell.stdout != ""
+  register: __ad_1_8_12_3
+  tags:
+    - AD.1.8.12.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.12.3 | AUDIT_RHEL | OSR | Setting permissions on /var/log/wtmp directory
+  debug:
+    msg: "{{ __ad_1_8_12_3 }}"
+  when: 
+    - ad_1_8_12_3
+    - ansible_check_mode
+    - __ad_1_8_12_3 | changed
+  tags:
+    - AD.1.8.12.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.12.4 ---------------------------------
+#
+- name: AD.1.8.12.4 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/secure directory
+  shell: grep '^auth' /etc/pam.d/* | grep pam_tally2.so
+  when: ad_1_8_12_4
+  failed_when: __ad_1_8_12_4_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_12_4_shell
+  tags:
+    - AD.1.8.12.4
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.4 | GATHER_INFO_RHEL | OSR | Setting permissions on /var/log/secure directory
+  stat:
+    path: /var/log/secure 
+  when:
+    - ad_1_8_12_4
+  register: __ad_1_8_12_4_stat
+  tags:
+    - AD.1.8.12.4
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.12.4 | PATCH_RHEL | OSR | Setting permissions on /var/log/secure directory
+  file:
+    path: /var/log/secure 
+    mode: "{% if __ad_1_8_12_4_stat.stat.gid < 1000 and __ad_1_8_12_4_stat.stat.gid > 100 %}g+w{% else %}g-w{% endif %}"
+  when:
+    - ad_1_8_12_4
+    - __ad_1_8_12_4_stat.stat.exists
+    - __ad_1_8_12_4_shell.stdout != ""
+  register: __ad_1_8_12_4
+  tags:
+    - AD.1.8.12.4
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.12.4 | AUDIT_RHEL | OSR | Setting permissions on /var/log/secure directory
+  debug:
+    msg: "{{ __ad_1_8_12_4 }}"
+  when: 
+    - ad_1_8_12_4
+    - ansible_check_mode
+    - __ad_1_8_12_4 | changed
+  tags:
+    - AD.1.8.12.4
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.13.3 ---------------------------------
+#
+- name: AD.1.8.13.3 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/inittab
+  stat:
+    path: /etc/inittab
+  when: ad_1_8_13_3
+  register: __ad_1_8_13_3_stat
+  tags:
+    - AD.1.8.13.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.13.3 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/inittab
+  shell: |
+    grep "^[^#]" /etc/inittab | awk '{split($0, a, ":"); print a[4]}' | awk '{print $1}' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_13_3
+    - __ad_1_8_13_3_stat.stat.exists
+  failed_when: __ad_1_8_13_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_13_3_shell
+  tags:
+    - AD.1.8.13.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.13.3 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/inittab
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_13_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_13_3
+    - __ad_1_8_13_3_stat.stat.exists
+    - __ad_1_8_13_3_shell.stdout != ""
+  register: __ad_1_8_13_3
+  tags:
+    - AD.1.8.13.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.13.3 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/inittab
+  debug:
+    msg: "{{ __ad_1_8_13_3 }}"
+  when: 
+    - ad_1_8_13_3
+    - ansible_check_mode
+    - __ad_1_8_13_3 | changed
+  tags:
+    - AD.1.8.13.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.13.4 ---------------------------------
+#
+- name: AD.1.8.13.4 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/inittab
+  stat:
+    path: /etc/inittab
+  when: ad_1_8_13_4
+  register: __ad_1_8_13_4_stat
+  tags:
+    - AD.1.8.13.4
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.13.4 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/inittab
+  shell: |
+    grep "^[^#]" /etc/inittab | awk '{split($0, a, ":"); print a[4]}' | awk '{print $1}' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_13_4
+    - __ad_1_8_13_4_stat.stat.exists
+  failed_when: __ad_1_8_13_4_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_13_4_shell
+  tags:
+    - AD.1.8.13.4
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.13.4 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/inittab
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_13_4_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_13_4
+    - __ad_1_8_13_4_stat.stat.exists
+    - __ad_1_8_13_4_shell.stdout != ""
+  register: __ad_1_8_13_4
+  tags:
+    - AD.1.8.13.4
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.13.4 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/inittab
+  debug:
+    msg: "{{ __ad_1_8_13_4 }}"
+  when: 
+    - ad_1_8_13_4
+    - ansible_check_mode
+    - __ad_1_8_13_4 | changed
+  tags:
+    - AD.1.8.13.4
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.14.2 ---------------------------------
+#
+- name: AD.1.8.14.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/root
+  stat:
+    path: /var/spool/cron/root
+  when: ad_1_8_14_2
+  register: __ad_1_8_14_2_stat
+  tags:
+    - AD.1.8.14.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.14.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/root
+  shell: |
+    grep "^[^#]" /var/spool/cron/root | awk '{print $6}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_14_2
+    - __ad_1_8_14_2_stat.stat.exists
+  failed_when: __ad_1_8_14_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_14_2_shell
+  tags:
+    - AD.1.8.14.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.14.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/root
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_14_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_14_2
+    - __ad_1_8_14_2_stat.stat.exists
+    - __ad_1_8_14_2_shell.stdout != ""
+  register: __ad_1_8_14_2
+  tags:
+    - AD.1.8.14.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.14.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/root
+  debug:
+    msg: "{{ __ad_1_8_14_2 }}"
+  when: 
+    - ad_1_8_14_2
+    - ansible_check_mode
+    - __ad_1_8_14_2 | changed
+  tags:
+    - AD.1.8.14.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.14.3 ---------------------------------
+#
+- name: AD.1.8.14.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/root
+  stat:
+    path: /var/spool/cron/root
+  when: ad_1_8_14_3
+  register: __ad_1_8_14_3_stat
+  tags:
+    - AD.1.8.14.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.14.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/root
+  shell: |
+    grep "^[^#]" /var/spool/cron/root | awk '{print $6}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_14_3
+    - __ad_1_8_14_3_stat.stat.exists
+  failed_when: __ad_1_8_14_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_14_3_shell
+  tags:
+    - AD.1.8.14.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.14.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/root
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_14_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_14_3
+    - __ad_1_8_14_3_stat.stat.exists
+    - __ad_1_8_14_3_shell.stdout != ""
+  register: __ad_1_8_14_3
+  tags:
+    - AD.1.8.14.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.14.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/root
+  debug:
+    msg: "{{ __ad_1_8_14_3 }}"
+  when: 
+    - ad_1_8_14_3
+    - ansible_check_mode
+    - __ad_1_8_14_3 | changed
+  tags:
+    - AD.1.8.14.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.15.2 ---------------------------------
+#
+- name: AD.1.8.15.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/crontab
+  stat:
+    path: /etc/crontab
+  when: ad_1_8_15_2
+  register: __ad_1_8_15_2_stat
+  tags:
+    - AD.1.8.15.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.15.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/crontab
+  shell: |
+    grep "^[^#]" /etc/crontab | awk '{print $7}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_15_2
+    - __ad_1_8_15_2_stat.stat.exists
+  failed_when: __ad_1_8_15_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_15_2_shell
+  tags:
+    - AD.1.8.15.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.15.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/crontab
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_15_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_15_2
+    - __ad_1_8_15_2_stat.stat.exists
+    - __ad_1_8_15_2_shell.stdout != ""
+  register: __ad_1_8_15_2
+  tags:
+    - AD.1.8.15.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.15.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/crontab
+  debug:
+    msg: "{{ __ad_1_8_15_2 }}"
+  when: 
+    - ad_1_8_15_2
+    - ansible_check_mode
+    - __ad_1_8_15_2 | changed
+  tags:
+    - AD.1.8.15.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.15.3 ---------------------------------
+#
+- name: AD.1.8.15.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/crontab
+  stat:
+    path: /etc/crontab
+  when: ad_1_8_15_3
+  register: __ad_1_8_15_3_stat
+  tags:
+    - AD.1.8.15.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.15.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/crontab
+  shell: |
+    grep "^[^#]" /etc/crontab | awk '{print $7}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_15_3
+    - __ad_1_8_15_3_stat.stat.exists
+  failed_when: __ad_1_8_15_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_15_3_shell
+  tags:
+    - AD.1.8.15.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.15.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/crontab
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_15_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_15_3
+    - __ad_1_8_15_3_stat.stat.exists
+    - __ad_1_8_15_3_shell.stdout != ""
+  register: __ad_1_8_15_3
+  tags:
+    - AD.1.8.15.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.15.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/crontab
+  debug:
+    msg: "{{ __ad_1_8_15_3 }}"
+  when: 
+    - ad_1_8_15_3
+    - ansible_check_mode
+    - __ad_1_8_15_3 | changed
+  tags:
+    - AD.1.8.15.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.17.2 ---------------------------------
+#
+- name: AD.1.8.17.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/xinetd.conf
+  stat:
+    path: /etc/xinetd.conf
+  when: ad_1_8_17_2
+  register: __ad_1_8_17_2_stat
+  tags:
+    - AD.1.8.17.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.17.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/xinetd.conf
+  shell: |
+    grep "server\s" /etc/xinetd.conf | awk '{split($0, a, "="); print a[2]}' | awk '{gsub(/ /, "", $1);print $1}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_17_2
+    - __ad_1_8_17_2_stat.stat.exists
+  failed_when: __ad_1_8_17_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_17_2_shell
+  tags:
+    - AD.1.8.17.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.17.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/xinetd.conf
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_17_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_17_2
+    - __ad_1_8_17_2_stat.stat.exists
+    - __ad_1_8_17_2_shell.stdout != ""
+  register: __ad_1_8_17_2
+  tags:
+    - AD.1.8.17.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.17.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/xinetd.conf
+  debug:
+    msg: "{{ __ad_1_8_17_2 }}"
+  when: 
+    - ad_1_8_17_2
+    - ansible_check_mode
+    - __ad_1_8_17_2 | changed
+  tags:
+    - AD.1.8.17.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.17.3 ---------------------------------
+#
+- name: AD.1.8.17.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/xinetd.conf
+  stat:
+    path: /etc/xinetd.conf
+  when: ad_1_8_17_3
+  register: __ad_1_8_17_3_stat
+  tags:
+    - AD.1.8.17.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.17.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/xinetd.conf
+  shell: |
+    grep "server\s" /etc/xinetd.conf | awk '{split($0, a, "="); print a[2]}' | awk '{gsub(/ /, "", $1);print $1}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_17_3
+    - __ad_1_8_17_3_stat.stat.exists
+  failed_when: __ad_1_8_17_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_17_3_shell
+  tags:
+    - AD.1.8.17.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.17.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/xinetd.conf
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_17_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_17_3
+    - __ad_1_8_17_3_stat.stat.exists
+    - __ad_1_8_17_3_shell.stdout != ""
+  register: __ad_1_8_17_3
+  tags:
+    - AD.1.8.17.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.17.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/xinetd.conf
+  debug:
+    msg: "{{ __ad_1_8_17_3 }}"
+  when: 
+    - ad_1_8_17_3
+    - ansible_check_mode
+    - __ad_1_8_17_3 | changed
+  tags:
+    - AD.1.8.17.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.18.2 ---------------------------------
+#
+- name: AD.1.8.18.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  stat:
+    path: /etc/init.d
+  when: ad_1_8_18_2
+  register: __ad_1_8_18_2_stat
+  tags:
+    - AD.1.8.18.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.18.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  shell: |
+    find /etc/init.d/ -perm /001 | while read -r line ; do
+    line=`readlink -f $line`
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_18_2
+    - __ad_1_8_18_2_stat.stat.exists
+  failed_when: __ad_1_8_18_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_18_2_shell
+  tags:
+    - AD.1.8.18.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.18.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_18_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_18_2
+    - __ad_1_8_18_2_stat.stat.exists
+    - __ad_1_8_18_2_shell.stdout != ""
+  register: __ad_1_8_18_2
+  tags:
+    - AD.1.8.18.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.18.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  debug:
+    msg: "{{ __ad_1_8_18_2 }}"
+  when: 
+    - ad_1_8_18_2
+    - ansible_check_mode
+    - __ad_1_8_18_2 | changed
+  tags:
+    - AD.1.8.18.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.18.3 ---------------------------------
+#
+- name: AD.1.8.18.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  stat:
+    path: /etc/init.d
+  when: ad_1_8_18_3
+  register: __ad_1_8_18_3_stat
+  tags:
+    - AD.1.8.18.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.18.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  shell: |
+    find /etc/init.d/ -perm /001 | while read -r line ; do
+    line=`readlink -f $line`
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_18_3
+    - __ad_1_8_18_3_stat.stat.exists
+  failed_when: __ad_1_8_18_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_18_3_shell
+  tags:
+    - AD.1.8.18.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.18.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_18_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_18_3
+    - __ad_1_8_18_3_stat.stat.exists
+    - __ad_1_8_18_3_shell.stdout != ""
+  register: __ad_1_8_18_3
+  tags:
+    - AD.1.8.18.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.18.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  debug:
+    msg: "{{ __ad_1_8_18_3 }}"
+  when: 
+    - ad_1_8_18_3
+    - ansible_check_mode
+    - __ad_1_8_18_3 | changed
+  tags:
+    - AD.1.8.18.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.19.2 ---------------------------------
+#
+- name: AD.1.8.19.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  stat:
+    path: /etc/init.d
+  when: ad_1_8_19_2
+  register: __ad_1_8_19_2_stat
+  tags:
+    - AD.1.8.19.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.19.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  shell: |
+    find /etc/init.d/ -perm /001 | while read -r line ; do
+    line=`readlink -f $line`
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_19_2
+    - __ad_1_8_19_2_stat.stat.exists
+  failed_when: __ad_1_8_19_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_19_2_shell
+  tags:
+    - AD.1.8.19.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.19.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_19_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_19_2
+    - __ad_1_8_19_2_stat.stat.exists
+    - __ad_1_8_19_2_shell.stdout != ""
+  register: __ad_1_8_19_2
+  tags:
+    - AD.1.8.19.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.19.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/init.d
+  debug:
+    msg: "{{ __ad_1_8_19_2 }}"
+  when: 
+    - ad_1_8_19_2
+    - ansible_check_mode
+    - __ad_1_8_19_2 | changed
+  tags:
+    - AD.1.8.19.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.19.3 ---------------------------------
+#
+- name: AD.1.8.19.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  stat:
+    path: /etc/init.d
+  when: ad_1_8_19_3
+  register: __ad_1_8_19_3_stat
+  tags:
+    - AD.1.8.19.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.19.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  shell: |
+    find /etc/init.d/ -perm /001 | while read -r line ; do
+    line=`readlink -f $line`
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_19_3
+    - __ad_1_8_19_3_stat.stat.exists
+  failed_when: __ad_1_8_19_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_19_3_shell
+  tags:
+    - AD.1.8.19.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.19.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_19_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_19_3
+    - __ad_1_8_19_3_stat.stat.exists
+    - __ad_1_8_19_3_shell.stdout != ""
+  register: __ad_1_8_19_3
+  tags:
+    - AD.1.8.19.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.19.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/init.d
+  debug:
+    msg: "{{ __ad_1_8_19_3 }}"
+  when: 
+    - ad_1_8_19_3
+    - ansible_check_mode
+    - __ad_1_8_19_3 | changed
+  tags:
+    - AD.1.8.19.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.20.2 ---------------------------------
+#
+- name: AD.1.8.20.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/cron.d/
+  stat:
+    path: /etc/cron.d/
+  when: ad_1_8_20_2
+  register: __ad_1_8_20_2_stat
+  tags:
+    - AD.1.8.20.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.20.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/cron.d/
+  shell: |
+    grep -R "^[^#]" /etc/cron.d/ |  awk '{split($0, a, ":"); print a[2]}' | grep -v '^[PATH|SHELL|MAILTO]' | awk '{print $7}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_20_2
+    - __ad_1_8_20_2_stat.stat.exists
+  failed_when: __ad_1_8_20_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_20_2_shell
+  tags:
+    - AD.1.8.20.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.20.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/cron.d/
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_20_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_20_2
+    - __ad_1_8_20_2_stat.stat.exists
+    - __ad_1_8_20_2_shell.stdout != ""
+  register: __ad_1_8_20_2
+  tags:
+    - AD.1.8.20.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.20.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /etc/cron.d/
+  debug:
+    msg: "{{ __ad_1_8_20_2 }}"
+  when: 
+    - ad_1_8_20_2
+    - ansible_check_mode
+    - __ad_1_8_20_2 | changed
+  tags:
+    - AD.1.8.20.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.20.3 ---------------------------------
+#
+- name: AD.1.8.20.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/cron.d/
+  stat:
+    path: /etc/cron.d/
+  when: ad_1_8_20_3
+  register: __ad_1_8_20_3_stat
+  tags:
+    - AD.1.8.20.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.20.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/cron.d/
+  shell: |
+    grep -R "^[^#]" /etc/cron.d/ |  awk '{split($0, a, ":"); print a[2]}' | grep -v '^[PATH|SHELL|MAILTO]' | awk '{print $7}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_20_3
+    - __ad_1_8_20_3_stat.stat.exists
+  failed_when: __ad_1_8_20_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_20_3_shell
+  tags:
+    - AD.1.8.20.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.20.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/cron.d/
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_20_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_20_3
+    - __ad_1_8_20_3_stat.stat.exists
+    - __ad_1_8_20_3_shell.stdout != ""
+  register: __ad_1_8_20_3
+  tags:
+    - AD.1.8.20.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.20.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /etc/cron.d/
+  debug:
+    msg: "{{ __ad_1_8_20_3 }}"
+  when: 
+    - ad_1_8_20_3
+    - ansible_check_mode
+    - __ad_1_8_20_3 | changed
+  tags:
+    - AD.1.8.20.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.21.2 ---------------------------------
+#
+- name: AD.1.8.21.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/tabs/root
+  stat:
+    path: /var/spool/cron/tabs/root
+  when: ad_1_8_21_2
+  register: __ad_1_8_21_2_stat
+  tags:
+    - AD.1.8.21.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.21.2 | GATHER_INFO_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/tabs/root
+  shell: |
+    grep "^[^#]" /var/spool/cron/tabs/root | awk '{print $6}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    echo "$line"
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_21_2
+    - __ad_1_8_21_2_stat.stat.exists
+  failed_when: __ad_1_8_21_2_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_21_2_shell
+  tags:
+    - AD.1.8.21.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.21.2 | PATCH_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/tabs/root
+  file:
+    path: "{{ item }}"
+    mode: o-w
+  with_items: "{{ __ad_1_8_21_2_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_21_2
+    - __ad_1_8_21_2_stat.stat.exists
+    - __ad_1_8_21_2_shell.stdout != ""
+  register: __ad_1_8_21_2
+  tags:
+    - AD.1.8.21.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.21.2 | AUDIT_RHEL | OSR | Setting other permissions on full directory path for entries in /var/spool/cron/tabs/root
+  debug:
+    msg: "{{ __ad_1_8_21_2 }}"
+  when: 
+    - ad_1_8_21_2
+    - ansible_check_mode
+    - __ad_1_8_21_2 | changed
+  tags:
+    - AD.1.8.21.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.21.3 ---------------------------------
+#
+- name: AD.1.8.21.2 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/tabs/root
+  stat:
+    path: /var/spool/cron/tabs/root
+  when: ad_1_8_21_3
+  register: __ad_1_8_21_3_stat
+  tags:
+    - AD.1.8.21.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.21.3 | GATHER_INFO_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/tabs/root
+  shell: |
+    grep "^[^#]" /var/spool/cron/tabs/root | awk '{print $6}' | grep -e '^/' | grep -v '^$' | while read -r line ; do
+    while [ $line != "/" ]; do
+    if [ $line != "/" ]; then
+    gid=`stat -c %g $line`
+    if [ $gid -ge 1000 ]; then
+    echo "$line"
+    fi
+    fi
+    line=`dirname $line`
+    done
+    done | sort | uniq
+  when:
+    - ad_1_8_21_3
+    - __ad_1_8_21_3_stat.stat.exists
+  failed_when: __ad_1_8_21_3_shell.rc > 2
+  check_mode: no
+  register: __ad_1_8_21_3_shell
+  tags:
+    - AD.1.8.21.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.21.3 | PATCH_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/tabs/root
+  file:
+    path: "{{ item }}"
+    mode: g-w
+  with_items: "{{ __ad_1_8_21_3_shell.stdout_lines }}"
+  failed_when: false
+  when:
+    - ad_1_8_21_3
+    - __ad_1_8_21_3_stat.stat.exists
+    - __ad_1_8_21_3_shell.stdout != ""
+  register: __ad_1_8_21_3
+  tags:
+    - AD.1.8.21.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.21.3 | AUDIT_RHEL | OSR | Setting group permissions on full directory path for entries in /var/spool/cron/tabs/root
+  debug:
+    msg: "{{ __ad_1_8_21_3 }}"
+  when: 
+    - ad_1_8_21_3
+    - ansible_check_mode
+    - __ad_1_8_21_3 | changed
+  tags:
+    - AD.1.8.21.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.22.1 ---------------------------------
+#
+- name: AD.1.8.22.1 | GATHER_INFO_RHEL | OSR | Files in /opt should not have other write / execute
+  shell: find /opt -perm /003 ! -type l
+  when: ad_1_8_22_1
+  register: __ad_1_8_22_1_stat
+  check_mode: no
+  tags:
+    - AD.1.8.22.1
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.22.1 | PATCH_RHEL | OSR | Files in /opt should not have other write / execute
+  file:
+    path: "{{ item }}"
+    mode: "o-wx"
+  with_items: "{{ __ad_1_8_22_1_stat.stdout_lines }}"
+  when:
+    - ad_1_8_22_1
+    - __ad_1_8_22_1_stat.stdout_lines != ""
+  register: __ad_1_8_22_1
+  tags:
+    - AD.1.8.22.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.22.1 | AUDIT_RHEL | OSR | Files in /opt should not have other write / execute
+  debug:
+    msg: "{% set output = [] %}\
+      {% for x in (__ad_1_8_22_1.results) %}\
+        {{ output.append( x.item + ' changed to ' + x.diff.after.mode  ) }}\
+      {% endfor %}\
+      {{output}}"
+  when: 
+    - ad_1_8_22_1
+    - ansible_check_mode
+    - __ad_1_8_22_1 | changed
+  tags:
+    - AD.1.8.22.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.22.2 ---------------------------------
+#
+- name: AD.1.8.22.2 | GATHER_INFO_RHEL | OSR | Files in /var should not have other write / execute
+  shell: find /var -perm /003 ! -type l
+  when: ad_1_8_22_2
+  register: __ad_1_8_22_2_stat
+  check_mode: no
+  tags:
+    - AD.1.8.22.2
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.22.2 | PATCH_RHEL | OSR | Files in /var should not have other write / execute
+  file:
+    path: "{{ item }}"
+    mode: "o-wx"
+  with_items: "{{ __ad_1_8_22_2_stat.stdout_lines }}"
+  when:
+    - ad_1_8_22_2
+    - __ad_1_8_22_2_stat.stdout_lines != ""
+  register: __ad_1_8_22_2
+  tags:
+    - AD.1.8.22.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.22.2 | AUDIT_RHEL | OSR | Files in /var should not have other write / execute
+  debug:
+    msg: "{% set output = [] %}\
+      {% for x in (__ad_1_8_22_2.results) %}\
+        {{ output.append( x.item + ' changed to ' + x.diff.after.mode  ) }}\
+      {% endfor %}\
+      {{output}}"
+  when: 
+    - ad_1_8_22_2
+    - ansible_check_mode
+    - __ad_1_8_22_2 | changed
+  tags:
+    - AD.1.8.22.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.22.3 ---------------------------------
+#
+- name: AD.1.8.22.3 | GATHER_INFO_RHEL | OSR | Files in /usr/local should not have other write / execute
+  shell: find /usr/local -perm /003 ! -type l
+  when: ad_1_8_22_3
+  register: __ad_1_8_22_3_stat
+  check_mode: no
+  tags:
+    - AD.1.8.22.3
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.22.3 | PATCH_RHEL | OSR | Files in /usr/local should not have other write / execute
+  file:
+    path: "{{ item }}"
+    mode: "o-wx"
+  with_items: "{{ __ad_1_8_22_3_stat.stdout_lines }}"
+  when:
+    - ad_1_8_22_3
+    - __ad_1_8_22_3_stat.stdout_lines != ""
+  register: __ad_1_8_22_3
+  tags:
+    - AD.1.8.22.3
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.22.3 | AUDIT_RHEL | OSR | Files in /usr/local should not have other write / execute
+  debug:
+    msg: "{% set output = [] %}\
+      {% for x in (__ad_1_8_22_3.results) %}\
+        {{ output.append( x.item + ' changed to ' + x.diff.after.mode  ) }}\
+      {% endfor %}\
+      {{output}}"
+  when: 
+    - ad_1_8_22_3
+    - ansible_check_mode
+    - __ad_1_8_22_3 | changed
+  tags:
+    - AD.1.8.22.3
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.8.22.4 ---------------------------------
+#
+- name: AD.1.8.22.4 | GATHER_INFO_RHEL | OSR | Files in /tmp should not have other write / execute
+  shell: find /tmp -perm /003 ! -type l | grep -v ansible_
+  when: ad_1_8_22_4
+  register: __ad_1_8_22_4_stat
+  check_mode: no
+  tags:
+    - AD.1.8.22.4
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.8.22.4 | PATCH_RHEL | OSR | Files in /tmp should not have other write / execute
+  file:
+    path: "{{ item }}"
+    mode: "o-wx"
+  with_items: "{{ __ad_1_8_22_4_stat.stdout_lines }}"
+  when:
+    - ad_1_8_22_4
+    - __ad_1_8_22_4_stat.stdout_lines != ""
+  register: __ad_1_8_22_4
+  tags:
+    - AD.1.8.22.4
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.8.22.4 | AUDIT_RHEL | OSR | Files in /tmp should not have other write / execute
+  debug:
+    msg: "{% set output = [] %}\
+      {% for x in (__ad_1_8_22_4.results) %}\
+        {{ output.append( x.item + ' changed to ' + x.diff.after.mode  ) }}\
+      {% endfor %}\
+      {{output}}"
+  when: 
+    - ad_1_8_22_4
+    - ansible_check_mode
+    - __ad_1_8_22_4 | changed
+  tags:
+    - AD.1.8.22.4
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.9.1.2 ---------------------------------
+#
+- name: AD.1.9.1.2 | PATCH_RHEL | OSR | Default UMASK /etc/bashrc
+  lineinfile:
+    path: /etc/bashrc
+    regexp: 'umask '
+    line: 'umask x77'
+  when: ad_1_9_1_2
+  register: __ad_1_9_1_2
+  tags:
+    - AD.1.9.1.2
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.9.1.2 | AUDIT_RHEL | OSR | Default UMASK /etc/bashrc
+  debug:
+    msg: "{{ __ad_1_9_1_2 }}"
+  when: 
+    - ad_1_9_1_2
+    - ansible_check_mode
+    - __ad_1_9_1_2 | changed
+  tags:
+    - AD.1.9.1.2
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.9.1.2.1 ---------------------------------
+#
+- name: AD.1.9.1.2.1 | PATCH_RHEL | OSR | Default UMASK /etc/login.defs
+  lineinfile:
+    path: /etc/login.defs
+    regexp: 'umask '
+    line: 'umask 077'
+  when: ad_1_9_1_2_1
+  register: __ad_1_9_1_2_1
+  tags:
+    - AD.1.9.1.2.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.9.1.2.1 | AUDIT_RHEL | OSR | Default UMASK /etc/login.defs
+  debug:
+    msg: "{{ __ad_1_9_1_2_1 }}"
+  when: 
+    - ad_1_9_1_2_1
+    - ansible_check_mode
+    - __ad_1_9_1_2_1 | changed
+  tags:
+    - AD.1.9.1.2.1
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.1.9.1.7 ---------------------------------
+#
+- name: AD.1.9.1.7 | GATHER_INFO_RHEL | OSR | Default UMASK (multiple files)
+  stat:
+    path: "{{ item }}"
+  with_items:
+    - /etc/skel/.cshrc
+    - /etc/skel/.login
+    - /etc/skel/.profile
+    - /etc/skel/.bashrc
+    - /etc/skel/.bash_profile
+    - /etc/skel/.bash_login
+    - /etc/skel/.tcshrc
+  when: ad_1_9_1_7
+  register: __ad_1_9_1_7_stat
+  tags:
+    - AD.1.9.1.7
+    - audit
+    - OSR
+    - S
+
+- name: AD.1.9.1.7 | PATCH_RHEL | OSR | Default UMASK (multiple files)
+  lineinfile:
+    path: "{{ item.item }}"
+    regexp: 'umask '
+    line: 'umask 077'
+  with_items: "{{ __ad_1_9_1_7_stat.results }}"
+  when:
+    - ad_1_9_1_7
+    - item.stat.exists
+  register: __ad_1_9_1_7
+  tags:
+    - AD.1.9.1.7
+    - patch
+    - OSR
+    - S
+
+- name: AD.1.9.1.7 | AUDIT_RHEL | OSR | Default UMASK /etc/bashrc
+  debug:
+    msg: "{{ __ad_1_9_1_7 }}"
+  when: 
+    - ad_1_9_1_7
+    - ansible_check_mode
+    - __ad_1_9_1_7 | changed
+  tags:
+    - AD.1.9.1.7
+    - audit
+    - OSR
+    - S
+
+#
+# --------------------------------- AD.2.0.1 ---------------------------------
+#
+- name: AD.2.0.1 | GATHER_INFO_RHEL | OSR | Business Use Notice
+  stat:
+    path: "{{ item }}"
+  with_items:
+    - /etc/issue
+    - /etc/motd
+  when: ad_2_0_1
+  register: __ad_2_0_1_stat
+  tags:
+    - AD.2.0.1
+    - audit
+    - OSR
+    - S
+
+- name: AD.2.0.1 | AUDIT_RHEL | OSR | Business Use Notice
+  debug:
+    msg: "{% set output = [] %}\
+      {% for x in (__ad_2_0_1_stat.results) %}\
+        {% if x.stat.exists and x.stat.size < 24 %}{{ output.append( 'Business Use Notice is not set in ' + x.item ) }}{% endif %}\
+      {% endfor %}\
+      {{output}}"
+  when:
+    - ad_2_0_1
+  register: __ad_2_0_1
+  tags:
+    - AD.2.0.1
+    - patch
+    - OSR
+    - S
+
+- name: AD.2.0.1 | AUDIT_RHEL | OSR | Default UMASK /etc/bashrc
+  debug:
+    msg: "{{ __ad_2_0_1 }}"
+  when: 
+    - ad_2_0_1
+    - ansible_check_mode
+    - __ad_2_0_1 | changed
+  tags:
+    - AD.2.0.1
+    - audit
+    - OSR
+    - S

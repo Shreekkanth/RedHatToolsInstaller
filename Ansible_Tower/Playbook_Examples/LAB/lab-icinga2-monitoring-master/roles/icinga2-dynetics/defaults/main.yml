@@ -1,0 +1,9 @@
+---
+# defaults file for icinga2-dynetics
+icinga2_node_firewalld: true
+icinga2_node_selinux: true
+icinga2_node_selinux_bool: true
+icinga2_master: false
+icinga2_master_plugins: false
+icinga2_master_update_objects: false
+icinga2_master_configure_ldap: false

@@ -1,0 +1,59 @@
+---
+# if no mac provided, return full list for device
+#   - {ip, mac, interface}
+# if ip/mac provided, return single port or no port if not present
+- name: import the network-engine role
+  import_role:
+    name: network-engine
+
+- name: Run 'show ip arp' command
+  ios_command:
+    commands: show ip arp
+  register: output
+
+- name: Debug output
+  debug:
+    var: output
+    verbosity: 1
+
+- name: Generate arp facts as JSON
+  command_parser:
+    file: "parser_templates/show_ip_arp.yml"
+    content: "{{ output.stdout.0 }}"
+  register: parser_output
+
+- name: Debug parser_output
+  debug:
+    var: parser_output
+    verbosity: 1
+
+- name: Create arp_entries fact
+  set_fact:
+    arp_entries: "{{ parser_output.ansible_facts.cisco_ios.arp_entries }}"
+
+- name: Filter arp_entries by provided IP address
+  set_fact:
+    arp_entries: "{{ arp_entries | json_query(ip_query) }}"
+  when: cisco_ios_endpoint_location_ip is defined
+  vars:
+    ip_query: "[?ip=='{{ cisco_ios_endpoint_location_ip }}']"
+
+- block:
+  - name: Normalize MAC address
+    set_fact:
+      sanitized_mac: "{{ cisco_ios_endpoint_location_mac | hwaddr('cisco') }}"
+
+  # - name: Mac Type
+  #   debug:
+  #     msg: "{{ cisco_ios_endpoint_location_mac | hwaddr('cisco') | type_debug }}"
+  #
+  # - name: Debug mac_query
+  #   debug:
+  #     msg: "[?mac=='{{ sanitized_mac }}']"
+
+  - name: Filter arp_entries by provided MAC address
+    set_fact:
+      arp_entries: "{{ arp_entries | json_query(mac_query) }}"
+    vars:
+      mac_query: "[?mac=='{{ sanitized_mac }}']"
+  when: cisco_ios_endpoint_location_mac is defined

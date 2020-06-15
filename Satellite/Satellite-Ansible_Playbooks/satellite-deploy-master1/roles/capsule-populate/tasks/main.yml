@@ -1,0 +1,54 @@
+---
+  - name: "Verify that capsule services are running as expected"
+    command: 
+      "/usr/bin/katello-service status"
+
+  - name: "Download bootstrap.py client registration script from satellite"
+    get_url:
+      url: "https://{{ groups['satellite-servers']|first }}/pub/bootstrap.py"
+      dest: "/var/www/html/pub"
+      force: yes
+
+  - name: "Set organization to capsule"
+    satellite_capsule:
+      action: "set-organizations"
+      name: "{{ item }}"
+      organizations: "{{ sat_org }}"
+    delegate_to: localhost
+    run_once: true
+    with_items: "{{ groups['satellite-capsules'] }}"
+
+  - name: "Set location to capsule"
+    satellite_capsule:
+      action: "set-locations"
+      name: "{{ item }}"
+      locations: "{{ capsule_location }}"
+    delegate_to: localhost
+    run_once: true
+    with_items: "{{ groups['satellite-capsules'] }}"
+
+  - name: "Assign Library env to capsule"
+    satellite_capsule:
+      action: "set-environment"
+      name: "{{ item }}"
+      environment: "Library"
+      organization: "{{ sat_org }}"
+    delegate_to: localhost
+    run_once: true
+    with_items: "{{ groups['satellite-capsules'] }}"
+
+  - name: "Sync content from satellite to capsule"
+    satellite_capsule:
+      action: "sync-content"
+      name: "{{ item }}"
+    delegate_to: localhost
+    run_once: true
+    with_items: "{{ groups['satellite-capsules'] }}"
+
+  - name: "Wait for capsules to be synched"
+    satellite_task:
+      task_type: "capsule_sync"
+      check_every: 60
+      timeout: "{{ capsule_sync_wait }}"
+    delegate_to: localhost
+...

@@ -1,0 +1,53 @@
+---
+# Satellite 5 unregister
+- block:
+  - include_vars: sat5.yml
+
+
+  - name: Remove existing RHN system id
+    file:
+      state: absent
+      path: /etc/sysconfig/rhn/systemid
+
+
+# - name: Remove existing Satellite CA cert
+#   file:
+#     state: absent
+#     path: "/usr/share/rhn/{{ rhn_cert_name }}"
+
+  when: is_sat6_client is not defined or not is_sat6_client
+  tags:
+    - satellite
+    - satellite_unregister
+    - satelite5
+
+
+# Satellite 6 unregister
+- block:
+  - name: Unregister this system from Satellite 6
+    shell: subscription-manager unregister
+    ignore_errors: yes
+
+
+  - name: Remove all local system and subscription data
+    shell: subscription-manager clean
+
+
+  - name: Remove Satellite 6 registration info
+    file:
+      path: /etc/rhsm/facts/katello.facts
+      state: absent
+
+
+  - name: Ensure subscription manager identity file is removed
+    file:
+      state: absent
+      path: /etc/pki/consumer/cert.pem
+  when: is_sat6_client is defined and is_sat6_client
+  tags:
+    - satellite
+    - satellite_unregister
+    - satellite6
+
+
+# vim: set ft=ansible ts=2 sw=2 tw=0 et :

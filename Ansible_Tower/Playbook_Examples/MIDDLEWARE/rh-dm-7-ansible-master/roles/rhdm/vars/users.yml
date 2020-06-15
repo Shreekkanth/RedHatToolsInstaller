@@ -1,0 +1,38 @@
+---
+#
+#
+password_to_dev: "Redhat1"
+admin_user_01: {
+     name: "admin", password: "{{password_to_dev}}" }
+
+admin_users:
+  - "{{ admin_user_01 }}"
+
+rhdm_users_01: { name: rhdm,           password: "{{password_to_dev}}", roles: "admin,kie-server,rest-all"}
+rhdm_users_02: { name: rhdmAdmin,      password: "{{password_to_dev}}", roles: "admin"}
+rhdm_users_03: { name: kieserver,      password: "{{password_to_dev}}", roles: "kie-server"}
+rhdm_users_04: { name: controllerUser, password: "{{password_to_dev}}", roles: "rest-all"}
+
+rhdm_users:
+  - "{{ rhdm_users_01 }}"
+  - "{{ rhdm_users_02 }}"
+  - "{{ rhdm_users_03 }}"
+  - "{{ rhdm_users_04 }}"
+
+poc_users_01: { name: john01,    password: "{{password_to_dev}}", roles: "users"}
+poc_users_02: { name: gianni01,  password: "{{password_to_dev}}", roles: "users"}
+poc_users_03: { name: evan01,    password: "{{password_to_dev}}", roles: "users"}
+poc_users_04: { name: paul01,    password: "{{password_to_dev}}", roles: "users"}
+poc_users_05: { name: axel01,    password: "{{password_to_dev}}", roles: "users"}
+poc_users_06: { name: brad01,    password: "{{password_to_dev}}", roles: "users"}
+
+poc_users:
+  - "{{ poc_users_01 }}"
+  - "{{ poc_users_02 }}"
+  - "{{ poc_users_03 }}"
+  - "{{ poc_users_04 }}"
+  - "{{ poc_users_05 }}"
+  - "{{ poc_users_06 }}"
+
+#
+# EOF

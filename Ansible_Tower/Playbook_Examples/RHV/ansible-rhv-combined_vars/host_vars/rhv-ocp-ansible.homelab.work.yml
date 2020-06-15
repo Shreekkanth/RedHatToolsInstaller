@@ -1,0 +1,6 @@
+---
+sat6_fqdn: sat6.homelab.work
+sat6_user: admin
+sat6_pass: "{{ sat6-homelab }}"
+sat6_organization: homelab_infra
+sat6_fail_on_existing: no

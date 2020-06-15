@@ -1,0 +1,56 @@
+---
+dependencies:
+  - role: satellite
+    satellite_internal_options: "{{ satellite_provisioning_internal_options }}"
+
+  - role: selinux
+    selinux_state: 'permissive'
+    when: "{{ satellite_provisioning_in_beaker }}"
+
+  - role: libvirt
+    libvirt_tftp: true
+
+  - role: epel_repositories
+
+  - role: ruby_libvirt_gem
+
+  - role: epel_repositories
+    epel_repositories_state: absent
+
+  - role: foreman_installer
+    foreman_installer_command: satellite-installer
+    foreman_installer_scenario: ''
+    foreman_installer_options:
+      - --foreman-proxy-dns true
+      - --foreman-proxy-dns-provider {{ satellite_provisioning_networking }}
+      - --foreman-proxy-dns-interface virbr1
+      - --foreman-proxy-dns-zone {{ satellite_provisioning_domain }}
+      - "{{ satellite_provisioning_beaker_forwarders }}"
+      - --foreman-proxy-dns-forwarders 8.8.8.8
+      - --foreman-proxy-dns-reverse {{ satellite_provisioning_proxy_dns_reverse }}
+      - --foreman-proxy-dhcp true
+      - --foreman-proxy-dhcp-provider {{ satellite_provisioning_networking }}
+      - --foreman-proxy-{{ satellite_provisioning_networking }}-network provision
+      - --foreman-proxy-dhcp-interface virbr1
+      - --foreman-proxy-dhcp-range "{{ satellite_provisioning_dhcp_start }} {{ satellite_provisioning_dhcp_end }}"
+      - --foreman-proxy-dhcp-gateway {{ satellite_provisioning_ip_address }}
+      - --foreman-proxy-dhcp-nameservers {{ satellite_provisioning_ip_address }}
+      - --foreman-proxy-tftp-servername {{ satellite_provisioning_ip_address }}
+      - --foreman-proxy-tftp true
+      - "{{ satellite_provisioning_managed_tftp }}"
+      - "{{ satellite_provisioning_internal_options }}"
+
+  - role: satellite_seeder
+    satellite_seeder_hammer: "{{ satellite_provisioning_hammer }}"
+    satellite_seeder_organization: "{{ satellite_provisioning_organization }}"
+    satellite_seeder_location: "{{ satellite_provisioning_location }}"
+    satellite_seeder_version: "{{ satellite_version }}"
+    satellite_seeder_nework: "{{ satellite_provisioning_network }}"
+    satellite_seeder_os: "{{ satellite_provisioning_os }}"
+    satellite_seeder_proxy_name: "{{ satellite_provisioning_proxy_name }}"
+    satellite_seeder_domain: "{{ satellite_provisioning_domain }}"
+    satellite_seeder_network: "{{ satellite_provisioning_network }}"
+    satellite_seeder_dhcp_start: "{{ satellite_provisioning_dhcp_start }}"
+    satellite_seeder_dhcp_end: "{{ satellite_provisioning_dhcp_end }}"
+    satellite_seeder_ip_address: "{{ satellite_provisioning_ip_address }}"
+    satellite_seeder_dogfood_tools_url: "{{ satellite_provisioning_dogfood_tools_url }}"

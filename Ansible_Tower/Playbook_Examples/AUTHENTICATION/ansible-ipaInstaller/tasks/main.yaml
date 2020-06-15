@@ -1,0 +1,196 @@
+---
+- name: "IPA Server not installed on {{ansible_fqdn}} (fail if already installed)"
+  shell: ipactl status
+  register: ipastatus
+  changed_when: "False"
+  ignore_errors: "Yes"
+
+- block:
+
+  - name: "Check if each server can resolve its own fqdn on DNS"
+    fail: msg="The IPv4 address for {{ ansible_fqdn }} is {{ lookup('dig', '{{ansible_fqdn}}', '@{{ansible_dns.nameservers[0]}}')}}"
+    when: "'{{ lookup('dig', '{{ansible_fqdn}}', '@{{ansible_dns.nameservers[0]}}') }}' != '{{ansible_default_ipv4.address}}'"
+
+  - name: "Check if each server can reverse resolve its own default ip address"
+    fail: msg="Reverse DNS for {{ansible_default_ipv4.address}} is {{ lookup('dig', '{{ansible_default_ipv4.address}}/PTR', '@{{ansible_dns.nameservers[0]}}')}}"
+    when: "'{{ lookup('dig', '{{ansible_default_ipv4.address}}/PTR', '@{{ansible_dns.nameservers[0]}}')}}' != '{{ansible_fqdn}}.'"
+
+  - name: "Check if master server can resolve fqdn of replica servers to be installed"
+    fail: msg="The IPv4 address for {{ ansible_fqdn }} is {{ lookup('dig', '{{ansible_fqdn}}', '@{{ansible_dns.nameservers[0]}}')}}"
+    delegate_to: "{{ ipa_server }}"
+    when:
+      - "'{{ lookup('dig', '{{ansible_fqdn}}', '@{{ansible_dns.nameservers[0]}}')}}' != '{{ansible_default_ipv4.address}}'"
+      - "{{ masterserver }}"
+
+  - name: "Check if replica servers can resolve fqdn of master server"
+    fail: msg="The IPv4 address for {{ ipa_server }} is {{ lookup('dig', '{{ipa_server}}', '@{{ansible_dns.nameservers[0]}}')}}"
+    when:
+      - "'{{ lookup('dig', '{{ipa_server}}', '@{{ansible_dns.nameservers[0]}}')}}' == 'NXDOMAIN'"
+      - "{{ not masterserver }}"
+
+  - name: Grant rhel-7-server-rpms repo enabled
+    shell: subscription-manager repos --enable rhel-7-server-rpms
+    register: repo_enabled
+    failed_when: "repo_enabled.rc != 0"
+
+  - name: ipa-server package and dependencies installed
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ package_list }}"
+
+  - name: Service rngd required for entropy problems creating krb database
+    service:
+      name: rngd
+      state: started
+      enabled: yes
+
+  - name: ipa-server Installation
+    shell: ipa-server-install --ds-password {{ dspassword }} --admin-password {{ adminpassword }} --realm {{ ipa_domain|upper }} --domain {{ ipa_domain|lower }} -N --mkhomedir --unattended
+    register: ipa_server_output
+    failed_when: "ipa_server_output.rc != 0"
+    when: "{{ masterserver }}"
+    no_log: true
+
+  - name: ipa-replica Installation
+    shell: ipa-replica-install --principal admin --admin-password {{ adminpassword }} --server {{ ipa_server }} --domain {{ ipa_domain|lower }} --setup-ca -N --mkhomedir --unattended
+    register: ipa_replica_output
+    failed_when: "ipa_replica_output.rc != 0"
+    when: "{{ not masterserver }}"
+    no_log: true
+    ignore_errors: "Yes"
+
+  - name: Services enabled
+    service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+    with_items:
+      - "ipa"
+
+  when: "'The ipactl command was successful' not in ipastatus.stderr and ipastatus.rc != 0"
+
+- block:
+  - name: Obtain KRB Ticket
+    shell: echo "{{admin_password}}" | kinit admin
+    register: kinit_result
+    failed_when: "'Password incorrect' in kinit_result.stderr or kinit_result.rc != 0"
+    become: no
+    no_log: true
+
+  - name: Check if Non expiring password group is created
+    shell: ipa group-show {{ passwordpolicy_name }}
+    register: group_result
+    failed_when: no
+    become: no
+
+  - name: Add group for non expiring password users
+    shell: ipa group-add --desc="Non expiring password group" {{ passwordpolicy_name }}
+    when: "group_result.rc != 0"
+    become: no
+
+  - name: Check if Non expiring password policy is already created
+    shell: ipa pwpolicy-show {{ passwordpolicy_name }}
+    register: pwpolicy_result
+    failed_when: no
+    become: no
+
+  - name: Create password policy with disabled password expiration
+    shell: ipa pwpolicy-add --maxlife=20000 --minlife=0 --history=0 --minclasses=0 --minlength=8 --maxfail=0 --lockouttime=5 --priority=0 {{ passwordpolicy_name }}
+    when: "pwpolicy_result.rc != 0"
+    become: no
+
+  - name: Get admin expiration date
+    shell: ipa user-show admin --all | grep krbpasswordexpiration | awk '{print $2}' | sed -e 's/Z//g'
+    register: admin_expiration_date
+    become: no
+
+  - block:
+
+    - name: Check if admin user is included in the non expiring password group
+      shell: ipa group-show {{passwordpolicy_name}} | grep "Member users" | grep "admin"
+      register: admin_group
+      become: no
+      failed_when: no
+
+    - name: Add admin user to nonexpiringpassword group
+      shell: ipa group-add-member --users=admin {{ passwordpolicy_name }}
+      when: "admin_group.rc != 0"
+      become: no
+
+    - name: Reset admin password
+      shell: echo "{{admin_password}}" | ipa user-mod admin --password
+      become: no
+      no_log: true
+
+    when: "{{ admin_expiration_date.stdout|int }} < 20200000000000"
+
+  - name: Check if Host Enrollment user is already created
+    shell: ipa user-show {{register_username|lower}}
+    register: user_status
+    failed_when: no
+    become: no
+
+  - name: Create user allowed to Host Enrollment.
+    shell: echo {{register_password}} | ipa user-add {{register_username|lower}} --first "Enrollement" --last "Only" --password
+    when: "user_status.rc != 0"
+    become: no
+    no_log: true
+
+  - name: Remove user from default group
+    shell: ipa group-remove-member --users={{register_username|lower}} ipausers
+    when: "user_status.rc != 0"
+    become: no
+
+  - name: Check if Role for Host Enrollment is already created
+    shell: ipa role-show Enroller
+    register: role_status
+    failed_when: no
+    become: no
+
+  - block:
+
+    - name: Create Role allowed to Host Enrollement
+      shell: ipa role-add Enroller --desc="Role allowed to enroll new servers"
+      become: no
+
+    - name: Add enrollement user to enrollement role
+      shell: ipa role-add-member Enroller --users={{register_username|lower}}
+      become: no
+
+    - name: Add Host Enrollement privilege to enrollement role
+      shell: ipa role-add-privilege Enroller --privileges="Host Enrollment"
+      become: no
+
+    - name: Add "System:Add Hosts" permission to "Host Enrollement" privilege
+      shell: 'ipa privilege-add-permission "Host Enrollment" --permissions="System: Add Hosts"'
+      become: no
+
+    when: "{{ role_status.rc != 0}}"
+
+  - name: Get enroller expiration date
+    shell: ipa user-show {{register_username|lower}} --all | grep krbpasswordexpiration | awk '{print $2}' | sed -e 's/Z//g'
+    register: enroller_expiration_date
+    become: no
+
+  - block:
+
+    - name: Check if enroller user is included in the non expiring password group
+      shell: ipa group-show {{passwordpolicy_name}} | grep "Member users" | grep {{register_username|lower}}
+      register: register_group
+      become: no
+      failed_when: no
+
+    - name: Add register user to nonexpiringpassword group
+      shell: ipa group-add-member --users={{register_username|lower}} {{ passwordpolicy_name }}
+      when: "register_group.rc != -2"
+      become: no
+
+    - name: Unlock enrollment user password
+      shell: echo -e "{{ register_password }}\n{{ register_password }}\n{{ register_password }}" | kinit {{ register_username|lower }}
+      become: no
+      no_log: true
+
+    when: "{{ enroller_expiration_date.stdout|int }} < 20200000000000"
+
+  when: "{{ masterserver }}"

@@ -1,0 +1,15 @@
+---
+
+- name: create tagging.sh
+  template: src=tagging.sh.j2 dest=~/tripleo_configs/scripts/tagging.sh mode=0755
+
+- name: check if profile is already set
+  shell: . ~/stackrc && openstack overcloud profiles list -f value -c 'Current Profile' | grep control
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: run tagging.sh
+  shell: ~/tripleo_configs/scripts/tagging.sh
+  when: result|failed

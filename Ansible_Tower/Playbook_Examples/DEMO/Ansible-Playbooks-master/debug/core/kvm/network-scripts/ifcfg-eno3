@@ -1,0 +1,6 @@
+BOOTPROTO=none
+NAME=eno3
+UUID=33f7c113-75b6-453f-be79-a8d8b7ce6c01
+DEVICE=eno3
+ONBOOT=yes
+BRIDGE=br-provision

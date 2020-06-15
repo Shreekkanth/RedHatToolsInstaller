@@ -1,0 +1,115 @@
+---
+#### Create via template create-users.sh
+- name: Apply Template Create User script
+  template:
+    src:   jboss/create_users.sh.j2
+    dest:  "{{ base_dir_working + 'create-users.sh' }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    mode:  0754
+  tags:
+    - jboss_eap_create_users
+
+#### Execute create-users.sh
+- name: Execute create-users.sh script
+  command: "{{ base_dir_working + 'create-users.sh'}}"
+  tags:
+    - jboss_eap_create_users
+  when: jboss_eap_create_users
+
+#### Copy JDBC Libraries
+- name: Copy JDBC Libraries
+  copy:
+    src:  "{{ item }}"
+    dest: "{{ rhpam_work_dir }}"
+  tags:
+    - rhpam_config
+  with_items: "{{ rhpam_jdbc_lib_list }}"
+
+#### Configure quarts-definition.properties
+# - name: Apply Template quarts-definition.properties
+#   template:
+#     src:   rhpam/quartz-definition.properties.j2
+#     dest:  "{{ rhpam_runtime_path_base + 'quartz-definition.properties' }}"
+#     owner: "{{ jboss_eap_user }}"
+#     group: "{{ jboss_eap_group }}"
+#     mode: 0644
+#   tags:
+#     - rhpam_config
+
+#### Configure custom-maven-settings.xml
+- name: Apply Template custom-maven-settings.xml
+  template:
+    src:   rhpam/custom-maven-settings_empty.xml.j2
+    dest:  "{{ rhpam_runtime_path_base + 'maven/custom-maven-settings.xml' }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    mode: 0644
+  tags:
+    - rhpam_config
+    - rhpam_custom_maven
+
+# Check the ${JBOSS_HOME}/bin/standalone.conf the extra JAVA_OPTS
+- name: "Check RH PAM standalone.conf file"
+  shell: 'grep "{{marker_standalone_conf}}" {{ jboss_eap_standalone_conf_file  }} | wc -l'
+  register: test_eap_standalone_conf_extra_java_opts
+  tags:
+    - jboss_eap
+    - jboss_eap_extra_java_opts
+
+####
+# -Djavax.net.ssl.trustStore=/opt/jboss/bpm/security/cacerts
+# -Djava.net.ssl.trustStorePassword=changeit
+#- name: Copy the truststore default for the JBoss service
+#  copy:
+#    src:        "{{ cacerts_path_ori }}"
+#    dest:       "{{ cacerts_path_dest }}"
+#    remote_src: true
+#    owner:      "{{ jboss_eap_user }}"
+#    group:      "{{ jboss_eap_group }}"
+#    mode:       0644
+#  tags:
+#    - jboss_eap
+#    - jboss_eap_certs
+
+#### Import Certificates > truststore JBoss
+#- name: Import Certificates to cacerts truststore file
+#  include_tasks: import_certs_truststore_server.yml
+#  vars:
+#    cert: "{{ item }}"
+#  with_items:    "{{ certs_import_truststore_list }}"
+#  when: jboss_import_certs
+#  tags:
+#    - jboss_eap_certs
+
+####
+# -Djavax.net.ssl.trustStore=/jboss_config/truststore/eap7_trusted.jks
+# -Djava.net.ssl.trustStorePassword=changeit
+#
+- name: Insert the extra JAVA_OPTS in the standalone.conf file
+  blockinfile:
+    path:   "{{ jboss_eap_standalone_conf_file }}"
+    insertafter: EOF
+    backup:      yes
+    marker:      "{{marker_standalone_conf}}"
+    content: |
+      GC_LOG=true
+      JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8"
+      JAVA_OPTS="$JAVA_OPTS -Djava.security.egd=file:/dev/./urandom"
+      JAVA_OPTS="$JAVA_OPTS -Dorg.apache.coyote.http11.Http11Protocol.SERVER=AServer"
+      JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$JBOSS_HOME"
+      JAVA_OPTS="$JAVA_OPTS -XX:+DisableExplicitGC"
+      JAVA_OPTS="$JAVA_OPTS -XX:MaxMetaspaceSize=512m"
+      JAVA_OPTS="$JAVA_OPTS -XX:MetaspaceSize=128M"
+      JAVA_OPTS="$JAVA_OPTS -Dnetworkaddress.cache.ttl=60"
+      JAVA_OPTS="$JAVA_OPTS -Dsun.zip.disableMemoryMapping=true"
+#      JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.trustStore={{cacerts_path_dest}}"
+#      JAVA_OPTS="$JAVA_OPTS -Djava.net.ssl.trustStorePassword={{cacerts_pass_ori}}"
+  tags:
+     - jboss_eap
+     - jboss_eap_extra_java_opts
+  when: test_eap_standalone_conf_extra_java_opts.stdout == "0"
+
+
+#
+# EOF

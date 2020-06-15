@@ -1,0 +1,12 @@
+---
+- name: netop
+  email: netop@ansible.com
+  state: absent
+
+- name: neteng
+  email: neteng@ansible.com
+  state: absent
+
+- name: netadmin
+  email: netadmin@ansible.com
+  state: absent

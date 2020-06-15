@@ -1,0 +1,2 @@
+{# Here the exit code of last initialization script
+#}{{ prev_script_result }}

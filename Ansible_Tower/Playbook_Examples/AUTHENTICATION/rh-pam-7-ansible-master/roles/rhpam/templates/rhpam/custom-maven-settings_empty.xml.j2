@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/xsd/settings-1.0.0.xsd">
+<!--
+    <proxies>
+        <proxy>
+            <active>true</active>
+            <protocol>http</protocol>
+            <host> proxy_squid_ip </host>
+            <port>3128</port>
+        </proxy>
+    </proxies>
+
+    <servers>
+        <server>
+            <id>artifactory-global-mirror</id>
+            <username> MAVEN_USER </username>
+            <password> MAVEN_KEY </password>
+        </server>
+    </servers>
+
+    <mirrors>
+        <mirror>
+            <id>MavenRepositoryCorp</id>
+            <name>Maven Repository Corp ISS</name>
+            <url>https://nexus.iss.com/nexus</url>
+            <mirrorOf>*</mirrorOf>
+        </mirror>
+    </mirrors>
+-->
+    <profiles>
+        <profile>
+            <id>repo-rhpam</id>
+            <repositories>
+                <repository>
+                    <id>dev-local-maven-repository</id>
+                    <name>Local RH PAM 7.0 GA Repository</name>
+                    <url>file:///home/{{jboss_eap_user}}/.m2/repository</url>
+                    <layout>default</layout>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>daily</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>red-hat-public-repository</id>
+                    <name>Red Hat Public Repository GA</name>
+                    <url>https://maven.repository.redhat.com/ga/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>jboss-public-repository-group</id>
+                    <name>JBoss Public Repository Group</name>
+                    <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>red-hat-public-plugin-repository</id>
+                    <url>https://maven.repository.redhat.com/ga/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>repo-rhpam</activeProfile>
+    </activeProfiles>
+
+</settings>

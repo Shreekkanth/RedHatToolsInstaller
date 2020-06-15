@@ -1,0 +1,6 @@
+---
+#vctr_iso_source_path: "/apps/data/built_iso/rhel7.6_emc_ks_{{ vm_build_type }}.iso"
+vm_template_export_path: "/tmp"
+vm_template_export_win_share: "//rosetta.corp.emc.com/ansible"
+# the following var forces OVF conversion to use SHA1 for older ESX compatibility
+vm_template_ova_force_sha1_hash_algo: True

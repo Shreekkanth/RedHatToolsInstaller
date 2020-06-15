@@ -1,0 +1,37 @@
+---
+
+# Install from upstream repos or directly from operating system packages
+ipaserver_os_packages: True
+ipa_server_ds_secret:
+ipa_server_admin_secret:
+
+# IPA server services.
+ipa_server_enable_ca: true
+ipa_server_enable_dns: true
+ipa_server_enable_kra: false
+ipa_server_enable_ntp: false
+ipa_server_trust_ad: false
+ipa_server_trust_ad_legacy_support: false
+
+# CA-less To install a server without a CA, you must provide the required
+# certificates. Default: Self signed CA
+ipa_server_http_cert_file: none
+ipa_server_http_key_file: none
+ipa_server_http_pin: none
+ipa_server_dirsrv_cert_file: none
+ipa_server_cert_key_file: none
+ipa_server_dirsrv_pin: none
+ipa_server_ca_cert_file: none
+
+# By default ipa is deployed with hbac_allow all rule allowing ipa users to
+# access any service within the realm.
+ipa_server_no_hbac_allow_all: false
+
+# Location of where deployment artefacts are recovered so they can be stored
+# security outside of the ipa infrastructure
+ipa_server_recovery_path: ""
+
+# The starting value for the IDs range (default random)
+# The max value for the IDs range (default: idstart+199999)
+ipa_server_start_uid:
+ipa_server_max_uid:

@@ -1,0 +1,23 @@
+---
+
+- name: copy /etc/kubernetes from master1 to master2 and master3
+  synchronize: src=/etc/kubernetes dest=/etc/
+  delegate_to: 10.0.1.121
+
+- name: wait for master2 to become ready
+  shell: kubectl get nodes | grep master2 | grep ' Ready '
+  register: result
+  until: result|success
+  retries: 20
+  delay: 10
+  changed_when: false
+  when: inventory_hostname == groups['masters'][0]
+
+- name: wait for master3 to become ready
+  shell: kubectl get nodes | grep master3 | grep ' Ready '
+  register: result
+  until: result|success
+  retries: 20
+  delay: 10
+  changed_when: false
+  when: inventory_hostname == groups['masters'][0]

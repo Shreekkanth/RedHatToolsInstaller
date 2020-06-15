@@ -1,0 +1,36 @@
+---
+- name: Ensure we are using 64-bit architecture
+  assert:
+    that:
+      - "'{{ ansible_architecture }}' == 'x86_64'"
+
+- name: Ensure we have at least 2 CPU cores
+  assert:
+    that:
+      - "{{ ansible_processor_vcpus }} >= 2"
+
+- name: Ensure that SELinux is set to enforcing
+  assert:
+    that:
+      - "'{{ ansible_selinux.config_mode }}' == 'enforcing'"
+      - "'{{ ansible_selinux.mode }}' == 'enforcing'"
+      - "'{{ ansible_selinux.status }}' == 'enabled'"
+
+- name: Add entry to /etc/hosts
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Confirm localhost resolves correctly
+  command: ping -c1 localhost
+  changed_when: false
+
+- name: Confirm hostname resolves correctly
+  command: ping -c1 {{ ansible_fqdn }}
+  changed_when: false
+
+- import_tasks: rhel_7.yml
+- import_tasks: partition.yml

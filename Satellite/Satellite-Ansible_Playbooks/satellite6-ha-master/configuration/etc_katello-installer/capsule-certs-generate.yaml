@@ -1,0 +1,24 @@
+--- 
+  :log_dir: /var/log/katello-installer
+  :log_name: capsule-certs-generate.log
+  :log_level: :debug
+  :no_prefix: true
+  :mapping: 
+    :capsule_certs: 
+      :manifest_name: capsule
+      :dir_name: certs
+  :answer_file: /etc/katello-installer/answers.capsule-certs-generate.yaml
+  :installer_dir: /usr/share/katello-installer
+  :modules_dir: /usr/share/katello-installer/modules
+  :default_values_dir: /etc/katello-installer
+  :colors: true
+  :color_of_background: :dark
+  :hook_dirs: 
+    - /usr/share/katello-installer/hooks
+  :custom: {}
+  :low_priority_modules: []
+  :dont_save_answers: true
+  :order: 
+    - certs
+    - capsule_certs
+  :password: ueWXdTdPk2_V1ze5f2YtomTyPysXgdJau6YiwCwqE40

@@ -1,0 +1,15 @@
+---
+- name: Include distro-specific vars
+  include_vars:
+    file: "{{ ansible_distribution|lower }}.yml"
+
+- name: Include RedHat
+  include_tasks: redhat.yml
+  when: ansible_distribution == 'RedHat' or ansible_distribution == 'Fedora' or ansible_distribution == 'CentOS'
+
+- name: Include Debian
+  include_tasks: debian.yml
+  when: ansible_distribution == 'Debian'
+
+- name: Common
+  include_tasks: common.yml

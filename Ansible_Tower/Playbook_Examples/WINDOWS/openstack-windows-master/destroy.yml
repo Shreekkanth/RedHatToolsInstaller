@@ -1,0 +1,43 @@
+---
+- name: Deploy Windows VM on OpenStack
+  hosts: "{{ myhostname }}"
+  gather_facts: false
+  connection: local
+  tasks:
+  - name:
+    shell: neutron --os-username {{ opst_username }} --os-project-name {{ opst_project_name }} --os-password {{ opst_password }} --os-auth-url {{ opst_url }} lbaas-member-delete {{ pool_id }} pool1
+    register: novacmd
+    
+  - debug:
+      var: novacmd.stdout
+    
+  - name: Get Windows 
+    os_server_facts:
+      auth_type: password
+      auth:
+        auth_url: "{{ opst_url }}"
+        username: "{{ opst_username }}"
+        password: "{{ opst_password }}"
+        project_name: "{{ opst_project_name }}"
+      server: "{{ inventory_hostname }}"
+    register: myvm
+
+  - name: Destory server instance
+    os_server:
+      auth_type: password
+      auth:
+        auth_url: "{{ opst_url }}"
+        username: "{{ opst_username }}"
+        password: "{{ opst_password }}"
+        project_name: "{{ opst_project_name }}"
+      state: absent
+      name: "{{ myvm.ansible_facts.openstack_servers[0].id }}"
+      
+  - name: Remove host from tower
+    tower_host:
+      name: "{{ inventory_hostname }}"
+      inventory: "Windows"
+      state: absent
+      tower_host: "{{ tower_host }}"
+      tower_username: "{{ tower_username }}"
+      tower_password: "{{ tower_password }}"

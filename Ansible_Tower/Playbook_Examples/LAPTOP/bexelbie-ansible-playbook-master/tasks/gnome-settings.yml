@@ -1,0 +1,40 @@
+---
+# Customize Gnome Shell - there is an ansible module for this in extras
+# but I am not using it for this small number of things
+
+- name: Gnome Shell 12 hour clock (interface)
+  shell: dconf write /org/gnome/desktop/interface/clock-format \'12h\'
+
+- name: Gnome Shell 12 hour clock (File Chooser)
+  shell: dconf write /org/gtk/Settings/FileChooser/clock-format \'12h\'
+
+- name: Gnome Shell show date
+  shell: dconf write /org/gnome/desktop/interface/clock-show-date true
+
+- name: Gnome Shell show weekday
+  shell: dconf write /org/gnome/desktop/interface/clock-show-weekday true
+
+- name: Gnome Shell Automatic Timezone
+  shell: dconf write /org/gnome/desktop/datetime/automatic-timezone true
+
+- name: Gnome Shell Favorites
+  shell: dconf write /org/gnome/shell/favorite-apps "['google-chrome.desktop',  'chromium-browser.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Nautilus.desktop', 'hexchat.desktop', 'firefox.desktop']"
+  #  shell: dconf write /org/gnome/shell/favorite-apps "['google-chrome.desktop',  'chromium-browser.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Nautilus.desktop', 'franz.desktop', 'hexchat.desktop', 'firefox.desktop']"
+
+- name: Gnome Shell World Clocks
+  shell: "dconf write /org/gnome/clocks/world-clocks \"[{'location': <(uint32 2, <('Raleigh', 'KRDU', true, [(0.62605930672100707, -1.3750818938070426)], [(0.62434085553949348, -1.3725027509582006)])>)>}, {'location': <(uint32 2, <('Reykjavík', 'BIRK', true, [(1.1193378211279323, -0.38222710618675809)], [(1.1196287151543625, -0.38309977081275531)])>)>}, {'location': <(uint32 2, <('Brno', 'LKTB', true, [(0.857829327355213, 0.291469985083053)], [(0.85870199198121022, 0.29030642643062599)])>)>}, {'location': <(uint32 2, <('Bangalore', 'VOBG', true, [(0.22601989378717041, 1.3555659188172149)], [(0.22631101470640302, 1.3537937114947398)])>)>}, {'location': <(uint32 2, <('Beijing', 'ZBAA', true, [(0.69696814214530467, 2.0295270260429752)], [(0.69689057971334611, 2.0313596217575696)])>)>}]\""
+
+- name: Gnome Shell set compose key to right-Alt
+  shell: gsettings set org.gnome.desktop.input-sources xkb-options "['compose:ralt']"
+
+- name: Gnome Shell turn off natural scrolling on the trackpad
+  shell: gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll false
+
+- name: Gnome Shell power button should hibernate
+  shell: gsettings set org.gnome.settings-daemon.plugins.power power-button-action 'hibernate' 
+
+- name: Stop Tracker from tracking me, part 1
+  shell: gsettings set org.freedesktop.Tracker.Miner.Files index-recursive-directories "['&VIDEOS']"
+
+- name: Stop Tracker from tracking me, part 2
+  shell: gsettings set org.freedesktop.Tracker.Miner.Files index-single-directories "@as []"

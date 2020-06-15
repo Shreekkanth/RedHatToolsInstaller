@@ -1,0 +1,6 @@
+.vaultpass
+roles/
+testing/
+files/surveys/
+onboarding-secrets.yml
+.retry

@@ -1,0 +1,12 @@
+{
+    "company_name": "Red Hat", 
+    "contact_email": "fdacunha@redhat.com", 
+    "contact_name": "Fabio Da Cunha ANZ Customer Demo", 
+    "hostname": "70eff90c9a054b6a984b2a17d7e54565", 
+    "instance_count": 100, 
+    "license_date": 1595650346, 
+    "license_key": "3fc4ae84963c56b0a6fea63eb00a763afe92aaa317c7666c02d13f2022117b86", 
+    "license_type": "enterprise", 
+    "subscription_name": "Red Hat Ansible Tower, Standard (100 Managed Nodes) Trial", 
+    "trial": true
+}

@@ -1,0 +1,51 @@
+---
+server_state_map:
+  beta:
+    prefix: N
+    patch_group: 1
+  development:
+    prefix: N
+    patch_group: 1
+  glb_development:
+    prefix: N
+    patch_group: 1
+  glb_test:
+    prefix: N
+    patch_group: 1
+  release:
+    prefix: N
+    patch_group: 1
+  standby:
+    prefix: N
+    patch_group: 1
+  test:
+    prefix: N
+    patch_group: 1
+  pre_production:
+    prefix: P
+    patch_group: 3
+techmap_query: >
+  EXEC dbo.wesweb_InsertRow
+    '{{ generate_server_name_requestor_id }}',
+    '{{ generate_server_name_model }}',
+    '{{ generate_server_name_machine_type }}',
+    '{{ generate_server_name_serial }}',
+    '{{ generate_server_name_os }}',
+    '{{ generate_server_name_server_type }}',
+    '{{ generate_server_name_primary_contact }}',
+    '{{ generate_server_name_secondary_contact }}',
+    '{{ generate_server_name_tertiary_contact }}',
+    '{{ generate_server_name_assignment_group }}',
+    '{{ generate_server_name_kernel }}',
+    '{{ generate_server_name_cpu_count }}',
+    '{{ generate_server_name_core_count }}',
+    '{{ generate_server_name_application }}',
+    '{{ generate_server_name_patch_group }}',
+    '{{ generate_server_name_location }}',
+    '{{ generate_server_name_server_domain }}',
+    '{{ generate_server_name_server_rack }}',
+    '{{ generate_server_name_server_state }}',
+    '{{ generate_server_name_server_form_factor }}',
+    '{{ generate_server_name_prefix }}',
+    '{{ generate_server_name_cluster_number }}',
+    '{{ generate_server_name_instance_number }}'

@@ -1,0 +1,21 @@
+---
+tower_scm_creds:
+  - name: cred1
+    description: SCM cred 1
+    key_data: "{{ vault_key_data_scm_cred1 }}"
+    key_passphrase:
+    kind: scm
+    organization: Default
+    password:
+    state: present
+    username: git
+
+  - name: cred2
+    description: SCM cred 2
+    key_data: "{{ vault_key_data_scm_cred2 }}"
+    key_passphrase:
+    kind: scm
+    organization: Default
+    password:
+    state: present
+    username: git

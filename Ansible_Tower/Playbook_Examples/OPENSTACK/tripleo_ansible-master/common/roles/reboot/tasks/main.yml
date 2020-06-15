@@ -1,0 +1,19 @@
+---
+
+- name: reboot
+  #shell: /sbin/shutdown -r +1
+  shell: sleep 1 && reboot
+  async: 1
+  poll: 0
+  ignore_errors: true
+
+- name: wait for ssh port down
+  local_action: wait_for host={{ inventory_hostname }} port=22 state=stopped delay=5 timeout=300
+
+- name: wait for ssh port up
+  wait_for: host={{ inventory_hostname }} port=22 state=started delay=30
+  delegate_to: 127.0.0.1
+
+- name: test connection
+  ping:
+

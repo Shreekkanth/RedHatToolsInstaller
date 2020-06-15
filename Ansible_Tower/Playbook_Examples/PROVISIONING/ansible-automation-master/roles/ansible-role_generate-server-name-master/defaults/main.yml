@@ -1,0 +1,28 @@
+---
+generate_server_name_hostname:
+generate_server_name_username:
+generate_server_name_password:
+generate_server_name_database:
+generate_server_name_requestor_id:
+generate_server_name_model: VM
+generate_server_name_machine_type: Virtual
+generate_server_name_serial:
+generate_server_name_os: RedHat
+generate_server_name_server_type:
+generate_server_name_primary_contact:
+generate_server_name_secondary_contact:
+generate_server_name_tertiary_contact:
+generate_server_name_assignment_group: 3FECC6B9-9349-4C2C-8AF5-E286E423D361
+generate_server_name_kernel:
+generate_server_name_cpu_count: 2
+generate_server_name_core_count: 2
+generate_server_name_application:
+generate_server_name_patch_group: "{{ server_state_map[generate_server_name_server_state | lower].patch_group }}"
+generate_server_name_location:
+generate_server_name_server_domain: bcbst.com
+generate_server_name_server_rack:
+generate_server_name_server_state: test
+generate_server_name_server_form_factor:
+generate_server_name_prefix: "R{{ server_state_map[generate_server_name_server_state | lower].prefix }}"
+generate_server_name_cluster_number: 0
+generate_server_name_instance_number: 0

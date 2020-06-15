@@ -1,0 +1,13 @@
+---
+# handlers file for generic-os
+- name: restart chronyd
+  service:
+    name: chronyd
+    state: restarted
+
+- name: restart ntpd
+  service:
+    name: ntpd
+    state: restarted
+
+

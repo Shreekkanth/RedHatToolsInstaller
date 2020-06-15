@@ -1,0 +1,7 @@
+#!/bin/bash
+
+HOSTNAME=`curl http://169.254.169.254/latest/dynamic/instance-identity/document | grep instanceId | awk {'print $3'} | sed s/\"//g | sed s/\,//g`
+echo "send fqdn.fqdn = \"$HOSTNAME.a2.vary.redhat.com.\";" > /etc/dhcp/dhclient.conf
+echo "send fqdn.encoded on;" >> /etc/dhcp/dhclient.conf
+echo "send fqdn.server-update off;" >> /etc/dhcp/dhclient.conf
+echo "also request fqdn;" >> /etc/dhcp/dhclient.conf

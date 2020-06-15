@@ -1,0 +1,29 @@
+#
+#
+#
+---
+- hosts: controller
+
+  vars:
+    rhdm_user_os:    user1
+    rhdm_group_os:   user1
+    jboss_eap_user:  user1
+    jboss_eap_group: user1
+    base_dir_install:     "/u02/rh/rhdm/"
+    base_dir_download:    "/u02/rh/software/"
+    #
+    jboss_import_certs:        false
+    jboss_remove_certs:        true
+    jboss_eap_apply_patches:   true
+    jboss_eap_patch_remove:    true
+    mysql_service_requires:    false
+    rhdm_deploy_brandinc_bc:   false
+    home_config_bash_profile:  false
+    jboss_port_offset_enabled: true
+    jboss_deploy_oam:          false
+
+  roles:
+  - rhdm
+
+#
+# EOF

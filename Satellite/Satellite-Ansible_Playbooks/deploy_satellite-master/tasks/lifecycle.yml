@@ -1,0 +1,13 @@
+---
+- name: SATELLITE | lifecycle | Load Hammer varriables
+  include_vars: file=vars/hammer-vars.yml
+
+- name: SATELLITE | lifecycle | Foreman is running
+  shell: 'systemctl is-active foreman-tasks.service'
+  register: foreman_status
+
+- name: SATELLITE | lifecycle | Create Satellite lifecycle Environments
+  command: hammer --password {{ sattelite_admin_passwd }} lifecycle-environment create --name "{{ item.name }}" --description "{{ item.description }}" --organization "{{ satellite_organization }}" --prior "{{ item.prior }}"
+  with_items: "{{ lifecycle_names }}"
+  when: foreman_status.stdout == "active"
+

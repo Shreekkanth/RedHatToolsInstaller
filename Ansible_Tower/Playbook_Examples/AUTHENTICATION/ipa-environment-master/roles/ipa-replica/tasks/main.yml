@@ -1,0 +1,32 @@
+---
+
+- name: Control if the role is supported on this system
+  assert:
+    that: >
+          {% for key, value in supported_distrobution.iteritems() -%}
+            ( ansible_distribution == "{{ key }}" and ansible_distribution_version | float >= {{ value.version }}){% if not loop.last %} or {% endif %}
+          {%- endfor %}
+    msg: >
+          This play is only supported on the following operating systems:
+          {% for key, value in supported_distrobution.iteritems() -%}
+            {{ key }} {{ value.version }}{% if not loop.last %}, {% endif %}
+          {%- endfor %}
+
+- name: Ensure CA-less preconditions are set
+  assert:
+    that:
+      - "ipa_replica_http_cert_file != none"
+      - "ipa_replica_http_key_file != none"
+      - "ipa_replica_http_pin != none"
+      - "ipa_replica_dirsrv_cert_file != none"
+      - "ipa_replica_dirsrv_key_file != none"
+      - "ipa_replica_dirsrv_pin != none"
+      - "ipa_replica_ca_file != none"
+  when: not ipa_replica_enable_ca
+
+- name: Include OS specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include: install.yml
+
+- include: deploy.yml

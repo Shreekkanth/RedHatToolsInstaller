@@ -1,0 +1,19 @@
+---
+tower_groups:
+  - name: Test group
+    credential: cred1
+    description: Test group
+    group_by:
+    instance_filters:
+    inventory: Tower test inventory
+    overwrite:
+    overwrite_vars:
+    source: manual
+    source_regions:
+    source_script:
+    source_vars:
+      example_var: aaa111
+    state: present
+    update_on_launch: false
+    variables:
+      example_var2: xyz789

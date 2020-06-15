@@ -1,0 +1,111 @@
+---
+# deploy firewall file for ansible-satellite6-deployment/
+- name: FIREWALL|Opening and enabling udp port 53 on {{ ansible_fqdn }}
+  firewalld:
+    port: "53/udp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 53 on {{ ansible_fqdn }}
+  firewalld:
+    port: "53/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling udp port 67 on {{ ansible_fqdn }}
+  firewalld:
+    port: "67/udp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling udp port 69 on {{ ansible_fqdn }}
+  firewalld:
+    port: "69/udp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 80 on {{ ansible_fqdn }}
+  firewalld:
+    port: "80/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 443 on {{ ansible_fqdn }}
+  firewalld:
+    port: "443/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 5000 on {{ ansible_fqdn }}
+  firewalld:
+    port: "5000/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 5647 on {{ ansible_fqdn }}
+  firewalld:
+    port: "5647/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 8000 on {{ ansible_fqdn }}
+  firewalld:
+    port: "8000/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 8140 on {{ ansible_fqdn }}
+  firewalld:
+    port: "8140/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected
+
+- name: FIREWALL|Opening and enabling tcp port 9090 on {{ ansible_fqdn }}
+  firewalld:
+    port: "9090/tcp"
+    permanent: true
+    state: enabled
+  tags:
+    - firewall
+    - disconnected
+    - connected

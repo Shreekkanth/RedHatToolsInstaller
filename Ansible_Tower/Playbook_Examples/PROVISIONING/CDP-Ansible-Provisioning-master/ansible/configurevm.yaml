@@ -1,0 +1,35 @@
+
+- name: Ping
+  ping:
+
+- name: Extend disk
+  include_role:
+    name: extend_disk
+
+- name: SSH server
+  include_role:
+    name: ssh_server
+
+- name: NTP client
+  include_role:
+    name: ntp_client
+
+- name: Set Local Facts
+  include_role:
+    name: local_facts
+  when: 
+  - set_local_facts | default(false) | bool
+    
+- name: Satellite client
+  include_role:
+    name: satellite_client
+  when: 
+  - register_to_satellite | default(false) | bool
+
+- name: Package update
+  include_role:
+    name: package_update
+  when: 
+  - register_to_satellite | default(false) | bool
+  - update_packages | default (false) | bool
+

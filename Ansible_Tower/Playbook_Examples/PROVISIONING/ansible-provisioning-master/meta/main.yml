@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: Gaetan Trellu
+  description: Install and configure a Red Hat baremetal server.
+  company: Red Hat
+  license: license (GPLv2, CC-BY, etc)
+  min_ansible_version: 1.9
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  categories:
+  - system
+dependencies: []

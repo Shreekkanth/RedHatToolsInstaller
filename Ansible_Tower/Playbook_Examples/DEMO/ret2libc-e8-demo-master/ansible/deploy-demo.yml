@@ -1,0 +1,101 @@
+- name: Deploy return-to-libc demo
+  hosts: all
+  become: true
+  tasks: 
+
+
+    - name: include the vault vars
+      include_vars:
+        file: vault
+      tags:
+        - register_host
+
+    - name: subscribe the host
+      redhat_subscription:
+        username: "{{ redhat_user }}"
+        password: "{{ redhat_password }}"
+        pool_ids: "8a85f99a68b938ff0169015172846213"
+      tags:
+        - register_host
+
+    - name: install required packages
+      yum:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - gcc
+        - zsh
+
+    - name: disable ASLR
+      shell: "echo 0 > /proc/sys/kernel/randomize_va_space"
+
+    - name: copy the exploit code
+      copy:
+        src: exploitme.c
+        dest: /usr/local/src/
+    
+    - name: compile the code
+      shell: "gcc -fno-stack-protector /usr/local/src/exploitme.c -o /usr/local/bin/exploitme"
+
+    - name: ensure the file is executable and has suid
+      file:
+        path: /usr/local/bin/exploitme
+        owner: root
+        group: root
+        mode: "4775"
+
+    - name: create the pleb user
+      user: 
+        name: pleb
+        password: "{{ '1800redhat' | password_hash('sha512') }}"
+        update_password: on_create
+
+    - name: create the superuser
+      user:
+        name: superuser
+        password: "{{ '1800redhat' | password_hash('sha512') }}"
+        update_password: on_create
+
+    - name: update sudoers for the superuser 
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^superuser ALL='
+        line: 'superuser ALL=(ALL) ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: copy the binary data to the user's home dir
+      copy:
+        src: in.txt
+        dest: /home/pleb/in.txt
+        owner: pleb
+        group: pleb
+
+    - name: remove the /bin/sh link
+      file:
+        path: /bin/sh
+        state: absent
+
+    - name: point /bin/sh at /usr/bin/zsh
+      file:
+        src: /usr/bin/zsh
+        dest: /bin/sh
+        owner: root
+        group: root
+        state: link
+
+    - name: update sshd to allow password auth
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        state: present
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+      notify:
+        - restart_sshd
+
+  handlers:
+    - name: restart_sshd
+      service:
+        name: sshd
+        state: restarted
+

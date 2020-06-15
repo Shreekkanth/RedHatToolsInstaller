@@ -1,0 +1,8 @@
+- name: Create Domain
+  hosts: DC
+  vars:
+    ansible_port: 5986
+    ansible_connection: winrm
+
+  roles:
+  - windows-ad-controller

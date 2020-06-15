@@ -1,0 +1,31 @@
+---
+
+- name: create teams and/or retieve id
+  tower_team:
+    name: "{{ team.0.name }}"
+    description: "Team created through Ansible"
+    organization: "{{ org.name }}"
+  register: team_info
+
+- name: block for org admin roles
+  block:
+  - name: apply admin role
+    command: >
+      tower-cli
+      role grant
+      --organization {{ org.name }} 
+      --team {{ team_info.id }}
+      --type {{ team.1 }}
+
+# TODO determine how we can use this module for applying roles
+# seems to be an issue when there are duplicate team names
+
+# - name: block for 'regular' roles
+#   block:
+#   - name: apply role
+#     tower_role:
+#       role: "{{ team.1 }}"
+#       organization: "{{ org.name }}"
+#       team: "{{ team_info.id }}"
+#       #target_team: "{{ team_info.id }}"
+#   when: "'_admin' not in team.1"

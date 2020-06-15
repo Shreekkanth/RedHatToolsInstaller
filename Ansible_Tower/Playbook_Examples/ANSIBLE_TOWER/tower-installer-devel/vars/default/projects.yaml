@@ -1,0 +1,22 @@
+---
+- name: Ansible Network
+  scm_type: git
+  scm_url: https://github.com/privateip/infra.git
+  teams:
+    - name: Network Operations
+      role: use
+    - name: Network Engineering
+      role: update
+    - name: Network Administrators
+      role: admin
+
+- name: Network Inventory Test
+  scm_type: git
+  scm_url: https://github.com/privateip/infra_inventory.git
+  teams:
+    - name: Network Operations
+      role: use
+    - name: Network Engineering
+      role: update
+    - name: Network Administrators
+      role: admin

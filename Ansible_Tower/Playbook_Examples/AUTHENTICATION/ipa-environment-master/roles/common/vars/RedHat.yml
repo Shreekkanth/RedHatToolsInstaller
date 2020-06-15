@@ -1,0 +1,5 @@
+---
+
+packages:
+  libselinux-python:
+    state: installed

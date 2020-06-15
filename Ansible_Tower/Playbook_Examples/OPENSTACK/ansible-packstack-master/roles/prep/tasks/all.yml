@@ -1,0 +1,80 @@
+---
+- name: List interfaces
+  shell: ls /etc/sysconfig/network-scripts/ifcfg-*
+  register: interfaces
+
+- name: Disable NetworkManager in interface config files
+  lineinfile:
+    dest: "{{ item }}"
+    regexp: "NM_CONTROLLED=.*"
+    line: 'NM_CONTROLLED=no'
+    state: present
+    create: no
+  with_items: "{{ interfaces.stdout_lines }}"
+  when: not 'ifcfg-lo' in "{{ item }}"
+
+- name: Disable NetworkManager
+  service:
+    enabled: no
+    name: NetworkManager
+    state: stopped
+
+- name: Collect tunnel interface UUID
+  command: grep "UUID" /etc/sysconfig/network-scripts/ifcfg-{{ tunnel_interface }}
+  register: tunnel_interface_uuid
+
+- name: Configure tunnel interface
+  template:
+    src: ifcfg-tunnel.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ tunnel_interface }}
+
+- name: Take down tunnel interface
+  command: ifdown {{ tunnel_interface }}
+
+- name: Bring up tunnel interface
+  command: ifup {{ tunnel_interface }}
+
+- name: Fetch rhos-release
+  get_url:
+    url: http://rhos-release.virt.bos.redhat.com/repos/rhos-release/rhos-release-latest.noarch.rpm
+    dest: /tmp/rhos-release-latest.noarch.rpm
+    force: yes
+  when: local_repo is not defined
+
+- name: Install rhos-release
+  yum:
+    name: /tmp/rhos-release-latest.noarch.rpm
+    state: present
+  when: local_repo is not defined
+
+- name: Enable RHEL OSP version
+  command: rhos-release {{ rhel_osp_version }}
+  when: local_repo is not defined
+
+- name: Enable RHEL 7.3 for OSP 10
+  command: rhos-release rhel-7.3
+  when: 
+    - rhel_osp_version == 10
+    - local_repo is not defined
+
+- name: Install yum utils
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - yum-utils
+    - openstack-utils
+
+- name: Disable Cobbler Repos
+  command: yum-config-manager --disable core-0 --disable core-1 --disable core-2
+  when: local_repo is not defined
+
+- name: Update packages
+  yum:
+    name: "*"
+    state: latest
+  notify:
+    - reboot server
+    - wait for reboot
+
+- meta: flush_handlers

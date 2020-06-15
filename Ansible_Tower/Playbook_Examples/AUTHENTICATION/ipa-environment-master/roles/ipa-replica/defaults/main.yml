@@ -1,0 +1,29 @@
+---
+
+supported_distrobution:
+  RedHat:
+    version: 7.3
+  CentOS:
+    version: 7.3
+
+# Install from upstream repos or directly from operating system packages
+os_packages: True
+
+# IPA server services.
+ipa_replica_enable_ca: true
+ipa_replica_enable_dns: true
+ipa_replica_enable_kra: false
+ipa_replica_enable_ntp: false
+
+ipa_replica_ad_trust_agent: false
+ipa_replica_ad_trust_legacy_support: false
+
+# CA-less To install a server without a CA, you must provide the required
+# certificates. Default: Self signed CA
+ipa_replica_http_cert_file: none
+ipa_replica_http_key_file: none
+ipa_replica_http_pin: none
+ipa_replica_dirsrv_cert_file: none
+ipa_replica_cert_key_file: none
+ipa_replica_dirsrv_pin: none
+ipa_replica_ca_cert_file: none

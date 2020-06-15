@@ -1,0 +1,17 @@
+---
+# file: main.yml
+- name: remove the pam demo project
+  command: 'oc delete project {{ pam_demo_project }}'
+
+- name: wait for project removal
+  command: 'oc get project {{ pam_demo_project }} --template=\{\{.status.phase\}\}'
+  retries: 12
+  delay: 15
+  register: project_status
+  until: (project_status.stdout != 'Terminating') and (project_status.rc == 1)
+  ignore_errors: yes
+
+- name: clean up the temporary folder structure if required
+  file:
+    path: '{{ pam_demo_working_dir }}'
+    state: absent

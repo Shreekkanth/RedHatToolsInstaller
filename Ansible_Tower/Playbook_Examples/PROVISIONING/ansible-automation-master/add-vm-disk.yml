@@ -1,0 +1,108 @@
+---
+- hosts: "{{ server_name }}"
+  # connection: local
+  gather_facts: true
+  vars:
+    server_state: lab
+    disk_size_gb: 10
+    filesystem_type: xfs
+    mount_point: /var/test
+
+  tasks:
+
+    - name: Gather disk facts from virtual machine
+      vmware_guest_disk_facts:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        datacenter: "{{ vcenter_map[server_state]['datacenter'] }}"
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name }}"
+      delegate_to: localhost
+      register: disk_facts
+
+    - name: Gather disk info from OS before change
+      setup:
+        filter: ansible_devices
+      register: hdd_before_change
+
+    - name: Create list of hard drives before change
+      set_fact:
+        hdd_before: "{{ hdd_before_change.ansible_facts.ansible_devices.keys() }}"
+
+    - name: Debug hdd_before
+      debug:
+        var: hdd_before
+        verbosity: 1
+
+    - name: Set unit_list
+      set_fact:
+        unit_list: "{{ unit_list | default([]) + [ item.value.unit_number ] }}"
+      with_dict: "{{ disk_facts.guest_disk_facts }}"
+
+    - name: Set datastore name
+      set_fact:
+        hdd_datastore: "{{ datastore | default(disk_facts.guest_disk_facts['0']['backing_datastore']) }}"
+
+    - name: Set SCSI controller ID
+      set_fact:
+        scsi_controller_index: "{{ scsi_controller | default(0) }}"
+
+    - name: Debug unit_list
+      debug:
+        msg: "{{ unit_list | max }}"
+        verbosity: 1
+
+    - name: Add disks to virtual machine
+      vmware_guest_disk:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        datacenter: "{{ vcenter_map[server_state]['datacenter'] }}"
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name }}"
+        disk:
+          - size_gb: "{{ disk_size_gb }}"
+            type: thin
+            state: present
+            datastore: "{{ hdd_datastore }}"
+            scsi_controller: "{{ scsi_controller_index }}"
+            unit_number: "{{ unit_list | max + 1 | int }}"
+            # scsi_type: 'paravirtual'
+      delegate_to: localhost
+      register: disk_facts
+
+    - name: Gather disk info from OS after change
+      setup:
+        filter: ansible_devices
+      register: hdd_after_change
+
+    - name: Create list of hard drives after change
+      set_fact:
+        hdd_after: "{{ hdd_after_change.ansible_facts.ansible_devices.keys() }}"
+
+    - name: Debug hdd_after
+      debug:
+        var: hdd_after
+        verbosity: 1
+
+    - name: Get new disk in ansible_devices via comparison
+      set_fact:
+        new_disks: "{{ hdd_after | difference(hdd_before) }}"
+
+    - name: Debug new_disks
+      debug:
+        var: new_disks
+
+    - name: Mount disk in OS
+      include_role:
+        name: linux_disk_management
+      vars:
+        # mount_point: /dev/sdc  -->  dev/sdc       _dev_sdc  -->   dev_sdc
+        linux_disk_management_vg_name: "vg.{{ mount_point[1:] | regex_replace('/', '_') }}"
+        linux_disk_management_disk_name: "/dev/{{ new_disks[0] }}"
+        linux_disk_management_volume_name: "lv{{ mount_point | regex_replace('/', '_') }}"
+        linux_disk_management_mount_point: "{{ mount_point }}"
+        linux_disk_management_filesystem_type: "{{ filesystem_type }}"

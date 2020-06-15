@@ -1,0 +1,21 @@
+---
+- name: "APPLICATION | Update installer cmd"
+  set_fact:
+    install_foreman_installer_cmd: "{{
+      install_foreman_installer_cmd }}
+      {% if item.value != None %}--{{ item.key }} '{{ item.value }}'{% else %}--{{ item.key }}{% endif %}"
+  loop: "{{ install_foreman_answers | dict2items }}"
+
+- name: "APPLICATION | Install Foreman / Satellite"
+  command: "{{ install_foreman_installer_cmd }}"
+  register: install_foreman_installer_cmd_result
+  when: >
+    install_foreman_installer_cmd != ansible_local['install_foreman']['previous_cmd']
+    or ansible_local['install_foreman']['previous_cmd'] is undefined
+
+- name: "APPLICATION | Update install_foreman local_fact"
+  lineinfile:
+    path: /etc/ansible/facts.d/install_foreman.fact
+    regexp: '^(.*)"previous_cmd":(.*)'
+    line: '\1"previous_cmd": "{{ install_foreman_installer_cmd }}"'
+    backrefs: true

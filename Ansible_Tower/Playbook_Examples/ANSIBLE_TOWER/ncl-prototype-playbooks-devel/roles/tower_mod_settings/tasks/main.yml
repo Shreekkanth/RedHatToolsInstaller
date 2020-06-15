@@ -1,0 +1,8 @@
+---
+# tasks file for tower_mod_settings
+
+- name: Modify Tower setting
+  tower_settings:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    tower_verify_ssl: "{{ check_ssl }}"

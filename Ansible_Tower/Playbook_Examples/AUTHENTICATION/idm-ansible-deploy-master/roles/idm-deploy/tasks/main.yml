@@ -1,0 +1,149 @@
+---
+# tasks file for idm-deploy
+#
+
+# Run a check to make sure all required variables are defined fail if not
+ - name: Checking for Required Variables
+   fail:
+     msg: "Variable '{{ item }}' is not defined"
+   when: "{{ item }} is not defined"
+   with_items: "{{ required_vars }}"
+
+# Check for a valid rhn subscription if one is not found register
+# The following can be replaces with the subscription manager role --jammcder
+ - name: Checking if system is registered to Red Hat CDN
+   command: /usr/sbin/subscription-manager status
+   register: subscription_status
+   ignore_errors: yes
+   failed_when: false
+   changed_when: false
+# - debug: var=subscription_status
+
+# Remove any custom repos in /etc/yum.repos.d that may cause issues with the install
+ - name: Find and remove any custom repos
+   shell: /usr/bin/find /etc/yum.repos.d/ -type f ! -name redhat.repo -exec rm -rf {} \;
+   when: "('Overall Status: Current' not in subscription_status.stdout)"
+
+ - name: Registering system to Red Hat CDN
+   redhat_subscription:
+     state: present
+     username: "{{ subscription_username }}"
+     password: "{{ subscription_password }}"
+     autosubscribe: True
+   when: "('Overall Status: Current' not in subscription_status.stdout)"
+   register: subscription_register
+# - debug: var=subscription_register
+
+# Make sure the correct channels are attached to the system
+ - name: Configure Repos required for IDM install
+   command: "{{ item }}"
+   with_items:
+     - '/usr/sbin/subscription-manager repos --disable=*'
+     - '/usr/sbin/subscription-manager repos --enable=rhel-7-server-rpms'
+   when: "('Overall Status: Current' in subscription_status.stdout) or ('System successfully registered' in subscription_register.msg)"
+   register: subscription_repos
+# - debug: var=subscription_repos
+# end of subscription manager role --jammcder
+
+# Clean up repo cache and do a system update
+ - name: Clean Yum repo cache
+   command: /usr/bin/yum clean all
+   changed_when: false
+
+ - name: Fully update the system
+   yum:
+     name: "*"
+     state: latest
+   register: yum_update
+
+# Check to see if a new kernel was installed during system update
+ - name: Checking for new kernel
+   shell: if [ "`rpm -q kernel --queryformat '%{installtime} %{version}-%{release}.%{arch}\n' | sort -n -k1 | tail -1 | cut -d ' ' -f 2`" = "`uname -r`" ]; then echo "Latest kernel already booted."; else echo "New kernel. Reboot required."; fi
+   register: kernel_update
+   changed_when: false
+# - debug: var=kernel_update
+
+# Reboot the system in the case of new kernel install, then wait for it to come back up
+ - name: Reboot the system to apply kernel updates
+   shell: sleep 2 && shutdown -r now "Ansible triggered Reboot"
+   async: 1
+   poll: 0
+   become: true
+   ignore_errors: true
+   when: "('New kernel' in kernel_update.stdout)"
+
+ - name: Waiting for system to Come back
+   local_action: wait_for host={{ inventory_hostname }} state=started port=22 delay=15 timeout=300
+   become: false
+   when: "('New kernel' in kernel_update.stdout)"
+
+# Install a few extra helpful packages
+ - name: Installing Extra Packages
+   yum:
+     name: "{{ item }}"
+     state: latest
+   with_items:
+     - bash-completion
+     - bind-utils 
+     - lsof
+     - vim
+
+# Install IDM packages
+ - name: Installing IDM server packages
+   yum:
+     name: "{{ item }}"
+     state: latest
+   with_items:
+     - ipa-server
+     - ipa-server-dns
+     - ipa-admintools
+     - firewalld
+     - samba-client
+     - ipa-server-trust-ad
+
+# Make sure firewalld is running and ports are open for IDM
+ - name: Configuring Firewall for IDM Communication
+   service:
+     state: started
+     enabled: yes
+     name: firewalld
+
+ - firewalld:
+     service: "{{ item }}"
+     permanent: true
+     state: enabled
+     immediate: true
+   with_items:
+     - freeipa-ldaps
+     - freeipa-ldap
+     - dns
+
+# Run the satellite installer command
+ - name: Configure and Start the IDM server
+   command: >
+     /usr/sbin/ipa-server-install
+     -U 
+     --realm {{ realm }}
+     --domain {{ domain }}
+     -a {{ admin_password }}
+     -p {{ ds_password }}
+     --hostname {{ hostname }}
+     --ip-address {{ ip_address }}
+     --setup-dns
+     --forwarder {{ forwarder }}
+     --forward-policy {{ forward_policy }}
+     --reverse-zone {{ reverse_zone }}
+   args:
+     creates: /etc/ipa/default.conf
+
+# Drop script in root home dir to create some needed entree's
+ - name: Place initial dns record create script in /root
+   template:
+     src: templates/setup-dns-records.j2
+     dest: /root/setup-dns-records.sh
+     owner: root
+     group: root
+     mode: 0700
+
+# Run the initial population script
+ - shell: /root/setup-dns-records.sh

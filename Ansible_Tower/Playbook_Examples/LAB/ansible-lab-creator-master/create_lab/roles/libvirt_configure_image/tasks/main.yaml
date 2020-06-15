@@ -1,0 +1,47 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: get VM disks
+  command: "ls {{ vm_location }}"
+  register: disks
+  changed_when: "disks.rc != 0"
+
+- name: Has the VM been defined
+  virt:
+      name: "{{ template_name }}"
+      command: status
+      uri: '{{ libvirt_uri }}'
+  register: template_status
+  ignore_errors: true
+
+- debug:
+    var: template_status
+
+- name: Create XML of Image
+  shell: |
+           virt-install --name {{ template_name }} --memory 2048 --vcpus 2 \
+           --disk {{ vm_location }}{{ image_file_name }} \
+           --import --os-variant rhel7 --print-xml > /tmp/rhel7-image.xml
+  when: "image_file_name in disks.stdout and template_status.failed == true"
+
+- name: Define VM from xml
+  virt:
+      name: "{{ template_name }}"
+      command: define
+      xml: "{{ lookup('template', '/tmp/rhel7-image.xml')}}"
+      uri: '{{ libvirt_uri }}'
+  when: "image_file_name in disks.stdout and template_status.failed == true"
+
+- name: Ensure image is not running
+  virt: 
+      name: "{{ template_name }}"
+      state: shutdown
+      uri: '{{ libvirt_uri }}'
+
+- name: Set default root password
+  shell: "virt-customize --hostname {{ template_name }} --edit /etc/ssh/sshd_config:'s/^#UseDNS yes/UseDNS no/' --root-password password:password -d {{ template_name }}"
+  
+- name: Remove Cloud-init packages
+  shell: "virt-customize --uninstall cloud-init -d {{ template_name }}"

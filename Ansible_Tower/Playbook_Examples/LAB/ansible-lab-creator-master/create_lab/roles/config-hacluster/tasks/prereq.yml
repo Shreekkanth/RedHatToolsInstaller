@@ -1,0 +1,33 @@
+---
+
+- name: 'Install required packages'
+  package:
+    name: "{{ config_hacluster_rpm_packages }}"
+    state: installed
+  notify:
+    - "Ensure Pacemaker is running"
+    - "Ensure Pacemaker is running at boot"
+
+
+
+- name: 'Ensure firewalld is running'
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: 'Open Firewall for HA cluster use'
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  with_items:
+  - high-availability
+
+- name: Update hacluster user password
+  user:
+    name: hacluster
+    password: "{{ 'hacluster_password' | password_hash('sha512') }}"
+
+

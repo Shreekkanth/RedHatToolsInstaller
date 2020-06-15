@@ -1,0 +1,25 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: create new inventory file to edit
+  delegate_to: localhost
+  copy:
+    src: "{{ role_path }}/files/inventory"
+    dest: "{{ tmp_inv_loc }}" 
+    owner: "{{ tmp_inv_owner }}"
+    group: "{{ tmp_inv_group }}"
+    mode: "{{ tmp_inv_permissions }}"
+
+- name: Configure Registry Auth
+  delegate_to: localhost
+  include: '{{ role_path }}/tasks/registryauth-config.yaml'
+
+- name: Configure Node configuration
+  delegate_to: localhost
+  include: 'node-config.yaml'
+
+- name: Configure Logging
+  delegate_to: localhost
+  include: 'logging-config.yaml'

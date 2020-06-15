@@ -1,0 +1,77 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Get current status
+  virt:
+    name: "{{ item.key }}.{{ domain_name }}"
+    command: status
+    uri: 'qemu:///system'
+  register: vm_status
+  ignore_errors: yes
+  with_dict: "{{ guests }}"
+  when: local_lab_delete == 'true'
+
+- debug:
+    msg: "{{ item.0 }}.{{ domain_name }}"
+  with_together: 
+    - "{{ guests }}"
+    - "{{ vm_status.results }}"
+
+- name: Shutdown VM(s)
+  virt:
+    name: "{{ item.0 }}.{{ domain_name }}"
+    command: shutdown
+    uri: 'qemu:///system'
+  ignore_errors: yes
+  with_together: 
+    - "{{ guests }}"
+    - "{{ vm_status.results }}"
+  when: local_lab_delete == 'true' and item.1.status == "running"
+
+- pause:
+    seconds: 5
+  when: local_lab_delete == 'true'
+
+- name: Shutdown VM(s)
+  virt:
+    name: "{{ item.key }}.{{ domain_name }}"
+    command: destroy
+    uri: 'qemu:///system'
+  ignore_errors: yes
+  with_dict: "{{ guests }}"
+
+- name: Undefine VM(s)
+  virt:
+    name: "{{ item.key }}.{{ domain_name }}"
+    command: undefine
+    uri: 'qemu:///system'
+  ignore_errors: yes
+  with_dict: '{{ guests }}'
+  when: local_lab_delete == 'true'
+
+- name: Remove VM Disk file(s)
+  file:
+    path: "{{ vm_location }}{{ item.key }}.{{ domain_name }}.{{ item.value.file_type }}"
+    state: absent
+  ignore_errors: yes
+  with_dict: '{{ guests }}'
+  when: local_lab_delete == 'true'
+
+- name: Remove Docker Disk file(s)
+  file: 
+    path: "{{ vm_location }}{{ item.key }}.{{ domain_name }}-vm-disk-docker"
+    state: absent
+  ignore_errors: yes
+  with_dict: '{{ guests }}'
+  when: local_lab_delete == 'true'
+
+- name: Remove Gluster Disk file(s)
+  file:
+    path: "{{ vm_location }}{{ item.key }}.{{ domain_name }}-vm-disk-gluster"
+    state: absent
+  ignore_errors: yes
+  with_dict: '{{ guests }}'
+  when: local_lab_delete == 'true' 
+#and glusterconfig == 'true'
+# and item.value.ocp_role == 'cnsnode'"

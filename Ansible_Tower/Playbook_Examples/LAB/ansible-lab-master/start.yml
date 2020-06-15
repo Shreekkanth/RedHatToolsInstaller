@@ -1,0 +1,17 @@
+---
+- name: Start lab
+  hosts: localhost
+  become: yes
+
+  tasks:     
+  - name: Get vms
+    virt:    
+      command: list_vms
+      state: shutdown
+    register: vms
+
+  - name: Virt start
+    virt:    
+      name: "{{ item }}"
+      command: start
+    with_items: "{{ vms.list_vms }}"

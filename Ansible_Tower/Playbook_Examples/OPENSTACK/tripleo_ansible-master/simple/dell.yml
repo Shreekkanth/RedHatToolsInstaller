@@ -1,0 +1,63 @@
+---
+
+- hosts: all
+  remote_user: root
+  vars:
+    local_packages:
+    - bash-completion
+    - bind-utils
+    - curl
+    - dstat
+    - git
+    - glibc-langpack-ja
+    - ipmitool
+    - lftp
+    - man
+    - man-pages
+    - mtr
+    - ntp
+    - ntpdate
+    - net-tools
+    - openssh-clients
+    - psmisc
+    - python2-libselinux
+    - rsync
+    - screen
+    - subversion
+    - sudo
+    - sysstat
+    - strace
+    - telnet
+    - traceroute
+    - tcpdump
+    - traceroute
+    - vim-enhanced
+#   - w3m
+    - wget
+    - wireshark
+    - xterm
+    - zsh
+    for_rhosp:
+    - libvirt-client
+    - libvirt-daemon
+    - qemu-kvm
+    - libvirt-daemon-driver-qemu
+    - libvirt-daemon-kvm
+    - virt-install
+    - bridge-utils
+    - rsync
+
+  tasks:
+  - name: update packages
+    dnf: name=* state=latest
+
+  - name: install basic packages
+    dnf: name={{ local_packages }} state=installed
+
+  - name: install rhosp packages
+    dnf: name={{ for_rhosp }} state=installed
+
+- hosts: all
+  remote_user: root
+  roles:
+    - user_root

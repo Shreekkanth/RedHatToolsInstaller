@@ -1,0 +1,30 @@
+---
+
+# Example
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=add-record ENV=pro RECORD=server01.example.com VALUE=10.218.18.150" --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=del-record ENV=pro RECORD=server01.example.com " --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=add-cname ENV=pro RECORD=server01.example.com VALUE=server01-bck.example.com" --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=del-cname ENV=pro RECORD=server01.example.com" --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=new-host ENV=pro RECORD=server01.example.com CIDR=10.218.16.0" --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=create-network ENV=pro NETCIDR=10.218.16.0/24" --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-admin.yml -i hosts -l localhost --extra-vars="ACTION=del-network ENV=pro NETCIDR=10.218.16.0/24" --ask-vault-pass -vvv
+
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - include_vars:
+        file: "{{ item }}"
+      with_items:
+        - "vars/{{ ENV }}.yml"
+  roles:
+    - role: infoblox
+      vars:
+        - action: "{{ ACTION }}"
+        - ifuser : "{{ infobloxuser }}"
+        - ifpass: "{{ infobloxpass }}"
+        - ifserver: "{{ infobloxhost }}"
+        - record: "{{ RECORD }}"
+        - value: "{{ VALUE | default ('') }}"
+        - cidr: "{{ CIDR | default ('') }}"
+        - wapi: "{{ WAPI | default ('2.7.1') }}"
+        - netcidr: "{{ NETCIDR | default ('') }}"

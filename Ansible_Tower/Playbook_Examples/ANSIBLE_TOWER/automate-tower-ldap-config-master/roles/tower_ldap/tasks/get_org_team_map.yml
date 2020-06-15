@@ -1,0 +1,32 @@
+---
+# tasks/get_org_team_map.yml
+# @author Marc Petrivelli - RedHat
+
+- set_fact:
+    awx_org_ldap: "{{ awx_org_ldap | default({}) | combine(_curr_org) }}"
+  loop: "{{ awx_organizations }}"
+  vars:
+    _curr_org: '{
+      "{{ item.name }}": {
+        "remove_users": false,
+        "users": false,
+        "admins": "{{ item.admin_ldap }}",
+        "remove_admins": false
+       }
+    }'
+
+- debug:
+    msg: "{{ item.1.name }}"
+  loop: "{{ awx_organizations | subelements('teams') }}"
+
+- set_fact:
+    awx_team_ldap: "{{ awx_team_ldap | default({}) | combine(_curr_team) }}"
+  loop: "{{ awx_organizations | subelements('teams') }}"
+  vars:
+    _curr_team: '{
+      "{{ item.1.name }}": {
+        "users": "{{ item.1.ldap_users }}",
+        "remove": True,
+        "organization": "{{ item.0.name }}"
+      }
+    }'

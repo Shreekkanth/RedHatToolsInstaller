@@ -1,0 +1,176 @@
+---
+- hosts: webdrupal-proxy
+  gather_facts: true
+  serial: 1
+  vars:
+     user: "{{ lookup('env','USER') }}"
+     epoch: "[{{ ansible_date_time.epoch }}]"
+
+  tasks:
+  - name: Announce in IRC that system patching is about to begin
+    local_action: command curl http://platypus-platops.itos.redhat.com/platops-patch --data-urlencode "{{ epoch }} _{{ user }} started system patching on {{ inventory_hostname }} at {{ ansible_date_time.iso8601 }}"
+    tags:
+      - announce
+
+  - name: Clean yum database
+    shell: yum clean all 1>/dev/null 2>&1
+    tags:
+      - yum_clean
+      - update
+
+  - name: Finding packages to update
+    shell: yum updateinfo list available 2> /dev/null | grep ^RH | awk 'BEGIN { kernel="" } { if (($1 ~ "^RHBA" && $1 <="RHBA-2014:1266") || ($1 ~ "^RHEA" && $1 <= "RHEA-2014:1236") || ($1 ~ "^RHSA" && $1 <= "RHSA-2014:1263")) { if ($3 !~ "kernel-") { print $3 } else { if (kernel == "" || kernel < $3) { kernel=$3 } } }} END { if (kernel != "") { print kernel }}' | sed -re 's/\.\w+$//g'
+    register: packages_to_install
+    tags:
+      - find_rpms
+
+  - name: Set nagios downtime for application services
+    nagios: action=downtime minutes=60 service=all host={{ inventory_hostname }}
+    delegate_to: "{{ nagios_host }}"
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0
+    tags:
+      - nagios
+
+  - name: Set nagios downtime for elbs
+    nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host }}"
+    delegate_to: "{{ nagios_host }}"
+    with_items: elbs
+    when: elbs is defined and packages_to_install is defined and packages_to_install.stdout|length > 0
+    tags:
+      - nagios
+
+  - name: set nagios downtime for elbs
+    nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host_secondary }}"
+    delegate_to: "{{ nagios_host }}"
+    with_items: elbs
+    when: elbs is defined and packages_to_install is defined and packages_to_install.stdout|length > 0
+    tags:
+      - nagios
+
+  - debug: msg="{{ packages_to_install.stdout_lines }}"
+    tags:
+      - verification
+
+  - name: Pausing to verify the rpms to be installed are acceptable
+    pause: prompt="Verify that the rpms to install are acceptable... press enter when ready to continue"
+    tags:
+      - verification
+
+  - name: gathering ec2 facts
+    ec2_facts:
+    tags:
+      - out_rotation
+      - in_rotation
+
+  - name: instance de-register
+    local_action: ec2_elb
+    args:
+      instance_id: "{{ ansible_ec2_instance_id }}"
+      state: 'absent'
+    tags:
+      - out_rotation
+
+  - name: Clean up yum db
+    command: yum clean all
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0
+    tags:
+      - update
+
+  - name: Patching the host
+    command: yum -y update --skip-broken {{ packages_to_install.stdout }}
+    register: update_rhel_status
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0
+    tags:
+      - update
+
+
+  - name: Announce yum updates success
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0 and update_rhel_status|success
+    local_action: command curl http://platypus-platops.itos.redhat.com/platops-patch --data-urlencode "{{ epoch }} _{{ user }}> [yum] successfuly installed updates on {{ inventory_hostname }}"
+    tags:
+      - update
+
+  - name: Show yum_update task error
+    when: update_rhel_status|failed
+    debug: msg="{{ update_rhel_status }}"
+    tags:
+      - update
+
+  - name: Announce yum update failure
+    when: update_rhel_status|failed
+    local_action: command curl http://platypus-platops.itos.redhat.com/platops-patch --data-urlencode "{{ epoch }} _{{ user }}> [yum] failed to install updates on {{ inventory_hostname }}"
+    tags:
+      - update
+
+  - name: Post update reboot
+    shell: shutdown -r now "Rebooting node after os patching"
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0 and update_rhel_status|success
+    tags:
+      - update
+      - reboot
+
+  - name: Wait for host to go down before checking that its up
+    local_action: command sleep 30
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0 and update_rhel_status|success
+    tags:
+      - check_host
+
+  - name: Checking that host is up
+    local_action: command ssh root@{{ inventory_hostname }} echo foo
+    register: wait_for_host
+    until: wait_for_host.rc  == 0
+    retries: 60
+    delay: 30
+    when: packages_to_install is defined and packages_to_install.stdout|length > 0 and update_rhel_status|success
+    tags:
+      - check_host
+
+  - name: Announce host is up
+    local_action: command curl http://platypus-platops.itos.redhat.com/platops-patch --data-urlencode "{{ epoch }} _{{ user }}> [system] finished post update reboot of {{ inventory_hostname }} at {{ ansible_date_time.iso8601 }}."
+    when: wait_for_host|success
+    tags:
+      - check_host
+
+  - name: Announce host never came back up
+    local_action: command curl http://platypus-platops.itos.redhat.com/platops-patch --data-urlencode "{{ epoch }} {{ user }}> [system] {{ inventory_hostname }} DID NOT come back up after reboot {{ ansible_date_time.iso8601 }}."
+    when: wait_for_host|failed
+    tags:
+      - check_host
+
+  - name: instance register
+    local_action: ec2_elb
+    args:
+      instance_id: "{{ ansible_ec2_instance_id }}"
+      ec2_elbs: "{{ public_elb }}"
+      state: 'present'
+    ignore_errors: yes
+    tags:
+      - in_rotation
+
+  - name: instance register
+    local_action: ec2_elb
+    args:
+      instance_id: "{{ ansible_ec2_instance_id }}"
+      ec2_elbs: "{{ internal_elb }}"
+      state: 'present'
+    ignore_errors: yes
+    tags:
+      - in_rotation
+
+  - name: instance register
+    local_action: ec2_elb
+    args:
+      instance_id: "{{ ansible_ec2_instance_id }}"
+      ec2_elbs: "{{ admin_elb }}"
+      state: 'present'
+    ignore_errors: yes
+    tags:
+      - in_rotation
+
+  # node is in the elb. delay to ensure two healthchecks fire and then
+  # perform a manual healthcheck. if successful, the node should be
+  # in service
+  - name: confirm node is in service
+    wait_for: host=localhost port=80 delay=30
+    tags:
+      - healthcheck

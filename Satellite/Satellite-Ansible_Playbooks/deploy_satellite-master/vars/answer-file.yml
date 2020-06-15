@@ -1,0 +1,10 @@
+---
+# TODO: Currently, the password entry is put in cleartext without quotation marks.  Idealy, we want to either use a hashed password,
+# or put the cleartext password in quotation marks so it will be used as the password for that item.
+
+ca_country: "US"
+ca_state: "Virginia"
+ca_city: "Fairfax"
+ca_org: "Home"
+
+

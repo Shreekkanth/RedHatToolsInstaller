@@ -1,0 +1,22 @@
+---
+# tasks file for role_rh_consultant
+- name: "Pre-Requisites | Install software for role"
+  package:
+    name: "{{ role_prereq_packages }}"
+    state: latest
+
+- import_tasks: setup_repos.yml
+
+- import_tasks: setup_local_rpms.yml
+  when: csb_install_packages_offline
+  
+- import_tasks: install_packages.yml
+
+- import_tasks: setup_printers.yml
+  when: setup_printers
+
+- import_tasks: setup_power_management.yml
+  when: enable_powermgmt
+
+- import_tasks: setup_tuned.yml
+  when: enable_tuned

@@ -1,0 +1,7 @@
+---
+#TODO ntp config
+- hosts: satellite-clients
+
+  roles:
+    - client-register
+...

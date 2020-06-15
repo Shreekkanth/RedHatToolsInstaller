@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# testrunner - interface script to devilhorn test framework
+# testrunner will execute a single pytest as an argument or all tests in
+# in testrunner current directory
+
+# Running Locally
+# There my be instances where you want to run a test locally on a system
+# under development conditions. Use the -m flag to pass the server role
+# Example:
+# pytest test_*.py -m "{% for group in vars.group_names %}{{group | regex_replace('-', '')}}{% if not loop.last %} or {%endif%}{%endfor%}"
+
+WORKINGDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd ${WORKINGDIR}
+. /opt/rh/python27/enable
+. venv/bin/activate
+# PYTEST_ADDOPTS set when executed remotely
+pytest --junitxml=results.xml $1

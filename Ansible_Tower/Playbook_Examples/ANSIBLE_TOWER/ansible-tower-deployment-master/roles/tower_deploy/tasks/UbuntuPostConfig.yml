@@ -1,0 +1,35 @@
+- name: Open HTTPS Firewall Port
+  ufw:
+    state: enabled
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Install python-setuptools
+  apt:
+    name: python-setuptools
+    state: present
+
+- name: Install python-dev
+  apt:
+    name: python-dev
+    state: present
+
+- name: Install python-setuptools
+  apt:
+    name: build-essential
+    state: present
+
+- name: Install Pip
+  easy_install:
+    name: pip
+
+- name: Install Pip packages
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - requests
+    - pprint
+    - ciscoconfparse
+    - netaddr
+    - pyvmomi

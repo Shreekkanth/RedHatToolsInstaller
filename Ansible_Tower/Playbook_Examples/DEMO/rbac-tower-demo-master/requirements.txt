@@ -1,0 +1,4 @@
+ansible
+docker-py
+ansible_tower_cli
+python-ldap

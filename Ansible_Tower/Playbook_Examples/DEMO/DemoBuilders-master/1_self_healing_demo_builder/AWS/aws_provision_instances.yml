@@ -1,0 +1,57 @@
+---
+- name: Create new EC2 instances
+  hosts: all
+  gather_facts: false
+  connection: local
+
+  vars:
+    region:   us-east-1
+    ami:      ami-585feb4e
+    keypair:  "{{ ec2_keypair_name | default('redhat demo') }}"
+    set_dns:  False
+#    count:    "{{ vm_count}}"
+    count: 2
+    mytags:
+      env:  "{{ tags_env  | default('prod') }}"
+      type: "{{ tags_type | default('app') }}"
+    wait_for_ssh: False
+ 
+  tasks:
+    - name: Provision instances
+      local_action:
+        module: ec2
+        keypair: "{{ keypair }}"
+        instance_type: "{{ type | default('t2.micro') }}"
+        vpc_subnet_id: "subnet-{{ vpc_subnet | default('7199b32a') }}"
+        image: "{{ ami }}"
+        region: "{{ region }}"
+        count: "{{ count }}"
+        wait: yes
+        instance_tags: "{{ mytags }}"
+        assign_public_ip: "{{ assign_eip | default(true) }}"
+      register: ec2
+ 
+    - name: Wait for SSH to come up
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        delay: 60
+        timeout: 320
+        state: started
+      with_items: "{{ ec2.instances }}"
+
+#    - name: associate an elastic IP with an instance
+#      ec2_eip:
+#        device_id: "{{ item.id }}"
+#        region: "{{ region }}"
+      with_items: "{{ ec2.instances }}"
+ 
+    - name: Instance info
+      debug:
+        msg: "{{ item.id }} {{ item.public_ip }}"
+      with_items: "{{ ec2.instances }}"
+
+    - name: More Instance info
+      debug:
+        msg: "{{ ec2.instances }}" 
+

@@ -1,0 +1,63 @@
+---
+- block:
+  - name: install Vagrant
+    dnf:
+      # TODO: Replace with "vagrant" after Fedora repo is updated.
+      # Vagrant 1.9.1 is not compatable with landrush.
+      name: "https://releases.hashicorp.com/vagrant/1.9.8/vagrant_1.9.8_x86_64.rpm"
+      state: present
+    become: yes
+    become_user: root
+
+  - name: gather installed Vagrant plugins
+    command: vagrant plugin list
+    register: installed_vagrant_plugins
+    changed_when: false
+
+  - name: install Vagrant plugin dependencies
+    dnf:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ vagrant_plugin_dependencies }}"
+    become: yes
+    become_user: root
+
+  - name: install Vagrant plugins
+    shell: vagrant plugin install {{ item }}
+    with_items: "{{ vagrant_plugins }}"
+    when: item not in installed_vagrant_plugins.stdout
+  tags:
+  - vagrant
+
+# TODO
+#- name: Import boxes
+
+# Configure dnsmasq to work with landrush
+- block:
+  - name: install dnsmasq
+    dnf:
+      name: dnsmasq
+      state: present
+
+  - name: configure dnsmasq
+    lineinfile:
+      dest: /etc/dnsmasq.conf
+      line: "{{ item }}"
+      insertafter: EOF
+    with_items:
+      - "conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig"
+      - "listen-address=127.0.0.1"
+      - "interface={{ dnsmasq_listen_interface }}"
+      - "bind-interfaces"
+    notify: restart dnsmasq
+
+  - name: start dnsmasq
+    service:
+      name: dnsmasq
+      state: started
+      enabled: yes
+  become: yes
+  become_user: root
+  when: '"landrush" in vagrant_plugins'
+  tags:
+  - vagrant

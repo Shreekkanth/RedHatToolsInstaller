@@ -1,0 +1,5 @@
+[rhel7-csb]
+name=RHEL7 CSB packages Staging
+baseurl=http://hdn.corp.redhat.com/rhel7-csb-stage/
+enabled=1
+gpgcheck=0

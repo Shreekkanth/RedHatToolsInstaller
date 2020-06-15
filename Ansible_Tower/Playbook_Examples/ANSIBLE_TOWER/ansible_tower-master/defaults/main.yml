@@ -1,0 +1,13 @@
+---
+# defaults file for ansible_tower
+
+ansible_tower_url: http://releases.ansible.com/ansible-tower/setup
+ansible_tower_bundle_url: https://releases.ansible.com/ansible-tower/setup-bundle
+ansible_tower_archive: ansible-tower-setup-latest.tar.gz
+ansible_tower_bundle_archive: ansible-tower-setup-bundle-latest.el7.tar.gz
+ansible_tower_dest: /var/tmp
+ansible_tower_checksum: sha1:20ed35c4d88a72211135bcd6acfba97200c9e25f143c86e63f91de58c0296833
+ansible_tower_bundle_checksum: sha1:56f22657236f3aaffe124fbf6b696dfb3ef5edae744a205a7be792b4b9b26e22
+ansible_tower_requisite_repositories:
+- rhel-7-server-rpms
+- rhel-7-server-extras-rpms

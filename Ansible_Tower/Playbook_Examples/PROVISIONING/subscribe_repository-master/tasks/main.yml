@@ -1,0 +1,8 @@
+---
+# tasks file for subscribe_repository
+
+- name: Place repository file
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/yum.repos.d/{{ item }}"
+  with_items: "{{ subscribe_repository_repo_file }}"

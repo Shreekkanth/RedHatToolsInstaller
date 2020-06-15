@@ -1,0 +1,13 @@
+---
+
+- name: Form Cluster with nodes
+  shell: echo "configure cluster here"
+
+# pcs cluster auth z1.example.com z2.example.com
+#
+# pcs cluster setup --start --name my_cluster z1.example.com z2.example.com
+#
+# pcs cluster enable --all
+# pcs cluster status
+#
+#

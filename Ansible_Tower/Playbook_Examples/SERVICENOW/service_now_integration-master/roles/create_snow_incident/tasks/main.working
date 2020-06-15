@@ -1,0 +1,30 @@
+- name: Get VM Data
+  vsphere_guest:
+    vmware_guest_facts: true
+    vcenter_hostname: 172.16.32.2
+    username: administrator
+    password: "{{ vcenter_password }}"
+    guest: "{{ target }}"
+    validate_certs: no
+  register: vmguest_facts
+
+- name: Posting to SNOW API
+  uri:
+    url: https://dev12140.service-now.com/api/now/table/incident
+    user: "{{ Username }}"
+    password: "{{ Password }}"
+    method: POST
+    return_content: no
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body: >
+      {"opened_by":"Ansible",
+      "short_description":"{{ snow_short_description }}",
+      "urgency":"{{ snow_urgency }}",
+      "impact":"{{ snow_urgency }}",
+      "priority":"{{ snow_urgency }}"}
+    status_code: 201
+    validate_certs: no
+#  no_log: True
+#  failed_when: false

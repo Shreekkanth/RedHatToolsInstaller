@@ -1,0 +1,32 @@
+resource_registry:
+  OS::TripleO::Services::CinderBackendDellEMCUnity: /usr/share/openstack-tripleo-heat-templates/puppet/services/cinder-backend-dellemc-unity.yaml
+
+parameter_defaults:
+  #### BACKEND SELECTION ####
+
+  ## Whether to enable iscsi backend for Cinder.
+  CinderEnableIscsiBackend: false
+  ## Whether to enable rbd (Ceph) backend for Cinder.
+  CinderEnableRbdBackend: false
+  ## Cinder Backup backend can be either 'ceph', 'swift' or 'nfs'.
+  #CinderBackupBackend: ceph
+  ## Whether to enable NFS backend for Cinder.
+  CinderEnableNfsBackend: false
+  ## Whether to enable rbd (Ceph) backend for Nova ephemeral storage.
+  NovaEnableRbdBackend: false
+  ## Glance backend can be either 'rbd' (Ceph), 'swift' or 'file'.
+  GlanceBackend: swift
+  ## Gnocchi backend can be either 'rbd' (Ceph), 'swift' or 'file'.
+  GnocchiBackend: swift
+
+  DockerCinderVolumeImage: 10.56.50.9:8787/sea-osp13_containers-cinder-volume:dellunity
+
+  CinderEnableDellEMCUnityBackend: true
+  CinderDellEMCUnityBackendName: 'tripleo_dellemc_unity'
+  CinderDellEMCUnitySanIp: '10.59.50.242'
+  CinderDellEMCUnitySanLogin: 'admin'
+  CinderDellEMCUnitySanPassword: 'S@msung1p'
+  CinderDellEMCUnityStorageProtocol: 'iscsi'
+  CinderDellEMCUnityIoPorts: ''
+  CinderDellEMCUnityStoragePoolNames: 'StoragePool00'
+#  CinderDellEMCVNXNaviSecCliPath: '/opt/Navisphere/bin/naviseccli'

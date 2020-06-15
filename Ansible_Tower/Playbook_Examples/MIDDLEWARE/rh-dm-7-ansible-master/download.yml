@@ -1,0 +1,37 @@
+---
+# How Execute:
+# > ansible-playbook download.yml -i inventory
+# > ansible-playbook download.yml -i inventory -vvv
+#
+- hosts: controller
+  become: false
+  vars:
+    transfer_method: csp-to-host
+    rhdm_user_os:    user1
+    rhdm_group_os:   user1    
+    download_csp:    false
+    download_oracle: false
+    curl_proxy:      ""
+    base_dir_download:    "/u02/rh/software/"
+  vars_prompt:
+   - name: "rhn_username"
+     prompt: "Enter Your Red Hat Customer Portal Username"
+     private: no
+
+   - name: "rhn_password"
+     prompt: "Enter Your Red Hat Customer Portal Password"
+     private: yes
+
+   - name:    "oracle_maven_username"
+     prompt:  "Enter Your OTN Username to Oracle Maven Repository "
+     private: no
+
+   - name:    "oracle_maven_password"
+     prompt:  "Enter Your OTN Password to Oracle Maven Repository "
+     private: yes
+
+  roles:
+    - rhdm-download
+
+# 
+# EOF

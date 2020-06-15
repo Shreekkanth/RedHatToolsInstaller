@@ -1,0 +1,54 @@
+---
+- name: install bind and firewalld
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - bind
+    - bind-utils
+    - firewalld
+
+- name: create zones dir
+  file:
+    path: /var/named/zones
+    state: directory
+    owner: named
+    group: named
+    setype: named_zone_t
+
+- name: create external zone config
+  template:
+    src: zone.db.j2
+    dest: /var/named/zones/zone.db
+    owner: named
+    group: named
+    setype: named_zone_t
+  notify: reload named
+
+- name: create named config
+  template:
+    src: named.conf.j2
+    dest: /etc/named.conf
+    owner: root
+    group: named
+    setype: named_conf_t
+  notify: restart named
+
+- name: start named
+  service:
+    name: named
+    state: started
+    enabled: yes
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: add dns to firewalld
+  firewalld:
+    service: dns
+    permanent: true
+    state: enabled
+    immediate: true

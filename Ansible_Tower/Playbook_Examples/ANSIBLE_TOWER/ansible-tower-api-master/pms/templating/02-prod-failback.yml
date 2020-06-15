@@ -1,0 +1,513 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    project_id: 276
+    pmsdb_os_cred: 35
+    pmsesb_os_cred: 35
+    pmsbat_os_cred: 35
+    pmsrep_os_cred: 35
+    pmstomweb_os_cred: 35
+    pmsapp_os_cred: 35
+    db_inv: 57
+    esb_inv: 58
+    bat_inv: 61
+    rep_inv: 60
+    tomweb_inv: 61
+    app_inv: 59
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: PMS Prod Failback- Stopping DR PMSTCP Server
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/stop_dr_apps/stop_dr_pmstcp.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS Prod Failback: Stopping DR PMSTCP Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:   PMS Prod Failback- Stopping DR Glassfish ESB Server  
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/stop_dr_apps/stop_dr_glassfish_esbserver.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS Prod Failback: Stopping DR Glassfish ESB Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Stopping DR Glassfish Batch Server
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsbat_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/stop_dr_apps/stop_dr_glassfish_batchserver.yml",
+          "inventory": "{{ bat_inv }}",
+          "name": "PMS Prod Failback: Stopping DR Glassfish Batch Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Stopping DR Glassfish App Server   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsapp_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/stop_dr_apps/stop_dr_glassfish_appserver.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "PMS Prod Failback: Stopping DR Glassfish App Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Stopping DR Tomcat Web Server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmstomweb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/stop_dr_apps/stop_dr_tomcat_webserver.yml",
+          "inventory": "{{ tomweb_inv }}",
+          "name": "PMS Prod Failback: Stopping DR Tomcat Web Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:   PMS Prod Failback- Stopping DR Tomcat Report Server   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsrep_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/stop_dr_apps/stop_dr_tomcat_reportserver.yml",
+          "inventory": "{{ rep_inv }}",
+          "name": "PMS Prod Failback: Stopping DR Tomcat Report Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Disable DB Cronjob   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/disable_cronjob_primary_seconday_db.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS Prod Failback: Disable DB Cronjob"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Retrieve Archivelog Seq for comparison    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/retrieve_archivelog_seq.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\noracle_home: /u03/apps/oracle/product/11.2.0.4/pmsdb_home\noracle_bin: /u03/apps/oracle/product/11.2.0.4/pmsdb_home/bin/\noracle_dbname: pmsdb",
+          "name": "PMS Prod Failback: Retrieve Archivelog Seq for comparison"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Validate Archivelog Seq between Prod(Secondary) & DR(Primary)    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/validate_archivelog_seq.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS Prod Failback: Validate Archivelog Seq between Prod(Secondary) & DR(Primary)"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Execute Archivelog Script (When Archivelog failed validation)    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/archivelog_script_runner.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS Prod Failback: Execute Archivelog Script (When Archivelog failed validation)"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Ensure all recovery script stopped   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/kill_remaining_recovery_script.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\n process_to_kill: 'recovery'",
+          "name": "PMS Prod Failback: Ensure all recovery script stopped"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Stopping all DB instance    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/start_prod_primary_dr_secondary_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\noracle_home: /u03/apps/oracle/product/11.2.0.4/pmsdb_home\noracle_bin: /u03/apps/oracle/product/11.2.0.4/pmsdb_home/bin/\noracle_dbname: pmsdb",
+          "name": "PMS Prod Failback: Stopping all DB instance"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Transferring control file and redo log from DR to Prod    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/backup_transfer_redo_controlfiles.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS Prod Failback- Transferring control file and redo log from DR to Prod"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Starting DB Prod as Primary and DR as Secondary     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/start_prod_primary_dr_secondary_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\noracle_home: /u03/apps/oracle/product/11.2.0.4/pmsdb_home\noracle_bin: /u03/apps/oracle/product/11.2.0.4/pmsdb_home/bin/\noracle_dbname: pmsdb",
+          "name": "PMS Prod Failback : Starting DB Prod as Primary and DR as Secondary"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Enabling cron job on DB server     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/db_prod_activation/enable_cronjob_primary_secondary.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS Prod Failback: Enabling cron job on DB serve"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Start PMSTCP on Prod serverr     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/start_production_apps/start_prod_pmstcp.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS Prod Failback: Start PMSTCP on Prod server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:   PMS Prod Failback- Start Glassfish ESB on Prod server   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/start_production_apps/start_prod_glassfish_esbserver.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": " PMS Prod Failback: Start Glassfish ESB on Prod server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Start Glassfish Batch on Prod server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsbat_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/start_production_apps/start_prod_glassfish_batchserver.yml",
+          "inventory": "{{ bat_inv }}",
+          "name": "PMS Prod Failback: Start Glassfish Batch on Prod server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+
+  - name: PMS Prod Failback- Start Glassfish App on Prod server     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsapp_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/start_production_apps/start_prod_glassfish_appserver.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "PMS Prod Failback: Start Glassfish App on Prod server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS Prod Failback- Start Tomcat Web on Prod server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmstomweb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/start_production_apps/start_prod_tomcat_webserver.yml",
+          "inventory": "{{ tomweb_inv }}",
+          "name": "PMS Prod Failback: Start Tomcat Web on Prod server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS Prod Failback- Start Tomcat Report on Prod serverr    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsrep_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "Production Failback/start_production_apps/start_prod_tomcat_reportserver.yml",
+          "inventory": "{{ rep_inv }}",
+          "name": "PMS Prod Failback: Start Tomcat Report on Prod server"
+        }
+      status_code: 201
+    ignore_errors: yes

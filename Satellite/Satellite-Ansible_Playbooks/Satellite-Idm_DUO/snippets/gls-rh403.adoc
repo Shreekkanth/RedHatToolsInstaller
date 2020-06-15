@@ -1,0 +1,2 @@
+|Red Hat Satellite 6 training
+|link:http://www.redhat.com/en/services/training/rh403-red-hat-satellite-6-administration[RH403 Red Hat Satellite 6 Administration]

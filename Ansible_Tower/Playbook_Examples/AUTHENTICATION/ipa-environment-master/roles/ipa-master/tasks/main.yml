@@ -1,0 +1,13 @@
+---
+
+- name: Manage cn=config database
+  ldap_attr:
+    dn: cn=config
+    server_uri: ldap://{{ ansible_nodename }}/
+    bind_dn: "{{ ipa_master_bind_dn }}"
+    bind_pw: "{{ ipa_master_ds_secret }}"
+    name: "{{ item.key }}"
+    values: "{{ item.value }}"
+    state: exact
+  with_dict: "{{ ipa_master_config_db }}"
+  notify: reload DS instances

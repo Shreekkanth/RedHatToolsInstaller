@@ -1,0 +1,12 @@
+---
+- name: "Attach VMWare Tools ISO"
+  hosts: "localhost"
+  gather_facts: False
+  tasks:
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "../vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+
+    - name: "Attach VMWare Tools installation media"
+      include_role:
+        name: "vmware_tools"
+        tasks_from: "mount"

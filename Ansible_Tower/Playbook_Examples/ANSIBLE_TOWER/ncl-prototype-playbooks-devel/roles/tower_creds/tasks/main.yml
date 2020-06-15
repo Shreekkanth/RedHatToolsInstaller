@@ -1,0 +1,20 @@
+---
+# tasks file for tower_creds
+
+- name: Tower credentials
+  tower_credential_beta:
+    credential_type: "{{ item.credential_type | default (omit) }}"
+    description: "{{ item.description | default ('') }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    organization: "{{ item.organization | default ('') }}"
+    password: "{{ item.password | default (omit) }}"
+    security_token: "{{ item.token | default (omit) }}"
+    ssh_key_data: "{{ item.key_data | default (omit) }}"
+    ssh_key_unlock: "{{ item.key_passphrase | default (omit) }}"
+    state: "{{ item.state }}"
+    team: "{{ item.team | default ('') }}"
+    tower_verify_ssl: "{{ check_ssl }}"
+    user: "{{ item.user | default ('') }}"
+    username: "{{ item.username | default (omit) }}"
+

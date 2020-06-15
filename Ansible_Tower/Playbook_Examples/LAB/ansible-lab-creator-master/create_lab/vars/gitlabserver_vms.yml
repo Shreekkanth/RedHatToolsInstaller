@@ -1,0 +1,23 @@
+---
+# Set this to true if you want to delete lab before rebuilding
+local_lab_delete: "true"
+
+# Environmental variables
+platform_group_name: "gitlab"
+
+git_lab_server_fqdn: rhel7-gitlab01.kenlab.external
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  rhel7-gitlab01:
+    mem: 4096 
+    cpus: 2
+    disk: 10 
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.202
+

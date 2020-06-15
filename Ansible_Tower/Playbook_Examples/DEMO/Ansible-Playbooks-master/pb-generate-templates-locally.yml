@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  name: Generate Undercloud and Overcloud templates
+  connection: local
+  gather_facts: no
+  vars:
+    input_folder: "{{ path_stack_templates }}"
+    output_folder: "debug/{{ named_env }}"
+  tasks:
+    - include_role:
+        name: template_overcloud
+
+
+
+    - file:
+        path: "debug/{{ named_env }}/{{ item }}"
+        state: directory
+        mode: 0755
+      with_items:
+        - director/network-scripts
+        - kvm/network-scripts
+      tags:
+        - kvm
+        - director
+
+
+
+    - name: Template KVM nics
+      vars:
+        input_folder: "{{ path_kvm_nic_configs }}"
+        output_folder: "debug/{{ named_env }}/kvm/network-scripts"
+      include_role:
+        name: template_dir
+        apply:
+          tags:
+            - kvm
+      tags:
+        - kvm
+
+
+
+    - name: Template Director nics
+      vars:
+        input_folder: "{{ path_director_nic_configs }}"
+        output_folder: "debug/{{ named_env }}/director/network-scripts"
+      include_role:
+        name: template_dir
+        apply:
+          tags:
+            - director
+      tags:
+        - director

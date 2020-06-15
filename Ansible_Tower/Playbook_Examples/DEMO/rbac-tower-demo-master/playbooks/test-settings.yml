@@ -1,0 +1,49 @@
+---
+# configure-tower.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- hosts: all
+  gather_facts: no
+  vars:
+    tower_config_file: "../build/wf_dev/tower_cli.cfg"
+    env: wf_dev
+    domain: "dev.wellsfargo.com"
+    org: "Wells Fargo"
+    ports: {
+      "http": 80
+    }
+    awx_superuser: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+    awx_systemauditor: "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+    awx_org_admin: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com"
+    awx_org_user_groups: [
+      "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+      "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+      "cn=DTCA_EIT_MW_DEV_ANSBL_DEV,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+      "cn=DTCA_EIT_MW_DEV_ANSBL_EXE,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+      "cn=DTCA_EIT_MW_DEV_ANSBL_INVMGR,ou=Groups,dc=dev,dc=wellsfargo,dc=com",
+    ]
+  tasks:
+    - debug: var=awx_org_user_groups
+
+    - debug:
+        msg: '{
+            "{{ org }}": {
+                "users": {{ awx_org_user_groups | to_json }},
+                "remove_users": false,
+                "admins": ["{{ awx_org_admin }}"],
+                "remove_admins": false
+            }
+        }'
+
+    - name: Import setting AUTH_LDAP_ORGANIZATION_MAP
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_ORGANIZATION_MAP
+        value: '{
+            "{{ org }}": {
+                "users": {{ awx_org_user_groups }},
+                "remove_users": false,
+                "admins": "{{ awx_org_admin }}",
+                "remove_admins": false
+            }
+        }'

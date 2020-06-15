@@ -1,0 +1,22 @@
+---
+chrony_config: /etc/chrony.conf
+
+common_packages:
+  - bash-completion
+  - firewalld
+  - net-tools
+  - nfs-utils
+  - screen
+  - sssd
+  - tree
+  - vim
+  - wget
+  - "{{ ntp_client }}"
+
+el7_packages:
+  - bind-utils
+  - crypto-utils
+  - policycoreutils-python
+  - libselinux-python
+
+el8_packages: []

@@ -1,0 +1,46 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Add System Properties
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/add_system_properties.cli
+#
+# http://jinja.pocoo.org/docs/dev/
+# https://www.arctiq.ca/our-blog/2017/2/16/ansible-jinja-warrior-loop-variable-scope/
+#
+# EOH
+#
+#connect
+batch
+
+# New Properties
+{% for item in rhdmSystemProperties %}
+/system-property={{ item.name }}:add(value="{{ item.value }}")
+{% endfor %}
+
+{% set controller_urls = [] %}
+{% for item in ansible_play_batch %}
+{% do controller_urls.append(kie_server_controller_protocol + item + ':' + kie_controller_port + kie_server_controller_url_ws) %}
+{% endfor %}
+
+{% if rhdm_controller_propocol_ws %}
+{% set prop_value = sys_org_kie_server_controller_ws %}
+{% else %}
+{% set prop_value = sys_org_kie_server_controller %}
+{% endif %}
+
+/system-property="org.kie.server.controller":add(value="{{ prop_value }}")
+
+# Update Properties
+{% for item in rhdmSystemPropertiesUpd %}
+/system-property={{ item.name }}:write-attribute(name="value", value="{{ item.value }}")
+{% endfor %}
+
+run-batch
+#
+# EOF

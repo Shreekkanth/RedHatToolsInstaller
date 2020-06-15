@@ -1,0 +1,39 @@
+---
+
+- name: copy undercloud.conf
+  shell: cp /usr/share/instack-undercloud/{{ undercloud_conf.file }}.sample ~/{{ undercloud_conf.file }} creates=~/{{ undercloud_conf.file }}
+
+- name: customize undercloud.conf
+  ini_file: >
+    dest={{ undercloud_conf.file }}
+    section=DEFAULT
+    option={{ item.option }}
+    value={{ item.value }}
+  with_items:
+    - option: local_ip
+      value: "{{ undercloud_conf.local_ip }}"
+    - option: network_gateway
+      value: "{{ undercloud_conf.gateway }}"
+#    - option: undercloud_public_vip
+#      value: "{{ undercloud_conf.public_vip }}"
+#    - option: undercloud_admin_vip
+#      value: "{{ undercloud_conf.admin_vip }}"
+    - option: local_interface
+      value: "{{ undercloud_conf.local_interface }}"
+    - option: network_cidr
+      value: "{{ undercloud_conf.network_cidr }}"
+    - option: masquerade_network
+      value: "{{ undercloud_conf.masquerade_network }}"
+    - option: dhcp_start
+      value: "{{ undercloud_conf.dhcp_start }}"
+    - option: dhcp_end
+      value: "{{ undercloud_conf.dhcp_end }}"
+    - option: inspection_iprange
+      value: "{{ undercloud_conf.inspection_iprange }}"
+#    - option: inspection_enable_uefi
+#      value: "{{ undercloud_conf.inspection_enable_uefi }}"
+#    - option: enable_telemetry
+#      value: "{{ undercloud_conf.enable_telemetry }}"
+#    - option: enable_ui
+#      value: "{{ undercloud_conf.enable_ui }}"
+

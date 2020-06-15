@@ -1,0 +1,42 @@
+#
+# --------------------------------- AD.2.1.4 ---------------------------------
+#
+- name: AD.2.1.4 | GATHER_INFO_RHEL | ENCRYPTION | Private key files must be readable and writeable only by the owner.
+  shell: for X in $(cut -f6 -d ':' /etc/passwd |sort |uniq); do     if [ -s "${X}/.ssh" ]; then         find ${X}/.ssh/*;     fi; done
+  when:
+    - ad_2_1_4
+  check_mode: no
+  register: __ad_2_1_4_files
+  tags:
+    - AD.2.1.4
+    - audit
+    - encryption
+    - B
+
+- name: AD.2.1.4 | PATCH_RHEL | ENCRYPTION | Private key files must be readable and writeable only by the owner.
+  file:
+    path: "{{ item }}"
+    mode: 0600
+  with_items: "{{ __ad_2_1_4_files.stdout_lines }}"
+  when:
+    - ad_2_1_4
+    - __ad_2_1_4_files.stdout_lines != ""
+  register: __ad_2_1_4
+  tags:
+    - AD.2.1.4
+    - patch
+    - encryption
+    - B
+
+- name: AD.2.1.4 | AUDIT_RHEL | ENCRYPTION | Private key files must be readable and writeable only by the owner.
+  debug:
+    msg: "{{ __ad_2_1_4 }}"
+  when: 
+    - ad_2_1_4
+    - ansible_check_mode
+    - __ad_2_1_4 | changed
+  tags:
+    - AD.2.1.4
+    - audit
+    - encryption
+    - B

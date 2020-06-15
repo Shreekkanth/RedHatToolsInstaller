@@ -1,0 +1,50 @@
+sat-6.3-compose-rhel7:
+  box: 'rhel7'
+  memory: 8192
+  ansible:
+    group: 'server'
+    playbook: 'playbooks/satellite.yml'
+    variables:
+        satellite_version: '6.3'
+        activation_key: 'satellite-6.3-qa-rhel7'
+        use_compose_repository: true
+        compose_repository_version: 6.3
+
+sat-6.3-qa-rhel7:
+  box: 'rhel7'
+  memory: 8192
+  ansible:
+    group: 'server'
+    playbook: 'playbooks/satellite.yml'
+    variables:
+        satellite_version: '6.3'
+        activation_key: 'satellite-6.3-qa-rhel7'
+
+sat-6.3-qa-rhel7-puppet4:
+  box: 'rhel7'
+  memory: 8192
+  ansible:
+    group: 'server'
+    playbook: 'playbooks/satellite.yml'
+    variables:
+        satellite_version: '6.3'
+        activation_key: 'satellite-6.3-qa-rhel7'
+        katello_client_extra_repos:
+          - Sat6-CI_Satellite_6_3_Composes_Satellite_6_3_Puppet_4_RHEL7
+
+capsule-6.3-qa-rhel7:
+  box:      'rhel7'
+  memory:   3072
+  ansible:
+    group: 'foreman_proxy_content'
+    server: 'sat-6.3-qa-rhel7'
+    playbook: 'playbooks/capsule.yml'
+    variables:
+        satellite_version: '6.3'
+        activation_key: 'capsule-6.3-qa-rhel7'
+
+sat-6.3.0-15.0-rhel7:
+  box_name: 'satellite_6_3_0_15_0_rhel7'
+  hostname: 'sat-630-150-rhel7.example.com'
+  memory:   8192
+  libvirt: 'http://dogfood.sat.engineering.redhat.com/pulp/isos/Sat6-CI/Library/custom/Vagrant_Boxes/Satellite_Boxes/satellite-6.3.0-15.0-rhel7.box'

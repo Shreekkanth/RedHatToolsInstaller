@@ -1,0 +1,8 @@
+---
+
+- hosts: origin_nodes
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - base_os

@@ -1,0 +1,10 @@
+---
+- name: Destroy a named vCenter VM instance
+  hosts: all
+  connection: local
+  gather_facts: False
+
+  vars:
+
+  roles:
+  - vmware_vm_destroy

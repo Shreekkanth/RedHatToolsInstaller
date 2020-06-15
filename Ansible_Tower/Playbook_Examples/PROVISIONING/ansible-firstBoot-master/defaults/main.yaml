@@ -1,0 +1,12 @@
+cmdline_file: '/tmp/cmdline'
+hostname_regexp: '(?<=hostname=)([a-z0-9])+'
+centro_regexp: '(?<=centro=)([0-9])+'
+maqueta_regexp: '(?<=maqueta=)([a-z0-9-.])+'
+entorno_regexp: '(?<=entornop=)([0-9a-zA-Z_])+'
+gateway_regexp: '(?<=gateway=)([0-9\.])+'
+capsuleha: 127.0.0.1
+bootstrap:
+  l: 'srv_satapi_maqrem'
+  p: 'xxxxxxxx'
+  o: 'Mercadona'
+  L: 'Tiendas'

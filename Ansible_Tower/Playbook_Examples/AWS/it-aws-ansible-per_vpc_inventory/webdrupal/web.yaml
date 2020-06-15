@@ -1,0 +1,92 @@
+---
+- hosts: webdrupal-proxy
+
+  gather_facts: true
+
+  serial: 1
+
+  pre_tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=30 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=30 service="{{ item }}" host="{{ admin_host }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=30 service="{{ item }}" host="{{ admin_host_secondary }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+  tasks:
+    - name: gathering ec2 facts
+      ec2_facts:
+      tags:
+        - out_rotation
+        - in_rotation
+
+    - name: instance de-register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        state: 'absent'
+      tags:
+        - out_rotation
+
+    - name: Run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes
+      tags:
+        - puppet
+
+    - name: Restart apache
+      shell: service httpd restart
+      ignore_errors: yes
+      tags:
+        - apache
+
+    - name: instance register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        ec2_elbs: "{{ public_elb }}"
+        state: 'present'
+      ignore_errors: yes
+      tags:
+        - in_rotation
+
+    - name: instance register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        ec2_elbs: "{{ internal_elb }}"
+        state: 'present'
+      ignore_errors: yes
+      tags:
+        - in_rotation
+
+    - name: instance register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        ec2_elbs: "{{ admin_elb }}"
+        state: 'present'
+      ignore_errors: yes
+      tags:
+        - in_rotation
+
+    # node is in the elb. delay to ensure two healthchecks fire and then
+    # perform a manual healthcheck. if successful, the node should be
+    # in service
+    - name: confirm node is in service
+      wait_for: host=localhost port=80 delay=30
+      tags:
+        - healthcheck
+

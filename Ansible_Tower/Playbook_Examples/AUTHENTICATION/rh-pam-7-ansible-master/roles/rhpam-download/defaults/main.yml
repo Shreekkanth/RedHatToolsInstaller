@@ -1,0 +1,227 @@
+---
+# defaults file for rhpam-download
+#
+rhpam_user_os:   quicklab
+rhpam_group_os:  quicklab
+rhpam_user_home: "/home/{{rhpam_user_os}}"
+
+base_dir_download: "{{rhpam_user_home}}/Downloads/software/"
+
+
+# Red Hat JBoss Enterprise Application Platform 7.1.0
+rh_jboss_eap_7_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=55301
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 01
+rh_jboss_eap_patch_7_1_01: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56861
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 02
+rh_jboss_eap_patch_7_1_02: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=57891
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 03
+rh_jboss_eap_patch_7_1_03: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59221
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 04
+rh_jboss_eap_patch_7_1_04: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60841
+
+rh_jboss_soft:
+  eap_7_1:
+    url: "{{rh_jboss_eap_7_1}}"
+    name: jboss-eap-7.1.0.zip
+  eap_patch_7_1_01:
+    url: "{{rh_jboss_eap_patch_7_1_01}}"
+    name: jboss-eap-7.1.1-patch.zip
+  eap_patch_7_1_02:
+    url: "{{rh_jboss_eap_patch_7_1_02}}"
+    name: jboss-eap-7.1.2-patch.zip
+  eap_patch_7_1_03:
+    url: "{{rh_jboss_eap_patch_7_1_03}}"
+    name: jboss-eap-7.1.3-patch.zip
+  eap_patch_7_1_04:
+    url: "{{rh_jboss_eap_patch_7_1_04}}"
+    name: jboss-eap-7.1.4-patch.zip
+
+#
+# Red Hat Process Automation Manager 7.1.0 Process Server for All Supported EE7 Containers
+rhpam_process_server_all_ee7_containers_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62101
+
+# Red Hat Process Automation Manager 7.1.0 Business Central Deployable for EAP 7
+rhpam_business_central_for_eap_7_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62091
+
+# Red Hat Process Automation Manager 7.1.0 Business Central Standalone
+rhpam_business_central_standalone_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62081
+
+# Red Hat Process Automation Manager 7.1.0 Add-Ons
+rhpam_add_ons_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62061
+
+# Red Hat Process Automation Manager 7.1.0 Source Distribution
+rhpam_source_distribution_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62041
+
+# Entando App Manager 5.0 for Red Hat Process Automation Manager 7.1.0
+rhpam_entando_app_manager_for_pam_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62021
+
+# Red Hat Process Automation Manager 7.1.0 Patch Update
+rhpam_patch_7_1_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62131
+
+# Red Hat Process Automation Manager 7.1.1 Update Tool
+rhpam_patch_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62661
+
+# Red Hat Process Automation Manager 7.0.1 Process Server for All Supported EE7 Containers
+#rhpam_process_server_all_ee7_containers: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59091
+
+# Red Hat Process Automation Manager 7.0.1 Business Central Deployable for EAP 7
+#rhpam_business_central_for_eap_7: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59081
+
+# Red Hat Process Automation Manager 7.0.1 Business Central Standalone
+#rhpam_business_central_standalone: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59071
+
+# Red Hat Process Automation Manager 7.0.1 Add-Ons
+#rhpam_add_ons_7: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59061
+
+# Red Hat Process Automation Manager 7.0.1 Source Distribution
+#rhpam_source_distribution: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59041
+
+# Entando App Manager 5.0 for Red Hat Process Automation Manager 7.0.1
+#rhpam_entando_app_manager_for_pam: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59021
+
+# Red Hat Process Automation Manager 7.0.2 Process Server for All Supported EE7 Containers
+#rhpam_process_server_all_ee7_containers_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60341
+
+# Red Hat Process Automation Manager 7.0.2 Business Central Deployable for EAP 7
+#rhpam_business_central_for_eap_7_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60331
+
+# Red Hat Prorhpam_patch_7_0_2:cess Automation Manager 7.0.2 Business Central Standalone
+#rhpam_business_central_standalone_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60321
+
+# Red Hat Process Automation Manager 7.0.2 Add-Ons
+#rhpam_add_ons_7_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60311
+
+# Red Hat Process Automation Manager 7.0.2 Source Distribution
+#rhpam_source_distribution_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60291
+
+# Entando App Manager 5.0 for Red Hat Process Automation Manager 7.0.2
+#rhpam_entando_app_manager_for_pam_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60271
+
+# Patches
+# Red Hat Process Automation Manager 7.0.2 Patch Update
+#rhpam_patch_7_0_2: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60261
+
+# Other source: http://ftp.redhat.com/redhat/middleware/rhpam/7.0.1/en/source/
+#
+#
+
+# rhpam_soft_7_0_1:
+#   process_server_all_ee7_containers:
+#     url:  "{{rhpam_process_server_all_ee7_containers}}"
+#     name: rhpam-7.0.1-kie-server-ee7.zip
+#   business_central_for_eap_7:
+#     url:  "{{rhpam_business_central_for_eap_7}}"
+#     name: rhpam-7.0.1-business-central-eap7-deployable.zip
+#   business_central_standalone:
+#     url:  "{{ rhpam_business_central_standalone }}"
+#     name: rhpam-7.0.1-business-central-standalone.jar
+#   add_ons_7:
+#     url:  "{{rhpam_add_ons_7}}"
+#     name: rhpam-7.0.1-add-ons.zip
+#   source_distribution:
+#     url:  "{{rhpam_source_distribution}}"
+#     name: rhpam-7.0.1-sources.zip
+#   entando_app_manager_for_pam:
+#     url:  "{{rhpam_entando_app_manager_for_pam}}"
+#     name: entando-app-manager-5.0-for-red-hat-process-automation-manager-7.0-guidelines.pdf
+
+# rhpam_soft_7_0_2:
+#   process_server_all_ee7_containers:
+#     url:  "{{rhpam_process_server_all_ee7_containers_0_2}}"
+#     name: rhpam-7.0.2-kie-server-ee7.zip
+#   business_central_for_eap_7:
+#     url:  "{{rhpam_business_central_for_eap_7_0_2}}"
+#     name: rhpam-7.0.2-business-central-eap7-deployable.zip
+#   business_central_standalone:
+#     url:  "{{ rhpam_business_central_standalone_0_2 }}"
+#     name: rhpam-7.0.2-business-central-standalone.jar
+#   add_ons_7:
+#     url:  "{{rhpam_add_ons_7_0_2}}"
+#     name: rhpam-7.0.2-add-ons.zip
+#   source_distribution:
+#     url:  "{{rhpam_source_distribution_0_2}}"
+#     name: rhpam-7.0.2-sources.zip
+#   entando_app_manager_for_pam:
+#     url:  "{{rhpam_entando_app_manager_for_pam_0_2}}"
+#     name: entando-app-manager-5.0-for-red-hat-process-automation-manager-7.0-guidelines.pdf
+#   patch_7_0_2:
+#     url: "{{rhpam_patch_7_0_2}}"
+#     name: rhpam-7.0.2-patch.zip
+
+rhpam_soft_7_1_0:
+  process_server_all_ee7_containers:
+    url:  "{{rhpam_process_server_all_ee7_containers_7_1_0}}"
+    name: rhpam-7.1.0-kie-server-ee7.zip
+  business_centralrhpam_patch_7_1_0_for_eap_7:
+    url:  "{{rhpam_business_central_for_eap_7_7_1_0}}"
+    name: rhpam-7.1.0-business-central-eap7-deployable.zip
+  business_central_standalone:
+    url:  "{{ rhpam_business_central_standalone_7_1_0 }}"
+    name: rhpam-7.1.0-business-central-standalone.jar
+  add_ons_7:
+    url:  "{{rhpam_add_ons_7_1_0}}"
+    name: rhpam-7.1.0-add-ons.zip
+  source_distribution:
+    url:  "{{rhpam_source_distribution_7_1_0}}"
+    name: rhpam-7.1.0-sources.zip
+  entando_app_manager_for_pam:
+    url:  "{{rhpam_entando_app_manager_for_pam_7_1_0}}"
+    name: entando-app-manager-5.0-for-red-hat-process-automation-manager-7.1-guidelines.pdf
+  patch_7_1_0:
+    url: "{{rhpam_patch_7_1_0}}"
+    name: rhpam-7.1.0-update.zip
+  patch_7_1_1:
+    url: "{{rhpam_patch_7_1_1}}"
+    name: rhpam-7.1.1-update.zip     
+
+rhpam_soft: "{{rhpam_soft_7_1_0}}"
+#
+#
+# MySQL:
+mysql_server_url:    https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+mysql_connector_url: https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.45.zip
+mysql_connector_java_version: 5.1.45
+
+mysql_soft:
+  mysql_server:
+    url: "{{ mysql_server_url }}"
+    name: mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+  mysql_jdbc_driver:
+    url: "{{ mysql_connector_url }}"
+    name: mysql-connector-java-5.1.45.zip
+
+# PostgreSQL:
+postgresql_jdbc_java_version: 42.2.5.jre6
+
+# Oracle:
+# https://blogs.oracle.com/dev2dev/get-oracle-jdbc-drivers-and-ucp-from-oracle-maven-repository-without-ides
+oracle_jdbc_java_version: 12.2.0.1
+oracle_maven_repo_url:    https://maven.oracle.com/
+curl_proxy: "-x http://proxy2.intranet.gobcantabria.es:8080"
+#
+#
+jmeter_bip_zip_url:     http://apache.uvigo.es//jmeter/binaries/apache-jmeter-4.0.zip
+jmeter_plugins_manager: https://jmeter-plugins.org/get/
+jmeter_soft:
+  jmeter_zip:
+    url: "{{jmeter_bip_zip_url}}"
+    name: apache-jmeter-4.0.zip
+  jmeter_plugin:
+    url: "{{jmeter_plugins_manager}}"
+    name: jmeter-plugins-manager-0.20.jar
+
+#
+# Messages
+MSG_001_TRANSFER_METHOD:  "ANSRHDOW-001: This role requires 'transfer_method' to be set and non empty. See the README"
+MSG_002_USERNAME_MISSING: "ANSRHDOW-002: This role requires 'rhn_username' to be set and non empty."
+MSG_003_PASSWORD_MISSING: "ANSRHDOW-003: This role requires 'rhn_password' to be set and non empty."
+
+# Constants
+TRANSFER_METHOD_CSP_TO_HOST: csp-to-host
+
+#
+# EOF

@@ -1,0 +1,21 @@
+---
+# tasks file for tower_groups
+
+- name: Add groups to Tower
+  tower_group:
+    credential: "{{ item.credential }}"
+    description: "{{ item.description }}"
+    group_by: "{{ item.group_by }}"
+    instance_filters: "{{ item.instance_filters }}"
+    inventory: "{{ item.inventory }}"
+    name: "{{ item.name }}"
+    overwrite: "{{ item.overwrite | default (omit, true) }}"
+    overwrite_vars: "{{ item.overwrite_vars }}"
+    source: "{{ item.source }}"
+    source_regions: "{{ item.source_regions }}"
+    source_script: "{{ item.source_script }}"
+    source_vars: "{{ item.source_vars }}"
+    state: "{{ item.state }}"
+    tower_verify_ssl: "{{ check_ssl }}"
+    update_on_launch: "{{ item.update_on_launch | default (omit, true) }}"
+    variables: "{{ item.variables }}"

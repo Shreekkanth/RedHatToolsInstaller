@@ -1,0 +1,6 @@
+---
+
+- name: reload DS instances
+  service:
+    name: "dirsrv@{{ realm_name | regex_replace('[.]', '-') | upper }}"
+    state: restarted

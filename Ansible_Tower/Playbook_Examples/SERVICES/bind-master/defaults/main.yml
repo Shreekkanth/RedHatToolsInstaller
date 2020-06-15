@@ -1,0 +1,16 @@
+---
+# defaults file for bind
+bind_enable_repository: false
+bind_requisite_repositories:
+- rhel-7-server-rpms
+bind_requisite_packages:
+#- bind-chroot
+- bind
+- bind-utils
+- firewalld
+- libsemanage-python
+bind_basedir: /var/named
+bind_named_conf: /etc/named.conf
+bind_user: named
+bind_group: "{{ bind_user }}"
+bind_port: 53

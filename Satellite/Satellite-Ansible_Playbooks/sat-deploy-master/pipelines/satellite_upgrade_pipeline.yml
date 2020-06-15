@@ -1,0 +1,88 @@
+- name: create vagrant boxes
+  hosts: localhost
+  any_errors_fatal: true
+  vars_files:
+    - vars/satellite_base.yml
+    - vars/upgrade_base.yml
+  roles:
+    - forklift
+
+- hosts:
+    - "{{ satdeploy_server_name }}"
+  any_errors_fatal: true
+  vars_files:
+    - vars/satellite_base.yml
+    - vars/upgrade_base.yml
+  tasks:
+    - set_fact:
+        compose_repository_type: Satellite
+        activation_key: "satellite-maintenance-next-qa-{{ pipeline_os }}"
+        foreman_installer_additional_packages:
+          - satellite
+
+- hosts:
+    - "{{ satdeploy_server_name }}"
+  any_errors_fatal: true
+  become: yes
+  vars_files:
+    - vars/satellite_base.yml
+    - vars/upgrade_base.yml
+  vars:
+    satellite_version: "{{ pipeline_version }}"
+    compose_repository_version: "{{ pipeline_version }}"
+  roles:
+    - etc_hosts
+    - dogfood_register
+    - compose-repository
+    - update_os_packages
+    - role: foreman_installer
+      foreman_installer_scenario: satellite
+      foreman_installer_command: satellite-installer
+
+- hosts:
+    - "{{ satdeploy_server_name }}"
+  any_errors_fatal: true
+  become: yes
+  vars_files:
+    - vars/satellite_base.yml
+    - vars/upgrade_base.yml
+  vars:
+    satellite_version: "{{ upgrade_version }}"
+    compose_repository_version: "{{ upgrade_version }}"
+  pre_tasks:
+    - name: Unlock packages
+      command: foreman-maintain packages unlock
+  roles:
+    - compose-repository
+    - role: foreman_installer
+      foreman_installer_scenario: satellite
+      foreman_installer_command: satellite-installer
+      foreman_installer_upgrade: true
+      foreman_installer_disable_system_checks: true
+  post_tasks:
+    - name: Lock packages
+      command: foreman-maintain packages lock
+
+- hosts:
+    - "{{ satdeploy_server_name }}"
+  any_errors_fatal: true
+  become: yes
+  vars_files:
+    - vars/satellite_base.yml
+    - vars/upgrade_base.yml
+  pre_tasks:
+    - name: load version specific vars
+      include_vars: "{{ item }}"
+      loop: "{{ query('first_found', ['vars/satellite_{{ pipeline_version }}.yml'], errors='ignore') }}"
+    - name: Unlock packages
+      command: foreman-maintain packages unlock
+    - name: Enable extras repository for test dependencies
+      command: subscription-manager repos --enable rhel-7-server-extras-rpms
+  roles:
+    - bats
+  post_tasks:
+    - name: Lock packages
+      command: foreman-maintain packages lock
+    - name: Disable extras repository for test dependencies
+      command: subscription-manager repos --disable rhel-7-server-extras-rpms
+      ignore_errors: True

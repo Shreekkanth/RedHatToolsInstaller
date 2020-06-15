@@ -1,0 +1,12 @@
+---
+#
+# Playbook to initialyze Quicklab VMs (subscription-manager + packages)
+#
+# $ ansible-playbook -l {limit} initial_configuration.yaml --forks 10 --ask-vault-pass 
+#
+- hosts: all
+  gather_facts: no
+  vars_files: vars/rhaccess.yaml
+
+  roles:
+      - quicklab

@@ -1,0 +1,23 @@
+---
+
+# OVERVIEW
+#   TODO
+#
+# VARS
+#   satellite6_url: The URL to the Satellite 6 instance to register against.
+
+- name: Un-Register from Satellite 6
+  hosts: all
+
+  vars:
+    satellite6_url: satellite6-master-0.rhc-lab.iad.redhat.com
+
+  tasks:
+    - name: un-register
+      redhat_subscription:
+        state: absent
+
+    - name: Remove Satellite CA Certificate
+      package:
+        state: absent
+        name: "katello-ca-consumer*"

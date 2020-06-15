@@ -1,0 +1,154 @@
+---
+
+# Registering system with CDN directly.
+- block:
+  - name: Registering host with CDN
+    redhat_subscription:
+      state: present
+      username: "{{ cdn_user }}"
+      password: "{{ cdn_password }}"
+      consumer_name: "{{ ansible_nodename }}"
+
+  - set_fact:
+      use_satellite_epel: false
+
+  - set_fact:
+      using_satellite: false
+  when: register_with_cdn
+
+# Register to satellite
+- block:
+  - name: Install latest katello-ca bundle
+    shell: rpm -i http://{{ sat_cdn_fqdn }}/pub/katello-ca-consumer-latest.noarch.rpm
+    register: result
+    failed_when: result.rc != 0 and result.rc != 1
+
+  - name: Register host to Satellite using credentials
+    redhat_subscription:
+      state: present
+      username: "{{ sat_cdn_user }}"
+      password: "{{ sat_cdn_password }}"
+      environment: "{{ sat_cdn_env }}"
+      auto_attach: true
+
+  - set_fact:
+      using_satellite: true
+  when: not register_with_cdn
+
+- name: Check if system is subscribed
+  shell: "/usr/bin/subscription-manager list --consumed --matches='{{ cdn_product }}*' | awk '/Pool ID/ {print $3}'"
+  register: subscribed
+  changed_when: false
+
+#Get the pool id for the pool that contains the product
+- name: CDN | get CDN pool id
+  shell: "/usr/bin/subscription-manager list --all --available | grep -A50 '{{ cdn_product }}' |
+    grep -B5 'Pool ID' | awk '/Pool ID/ { print $3 }' | head -1"
+  register: pool_id_command
+  ignore_errors: yes
+  changed_when: false
+  when:
+    - subscribed.stdout == ''
+    - pool_id is undefined
+
+- name: Set pool_id fact
+  set_fact:
+    pool_id: "{{ pool_id_command.stdout }}"
+  when:
+    - subscribed.stdout == ''
+    - pool_id is undefined
+
+#Attaching the system to the right Pool
+- name: CDN | subscribing to the pool
+  command: "/usr/bin/subscription-manager attach --pool={{ pool_id }}"
+  ignore_errors: yes
+  when: subscribed.stdout == ''
+
+- name: Disable all repositories
+  rhsm_repository:
+    name: "*"
+    state: disabled
+  when: reset_redhat_repos
+
+- name: Check enabled repos
+  command: yum repolist
+  register: enabled_repos
+  changed_when: false
+  args:
+    warn: false
+
+- name: Enable user defined repositories
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - "{{ redhat_repositories }}"
+  when:
+    - redhat_repositories is defined
+    - item not in enabled_repos.stdout
+
+- block:
+  - set_fact:
+      repository_list: "{{ redhat_el7_repositories }}"
+
+  - set_fact:
+      sat_tools_repository: "rhel-7-server-satellite-tools-{{ satellite_version }}-rpms"
+  when: ansible_distribution_major_version == '7'
+
+- block:
+  - set_fact:
+      repository_list: "{{ redhat_el8_repositories }}"
+
+  - set_fact:
+      sat_tools_repository: "satellite-tools-{{ satellite_version }}-for-rhel-8-x86_64-rpms"
+  when: ansible_distribution_major_version == '8'
+
+- set_fact:
+    repository_list: "{{ repository_list + sat_tools_repository }}"
+  when: using_satellite
+
+
+- name: Enable default repositories
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - "{{ repository_list }}"
+  when:
+    - redhat_repositories is not defined
+    - item not in enabled_repos.stdout
+
+
+- block:
+  - name: Enable Internet EPEL repo
+    yum:
+      name: http://download.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+    when: register_with_cdn or not use_satellite_epel
+
+  - name: Enable Satellite EPEL repo
+    rhsm_repository:
+      name: "{{ sat_epel_repo }}"
+      state: enabled
+    when: use_satellite_epel
+  when: enable_epel
+
+
+# Doesn't hurt to clean the yum cache anyway (Suppress warnings - clean is not in the yum module)
+- name: Clean yum cache
+  command: "yum clean all"
+  args:
+    warn: no
+  changed_when: false
+
+# If we're using Satellite, install the satellite tools.
+- name: Install Satellite tools
+  yum:
+    name: katello-host-tools
+    state: latest
+  when: using_satellite and install_katello_tools
+
+- name: Install Satellite tracer
+  yum:
+    name: katello-host-tools-tracer
+    state: latest
+  when: using_satellite and install_katello_tracer

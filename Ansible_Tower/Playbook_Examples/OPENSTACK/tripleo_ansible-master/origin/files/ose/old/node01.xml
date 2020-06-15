@@ -1,0 +1,74 @@
+<domain type="kvm">
+  <name>node01</name>
+  <uuid>4a52a704-be37-4815-b4b1-31716f4e4fe3</uuid>
+  <memory>4194304</memory>
+  <currentMemory>4194304</currentMemory>
+  <vcpu>2</vcpu>
+  <os>
+    <type arch="x86_64">hvm</type>
+    <boot dev="hd"/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode="custom" match="exact">
+    <model>SandyBridge</model>
+    <feature policy="force" name="vmx"/>
+  </cpu>
+  <clock offset="utc">
+    <timer name="rtc" tickpolicy="catchup"/>
+    <timer name="pit" tickpolicy="delay"/>
+    <timer name="hpet" present="no"/>
+  </clock>
+  <pm>
+    <suspend-to-mem enabled="no"/>
+    <suspend-to-disk enabled="no"/>
+  </pm>
+  <devices>
+    <emulator>/usr/bin/qemu-kvm</emulator>
+    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2"/>
+      <source file="/ssd/images/node01.qcow2"/>
+      <target dev="vda" bus="virtio"/>
+    </disk>
+    <controller type="usb" index="0" model="ich9-ehci1"/>
+    <controller type="usb" index="0" model="ich9-uhci1">
+      <master startport="0"/>
+    </controller>
+    <controller type="usb" index="0" model="ich9-uhci2">
+      <master startport="2"/>
+    </controller>
+    <controller type="usb" index="0" model="ich9-uhci3">
+      <master startport="4"/>
+    </controller>
+    <interface type="bridge">
+      <source bridge="br1"/>
+      <mac address="52:54:00:43:66:96"/>
+      <model type="virtio"/>
+    </interface>
+    <interface type="network">
+      <source network="mgmt"/>
+      <mac address="52:54:00:cc:02:95"/>
+      <model type="virtio"/>
+    </interface>
+    <interface type="network">
+      <source network="tenant"/>
+      <mac address="52:54:00:73:2f:f6"/>
+      <model type="virtio"/>
+    </interface>
+    <interface type="network">
+      <source network="external"/>
+      <mac address="52:54:00:31:80:51"/>
+      <model type="virtio"/>
+    </interface>
+    <input type="tablet" bus="usb"/>
+    <graphics type="vnc" port="-1"/>
+    <console type="pty"/>
+    <channel type="unix">
+      <source mode="bind"/>
+      <target type="virtio" name="org.qemu.guest_agent.0"/>
+    </channel>
+  </devices>
+</domain>
+

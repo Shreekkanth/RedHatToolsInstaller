@@ -1,0 +1,15 @@
+---
+
+- name: install docker-python package
+  yum: name=docker-python state=installed
+
+- name: centos bash container
+  docker:
+    name: centos
+    hostname: centos_bash
+    image: centos:latest
+    pull: always
+    state: reloaded
+    command: bash
+    detach: True
+    privileged: True

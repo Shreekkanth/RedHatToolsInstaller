@@ -1,0 +1,27 @@
+---
+####
+- name: Check Existence of JBoss EAP cli Directory
+  stat:
+    path: "{{ jboss_eap_config_cli }}"
+  register: jboss_eap_config_cli_exists
+  tags:
+    - rhpam_templates
+    - jboss_eap_create_cli_scripts
+
+#### Create Templates Scripts
+- name: Create Templates Scripts {{ item }}
+  template:
+    src:   "jboss/cli/{{item}}"
+    dest:  "{{ jboss_eap_config_cli + item[0:-3] + '.cli' }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    mode: 0644
+    force: yes
+  tags:
+    - rhpam_templates
+    - jboss_eap_create_cli_scripts
+  when: jboss_eap_config_cli_exists.stat.exists == true
+  with_items: "{{ jboss_eap_scripts_cli_templates_list }}"
+
+#
+# EOF

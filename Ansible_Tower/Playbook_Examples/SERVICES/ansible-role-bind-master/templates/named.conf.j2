@@ -1,0 +1,28 @@
+// named.conf
+options {
+  listen-on port 53 { any; };
+  directory "/var/named";
+  dump-file "/var/named/data/cache_dump.db";
+  statistics-file "/var/named/data/named_stats.txt";
+  memstatistics-file "/var/named/data/named_mem_stats.txt";
+  allow-query { any; };
+  allow-transfer {"none";};
+  allow-recursion {"none";};
+  recursion no;
+  version "[Secured]";
+  rate-limit {
+    responses-per-second 15;
+  };
+  /* Path to ISC DLV key */
+  bindkeys-file "/etc/named.iscdlv.key";
+};
+logging {
+  channel default_debug {
+    file "data/named.run";
+    severity dynamic;
+  };
+};
+zone "{{ ext_domain }}" IN {
+  type master;
+  file "zones/zone.db";
+};

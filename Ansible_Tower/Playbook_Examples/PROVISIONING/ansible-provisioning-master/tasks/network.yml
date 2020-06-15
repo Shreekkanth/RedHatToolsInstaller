@@ -1,0 +1,26 @@
+---
+# file: roles/provisioning/tasks/network.yml
+- name: Configuring network bonding
+  copy:
+    src={{ item }}
+    dest=/etc/sysconfig/network-scripts/
+    owner=root
+    group=root
+    mode=0644
+    force=yes
+  with_fileglob:
+    - "{{ playbook_dir }}/files/etc/sysconfig/network-scripts/*"
+  when: provisioning_configure_network and provisioning_configure_network == true
+  notify: Restart Network
+  tags:
+    - provisioning
+    - provisioning-network
+
+- name: Purging the current network configuration
+  file:
+    path=/etc/sysconfig/network-scripts/{{ ifcfg_to_remove }}
+    state=absent
+  when: ifcfg_to_remove
+  tags:
+    - provisioning
+    - provisioning-network

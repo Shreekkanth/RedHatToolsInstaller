@@ -1,0 +1,8 @@
+---
+- name: Deploy catalogs to Ansible Tower hosts
+  hosts: tower
+
+  roles:
+    - name: ansible_tower
+      ansible_tower_catalog_path: "{{ playbook_dir }}/vars/default"
+

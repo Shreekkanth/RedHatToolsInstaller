@@ -1,0 +1,13 @@
+{% if dns_searches %}
+search {{ dns_searches | join(' ') }}
+{% endif %}
+{% if dns_servers[ansible_hostname|list|first|upper] is defined %}
+{% for dns_nameserver in dns_servers[ansible_hostname|list|first|upper] %}
+nameserver {{ dns_nameserver }}
+{% endfor %}
+{% else %}
+{% for dns_nameserver in dns_servers["L"] %}
+nameserver {{ dns_nameserver }}
+{% endfor %}
+{% endif %}
+

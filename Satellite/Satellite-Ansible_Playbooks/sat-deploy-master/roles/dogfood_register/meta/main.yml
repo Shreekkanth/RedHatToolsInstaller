@@ -1,0 +1,7 @@
+---
+dependencies:
+  - role: katello_client
+    katello_client_cleanup: True
+    katello_client_server: dogfood.sat.engineering.redhat.com
+    katello_client_organization: Sat6-CI
+    katello_client_activationkey: '{{ activation_key }}'

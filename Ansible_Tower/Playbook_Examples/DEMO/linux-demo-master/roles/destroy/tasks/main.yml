@@ -1,0 +1,5 @@
+- name: Power off and delete VM
+  vsphere_guest:
+    guest: "{{ inventory_hostname }}"
+    state: absent
+    force: yes

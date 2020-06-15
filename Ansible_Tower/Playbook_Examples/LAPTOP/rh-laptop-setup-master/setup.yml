@@ -1,0 +1,149 @@
+---
+- hosts: localhost
+  become: yes
+  vars:
+    - task_disabled: true
+  tasks: 
+    - name: Checking that all prereq variables are set for this playbook 
+      fail: msg="Missing variable '{{ item }}', please set it when executing using -e {{ item }}=value"
+      when: item not in vars
+      with_items: 
+       - rh_username
+      tags:
+        - always
+
+    - name: Installing basic prereq packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - ansible
+        - git 
+        - curl
+        - libselinux-python
+        - python2-dnf
+      tags:
+        - always
+
+
+    - name: Install RH CA cert
+      package:
+        name: rhfiles/certs/redhat-internal-cert-install-0.1-7.el7.csb.noarch.rpm 
+      tags: certificates
+
+
+    # Setup OpenVPN with config from https://mojo.redhat.com/docs/DOC-1013377
+    - name: Install packages for OpenVPN
+      package: 
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - NetworkManager-openvpn
+        - NetworkManager-openvpn-gnome
+      tags:
+        - certificates
+        - packages
+        - openvpn
+
+    - name: Configure VPN 
+      package:
+        name:  
+          - rhfiles/openvpn/redhat-internal-NetworkManager-openvpn-profiles-0.1-29.el7.csb.noarch.rpm
+      tags:
+        - openvpn
+ 
+
+    # Adding kerberos configuration with krb5.conf from https://mojo.redhat.com/docs/DOC-1013757 
+    - name: Install packages for Kerberos
+      package:
+        name: krb5-workstation
+        state: latest
+      register: install_kerberos_packages
+      tags:
+        - packages
+        - kerberos
+       
+    - name: Make REDHAT.COM default domain
+      ini_file:
+        path: /etc/krb5.conf
+        section: libdefaults
+        option: default_realm
+        value: REDHAT.COM
+      when: install_kerberos_packages
+      tags:
+        - kerberos
+
+    - name: Ensures /etc/opt/chrome/policies/managed dir exists for kerberos configuration
+      file: path=/etc/opt/chrome/policies/managed state=directory
+      when: install_kerberos_packages
+      tags:
+        - kerberos
+
+    - name: Configure Chrome to enable Kerberos auth for Red Hat 
+      copy:
+        src: rhfiles/kerberos/chrome-redhat-corp.json
+        dest: /etc/opt/chrome/policies/managed/redhat-corp.json
+        mode: 0644
+      when: install_kerberos_packages
+      tags:
+        - kerberos
+
+
+    # Backup with SpiderOak, instructions from https://redhat.service-now.com/rh_ess/kb_view.do?sysparm_article=KB0000941
+    # Internal Helpdesk key fetched from http://hdn.corp.redhat.com/rhel7-csb-stage/repoview/redhat-internal-release.html
+    - name: Import RH Helpdesk key
+      rpm_key: 
+        state=present
+        key=rhfiles/keys/RPM-GPG-KEY-helpdesk-new
+      register: helpdesk_key
+      tags:
+        - rpm-keys
+        - backup
+        - spideroak
+
+    - name: Setup up internal SpiderOak repository
+      yum_repository:
+        name: spideroak
+        description: SpiderOak packages
+        baseurl: https://hdn.corp.redhat.com/software/spideroak/repo/
+        gpgcheck: yes
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-helpdesk-new
+        skip_if_unavailable: yes
+      when: helpdesk_key
+      register: spideroak_repo
+      tags:
+        - backup
+        - spideroak
+
+    - name: Install SpiderOak
+      package:
+        name: SpiderOakGroups
+        state: latest
+      when: spideroak_repo
+      tags:
+        - backup
+        - spideroak
+
+    # Collect Information for Red Hat Inventory
+    # Inspired by script found on: https://mojo.redhat.com/docs/DOC-1072148
+    - name: Collect IP used to reach redhat.com for the RH Inventory
+      shell: ip route get 10.4.164.55 | awk '$2 ~ /^via$/ { print $NF }' ; touch /root/.rhinventory_done
+      args:
+        creates: /root/.rhinventory_done
+      register: ip_route_ip
+      when: task_disabled != true
+      tags:
+        - rhinventory
+
+    - name: Sending email with Red Hat Inventory
+      mail:
+        host='aspmx.l.google.com'
+        port=25
+        from="{{ rh_username }}@redhat.com"
+        to="{{ rh_username }}@redhat.com"
+        subject='Serial_Number_Check_2016'
+        body="\t{{ rh_username }}{{':'}} {{ ansible_date_time.date }}\n\t{{ ip_route_ip.stdout }} interface\n\tProduct Name{{':'}} {{ ansible_product_name }}\n\tVersion{{':'}} {{ ansible_product_version }}\n\tSerial Number{{':'}} {{ ansible_product_serial }}\n\tScript Version{{':'}} rh-laptop-setup Ansible Playbook"
+      when: ip_route_ip.changed and task_disabled != true
+      tags:
+        - rhinventory
+

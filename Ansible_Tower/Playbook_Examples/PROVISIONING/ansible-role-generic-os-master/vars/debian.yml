@@ -1,0 +1,13 @@
+---
+chrony_config: /etc/chrony/chrony.conf
+
+common_packages:
+  - bash-completion
+  - firewalld
+  - net-tools
+  - screen
+  - sssd
+  - tree
+  - vim
+  - wget
+  - "{{ ntp_client }}"

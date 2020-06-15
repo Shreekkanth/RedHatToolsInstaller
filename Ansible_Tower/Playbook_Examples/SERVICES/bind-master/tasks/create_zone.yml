@@ -1,0 +1,27 @@
+---
+# tasks file for bind
+
+- name: Add zone section at named.conf
+  blockinfile:
+    dest: "{{ bind_named_conf }}"
+    block: |
+      zone "{{ public_domain }}" IN {
+              type master;
+              file "zones/{{ public_domain }}.db";
+              allow-update { key {{ public_domain }}; } ;
+      };
+  notify: Restart named service
+
+- name: Configure zone file
+  template:
+    src: domain.db.j2
+    dest: "{{ bind_basedir }}/zones/{{ public_domain }}.db"
+    owner: "{{ bind_user }}"
+    group: "{{ bind_group }}"
+    backup: yes
+
+- name: Restore default SELinux security contexts of zone directory
+  command: restorecon -R "{{ item }}"
+  with_items: 
+  - "{{ bind_named_conf }}"
+  - "{{ bind_basedir }}"

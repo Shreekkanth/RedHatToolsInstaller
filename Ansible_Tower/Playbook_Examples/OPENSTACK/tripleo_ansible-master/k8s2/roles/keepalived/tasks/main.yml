@@ -1,0 +1,22 @@
+---
+
+- name: install keepalived
+  yum: name=keepalived state=latest
+
+- name: start keepalived
+  service: name=keepalived state=started enabled=yes
+
+- name: install check script
+  template: src=check_apiserver.sh.j2 dest=/etc/keepalived/check_apiserver.sh mode=0755
+
+- name: backup keepalived.conf
+  shell: test -f {{ item }}.orig || cp {{ item }} {{ item }}.orig
+  with_items:
+    - /etc/keepalived/keepalived.conf
+  check_mode: no
+  ignore_errors: yes
+  changed_when: false
+
+- name: install keepalived.conf
+  template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+  notify: restart keepalived

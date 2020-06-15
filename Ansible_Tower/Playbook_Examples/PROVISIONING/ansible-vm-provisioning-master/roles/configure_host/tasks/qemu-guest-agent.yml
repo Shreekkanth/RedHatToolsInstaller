@@ -1,0 +1,10 @@
+- name: Install QEMU guest agent
+  yum:
+    name: qemu-guest-agent
+    state: present
+
+- name: Start guest agent
+  service:
+    name: qemu-guest-agent
+    enabled: true
+    state: started

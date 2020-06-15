@@ -1,0 +1,12 @@
+[controller]
+192.168.122.243   ansible_connection=local
+
+[lab]
+node-0.rhpam7.lab.rdu2.cee.redhat.com
+#node-0.rhpam7.quicklab.pnq2.cee.redhat.com
+#node-0.rhpam7.quicklab.pnq2.cee.redhat.com ( 10.74.159.219 )
+
+
+
+#
+# EOF

@@ -1,0 +1,40 @@
+---
+- name: Control if the role is supported on this system
+  assert:
+    that: >
+          {% for key, value in supported_distrobution.iteritems() -%}
+            ( ansible_distribution == "{{ key }}" and ansible_distribution_version | float >= {{ value.version }}){% if not loop.last %} or {% endif %}
+          {%- endfor %}
+    msg: >
+          This play is only supported on the following operating systems:
+          {% for key, value in supported_distrobution.iteritems() -%}
+            {{ key }} {{ value.version }}{% if not loop.last %}, {% endif %}
+          {%- endfor %}
+
+- name: Ensure required params
+  assert:
+    that:
+      - ipa_server_ds_secret is defined
+      - ipa_server_admin_secret is defined
+      - realm_name is defined
+
+- name: Ensure CA-less preconditions are set
+  assert:
+    that:
+      - "ipa_server_http_cert_file != none"
+      - "ipa_server_http_key_file != none"
+      - "ipa_server_http_pin != none"
+      - "ipa_server_dirsrv_cert_file != none"
+      - "ipa_server_dirsrv_key_file != none"
+      - "ipa_server_dirsrv_pin != none"
+      - "ipa_server_ca_file != none"
+  when: not ipa_server_enable_ca
+
+- name: Include OS specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include: install.yml
+
+- include: deploy.yml
+
+- include: realm.yml

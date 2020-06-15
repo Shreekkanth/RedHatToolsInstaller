@@ -1,0 +1,48 @@
+- name: Delete VM
+  gather_facts: false
+  hosts: localhost
+  tasks:
+
+  - name: Delete VM
+    include_role:
+      name: delete_vm
+    with_items: "{{ instances }}"
+
+  # - name: Get Satellite host info
+  #   delegate_to: localhost
+  #   uri:
+  #     validate_certs: false
+  #     user: "{{ satellite_username }}"
+  #     password: "{{ satellite_password }}"
+  #     force_basic_auth: yes
+  #     body_format: json
+  #     method: "GET"
+  #     url: "https://{{ satellite_hostname }}/api/hosts/{{ inventory_hostname }}"
+  #   register: satellite_host_info
+  #   failed_when: 
+  #   - satellite_host_info is defined
+  #   - satellite_host_info.status != 200
+  #   - satellite_host_info.status != 404
+
+  # - name: Dump Satellite host info
+  #   debug:
+  #     msg: "{{ satellite_host_info }}"
+  #     verbosity: 1
+
+  # - name: Delete Host from Satellite
+  #   delegate_to: localhost
+  #   uri:
+  #     validate_certs: false
+  #     user: "{{ satellite_username }}"
+  #     password: "{{ satellite_password }}"
+  #     force_basic_auth: yes
+  #     body_format: json
+  #     method: "DELETE"
+  #     url: "https://{{ satellite_hostname }}/api/hosts/{{ inventory_hostname }}"
+  #   register: satellite_delete_host
+  #   when: satellite_host_info.status == 200
+  #   changed_when: satellite_delete_host.status == 200
+  #   failed_when: 
+  #   - satellite_delete_host is defined
+  #   - satellite_delete_host.status != 200
+  #   - satellite_delete_host.status != 404

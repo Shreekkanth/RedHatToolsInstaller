@@ -1,0 +1,38 @@
+---
+- hosts: "localhost"
+  # tasks:
+  #   - shell: 'cut -d: -f1,3 /etc/passwd | awk -F : {{ "\'\{print "{user: " "\""$1"\""",""uid: ""\""$2"\"""}"\}\'" }}'
+  #     register: user_dict
+  #
+  #   # - shell: "echo {{ item.user }}"
+  #   #   with_items: "{{ user_dict.stdout_lines }}"
+  #   #   when: "{{ item.uid | int < 50 }}"
+  #   #   register: output
+  #
+  #   - debug:
+  #       var: user_dict.stdout_lines
+  tasks:
+    - name: Collect list of user accounts to lock
+      getent:
+        database: "passwd"
+        key: "{{ item }}"
+        fail_key: False
+        split: ":"
+      register: "lock_users"
+      with_items: "{{ range(0, 501, 1) | list }}"
+
+    - debug:
+        var: lock_users.results|json_query('[*].ansible_facts.getent_passwd')
+
+    - shell: 'echo "{{ item.key }}"'
+      with_dict: "{{ lock_users.results|json_query('[*].ansible_facts.getent_passwd') }}"
+      register: "users"
+      when:
+        - 'item.value'
+        - 'item.key != "root"'
+
+    - debug:
+        var: users | json_query('results[*].stdout')
+    #
+    # - debug:
+    #     var: lock_users.results

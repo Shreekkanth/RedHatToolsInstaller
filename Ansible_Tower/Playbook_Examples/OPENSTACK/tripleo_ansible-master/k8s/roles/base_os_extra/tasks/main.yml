@@ -1,0 +1,18 @@
+---
+
+- name: bashrc
+  lineinfile: >-
+    dest=.bashrc
+    state=present
+    regexp={{ item.regexp }}
+    line={{ item.content }}
+    backup=yes
+  with_items:
+    - regexp: '^alias ls='
+      content: "alias ls='ls --color=always'"
+    - regexp: '^export TERM='
+      content: 'export TERM=xterm'
+    - regexp: '^export SYSTEMD_LESS'
+      content: 'export SYSTEMD_LESS=FRXMK'
+    - regexp: '^export KUBECONFIG='
+      content: 'export KUBECONFIG=/etc/kubernetes/admin.conf'

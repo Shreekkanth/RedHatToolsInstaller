@@ -1,0 +1,159 @@
+---
+# Find satellite proxy if satellite_server is not defined
+- block:
+  - name: Get facts about Satellite proxies
+    ec2_remote_facts:
+      filters:
+        instance-state-name: running
+        "tag:ServiceName": Satellite
+        "tag:ServiceComponent": Proxy
+    register: satellite_ec2_facts
+
+
+  - debug: var=satellite_ec2_facts
+
+
+  - set_fact:
+      satellite_server: satellite_ec2_facts
+    when:
+      - satellite_ec2_facts is defined
+      - satellite_ec2_facts.results|length > 0
+
+
+  - fail:
+      msg: "No satellite_server specified and no satellite ec2 search results."
+    when: satellite_ec2_facts.results is not defined or satellite_ec2_facts.results|length == 0
+
+  when:
+    - satellite_server is not defined
+    - is_sat6_client is not defined or not is_sat6_client
+  tags:
+    - satellite
+    - satellite_register
+
+
+- name: Download new Satellite CA cert
+  get_url:
+    url: "{{ satellite_cert }}"
+    dest: "/usr/share/rhn/{{ rhn_cert_name }}"
+    force: yes
+  tags:
+    - satellite
+    - satellite_register
+
+
+# Satellite 5 registration
+- block:
+  - include_vars: sat5.yml
+  - debug: var=area
+  - debug: var=satellite_server
+  - debug: var=satellite_proxy
+
+
+  - name: Create RHN directory
+    file:
+      state: directory
+      path: "/usr/share/rhn"
+
+
+
+  - name: Import Satellite RPM GPG key
+    rpm_key:
+      state: present
+      key: "{{ satellite_gpg_key }}"
+
+
+  # - name: Register to Satellite
+  #   rhn_register:
+  #     state: present
+  #     server_url: "https://{{ satellite_server }}/XMLRPC"
+  #     sslcacert: "/usr/share/rhn/{{ rhn_cert_name }}"
+  #     activationkey: "{{ satellite_key }}"
+  #   ignore_errors: yes
+  #   register: satellite_registration
+
+
+  - name: Register to Satellite (via shell)
+    shell: "rhnreg_ks --serverUrl=https://{{ satellite_server }}/XMLRPC --sslCACert=/usr/share/rhn/{{ rhn_cert_name }} --activationkey={{ satellite_key }} --force"
+    args:
+      executable: /bin/bash
+    #when: satellite_registration | failed
+
+
+  - name: Check if Satellite proxy is available
+    uri:
+      url: "https://{{ satellite_proxy }}/index.html"
+      validate_certs: no
+    register: check_satellite
+
+
+  - name: Update Satellite proxy
+    lineinfile:
+      dest: /etc/sysconfig/rhn/up2date
+      regexp: "^serverURL=http*.*$"
+      line: "serverURL=https://{{ satellite_proxy }}/XMLRPC"
+    when: check_satellite.status == 200
+  when: is_sat6_client is not defined or not is_sat6_client
+  tags:
+    - satellite
+    - satellite5
+    - satellite_register
+
+
+# Satelite 6 registration
+- block:
+  - include_vars: sat6.yml
+  - debug: var=area
+  - debug: var=satellite_capsule
+
+
+  - name: Install CA RPM
+    package:
+      name: "http://{{ satellite_capsule }}/pub/katello-ca-consumer-latest.noarch.rpm"
+      state: present
+
+
+  - name: Register to Satellite
+    shell: "subscription-manager register --org={{ satellite_org }} --activationkey={{ satellite_key }} --force 2>&1"
+
+
+  - name: Auto attach
+    shell: subscription-manager attach --auto 2>&1
+
+
+  - name: Attach required pools
+    shell: "subscription-manager list --available --matches=\"{{ item }}\" --pool-only | xargs subscription-manager attach --pool"
+    with_items:
+      - "platops-metrics-el{{ ansible_distribution_major_version }}"
+      - "platops-utility-el{{ ansible_distribution_major_version }}"
+      - "Employee SKU"
+
+
+  - name: Enable required repos
+    shell: "subscription-manager repos --enable={{ item }} 2>&1"
+    with_items:
+      - "rhit_platops-metrics-el{{ ansible_distribution_major_version }}_rpms"
+      - "rhit_platops-utility-el{{ ansible_distribution_major_version }}_rpms"
+      - "rhel-{{ ansible_distribution_major_version }}-server-satellite-tools-6.2-rpms"
+
+
+  # - name: Install pre-requisite packages
+  #   package:
+  #     state: present
+  #     name: yum-plugin-priorities
+  #
+  #
+  # - name: Set repo priority
+  #   shell: "yum-config-manager --setopt \"{{ item }}.priority=\" --enable {{ item }} 2>&1"
+  #   with_items:
+  #     - "rhel-{{ ansible_distribution_major_version }}-server-satellite-tools-6.2-rpms"
+
+
+  when: is_sat6_client is defined and is_sat6_client
+  tags:
+    - satellite
+    - satellite6
+    - satellite_register
+
+
+# vim: set ft=ansible ts=2 sw=2 tw=0 et :

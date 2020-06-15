@@ -1,0 +1,9 @@
+---
+- hosts: RN002053
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Run disk expansion role
+      include_role:
+        name: linux_disk_management

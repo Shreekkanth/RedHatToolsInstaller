@@ -1,0 +1,452 @@
+---
+##
+# https://dev.mysql.com/doc/refman/5.7/en/binary-installation.html
+#
+# Initialize
+# ./mysqld --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf --initialize
+# ./mysqld --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf --initialize-insecure
+#
+# Start DB
+# ./mysqld      --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf --daemonize
+# ./mysqld_safe --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf --daemonize
+
+# Shutdown
+# ./mysqladmin --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf -u root --password="{{password_to_dev}}"  shutdown
+
+# ALTER USER 'root'@'localhost' IDENTIFIED BY '"{{password_to_dev}}"';
+##
+
+# Access to DB CLI:
+
+#
+# sudo yum install libaio
+- name: Install the latest version of libaio
+  become: true
+  yum:
+    name:  libaio
+    state: latest
+  tags:
+    - mysql_install
+  when: mysql_install
+
+#
+# Check Existence Directories
+#
+- name: Check Existence of MySQL Base
+  stat:
+    path: "{{ mysql_server_dest }}"
+  register: mysql_server_dest_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of Libraries MySQL
+  stat:
+    path: "{{ mysql_server_base + '/bin/' + mysql_user }}"
+  register: mysql_server_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of Link to MySQL
+  stat:
+    path: "{{ mysql_last_dist }}"
+  register: mysql_server_link_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of MySQL Conf
+  stat:
+    path: "{{ mysql_conf_base }}"
+  register: mysql_conf_base_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of MySQL Data
+  stat:
+    path: "{{ mysql_data_base }}"
+  register: mysql_data_base_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of MySQL Logs
+  stat:
+    path: "{{ mysql_logs_base }}"
+  register: mysql_logs_base_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of MySQL Run Directory
+  stat:
+    path: "{{ mysql_run_base }}"
+  register: mysql_run_base_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+
+- name: Check Existence of MySQL tmpfiles Configuration
+  stat:
+    path: "{{ mysql_tmpfiles_conf }}"
+  register: mysql_tmpfiles_conf_exists
+  tags:
+    - mysql_install
+    - mysql_uninstall
+#
+# Create directories & symbolic links
+#
+- name: Create MySQL Base Destination
+  file:
+    path:  "{{ mysql_server_dest }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_server_dest_exists.stat.exists == false
+
+# Extract MySQL Server
+- name: Extract MySQL server
+  unarchive:
+    src:        "{{ mysql_artifact }}"
+    dest:       "{{ mysql_server_dest }}"
+    remote_src: no
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_server_exists.stat.exists == false
+
+# ln -s full-path-to-mysql-VERSION-OS mysql
+- name: Link Symbolic
+  file:
+    src:   "{{ mysql_base_name }}"
+    dest:  "{{ mysql_last_dist }}"
+    state: link
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_server_link_exists.stat.exists == false
+
+- name: Create MySQL Conf Directory
+  file:
+    path:  "{{ mysql_conf_base }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_conf_base_exists.stat.exists == false
+
+- name: Create MySQL Data Directory
+  file:
+    path:  "{{ mysql_data_base }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_data_base_exists.stat.exists == false
+
+- name: Create MySQL Logs Directory
+  file:
+    path:  "{{ mysql_logs_base }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_logs_base_exists.stat.exists == false
+
+- name: Create Log InnoDB
+  file:
+    path:  "{{ mysql_logs_base + mysql_configurations[0].name }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - mysql_install
+
+- name: Create MySQL TMP Dir
+  file:
+    path:  "{{ mysql_tmp_systemd }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - mysql_install
+    - rhpam_model_mysql
+  when: mysql_install or is_mysql_ds
+
+- name: Create MySQL Run
+  become: true
+  file:
+    path:  "{{ mysql_run_base }}"
+    state: directory
+    mode:  "0775"
+    owner: "{{mysql_user}}"
+    group: "{{mysql_group}}"
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_run_base_exists.stat.exists == false
+
+#
+# https://dev.mysql.com/doc/refman/5.7/en/using-systemd.html#systemd-multiple-mysql-instances
+#
+# Generate MySQL configuration file
+- name: Copy MySQL configuration
+  template:
+    src:  mysql/mysql_conf.j2
+    dest: "{{ mysql_conf_base + item.1.name + '.cnf' }}"
+    mode: 0644
+  tags:
+    - mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+  when: mysql_install
+
+# Generate MySQL service systemd File
+- name: Generate MySQL Systemd Service File
+  template:
+    src:  mysql/mysql_service.j2
+    dest: "{{ mysql_tmp_systemd + 'mysql_' +  item.1.name + '.service' }}"
+    mode: 0644
+  tags:
+    - mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+  when: mysql_install
+
+# Generate MySQL service configuration file
+# {{ '_' + '%02d' | format(item.0) }}_service
+- name: Generate MySQL Systemd Service Configuration File
+  template:
+    src:  mysql/mysql_service_conf.j2
+    dest: "{{ mysql_tmp_systemd + 'mysql_' +  item.1.name + '.conf' }}"
+    mode: 0644
+  tags:
+    - mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+  when: mysql_install
+
+# https://developers.redhat.com/blog/2016/09/20/managing-temporary-files-with-systemd-tmpfiles-on-rhel7/
+# https://www.freedesktop.org/software/systemd/man/systemd-tmpfiles.html
+# Generate MySQL tmpfiles conf file: /usr/lib/tmpfiles.d/mysql.conf
+- name: Generate MySQL tmpfiles mysql.conf
+  template:
+    src:  mysql/mysql_tmpfiles.d.j2
+    dest: "{{ mysql_tmp_systemd + 'mysql.conf' }}"
+    mode: 0644
+  tags:
+    - mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+  when: mysql_install and mysql_tmpfiles_conf_exists.stat.exists == false
+
+# Copy tmpfiles.d
+- name: "Copy MySQL tmpfiles.d: /usr/lib/tmpfiles.d"
+  become: true
+  copy:
+    src:        "{{ mysql_tmp_systemd + 'mysql.conf' }}"
+    dest:       "{{ mysql_tmpfiles_conf }}"
+    remote_src: true
+    mode:       0644
+    owner:      root
+    group:      root
+  tags:
+    - mysql_install
+  when: mysql_install and mysql_tmpfiles_conf_exists.stat.exists == false
+
+######
+# Copy MySQL service systemd File
+- name: Copy MySQL Systemd Service File
+  become: true
+  copy:
+    src:        "{{ mysql_tmp_systemd + 'mysql_' +  item.1.name + '.service' }}"
+    dest:       "{{ user_lib_systemd }}"
+    remote_src: true
+    mode:       0644
+  tags:
+    - mysql_install
+  when: mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+
+# Generate MySQL service configuration file
+- name: Copy MySQL Systemd Service Configuration File
+  become: true
+  copy:
+    src:  "{{ mysql_tmp_systemd + 'mysql_' +  item.1.name + '.conf' }}"
+    dest: "{{ etc_sysconfig }}"
+    remote_src: true
+    mode: 0644
+  tags:
+    - mysql_install
+  when: mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+
+# Init Database
+# ./mysqld --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf --initialize
+# ./mysqld --defaults-file=/opt/jboss/mysql/mysql-files/conf/my_cnf_dev_00.cnf --initialize-insecure
+- name: Init DataBase
+  command: "{{ mysql_home + 'bin/mysqld --defaults-file=' + mysql_conf_base + item.1.name + '.cnf --initialize-insecure'}}"
+  tags:
+    - mysql_install
+  when: mysql_install
+  with_indexed_items: "{{ mysql_configurations | default([]) }}"
+
+#
+# chown -R mysql:mysql MYSQL_HOME
+#
+- name: Chown mysql:mysql MySQL Base Directory
+  become: true
+  file:
+    path:    "{{ mysql_server_dest }}"
+    owner:   "{{ mysql_user }}"
+    group:   "{{ mysql_group }}"
+    recurse: yes
+    state:   directory
+  tags:
+    - mysql_install
+  when: mysql_install
+  notify:
+    - reload systemd
+    - enable mysql service
+    - start mysql service
+
+# Force the handlers
+- name: Force the handlers
+  meta: flush_handlers
+  tags:
+    - mysql_install
+
+# We wait while the server is starting
+- pause:
+    seconds: 10
+    prompt:  "We wait while the server is starting"
+  tags:
+    - mysql_install
+
+- name: Check Existence of tmp directory
+  stat:
+    path:   "{{ mysql_tmp_dir }}"
+  register: mysql_tmp_dir_exists
+  tags:
+    - mysql_set_password
+    - mysql_install
+  when: mysql_install
+
+# Generate New root password SQL file
+- name: Generate New root password SQL file
+  template:
+    src:  mysql/assign_new_root_password.sql.j2
+    dest: "{{ mysql_tmp_dir + 'assign_new_root_password.sql' }}"
+    mode: 0644
+  tags:
+    - mysql_set_password
+  when: mysql_install and mysql_tmp_dir_exists.stat.exists == true
+
+#### Assign New root password
+#- name: Assign New root password SQL file
+#  mysql_db:
+#    name: all
+#    config_file: "{{ mysql_conf_base + 'my_cnf_dev.cnf' }}"
+#    state:  import
+#    target: "{{ mysql_tmp_dir + 'assign_new_root_password.sql' }}"
+#    login_user: 'root'
+#    #login_password: "{{ mysql_user_root_pwd }}"
+#  register: mysql_set_password_root_status
+#  tags:
+#    - mysql_set_password
+#  when: mysql_install == true
+
+#### Assign New root password SQL file with command
+- name: Assign New root password SQL file with command
+  shell:    "{{ mysql_home + 'bin/mysql --defaults-file=' + mysql_conf_file + ' -u root < ' + mysql_tmp_dir + 'assign_new_root_password.sql' }}"
+  register: mysql_set_password_root_status
+  tags:
+    - mysql_set_password
+  when: mysql_install
+
+#
+# Remove Installation MySQL
+# 1/ Uninstall & disable MySQL systemd Service
+# 2/ Remove unlink "mysql"
+# 3/ Remove MySQL Base Installation Directory
+# 4/ Remove tmpfiles.d file
+# 5/ Remove MySQL systemd service file
+# 6/ Remove MySQL systemd configuration file
+# 7/ Execute: "systemctl daemon-reload"
+#
+# Uninstall MySQL Systemd Service
+- name: Stop MySQL service
+  become: true
+  systemd:
+    name:    "{{mysql_dev_service_name}}"
+    state:   stopped
+    enabled: no
+  ignore_errors: yes
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall
+
+# We wait while the server is starting
+- pause:
+    seconds: 5
+    prompt: "We wait while the mysql server is stopping"
+  tags:
+    - mysql_uninstall
+
+# unlink mysql
+- name: Remove Link Symbolic
+  become: true
+  file:
+    path: "{{ mysql_last_dist }}"
+    state: absent
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall and mysql_server_link_exists.stat.exists == true
+
+# Remove MySQL Base Directory
+- name: Remove MySQL Base Directory
+  become: true
+  file:
+    path:  "{{ mysql_server_dest }}"
+    state: absent
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall and mysql_server_dest_exists.stat.exists == true
+
+# Remove MySQL tmpfiles.d
+- name: Remove MySQL tmpfiles.d file
+  become: true
+  file:
+    path:  "{{ mysql_tmpfiles_conf }}"
+    state: absent
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall
+
+# Remove MySQL systemd service file
+- name: Remove MySQL service file
+  become: true
+  file:
+    path:  "{{ user_lib_systemd + 'mysql_' +  item.1.name + '.service' }}"
+    state: absent
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall
+  with_indexed_items: "{{ mysql_configuration | default([]) }}"
+
+# Remove MySQL systemd configuration file
+- name: Remove MySQL service configuration file
+  become: true
+  file:
+    path:  "{{ etc_sysconfig + 'mysql_' +  item.1.name + '.conf' }}"
+    state: absent
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall
+  with_indexed_items: "{{ mysql_configuration | default([]) }}"
+
+# Execute
+- name: "Execute systemctl daemon-reload"
+  become: true
+  systemd:
+    daemon_reload: yes
+  tags:
+    - mysql_uninstall
+  when: mysql_uninstall
+
+#
+# EOF

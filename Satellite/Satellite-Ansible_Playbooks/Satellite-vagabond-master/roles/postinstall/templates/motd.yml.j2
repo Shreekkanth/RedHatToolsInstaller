@@ -1,0 +1,21 @@
+
+
+----------------------------------------
+Welcome to host {{ ansible_hostname }}
+{{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_architecture }}
+----------------------------------------
+
+FQDN: {{ ansible_fqdn }}
+IP:  {{ ansible_default_ipv4.address }}
+
+Memory:  {{ ansible_memtotal_mb }} MB
+----------------------------------------
+
+You can access the Satellite 6.5 WebUI through the following links
+
+https://{{ ansible_default_ipv4.address }}
+
+or
+
+https://{{ ansible_fqdn }}
+

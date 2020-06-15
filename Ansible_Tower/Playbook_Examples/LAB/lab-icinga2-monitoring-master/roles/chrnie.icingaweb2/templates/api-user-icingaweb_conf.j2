@@ -1,0 +1,16 @@
+/**
+ * This APIUser has been created by ansible for icingaweb2 command transport
+ */
+object ApiUser "{{ icingaweb2_api_user }}" {
+  password = "{{ icingaweb2_api_password }}"
+
+  permissions = [ "*" ]
+}
+{% if 'director' in icingaweb2_modules %}
+
+object ApiUser "{{ director_api_user }}" {
+  password = "{{ director_api_password }}"
+
+  permissions = [ "*" ]
+}
+{% endif %}

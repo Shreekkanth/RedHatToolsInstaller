@@ -1,0 +1,77 @@
+# This template configures each role to use a pair of bonded nics (nic2 and
+# nic3) and configures an IP address on each relevant isolated network
+# for each role. This template assumes use of network-isolation.yaml.
+#
+# FIXME: if/when we add functionality to heatclient to include heat
+# environment files we should think about using it here to automatically
+# include network-isolation.yaml.
+resource_registry:
+  OS::TripleO::BlockStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/cinder-storage.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: /home/stack/templates/nic-configs/compute.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller.yaml
+  OS::TripleO::ObjectStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/swift-storage.yaml
+  OS::TripleO::CephStorage::Net::SoftwareConfig: /home/stack/templates/nic-configs/ceph-storage.yaml
+
+  OS::TripleO::Network::External: /home/stack/templates/tht/network/external.yaml
+  OS::TripleO::Network::InternalApi: /home/stack/templates/tht/network/internal_api.yaml
+  OS::TripleO::Network::StorageMgmt: /home/stack/templates/tht/network/storage_mgmt.yaml
+  OS::TripleO::Network::Storage: /home/stack/templates/tht/network/storage.yaml
+  OS::TripleO::Network::Tenant: /home/stack/templates/tht/network/tenant.yaml
+  # Management network is optional and disabled by default.
+  # To enable it, include environments/network-management.yaml
+{% if osp_version <= 9 %}
+  OS::TripleO::Network::Management: /home/stack/templates/tht/network/management.yaml
+{% else %}
+  #OS::TripleO::Network::Management: /home/stack/templates/tht/network/management.yaml
+{% endif %}
+
+parameter_defaults:
+  InternalApiNetworkVlanID: {{ osp_version }}1
+  InternalApiNetCidr: 172.16.{{ osp_version }}.0/24
+  InternalApiAllocationPools: [{'start': '172.16.{{ osp_version }}.220', 'end': '172.16.{{ osp_version }}.229'}]
+
+  StorageNetworkVlanID: {{ osp_version }}2
+  StorageNetCidr: 172.17.{{ osp_version }}.0/24
+  StorageAllocationPools: [{'start': '172.17.{{ osp_version }}.220', 'end': '172.17.{{ osp_version }}.229'}]
+
+  StorageMgmtNetworkVlanID: {{ osp_version }}3
+  StorageMgmtNetCidr: 172.18.{{ osp_version }}.0/24
+  StorageMgmtAllocationPools: [{'start': '172.18.{{ osp_version }}.220', 'end': '172.18.{{ osp_version }}.229'}]
+
+  TenantNetworkVlanID: {{ osp_version }}4
+  TenantNetCidr: 172.19.{{ osp_version }}.0/24
+  TenantAllocationPools: [{'start': '172.19.{{ osp_version }}.220', 'end': '172.19.{{ osp_version }}.229'}]
+
+{% if osp_version <= 9 %}
+  ManagementNetworkVlanID: {{ osp_version }}5
+  ManagementNetCidr: 172.20.{{ osp_version }}.0/24
+  ManagementAllocationPools: [{'start': '172.20.{{ osp_version }}.220', 'end': '172.20.{{ osp_version }}.229'}]
+{% else %}
+  #ManagementNetworkVlanID: {{ osp_version }}5
+  #ManagementNetCidr: 172.20.{{ osp_version }}.0/24
+  #ManagementAllocationPools: [{'start': '172.20.{{ osp_version }}.220', 'end': '172.20.{{ osp_version }}.229'}]
+{% endif %}
+  # Use either this parameter or ControlPlaneDefaultRoute in the NIC templates
+  # ManagementInterfaceDefaultRoute: 172.20.{{ osp_version }}.1
+
+  ExternalNetworkVlanID: {{ osp_version }}0
+  ExternalNetCidr: 10.{{ osp_version }}.1.0/24
+  # Leave room for floating IPs in the External allocation pool
+  ExternalAllocationPools: [{'start': '10.{{ osp_version }}.1.220', 'end': '10.{{ osp_version }}.1.229'}]
+  # Set to the router gateway on the external network
+  ExternalInterfaceDefaultRoute: 10.{{ osp_version }}.1.1
+
+  # Gateway router for the provisioning network (or Undercloud IP)
+  ControlPlaneDefaultRoute: 10.{{ osp_version }}.9.200
+  # The IP address of the EC2 metadata server. Generally the IP of the Undercloud
+  EC2MetadataIp: 10.{{ osp_version }}.9.200
+
+  # Set to "br-ex" if using floating IPs on native VLAN on bridge br-ex
+  NeutronExternalNetworkBridge: "''"
+  # Customize bonding options if required
+  BondInterfaceOvsOptions:
+    "bond_mode=active-backup"
+
+  CloudDomain: "osptest.local"
+  # Define the DNS servers (maximum 2) for the overcloud nodes
+  DnsServers: ["10.64.255.25","10.68.5.26"]

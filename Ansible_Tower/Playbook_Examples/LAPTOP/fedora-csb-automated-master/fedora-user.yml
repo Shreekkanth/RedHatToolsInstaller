@@ -1,0 +1,23 @@
+---
+- name: Setup a proper user environment (your needs might vary)
+  hosts: localhost
+  connection: local
+  vars_files:
+    - local_vars.yml
+  tasks:
+    - name: Make sure there is a an .ssh directory
+      file:
+        name: "{{ lookup('env','HOME') }}/.ssh"
+        state: directory
+        mode: "u+rwX,og="
+
+    - name: Activate the Gnome Shell extensions
+      command: gnome-shell-extension-tool -e "{{ item }}"
+      with_items: "{{ gnome_shell_extensions }}"
+      register: res
+      changed_when: not "is already enabled" in res.stderr
+      failed_when: (not "is already enabled" in res.stderr) and (res.rc != 0)
+# TODO TopIcons Plus isn't packaged, how to download/enable?
+# TODO use dconf or gsettings to set Gnome preferences
+# /org/gnome/desktop/wm/preferences/action-middle-click-titlebar
+#  'toggle-maximize-vertically'

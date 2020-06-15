@@ -1,0 +1,5 @@
+---
+hosts_backup: True
+hosts_set_hostname: True
+hosts_hostname: {}
+hosts_add_host: [{}]

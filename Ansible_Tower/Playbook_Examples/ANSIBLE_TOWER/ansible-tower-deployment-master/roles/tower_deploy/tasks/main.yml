@@ -1,0 +1,21 @@
+- name: Check if server has access to ansible.com
+  uri:
+    url: http://releases.ansible.com/ansible/
+  register: internet_access
+  ignore_error: yes
+
+- name: Online Installation
+  include_tasks: 'OnlineInstallation.yml'
+  when: internet_access.status == 200
+
+- name: Offline Installation
+  include_tasks: 'OfflineInstallation.yml'
+  when: internet_access.failed != 200
+
+- name: Ubuntu post config tasks
+  include_tasks: 'UbuntuPostConfig.yml'
+  when: ansible_os_family == 'Ubuntu'
+
+- name: RedHat post config tasks
+  include_tasks: 'RedHatPostConfig.yml'
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7

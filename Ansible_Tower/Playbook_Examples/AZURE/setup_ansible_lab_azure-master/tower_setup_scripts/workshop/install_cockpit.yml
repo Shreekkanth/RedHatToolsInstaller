@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Install Cockpit
+    yum: name=cockpit state=latest
+
+  - name: Enable Cockpit
+    service: name=cockpit.socket state=started enabled=yes
+
+  - name: Open firewall for Cockpit
+    firewalld:
+      service: cockpit
+      state: enabled
+      permanent: true
+      immediate: yes

@@ -1,0 +1,18 @@
+---
+
+- name: stop chronyd
+  service: name=chronyd state=stopped enabled=no
+- name: install ntp packages
+  yum: name={{ item }} state=latest
+  with_items:
+    - ntpdate
+  notify: run ntpdate
+
+- name: install ntp packages
+  yum: name={{ item }} state=latest
+  with_items:
+    - ntp
+  notify: restart ntpd
+
+#- name: ntp
+#  service: name=ntpd state=started enabled=yes

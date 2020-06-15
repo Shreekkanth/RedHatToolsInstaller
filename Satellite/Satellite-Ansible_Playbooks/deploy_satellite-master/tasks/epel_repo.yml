@@ -1,0 +1,30 @@
+---
+- name: SATELLITE | epel | Load Hammer varriables
+  include_vars: file=vars/hammer-vars.yml
+
+- name: SATELLITE | epel | Foreman is running
+  shell: 'systemctl is-active foreman-tasks.service'
+  register: foreman_status
+
+- name: SATELLITE | epel | Download epel 7 GPG Key
+  get_url: 
+    url: "{{ item.url }}"
+    dest: "{{ item.key }}"
+  with_items: "{{ epel7_gpgkey }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | epel | Add epel 7 GPG Key to Satellite
+  command: hammer --password "{{ satellite_admin_passwd }}" gpg create --organization "{{ satellite_organization }}" --name "{{ item.name }}" --key "{{ item.key }}"
+  with_items: "{{ epel7_gpgkey }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | epel | Create epel 7 Product Name
+  command: hammer --password "{{ satellite_admin_passwd }}" product create --organization "{{ satellite_organization }}" --name "{{ item.product_name }}" --gpg-key "{{ item.gpgkey }}"
+  with_items: "{{ epel7_repository }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | epel | Create epel 7 Repoistory
+  command: hammer --password "{{ satellite_admin_passwd }}" repository create --organization "{{ satellite_organization }}" --name "{{ item.repo_name }}" --gpg-key "{{ item.gpgkey }}" --checksum-type "{{ item.checksum }}" --content-type yum --url "{{ item.url }}" --product "{{ item.product_name }}"
+  with_items: "{{ epel7_repository }}"
+  when: foreman_status.stdout == "active"
+

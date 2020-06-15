@@ -1,0 +1,7 @@
+---
+# tasks file for tower
+- name: "Include Dependencies tasks"
+  include_tasks: tower_checks.yml
+
+- name: "Include Dependencies tasks"
+  include_tasks: tower_setup.yml

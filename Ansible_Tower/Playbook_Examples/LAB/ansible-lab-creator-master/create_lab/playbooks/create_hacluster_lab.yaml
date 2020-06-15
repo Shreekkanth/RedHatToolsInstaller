@@ -1,0 +1,54 @@
+---
+
+- name: Build VMs  
+  hosts: kvm
+  become: true
+  vars_files:
+    - ../vars/hacluster_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/libvirt_build_vms
+
+    - include_role:
+        name: ../roles/libvirt_start_vms
+
+- name: Add DNS records
+  hosts: idm
+  become: true
+  vars_files:
+    - ../vars/hacluster_vms.yml
+
+  tasks:
+    - include_vars: config.yaml
+    - include_role:
+        name: ../roles/config-dnsenv
+      vars:
+         dns_record_state: present
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - ../vars/hacluster_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/ansible_host_configure
+
+
+- name: Configure HA systems 
+  hosts: rhel7ha_systems 
+  become: true
+  vars_files:
+    - ../vars/hacluster_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/extend_vm_disks
+
+    - include_role:
+        name: ../roles/rhsm_register
+
+    - include_role:
+        name: ../roles/config-hacluster 

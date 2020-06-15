@@ -1,0 +1,31 @@
+[tower]
+tower1 ansible_host='tower-0001.prod'
+tower2 ansible_host='tower-0002.prod'
+tower3 ansible_host='tower-0003.prod'
+
+[database]
+tower-db ansible_host='postgres.prod'
+
+[all:vars]
+admin_password="{{ ansible_tower_admin_password }}"
+
+pg_host='postgres.prod'
+pg_port='5432'
+
+pg_database='awx'
+pg_username='awx'
+pg_password="{{ ansible_tower_pg_password }}"
+
+rabbitmq_port=5672
+rabbitmq_vhost=tower
+rabbitmq_username=tower
+rabbitmq_password="{{ ansible_tower_rabbitmq_password }}"
+rabbitmq_cookie=cookiemonster
+
+# Needs to be true for fqdns and ip addresses
+rabbitmq_use_long_name=true
+
+[production:children]
+database
+tower
+

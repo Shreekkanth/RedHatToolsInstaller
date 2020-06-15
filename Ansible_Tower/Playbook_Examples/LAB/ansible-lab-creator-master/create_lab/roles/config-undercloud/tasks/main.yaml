@@ -1,0 +1,25 @@
+- import_tasks: pre-flight-checks.yaml
+
+# Lab creator does this
+#- import_tasks: set-interface.yaml
+- import_tasks: add-ssh-key-to-root.yaml
+- import_tasks: create-stack-user.yaml 
+- import_tasks: create-dirs.yaml
+- import_tasks: modify-hosts.yaml
+- import_tasks: update-system.yaml
+- import_tasks: reboot-system.yaml
+- import_tasks: install-rdo.yaml
+- import_tasks: bootif-fix.yaml
+  when: bootifFix|default(false)|bool == true
+- import_tasks: undercloud-config-ssl.yaml
+- import_tasks: undercloud-config.yaml
+- import_tasks: undercloud-install.yaml
+- import_tasks: install-ansible.yaml
+  when: goAnsible|default(false)|bool == true
+- import_tasks: upload-playbooks.yaml
+  when: goAnsible|default(false)|bool == true
+- import_tasks: create-local-registry.yaml
+  when: 
+    - (osp_version == "osp12" or osp_version == "osp13" )
+    - create_local_registry|default(false)|bool == true
+

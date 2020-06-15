@@ -1,0 +1,13 @@
+---
+ks_iso_install_media_path: ""
+ks_iso_kickstart_file: ""
+ks_iso_built_path: "/my/built/kickstart_isos"
+ks_iso_built_filename: "my_custom_kickstart_iso.iso"
+ks_iso_volume_id: "My Kickstart ISO"
+ks_iso_boot_timeout: "150" # 15 secs
+ks_iso_boot_total_timeout: "900" # 90 secs
+ks_iso_cleanup_build: True
+
+# optional build directory override
+# ks_iso_build_dir:
+#   path: "/path/to/my/desired/build/directory"

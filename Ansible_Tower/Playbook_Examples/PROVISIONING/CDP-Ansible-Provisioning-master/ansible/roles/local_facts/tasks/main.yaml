@@ -1,0 +1,15 @@
+---
+- name: Create local facts directory
+  file: 
+    state: "directory"
+    recurse: true
+    path: "{{ local_facts_directory }}"
+
+- name: Copy custom facts file to server
+  copy:
+    dest: "{{ local_facts_directory }}/{{ item.file }}"
+    content: "{{ item.content }}"
+  with_items: "{{ local_facts }}"
+
+- name:
+  setup:

@@ -1,0 +1,25 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Remove the node identifier configuration
+# https://access.redhat.com/solutions/260023
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/remove_node_identifier.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+/subsystem=ejb3/service=timer-service:write-attribute(name=default-data-store,value=default-file-store)
+/subsystem=ejb3/service=timer-service/database-data-store={{database_data_store_name}}:remove()
+
+run-batch
+#
+# EOF

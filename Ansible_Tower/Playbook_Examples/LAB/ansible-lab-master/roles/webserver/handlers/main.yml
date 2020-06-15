@@ -1,0 +1,7 @@
+---
+# handlers file for webserver
+- name: web-restart
+  service:
+    name: "{{ item }}" 
+    state: restarted
+  with_items: "{{ svcs }}" 

@@ -1,0 +1,553 @@
+---
+- name: "Ensure root password is set properly"
+  user:
+    name: "root"
+    password: "{{ encrypted_root_pw }}"
+
+- name: "Register to Satellite 6"
+  include_role:
+    name: "satellite6_bootstrap"
+  vars:
+    sat6_server: "{{ sat6_srv }}"
+    sat6_organization: "{{ sat6_org }}"
+    sat6_activation_key: "{{ sat6_ak }}"
+    sat6_enable_repos: "{{ sat6_repos }}"
+    sat6_host_group: "{{ sat6_hg }}"
+    sat6_location: "{{ sat6_loc }}"
+    sat6_user: "migrater"
+    sat6_update_existing: True
+    sat6_remote_execution: False
+    sat6_force_katello: False
+    sat6_legacy_purge: False
+  become: True
+
+- name: "Patch system"
+  import_role:
+    name: "patching"
+  vars:
+    patch_never_reboot: True
+    patch_never_restart_svc: True
+
+- name: "Reboot after patching"
+  reboot:
+
+- name: "Network device naming fix (use old ethX names)"
+  block:
+    - name: "Update grub defaults"
+      replace:
+        path: "/etc/default/grub"
+        regexp: 'p rhgb quiet'
+        replace: "p biosdevname=0 net.ifnames=0 rhgb quiet"
+
+    - name: "Update grub bootloader configuration | BIOS"
+      command: '/usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg'
+      when: "hostvars['localhost']['vm_build_type'] == 'bios'"
+
+    - name: "Update grub bootloader configuration | EFI"
+      command: '/usr/sbin/grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg'
+      when: "hostvars['localhost']['vm_build_type'] == 'efi'"
+
+    - name: "Update network script configuration"
+      template:
+        dest: "/etc/sysconfig/network-scripts/ifcfg-eth0"
+        src: "templates/ifcfg-eth0.j2"
+        mode: "0644"
+        owner: "root"
+        group: "root"
+
+    - name: "Ensure ifcfg-ens192 network-script is removed"
+      file:
+        path: "/etc/sysconfig/network-scripts/ifcfg-ens192"
+        state: "absent"
+  become: True
+
+#sysctl stuff (ipv6 and tuning)
+- name: "Kernel adjustments"
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_file: "{{ item.file | default(omit) }}"
+    reload: True
+    state: "present"
+  with_items: "{{ kernel_params }}"
+  register: "kernel_result"
+  become: True
+
+- name: "Dracut - Overwrite existing initramfs file"
+  command: "dracut -f"
+  become: True
+  when: "kernel_result is succeeded"
+
+- name: "modprobe.d settings"
+  copy:
+    content: "{{ item.value }}"
+    dest: "/etc/modprobe.d/{{ item.name }}"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  with_items: "{{ modprobe_settings }}"
+  become: True
+
+- name: "yp config"
+  lineinfile:
+    create: True
+    path: "/etc/yp.conf"
+    regexp: "domain durham server 10.106.228.237"
+    line: "domain durham server 10.106.228.237"
+    state: "present"
+  become: True
+
+- name: "Install yp packages"
+  package:
+    state: "latest"
+    name: "{{ yp_pkgs }}"
+  become: True
+
+- name: "/etc/sysconfig/network config"
+  lineinfile:
+    path: "/etc/sysconfig/network"
+    regexp: "NISDOMAIN=durham"
+    line: "NISDOMAIN=durham"
+    state: "present"
+  become: True
+
+- name: "Copy nsswitch.conf"
+  copy:
+    src: "nsswitch.conf"
+    dest: "/etc/nsswitch.conf"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  become: True
+
+- name: "Enable and Start ypbind"
+  service:
+    name: "ypbind"
+    enabled: True
+    state: "started"
+  become: True
+
+#allowed users and nis groups
+- name: "NIS Users and Groups"
+  lineinfile:
+    path: "/etc/passwd"
+    line: "{{ item }}"
+    regexp: "^'{{ item }}'$"
+    state: "present"
+  with_items: "{{ nis_users_groups }}"
+  become: True
+
+# SSHD Stuff
+- name: "Standard motd"
+  copy:
+    content: "{{ motd }}"
+    dest: "/etc/issue"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  become: True
+
+- name: "Add motd to sshd settings"
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    regexp: "^Banner.*"
+    line: "Banner /etc/issue"
+    insertafter: "^#Banner"
+    state: "present"
+  register: "sshd_result"
+  become: True
+
+#allow ssh root login
+- name: "Allow SSH root login"
+  replace:
+    path: "/etc/ssh/sshd_config"
+    regexp: "{{ item.find }}"
+    replace: "{{ item.replace }}"
+  with_items: "{{ sshd_root_settings }}"
+  become: True
+
+#remove weak ciphers
+- name: "Specify ciphers in SSHD config"
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    line: "{{ sshd_ciphers }}"
+    regexp: "{{ sshd_ciphers }}"
+    state: "present"
+  become: True
+
+- name: "Specify MACs in SSHD config"
+  lineinfile:
+    path: "/etc/ssh/sshd_config"
+    line: "{{ sshd_macs }}"
+    regexp: "{{ sshd_macs }}"
+    state: "present"
+  become: True
+
+- name: "Restart sshd"
+  service:
+    name: "sshd"
+    state: "restarted"
+  become: True
+
+#configure sudoers
+- name: "Configure sudoers | Intigua"
+  copy:
+    dest: "/etc/sudoers.d/intigua"
+    content: "{{ sudoers_rules_intigua }}"
+    mode: "0440"
+    owner: "root"
+    group: "root"
+  become: True
+
+- name: "Configure sudoers | Service Now"
+  copy:
+    dest: "/etc/sudoers.d/snowdscv"
+    content: "{{ sudoers_rules_snow }}"
+    mode: "0440"
+    owner: "root"
+    group: "root"
+  become: True
+
+- name: "Configure sudoers | Avamar"
+  copy:
+    dest: "/etc/sudoers.d/BRS"
+    content: "{{ sudoers_rules_avamar }}"
+    mode: "0440"
+    owner: "root"
+    group: "root"
+
+# pamd settings
+- name: "pamd | do not use last 5 passwords"
+  pamd:
+    type: "password"
+    control: "sufficient"
+    module_path: "pam_unix.so"
+    name: "system-auth"
+    module_arguments: "remember=5"
+    state: "args_present"
+  become: True
+
+#securetty conf
+- name: "Set tty entries in /etc/securetty"
+  copy:
+    dest: "/etc/securetty"
+    content: "{{ securetty_conf }}"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  become: True
+
+#snmpd
+- name: "Install snmp"
+  package:
+    name: "{{ snmp_pkgs }}"
+    state: "latest"
+  become: True
+
+- name: "Configure snmpd"
+  copy:
+    dest: "/etc/snmp/snmpd.conf"
+    content: "{{ snmpd_conf }}"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  become: True
+
+- name: "Ensure firewalld is started and enabled"
+  service:
+    name: "firewalld"
+    state: "started"
+    enabled: True
+  become: True
+
+#firewalld
+- name: "Set firewalld rules"
+  firewalld:
+    immediate: True
+    permanent: True
+    state: "enabled"
+    port: "{{ item }}"
+  with_items: "{{ fw_ports }}"
+  become: True
+
+- name: "Install additional packages"
+  package:
+    name: "{{ addl_pkgs }}"
+    state: "latest"
+  become: True
+
+#EMC CA
+- name: "Install EMC CA"
+  block:
+    - name: "Download EMC CA"
+      copy:
+        src: "{{ emc_ca_file }}"
+        dest: "/etc/pki/ca-trust/source/anchors/EMCSSLCA-Chain.pem"
+        mode: "0644"
+        owner: "root"
+        group: "root"
+
+    - name: "Update CA Trust"
+      command: "/usr/bin/update-ca-trust"
+  become: True
+
+#Disable networkmanager
+- name: "Disable Network Manager service"
+  service:
+    enabled: False
+    state: "stopped"
+    name: "NetworkManager"
+  become: True
+
+- name: "Disable NetworkManager-wait-online service"
+  service:
+    enabled: False
+    state: "stopped"
+    name: "NetworkManager-wait-online"
+  become: True
+
+- name: "Configure resolv.conf"
+  include_role:
+    name: "resolv"
+
+#Install & conf NTP
+- name: "Install and configure NTP"
+  block:
+    - name: "Install NTP"
+      package:
+        name: "ntp"
+        state: "latest"
+      become: True
+
+    - name: "Configure NTP"
+      copy:
+        content: "{{ ntp_conf }}"
+        dest: "/etc/ntp.conf"
+        mode: "0644"
+        owner: "root"
+        group: "root"
+
+    - name: "Enable and Start NTP"
+      service:
+        name: "ntpd"
+        enabled: True
+        state: "started"
+
+    - name: "firewalld | ntpd service"
+      firewalld:
+        service: "ntp"
+        permanent: True
+        immediate: True
+        state: "enabled"
+  become: True
+
+# Conf autofs
+- name: "Install and configure autofs"
+  block:
+    - name: "Install autofs"
+      package:
+        name: "{{ autofs_pkgs }}"
+        state: "latest"
+
+    - name: "Configure autofs"
+      copy:
+        content: "{{ autofs_conf }}"
+        dest: "/etc/auto.master"
+        mode: "0644"
+        owner: "root"
+        group: "root"
+
+    - name: "Start and enable autofs"
+      service:
+        name: "autofs"
+        enabled: True
+        state: "started"
+  become: True
+
+# conf postfix
+- name: "Configure postfix"
+  block:
+    - name: "Configure postfix relay and domain"
+      blockinfile:
+        path: "/etc/postfix/main.cf"
+        block: "{{ postfix_lines }}"
+
+    - name: "Update postfix protocol to ipv4"
+      replace:
+        path: "/etc/postfix/main.cf"
+        regexp: "inet_protocols = all"
+        replace: "inet_protocols = ipv4"
+  become: True
+
+# logrotate
+- name: "Configure logrotate"
+  replace:
+    path: "/etc/logrotate.conf"
+    regexp: "{{ item.search }}"
+    replace: "{{ item.replace }}"
+  with_items: "{{ logrotate_updates }}"
+  become: True
+
+- name: "Ensure /var/log/messages permissions"
+  file:
+    path: "/var/log/messages"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  become: True
+
+# NAS selinux bool
+- name: "Set NAS sebool"
+  seboolean:
+    name: "use_nfs_home_dirs"
+    persistent: True
+    state: True
+  become: True
+
+# SELinux permissive
+- name: "Set SELinux policy"
+  selinux:
+    policy: "targeted"
+    state: "permissive"
+
+# SELinux AVC emails
+- name: "Set SELinux AVC emails"
+  block:
+    - name: "Install setroubleshoot package"
+      package:
+        name: "setroubleshoot*"
+        state: "latest"
+
+    - name: "Add SELinux AVC email recipients"
+      lineinfile:
+        path: "/var/lib/setroubleshoot/email_alert_recipients"
+        line: "{{ selinux_troubleshoot_recipients }}"
+        regexp: "{{ selinux_troubleshoot_recipients }}"
+        create: True
+        state: "present"
+
+    - name: "Restart messagebus"
+      service:
+        name: "messagebus"
+        state: "restarted"
+  become: True
+
+# SElinux restorecon
+- name: "Restore SELinux file contexts"
+  command: "/sbin/restorecon -Rv {{ item }}"
+  with_items: "{{ se_restorecon_paths }}"
+  register: "restorecon_results"
+  become: True
+
+- name: "Ensure firewalld is restarted and enabled"
+  service:
+    name: "firewalld"
+    state: "restarted"
+    enabled: True
+  become: True
+
+# Cork ypbind fw rules
+- name: "Set Cork NTP firewall rules"
+  firewalld:
+    immediate: True
+    permanent: True
+    rich_rule: "{{ item }}"
+    state: "enabled"
+  with_items: "{{ firewalld_cork_ntp_rich_rules }}"
+  become: True
+
+- debug:
+    var: "hostvars['localhost']['satellite_sub_mgmt_version']"
+    verbosity: "1"
+
+- name: "Re-install RHN Tools"
+  package:
+    name: "{{ rhn_pkgs }}"
+    state: "latest"
+  become: True
+  when: 'hostvars["localhost"]["satellite_sub_mgmt_version"] == "sat5"'
+
+- name: "Ensure /etc/hosts is configured"
+  import_role:
+    name: "hosts"
+  vars:
+    hosts_add_hosts: "{{ etc_hosts }}"
+  become: True
+  tags:
+    - "vra_agent"
+    - "hosts"
+
+- name: "Install vRA Agent"
+  block:
+    - name: "Ensure vRA Agent temporary directory is removed"
+      file:
+        path: "{{ vra_agent_install.temp_dir }}"
+        state: "absent"
+
+    - name: "Ensure vRA Agent temporary directory exists"
+      file:
+        path: "{{ vra_agent_install.temp_dir }}"
+        state: "directory"
+
+    - name: "Download vRA Agent installation script"
+      get_url:
+        url: "{{ vra_agent_install.install_script_url }}"
+        dest: "{{ vra_agent_install.temp_dir }}"
+        mode: "0755"
+        validate_certs: False
+
+    - name: "Download JRE for vRA Agent"
+      get_url:
+        url: "{{ vra_agent_install.jre_url }}"
+        dest: "{{ vra_agent_install.temp_dir }}"
+        mode: "0744"
+        validate_certs: False
+
+    - name: "Ensure JRE directory exists"
+      file:
+        path: "{{ vra_agent_install.jre_extract_dest }}"
+        state: "directory"
+
+    - name: "Download and Extract JRE for vRA Agent"
+      unarchive:
+        remote_src: True
+        src: "{{ vra_agent_install.jre_url }}"
+        dest: "{{ vra_agent_install.jre_extract_dest }}"
+        validate_certs: False
+
+    - name: "Run vRA Agent installation"
+      register: "vra_install_result"
+      shell: './prepare_vra_template.sh -n -a {{ vra_agent_install.appliance_server }} \
+                                        -m {{ vra_agent_install.mgr_svc_host }} \
+                                        -f {{ vra_agent_install.mgr_finger_print }} \
+                                        -g {{ vra_agent_install.appliance_finger_print }}'
+      args:
+        chdir: "{{ vra_agent_install.temp_dir }}"
+
+    - debug:
+        var: "vra_install_result.stdout_lines"
+
+    - name: "Copy vRA Agent LVM Extensions"
+      synchronize:
+        src: "{{ vra_agent_install.gugent_lvm_extensions_src }}"
+        dest: "{{ vra_agent_install.gugent_home }}/"
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: "Copy vRA Agent LVM Extension into place"
+      synchronize:
+        src: "{{ vra_agent_install.gugent_home }}{{ vra_agent_install.gugent_lvm_extension_src }}"
+        dest: "{{ vra_agent_install.gugent_home }}{{ vra_agent_install.gugent_lvm_extension_dest }}"
+      delegate_to: "{{ inventory_hostname }}"
+
+    - debug:
+        var: "vra_agent_install.gugent_lvm_extension_src | basename"
+        verbosity: "1"
+
+    - name: "Ensure vRA Agent LVM Extension is executable"
+      file:
+        state: "file"
+        path: "{{ vra_agent_install.gugent_home }}{{ vra_agent_install.gugent_lvm_extension_dest }}{{ vra_agent_install.gugent_lvm_extension_src | basename }}"
+        mode: "0755"
+  become: True
+  tags:
+    - "vra_agent"

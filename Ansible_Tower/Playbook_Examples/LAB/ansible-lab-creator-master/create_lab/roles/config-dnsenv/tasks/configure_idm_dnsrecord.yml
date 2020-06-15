@@ -1,0 +1,26 @@
+---
+- name: Add or remove DNS records in IdM
+  ipa_dnsrecord:
+    ipa_host: '{{ idm_server }}'
+    ipa_pass: '{{ idm_password }}'
+    state: '{{ dns_record_state }}' 
+    zone_name: '{{ domain_name }}'
+    record_name: "{{ item.key }}"
+    record_type: 'A'
+    record_value: '{{ item.value.ipaddress }}'
+    record_ttl: 300
+    validate_certs: False
+  with_dict: "{{ guests }}"
+
+- name: Add or remove reverse dns record
+  ipa_dnsrecord:
+    ipa_host: '{{ idm_server }}'
+    ipa_pass: '{{ idm_password }}'
+    state: '{{ dns_record_state }}'
+    zone_name: '{{ idm_reverse_zone_name }}'
+    record_name: '{{ item.value.ipaddress.split(".")[3] }}'
+    record_type: 'PTR'
+    record_value: '{{ item.key }}.{{ domain_name }}'
+    record_ttl: 300
+    validate_certs: False
+  with_dict: "{{ guests }}"

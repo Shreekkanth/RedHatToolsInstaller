@@ -1,0 +1,7 @@
+---
+# vars file for kvm-preparation
+libvirtd_conf:
+  - 'listen_tls = 0'
+  - 'listen_tcp = 1'
+  - 'auth_tcp = "none"'
+  - 'tcp_port = "16509"'

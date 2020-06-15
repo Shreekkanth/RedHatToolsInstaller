@@ -1,0 +1,94 @@
+---
+- set_fact:
+    packagelist: "{{ common_packages + additional_packages }}"
+
+- name: Install additional packages
+  package:
+    name: "{{ packagelist }}"
+    state: present
+
+- name: Ensure chrony is configured
+  lineinfile:
+    path: "{{ chrony_config }}"
+    line: "server {{ item }} iburst"
+  with_items:
+    - "{{ ntpservers }}"
+  notify:
+    - restart chronyd
+  when: ntp_client == 'chrony'
+
+- name: Remove default ntp servers
+  lineinfile:
+    path: "{{ chrony_config }}"
+    state: absent
+    regexp: '^server\s\d.rhel'
+  notify:
+    - restart chronyd
+  when: ntp_client == 'chrony'
+
+- name: Remove default ntp pools
+  lineinfile:
+    path: "{{ chrony_config }}"
+    state: absent
+    regexp: '^pool\s\d.*'
+  notify:
+    - restart chronyd
+  when: ntp_client == 'chrony'
+
+- name: Install ntpd
+  package:
+    name: ntp
+    state: present
+  when: ntp_client == 'ntpd'
+
+- name: Ensure ntpd is configured
+  lineinfile:
+    path: /etc/ntp.conf
+    line: "server {{ item }} iburst"
+  with_items:
+    - "{{ ntpservers }}"
+  notify:
+    - restart ntpd
+  when: ntp_client == 'ntpd'
+
+- name: Remove default ntp servers
+  lineinfile:
+    path: /etc/ntp.conf
+    state: absent
+    regexp: '^server\s\d.rhel'
+  notify:
+    - restart ntpd
+  when: ntp_client == 'ntpd'
+
+- name: Remove default ntp pools
+  lineinfile:
+    path: /etc/ntp.conf
+    state: absent
+    regexp: '^pool\s\d.*'
+  notify:
+    - restart ntpd
+  when: ntp_client == 'ntpd'
+
+- name: Ensure basic firewall is running
+  service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Install common hardware utils
+  package:
+    name: "{{ packages }}"
+    state: present
+  when: ansible_virtualization_type == 'host'
+  vars:
+    packages:
+      - pciutils
+      - usbutils
+
+- name: Deploy MOTD
+  template:
+    src: templates/motd.j2
+    dest: /etc/motd
+    mode: 0644
+    owner: root
+    group: root

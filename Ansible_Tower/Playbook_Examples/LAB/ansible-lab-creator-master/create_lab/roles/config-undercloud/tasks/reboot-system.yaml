@@ -1,0 +1,13 @@
+- name: Reboot and wait...
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: update_result.changed != false or (update_result is failed and update2_result is succeeded)
+  register: was_rebooted
+
+- name: Waiting for server to come back...
+  local_action: wait_for host={{ inventory_hostname }} port=22 state=started search_regex=OpenSSH delay=10 timeout=300
+  when: update_result.changed != false or (update_result is failed and update2_result is succeeded)
+ 
+

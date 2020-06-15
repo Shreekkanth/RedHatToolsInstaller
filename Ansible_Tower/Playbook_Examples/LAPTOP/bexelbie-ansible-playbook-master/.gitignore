@@ -1,0 +1,4 @@
+# Don't store unencrypted files
+dot-files/secure
+# Don't store the gocrytpfs conf - it's stored in the pass vault
+dot-files/secure.encrypted/gocryptfs.conf

@@ -1,0 +1,6 @@
+BOOTPROTO=none
+NAME=ens2f0.2350
+DEVICE=ens2f0.2350
+ONBOOT=yes
+BRIDGE=br-storage
+VLAN=yes

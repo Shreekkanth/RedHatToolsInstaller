@@ -1,0 +1,129 @@
+#!/bin/bash
+
+# Call like so:
+#
+# Usage: rh-iptables [ --noop ] { --tcp | --udp } PORT [ CIDR ... ]
+#
+#
+# rh-iptables -a ACCEPT -c INPUT -r tcp -p 1337 - Opens port 1337 to all incoming connections
+#
+# rh-iptables -a ACCEPT -c INPUT -r udp -p 1337 -i 0.0.0.0/8 - Open port 1337 to the given subnet
+#
+# rh-iptables -a ACCEPT -c INPUT -r tcp -p 1337 -i 10.10.132.0/8 10.10.120.0/8 - Open port 1337
+# to the given subnets
+
+insert_acl_loop()
+{
+    # This function is only good once. The only checking it does is to
+    # see if the port you specified is already present in the iptables
+    # rules for the table you specified
+
+    if [ $PORT ]; then
+        # Is the rule already present?
+        if ! iptables -S "${CHAIN}" | grep -q "${PORT}"; then
+            # It is not present. Lets add it after the SSH rule. First we
+            # gotta find the rule number though...
+            INSERT_AFTER=`iptables -S "${CHAIN}" | grep -n 22 | awk -F : '{print $1}'`
+
+            _insert_acl "${INSERT_AFTER}"
+            _save_iptables
+	fi
+    else
+	# We don't have a port to go on so let's just see if they've
+	# got a unique action, port, andsource.
+	if ! iptables -S "${CHAIN}" | grep "${ACTION}" | grep "${PROTO}" | grep -q "${SOURCE}"; then
+            INSERT_AFTER=`iptables -S "${CHAIN}" | grep -n 22 | awk -F : '{print $1}'`
+
+            _insert_acl "${INSERT_AFTER}"
+            _save_iptables
+	fi
+    fi
+}
+
+_insert_acl()
+{
+    INSERT_AFTER=${1}
+
+    if [ "${CHAIN}" == 'INPUT' ]; then
+        CMD="iptables -I ${CHAIN} ${INSERT_AFTER} ${SOURCEARG} -m state --state NEW -m ${PROTO} ${UIDRANGE} -p ${PROTO} ${PORTARG} -j ${ACTION}"
+    elif [ "${CHAIN}" == 'OUTPUT' ]; then
+        CMD="iptables -A ${CHAIN} ${SOURCEARG} -m state --state NEW -m ${PROTO} ${UIDRANGE} -p ${PROTO} ${PORTARG} -j ${ACTION}"
+    fi
+    
+    if $NOOP; then
+        cat <<EOF
+Would have ran:
+
+    ${CMD}
+EOF
+    else
+        $CMD
+        _save_iptables
+    fi
+
+}
+
+_save_iptables()
+{
+    iptables-save > /etc/sysconfig/iptables
+}
+
+
+_usage()
+{
+    cat <<EOF
+Usage:
+${0} -a [ACCEPT|DROP] -c [INPUT|OUTPUT] -p PORT [-r [tcp|udp]] [-i IP/CIDR] [-u [UID-RANGE]] [-n]
+-a [ACCEPT|DROP]    - wether to accept or drop packets
+-c [INPUT|OUTPUT]   - which chain to operate on
+-p PORT             - the port to block/allow
+-r [tcp|udp]        - which protocol to operate on (OPTIONAL; defaults to tcp)
+-i IP/CIDR          - the IP address to block/allow (OPTIONAL)
+-u UID-RANGE        - uid range to block/allow traffic from (OPTIONAL)
+-n                  - perform a no-op (OPTIONAL)
+EOF
+	exit 1
+}
+
+#####################################
+# Main
+
+NOOP=false
+PROTO='tcp'
+
+while getopts 'a:c:r:p:i:u:n' OPT; do
+    case $OPT in
+        a)
+            ACTION=$OPTARG
+            ;;
+        c)
+            CHAIN=$OPTARG
+            ;;
+        r)
+            PROTO=$OPTARG
+            ;;
+        p)
+            PORT="$OPTARG"
+	    PORTARG="--dport $PORT"
+            ;;
+        i)
+            SOURCE="$OPTARG"
+	    SOURCEARG="-s $OPTARG"
+            ;;
+        u)
+            UIDRANGE="-m owner --uid-owner $OPTARG"
+            ;;
+        n)
+            NOOP=true
+            ;;
+        *)
+            _usage
+            ;;
+    esac
+done
+
+if [ -z "${ACTION}" -o -z "${CHAIN}" ]; then
+    _usage
+fi
+
+insert_acl_loop

@@ -1,0 +1,28 @@
+- name: "build smcroute rpm"
+  hosts: "rpmbuild"
+  vars:
+    exec_user_dir: "{{ lookup('env', 'HOME') }}"
+    smcroute_src: "https://github.com/troglobit/smcroute/releases/download/2.4.3/smcroute-2.4.3.tar.gz"
+    src_archive: "{{ exec_user_dir }}/{{ smcroute_src|basename }}"
+    pkg_name: "smcroute"
+    pkg_version: "2.4.3"
+    pkg_release: "1.el7"
+    pkg_arch: "x86_64"
+    template_path: "templates/smcroute.spec.j2"
+  tasks:
+    - name: "install build dependencies"
+      yum:
+        name: "libcap-devel"
+        state: "present"
+      become: yes
+
+    - name: "download source archive"
+      get_url:
+        url: "{{ smcroute_src }}"
+        dest: "{{ src_archive }}"
+      delegate_to: localhost
+
+    - name: "run build role"
+      import_role:
+        name: "rhc.rpm-build"
+

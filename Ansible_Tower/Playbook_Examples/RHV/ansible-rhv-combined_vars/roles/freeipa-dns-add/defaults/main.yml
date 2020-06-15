@@ -1,0 +1,9 @@
+---
+# defaults file for freeipa-dns-add
+ipa_dns_entry: "server1.example.com"
+ipa_server_hostname: "ipa.example.com"
+ipa_user: "johndoe"
+ipa_password: "password"
+ipa_zone_name: "example.com"
+ipa_nic_ip_address: "192.168.1.10"
+ipa_reverse_zone_name: "1.168.192.in-addr.arpa"

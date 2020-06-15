@@ -1,0 +1,9 @@
+---
+# Tower inventories
+
+- hosts: all
+  tasks:
+  - name: Tower inventories
+    include_role:
+      name: tower_inventories
+    loop: "{{ tower_inventories }}"

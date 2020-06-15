@@ -1,0 +1,19 @@
+---
+
+- hosts: origin_all
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - yum_repository
+    - epel
+    - ../common/roles/ntp
+    - base_os
+    - base_os_extra
+
+- hosts: origin_nodes
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - docker

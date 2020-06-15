@@ -1,0 +1,26 @@
+---
+- name: CAPSULE | Use firewalld services
+  block:
+    - name: CAPSULE | firewall | Install firewalld
+      yum:
+        name: firewalld
+        state: present
+      ignore_errors: yes
+
+    - name: CAPSULE | firewall | Enable and Start firewalld
+      service:
+        name: firewalld
+        enabled: yes
+        state: started
+
+    - name: CAPSULE | firewall | Enable service in firewall
+      firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        immediate: yes
+        state: enabled
+      with_items:
+        - "{{ firewall_services }}"
+
+  when: use_firewalld
+

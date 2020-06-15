@@ -1,0 +1,18 @@
+---
+
+- name: download etcd container image
+  shell: docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+
+- name: bootstrap_etcd.sh
+  template: src=bootstrap_etcd.sh dest=$HOME/bootstrap_etcd.sh mode=0755
+
+- name: bootstrap etcd
+  shell: bash bootstrap_etcd.sh
+
+- name: wait for cluster healthiness
+  shell: docker exec etcd etcdctl cluster-health
+  register: result
+  until: result.stdout.find("cluster is healthy") != -1
+  retries: 5
+  delay: 10
+  when: inventory_hostname == groups['masters'][0]

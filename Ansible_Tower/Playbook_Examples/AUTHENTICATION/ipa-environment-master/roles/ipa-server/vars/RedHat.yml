@@ -1,0 +1,17 @@
+---
+
+ipaserver_install_command: /sbin/ipa-server-install
+ipaserver_trust_ad_install_command: /sbin/ipa-adtrust-install
+
+ipaserver_os_repo_url:
+ipaserver_os_repo_key:
+
+ipaserver_packages:
+  ipa-server:
+    state: installed
+
+ipaserver_packages_ad:
+  ipa-server-trust-ad:
+    state: installed
+  expect:
+    state: installed

@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Red Hat Consulting EMEA (Spain)
+  description: Role for Install Red Hat JBoss Decision Manger and Patches
+  company: Red Hat
+  license: license (Apache)
+  min_ansible_version: 2.0.2.0
+  platforms:
+   - name: EL
+     versions:
+     - 7
+     - 6
+  categories:
+   - jboss
+   - eap
+   - dm
+
+#
+# EOF

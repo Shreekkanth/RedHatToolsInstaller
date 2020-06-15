@@ -1,0 +1,9 @@
+---
+# Tower labels
+
+- hosts: all
+  tasks:
+  - name: Tower labels
+    include_role:
+      name: tower_labels
+    loop: "{{ tower_labels }}"

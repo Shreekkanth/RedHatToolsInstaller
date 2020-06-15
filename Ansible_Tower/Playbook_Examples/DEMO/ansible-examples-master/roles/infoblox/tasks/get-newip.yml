@@ -1,0 +1,19 @@
+---
+#- shell: echo 10.218.18.150
+#  register: newip
+
+- name: '[INFOBLOX][GET-NEWIP] Get Next Available IP'
+  infoblox:
+    server: "{{ ifserver }}"
+    username: "{{ ifuser }}"
+    password: "{{ ifpass }}"
+    action: get_next_available_ip
+    network: "{{ cidr }}"
+    api_version: "{{ wapi }}"
+  register: newip
+
+- set_fact:
+    valueip: "{{ newip.result }}"
+
+- debug:
+    msg: "{{ cidr }} - {{ newip.result }}"

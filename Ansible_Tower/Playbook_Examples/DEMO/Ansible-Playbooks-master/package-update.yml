@@ -1,0 +1,43 @@
+---
+# Limit how this applies with -l/--limit option
+- name: group hosts based on os family
+  hosts: all
+  user: root
+
+  tasks:
+    - group_by: key="{{ansible_os_family}}"
+
+- name: update debian based hosts
+  hosts: Debian
+  user: root
+  gather_facts: no
+
+  tasks:
+    - name: do apt update and upgrade
+      apt: update_cache=yes upgrade=dist
+
+- name: update redhat based hosts
+  hosts: RedHat
+  user: root
+  gather_facts: no
+
+  tasks:
+    - name: expire yum caches
+      command: yum clean expire-cache
+
+    - name: apply package updates
+      command: yum -y update
+
+- name: update rkhunter if installed
+  hosts: all
+  user: root
+  gather_facts: no
+
+  tasks:
+    - name: check for rkhunter
+      stat: path=/usr/bin/rkhunter
+      register: rkhunter
+
+    - name: update rkhunter prop
+      command: /usr/bin/rkhunter --propupd
+      when: rkhunter.stat.exists

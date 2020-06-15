@@ -1,0 +1,103 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: get VM disks
+  command: "ls {{ vm_location }}"
+  register: disks
+  changed_when: "disks.rc != 0"
+
+- name: Create working directories
+  file: path={{ working_location }}{{ item.key }}.{{ domain_name }} state=directory
+  when: item.key not in disks.stdout
+  with_dict: "{{ guests }}"
+
+- name: Clone Image
+  command: >
+           virt-clone --connect qemu:///system --original {{ template_name }} 
+           --name {{ item.key }}.{{ domain_name }} 
+           --file {{ vm_location }}{{ item.key }}.{{ domain_name }}.{{ item.value.vmfile_type }} 
+  when: item.key not in disks.stdout and item.value.vmtype != "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Create Empty VM xml
+  shell: virt-install 
+           -n {{ item.key }}.{{ domain_name }} 
+           --os-type=Linux 
+           --os-variant={{ item.value.vmos_type }} 
+           --ram={{ item.value.vmmem }} 
+           --vcpus={{ item.value.vmcores }} 
+           --disk path={{ vm_location }}{{ item.key }}.{{ domain_name }}.{{ item.value.vmfile_type }},bus=virtio,size={{item.value.vmgrowdisk}} 
+           --print-xml >{{ working_location }}{{ item.key }}.{{ domain_name }}/{{ item.key }}.{{ domain_name }}.xml
+  when: item.key not in disks.stdout and item.value.vmtype == "emptyvm"
+  with_dict: "{{ guests }}"
+           #--location=http://.com/pub/rhel6/x86_64/
+          # --description "Empty VM" 
+          # --noautoconsole
+          # --graphics none 
+
+- name: Define VM
+  virt:
+      name: "{{ item.key }}.{{ domain_name }}"
+      command: define
+      xml: "{{ lookup('file', '{{ working_location }}{{ item.key }}.{{ domain_name }}/{{ item.key }}.{{ domain_name }}.xml') }}"
+  when: item.key not in disks.stdout and item.value.vmtype == "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Set memory For VMs
+  shell: "virt-xml --memory {{ item.value.vmmem }} {{ item.key }}.{{ domain_name }} --edit"
+  when: item.key not in disks.stdout and item.value.vmtype != "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Set vCPUs For VMs
+  shell: "virt-xml --vcpu {{ item.value.vmcores }} {{ item.key }}.{{ domain_name }} --edit"
+  when: item.key not in disks.stdout and item.value.vmtype != "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Increase disk sizes
+  shell: "qemu-img resize {{ vm_location }}/{{ item.key }}.{{ domain_name }}.{{ item.value.vmfile_type }} +{{item.value.vmgrowdisk}}G"
+  when: item.key not in disks.stdout and item.value.vmtype != "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Create network configuration for each VM
+  shell: echo -e "BOOTPROTO=static
+         \nDEVICE=eth0
+         \nONBOOT=yes
+         \nTYPE=Ethernet
+         \nIPADDR={{ item.value.ipaddress }}
+         \nPREFIX=24
+         \nGATEWAY={{ gateway }}
+         \nDNS1={{ dns1 }}
+         \nDNS2={{ dns2 }}
+         \nDOMAIN={{ domain_name }}" >>{{ working_location }}{{ item.key }}.{{ domain_name }}/ifcfg-eth0
+  when: item.key not in disks.stdout and item.value.vmtype != "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Create hostfile entry
+  shell: echo -e "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+         \n::1         localhost localhost.localdomain localhost6 localhost6.localdomain6 
+         \n{{ item.value.ipaddress }}         {{ item.key }}.{{ domain_name }} {{ item.key }}
+         " >>{{ working_location }}{{ item.key }}.{{ domain_name }}/hosts
+  with_dict: "{{ guests }}"
+
+- name: Set Hostname and Copy in network configuration
+  shell: "virt-customize --hostname {{ item.key }}.{{ domain_name }} --copy-in {{ working_location }}{{ item.key }}.{{ domain_name }}/ifcfg-eth0:/etc/sysconfig/network-scripts/ --copy-in {{ working_location }}{{ item.key }}.{{ domain_name }}/hosts:/etc/ --edit /etc/ssh/sshd_config:'s/^#UseDNS yes/UseDNS no/' -d {{ item.key }}.{{ domain_name }}"
+  when: item.key not in disks.stdout and item.value.vmtype != "emptyvm"
+  with_dict: "{{ guests }}"
+
+- name: Check if root ssh keys generated
+  stat: path=/root/.ssh/id_rsa.pub
+  register: root_ssh
+
+# Need to make sure the --selinux-relabel is inplace https://bugzilla.redhat.com/show_bug.cgi?id=1378311
+- name: Copy in ssh keys
+  shell: "virt-customize --ssh-inject root:file:/root/.ssh/id_rsa.pub --selinux-relabel -d {{ item.key }}.{{ domain_name }}"
+  with_dict: "{{ guests }}"
+  when: "root_ssh.stat.exists == True and item.key not in disks.stdout and item.value.vmtype != 'emptyvm'"
+
+- name: Clean up working files
+  file: path={{ working_location }}{{ item.key }}.{{ domain_name }} state=absent
+  when: item.key not in disks.stdout
+  with_dict: "{{ guests }}"
+

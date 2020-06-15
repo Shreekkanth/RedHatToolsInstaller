@@ -1,0 +1,30 @@
+---
+- name: Create temp directory for git
+  tempfile:
+    state: "directory"
+    suffix: "build"
+  register: temp_directory
+  notify: "Remove temporary git directory"
+
+- name: Get git code
+  git:
+    repo: "{{ gitlab_url }}"
+    dest: "{{ temp_directory.path }}"
+
+- name: Get files from last git commit
+  command: 'git diff --line-prefix {{ temp_directory.path +"/" | quote }} --name-only HEAD^'
+  args:
+    chdir: "{{ temp_directory.path }}"
+  register: changed_files
+
+- name: Importing the following assets
+  debug:
+    msg: "{{ changed_files.stdout_lines }}"
+  verbosity: 1
+
+# try this instead (i think i get what you're trying to do)
+- name: Import new files to Ansible Tower
+  tower_send:
+    # This needs to come through as a signle argument so that the import process can order the assets for dependencies
+    files: "{{ changed_files.stdout_lines }}"
+  when: changed_files.stdout | length > 0

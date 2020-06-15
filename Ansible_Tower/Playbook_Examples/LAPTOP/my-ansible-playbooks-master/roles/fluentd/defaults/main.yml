@@ -1,0 +1,22 @@
+download_td_agent_rpm: yes
+td_agent_rpm_path: /tmp
+td_agent_url: https://packages.treasuredata.com/2/redhat/7/x86_64
+td_agent_rpm: td-agent-2.2.0-0.x86_64.rpm
+
+# Plugins for fluentd
+fluentd_plugins:
+  - name: fluent-plugin-concat
+    version: 1.0.0
+  - name: fluent-plugin-kubernetes
+    version: 0.3.1
+
+# yum packages required by fluentd plugins
+fluentd_plugin_dependancies: []
+
+fluentd_config_files:
+  - kubernetes.conf
+
+# Proxy settings if required
+proxy_env:
+  http_proxy: ""
+  https_proxy: ""

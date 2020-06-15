@@ -1,0 +1,16 @@
+---
+- hosts: all:!localhost
+  gather_facts: true
+
+- hosts: localhost
+  gather_facts: false
+  pre_tasks:
+    - include: roles/prep/pre_tasks/pre_tasks.yml
+
+- hosts: all:!localhost
+  roles:
+    - { role: prep, tags: 'prep' }
+
+- hosts: controller
+  roles:
+    - { role: packstack, tags: 'packstack' }

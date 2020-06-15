@@ -1,0 +1,21 @@
+- debug:
+    msg: "Creating {{ secgroup }} Security Group..."
+
+- name: "Create security group"
+  ec2_group:
+    state: present
+    name: "{{ secgroup }}"
+    tags: 
+      Name: "{{ secgroup }}"
+    description: "General Security Group"
+    aws_access_key: "{{ key }}"
+    aws_secret_key: "{{ secret }}"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    rules:
+      - proto: all
+        from_port: 0
+        to_port: 65535
+        cidr_ip: 0.0.0.0/0
+        rule_desc: "All traffic enabled"
+    validate_certs: no

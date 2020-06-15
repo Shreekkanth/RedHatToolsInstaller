@@ -1,0 +1,65 @@
+---
+# defaults file for role_rh_consultant
+role_prereq_packages:
+  - libselinux-python
+
+# Need to find GPGkey for CSB repo
+enable_csb: true
+enable_rpmfusion_free: true
+enable_rpmfusion_nonfree: false
+# Linphone disabled by default due to lack of GPGkey
+enable_linphone: false
+enable_rocketchat: false
+
+# Space delimited list of packages to exclude from the CSB
+# Currently defaults to exlude known el7 packages with conflicts
+# to upstream Fedora repo packages
+csb_exclude_packages: "linux-firmware vagrant"
+
+csb_install_packages: false
+csb_packages:
+  - redhat-internal-pubkey-14-2.el7.csb.noarch
+  - redhat-internal-rhdr-pubkey-14-0.noarch
+  - redhat-internal-cert-install
+  - redhat-internal-NetworkManager-openvpn-profiles
+
+csb_install_packages_offline: true
+csb_packages_offline:
+  - redhat-internal-cert-install-0.1-9.el7.csb.noarch.rpm
+  - redhat-internal-NetworkManager-openvpn-profiles-0.1-30.el7.csb.noarch.rpm
+  - redhat-internal-pubkey-14-2.el7.csb.noarch.rpm
+  - redhat-internal-rhdr-pubkey-14-0.noarch.rpm
+
+chat_install_packages: false
+chat_packages:
+  - rocketchat
+  - hexchat
+  - pidgin
+
+default_install_packages: true
+default_packages:
+  - firefox
+  - thunderbird
+  - chromium
+
+bluejeans_install_packages: true
+bluejeans_packages:
+  - bluejeans
+
+setup_printers: true
+
+enable_powermgmt: true
+powermgmt_packages:
+  - thermald
+  - tlp
+  - tlp-rdw
+powermgmt_packages_lenovo:
+  - akmod-tp_smapi
+  - akmod-acpi_call
+  - kernel-devel
+
+enable_tuned: true
+tuned_packages:
+  - tuned
+
+cups_server: cups2.bne.redhat.com

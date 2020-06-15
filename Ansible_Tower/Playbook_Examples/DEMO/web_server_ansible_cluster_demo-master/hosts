@@ -1,0 +1,14 @@
+[nginx_cluster]
+node-0.owenwebcluster1.quicklab.pnq2.cee.redhat.com
+node-1.owenwebcluster1.quicklab.pnq2.cee.redhat.com
+node-2.owenwebcluster1.quicklab.pnq2.cee.redhat.com
+
+[haproxy]
+node-3.owenwebcluster1.quicklab.pnq2.cee.redhat.com
+
+[sensu]
+node-4.owenwebcluster1.quicklab.pnq2.cee.redhat.com
+
+[all:vars]
+ansible_user=quicklab
+ansible_ssh_private_key_file=~/Downloads/quicklab_cloud_key.pem

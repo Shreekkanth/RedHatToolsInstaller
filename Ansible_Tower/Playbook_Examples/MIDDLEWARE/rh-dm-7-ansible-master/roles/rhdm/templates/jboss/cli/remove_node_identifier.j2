@@ -1,0 +1,25 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Remove the node identifier configuration
+# https://access.redhat.com/solutions/260023
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/remove_node_identifier.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+/system-property=jboss.tx.node.id:remove()
+/subsystem=transactions:undefine-attribute(name=node-identifier)
+
+run-batch
+#
+# EOF

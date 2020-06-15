@@ -1,0 +1,59 @@
+---
+- name: Make a label on ansible_devices[1]
+  parted:
+    device: /dev/vdb
+    label: msdos
+
+- name: Create primary partition on ansible_devices[1]
+  parted:
+    device: /dev/vdb
+    number: 1
+    state: present
+    flags: [lvm]
+
+- name: Create a volume group
+  lvg:
+    vg: vg_satellite
+    pvs: /dev/vdb1
+    pesize: "32"
+    state: present
+
+- name: Create lv_mongodb
+  lvol:
+    vg: vg_satellite
+    lv: lv_mongodb
+    size: 15g
+    state: present
+
+- name: Create lv_pulp
+  lvol:
+    vg: vg_satellite
+    lv: lv_pulp
+    size: 24g
+    state: present
+
+- name: Create filesystem for lv_mongodb
+  filesystem:
+    fstype: xfs
+    dev: /dev/vg_satellite/lv_mongodb
+
+- name: Create filesystem for lv_pulp
+  filesystem:
+    fstype: xfs
+    dev: /dev/vg_satellite/lv_pulp
+
+- name: Mount mongodb
+  mount:
+    path: /var/lib/mongodb
+    src: /dev/mapper/vg_satellite-lv_mongodb
+    fstype: xfs
+    opts: defaults
+    state: mounted
+
+- name: Mount pulp
+  mount:
+    path: /var/lib/pulp
+    src: /dev/mapper/vg_satellite-lv_pulp
+    fstype: xfs
+    opts: defaults
+    state: mounted

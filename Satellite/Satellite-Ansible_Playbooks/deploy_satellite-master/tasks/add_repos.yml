@@ -1,0 +1,48 @@
+---
+- name: SATELLITE | add repositories | Load Hammer varriables
+  include_vars: file=vars/hammer-vars.yml
+
+- name: SATELLITE | add repositories | Foreman is running
+  shell: 'systemctl is-active foreman-tasks.service'
+  register: foreman_status
+
+#- name: SATELLITE | add repositories | Add Red Hat repositories to Satellite server -- those that have a "Release Version"
+#  command: hammer --password "{{ satellite_admin_passwd }}" repository-set enable --name "{{ item.name_repo }}" --organization "{{ satellite_organization }}" --product "{{ item.product_name }}" --releasever "{{ item.rel }}" --basearch "{{ item.architecture }}"
+#  with_items: "{{ rhel_repositores }}"
+#  when: foreman_status.stdout == "active"
+#
+#- name: SATELLITE | add repositories | Add Red Hat repositories to Satellite server -- those that don't have a "Release Version"
+#  command: hammer --password "{{ satellite_admin_passwd }}" repository-set enable --name "{{ item.name_repo }}" --organization "{{ satellite_organization }}" --product "{{ item.product_name }}" --basearch "{{ item.architecture }}"
+#  with_items: "{{ rhel_repositories_2 }}"
+#  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | add repositories | Add Red Hat repositories to Satellite server -- those that have a "Release Version"
+  katello:
+    username: admin
+    password: '{{ satellite_admin_passwd }}'
+    server_url: '{{ satellite_url }}'
+    entity: repository_set
+    params:
+      name: '{{ item.name_repo }}'
+      organization: '{{ satellite_organization }}'
+      product: '{{ item.product_name }}'
+      releasever: '{{ item.rel }}'
+      basearch: '{{ item.architecture }}'
+  with_items: "{{ rhel_repositores }}"
+  delegate_to: localhost
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | add repositories | Add Red Hat repositories to Satellite server -- those that don't have a "Release Version"
+  katello:
+    username: admin
+    password: '{{ satellite_admin_passwd }}'
+    server_url: '{{ satellite_url }}'
+    entity: repository_set
+    params:
+      name: '{{ item.name_repo }}'
+      organization: '{{ satellite_organization }}'
+      product: '{{ item.product_name }}'
+      basearch: '{{ item.architecture }}'
+  with_items: "{{ rhel_repositories_2 }}"
+  delegate_to: localhost
+  when: foreman_status.stdout == "active"

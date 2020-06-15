@@ -1,0 +1,8 @@
+---
+# Environment specific local.yml
+# This file is used for running last minute tasks or roles that should not
+# be available across all environments
+
+# Add homedir override to server sssd config so that user homedir locations are consistent.
+# (Doing this server-side affects all enroled clients)
+# Automount maps will be defined in env-specific roles.

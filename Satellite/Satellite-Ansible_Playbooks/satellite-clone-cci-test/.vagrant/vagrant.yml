@@ -1,0 +1,16 @@
+---
+types:
+  infra2:
+    flavor: m1.medium
+    image: Fedora-Cloud-Base-26-compose-latest
+    username: fedora
+    password: redhat
+  infra1:
+    flavor: m1.medium
+    image: rhel-7.5-server-x86_64-released
+    username: root
+    password: redhat
+systems:
+  satellite:
+    type: infra1
+    group: satellite6

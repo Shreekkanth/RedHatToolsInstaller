@@ -1,0 +1,54 @@
+---
+# tasks file for roles/ansible-role-gitlab
+
+# Install GitLab and its dependencies.
+- name: Install GitLab dependencies.
+  package: name={{ item }} state=present
+  with_items:
+    - openssh-server
+    - policycoreutils-python
+    - openssh-clients
+    - postfix
+    - openssl
+    - tzdata
+
+- name: Define the Gitlab package name.
+  set_fact:
+    gitlab_package_name: "{{ gitlab_edition }}{{ gitlab_package_version_separator }}{{ gitlab_version }}"
+  when: gitlab_version != ''
+
+- name: Transfer Gitlab package
+  copy:
+    src: "{{ gitlab_package_name }}.rpm"
+    dest: "/tmp/{{ gitlab_package_name }}.rpm"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install GitLab
+  command: >
+    yum localinstall "/tmp/{{ gitlab_package_name }}.rpm"
+  failed_when: false
+
+# Start and configure GitLab. Sometimes the first run fails, but after that,
+# restarts fix problems, so ignore failures on this run.
+- name: Reconfigure GitLab (first run).
+  command: >
+    gitlab-ctl reconfigure
+    creates=/var/opt/gitlab/bootstrapped
+  failed_when: false
+
+
+- name: Configure firewalld https
+  firewalld:
+    service: https
+    permanent: true
+    state: enabled
+
+- name: Configure firewalld http
+  firewalld:
+    service: http
+    permanent: true
+    state: enabled
+  notify: Restart firewalld
+  notify: Restart httpd

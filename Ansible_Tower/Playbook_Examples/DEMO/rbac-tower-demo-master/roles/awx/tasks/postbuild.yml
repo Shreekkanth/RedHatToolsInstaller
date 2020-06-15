@@ -1,0 +1,26 @@
+---
+# awx/tasks/postbuild.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Wait for tower container to be alive
+  wait_for:
+    timeout: 20
+
+- name: Query Tower to begin migrations
+  uri:
+    url: "http://localhost:{{ ports.http }}"
+
+- name: Wait for tower migrations to finish
+  wait_for:
+    timeout: 120
+
+- name: Setup ping project
+  tower_project:
+    description: "Pings target host to ensure connectivity with Ansible"
+    name: "Ping"
+    organization: "Default"
+    scm_type: git
+    scm_url: "https://github.com/anthonyloukinas/ping.git"
+    tower_config_file: "{{ playbook_dir }}/build/{{ env }}/tower_cli.cfg"
+
+- include_tasks: ldap-auth.yml

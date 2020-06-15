@@ -1,0 +1,47 @@
+- name: Create RHV Virtual Machines
+  hosts: localhost
+  gather_facts: false
+  become: false
+  vars_files:
+  - vms_definition.yml
+  tasks:
+
+  - name: Add hosts to be provisioned
+    with_items: "{{ provision_vms }}"
+    add_host: 
+      name: "{{ item.fqdn }}"
+      ansible_host: "{{ item.ip }}"
+      ansible_user: "root"
+      ansible_ssh_pass: "{{ item.root_password }}"
+      hostinfo: "{{ item }}"
+      group: "provisioned"
+    changed_when: false
+
+- name: Create and configure systems
+  hosts: provisioned
+  gather_facts: false
+  become: false
+  tasks:
+
+  - name: Create RHV vm
+    include_role:
+      name: rhv_create_vm
+
+  - name: Create Sat host
+    include_role:
+      name: sat_create_host
+
+  - name: Wait for vm to be up
+    wait_for_connection:
+      delay: 0
+      sleep: 3
+      timeout: 300
+
+  - name: Post deploy and setup
+    include_role:
+      name: configure_host
+
+  - name: Restart RHV vm in normal boot mode
+    include_role:
+      name: rhv_create_vm
+      tasks_from: shutdown_restart_vm.yml

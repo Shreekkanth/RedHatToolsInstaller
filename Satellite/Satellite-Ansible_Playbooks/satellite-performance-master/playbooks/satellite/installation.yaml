@@ -1,0 +1,19 @@
+---
+- hosts: satellite6
+  remote_user: root
+  ###gather_facts: no
+  vars_files:
+    - ../../conf/satperf.yaml
+    - ../../conf/satperf.local.yaml
+  roles:
+    - common
+    - epel-not-present
+    - rhsm
+    - ntp
+    ###- upgrade-restart
+    ###- satellite-ec2-partitioning
+    - setup
+    - enlarge-arp-table
+    - pbench_client
+    - satellite-populate
+...

@@ -1,0 +1,23 @@
+---
+- name: Setup stuff
+  hosts: ansible
+  remote_user: mtenheuv
+  become: 1
+
+  roles:
+  - role: webserver
+    pkg_list: 
+    - httpd
+    - firewalld
+    - mod_ssl
+    - php
+    - vim
+    - bind-utils
+    svcs: 
+      - httpd
+      - firewalld
+    fw_type: firewalld
+    fw_services:
+      - http
+      - https
+...

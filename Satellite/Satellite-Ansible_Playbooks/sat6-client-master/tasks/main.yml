@@ -1,0 +1,44 @@
+---
+# tasks file
+
+- fail: msg="sat_activation_key required, set in group_vars"
+  when: sat_activation_key is not defined
+
+- name: Copy RPM GPG keys
+  copy:
+    src: RPM-GPG/
+    dest: /etc/pki/rpm-gpg/
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: Trust RPM GPG keys
+  rpm_key:
+    state: present
+    key: "{{ item }}"
+  loop: "{{ load_rpm_keys }}"
+
+- name: install the katello agent
+  yum:
+    name: "{{ katello_agent }}"
+    state: present
+
+- name: Register host with satellite
+  redhat_subscription:
+    state: present
+    auto_attach: true
+    activationkey: "{{ sat_activation_key }}"
+    org_id: "{{ sat_org_id }}"
+
+- name: Upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+  when: update_all_packages
+
+- name: Install base packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ base_packages }}"

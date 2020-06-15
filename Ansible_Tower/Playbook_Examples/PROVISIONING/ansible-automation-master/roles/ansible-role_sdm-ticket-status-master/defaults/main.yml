@@ -1,0 +1,6 @@
+---
+sdm_ticket_status_api_base_url:
+sdm_ticket_status_api_key:
+sdm_ticket_status_ticket_id:
+sdm_ticket_status_wait: false
+sdm_ticket_status_wait_for: 'Closed'

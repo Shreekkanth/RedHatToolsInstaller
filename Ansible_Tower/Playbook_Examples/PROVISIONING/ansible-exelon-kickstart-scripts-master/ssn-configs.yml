@@ -1,0 +1,114 @@
+---
+- hosts: "all"
+  vars_files:
+    - "vars/groups.yml"
+    - "vars/users.yml"
+  handlers:
+    - name: Restart syslog
+      service:
+        name: "syslog"
+        state: "restarted"
+
+    - name: Restart sshd
+      service:
+        name: "sshd"
+        state: "restarted"
+
+  tasks:
+    - name: RHEL5/6 SSN configurations
+      block:
+        - name: Create user groups
+          include_role:
+            name: "groups"
+
+        - name: Create user accounts
+          include_role:
+            name: "users"
+
+        - name: Check for VRTS
+          shell: "rpm -qa | grep VRTS"
+          register: "vrts_installed"
+          ignore_errors: True
+
+        - name: Update bash_profile | VRTS installed
+          lineinfile:
+            line: "{{ item }}"
+            path: "/root/.bash_profile"
+            regexp: "{{ item }}"
+            state: "present"
+          with_items:
+            - "PATH=$PATH/PATH=$PATH:/usr/bin:/opt/quest/bin:/opt/VRTS/bin:/etc/vx/bin/"
+            - "MANPATH=$MANPATH:/opt/VRTS/man"
+            - "export MANPATH"
+          when: "vrts_installed.rc == 0"
+
+        - name: Update bash_profile | VRTS not installed
+          lineinfile:
+            line: "{{ item }}"
+            path: "/root/bash_profile"
+            regexp: "{{ item }}"
+            state: "present"
+          with_items:
+            - "PATH=$PATH/PATH=$PATH:/usr/bin:/opt/quest/bin/"
+          when: "vrts_installed.rc > 0"
+
+        - name: Find system log files
+          find:
+            paths: "/var/log"
+            patterns: "messages*"
+          register: "syslogs"
+
+        - name: Update utmp and system logs permissions
+          file:
+            path: "{{ item }}"
+            mode: "0644"
+          with_items:
+            - "/var/run/utmp"
+            - "{{ syslogs | json_query('files[*].path') }}"
+
+        - name: Update /etc/man.config
+          replace:
+            path: "/etc/man.config"
+            replace: "/usr/bin/less -Xis"
+            regexp: "/usr/bin/less -is"
+
+        - name: Create symbolic link to libcrypto.so.4
+          file:
+            src: "/usr/lib/libcrypto.so.1.0.1e"
+            path: "/usr/lib/libcrypto.so.4"
+            state: "link"
+
+        - name: Update sendmail configuration
+          replace:
+            path: "{{ item.path }}"
+            replace: "{{ item.replace }}"
+            regexp: "{{ item.search }}"
+          with_items:
+            - search: "DSsmtpux.ceg.corp.net"
+              replace: "DSexrelay.ceg.corp.net"
+              path: "/etc/mail/sendmail.cf"
+            - search: "DSsmtpux.ceg.corp.net"
+              replace: "DSexrelay.ceg.corp.net"
+              path: "/etc/mail/submit.cf"
+            - search: "D{MTAHost}smtpux.ceg.corp.net"
+              replace: "D{MTAHost}exrelay.ceg.corp.net"
+              path: "/etc/mail/submit.cf"
+            - search: "DAEMON=yes"
+              replace: "DAEMON=no"
+              path: "/etc/sysconfig/sendmail"
+
+        - name: Update sshd configuration
+          lineinfile:
+            path: "/etc/ssh/sshd_config"
+            line: "Allowusers e33877 e16970 e13352 e39239 e46467 e048895"
+            regexp: "Allowusers e33877 e16970 e13352 e39239 e46467 e048895"
+            state: "present"
+
+        #This should be moved to Sat6 content view in a custom product so Sat5 can retire
+        - name: Install syslog-ng-premium-edition-client
+          package:
+            name: "http://satadmin.exelonds.com/pub/software/syslog-ng-premium-edition-client-5.0.10b-1.rhel6.i386.rpm"
+            state: "present"
+      when:
+        - ansible_system == "Linux"
+        - (ansible_distribution_major_version == "6") or (ansible_distribution_major_version == "5")

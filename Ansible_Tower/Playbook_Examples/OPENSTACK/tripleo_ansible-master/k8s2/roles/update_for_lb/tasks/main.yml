@@ -1,0 +1,9 @@
+---
+
+- name: update kube-proxy configmap
+  shell: >
+    kubectl -n kube-system patch configmap kube-proxy -p '{"data": {"kubeconfig.conf": "apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\n    server: https://10.0.1.120:8443\n  name: default\ncontexts:\n- context:\n    cluster: default\n    namespace: default\n    user: default\n  name: default\ncurrent-context: default\nusers:\n- name: default\n  user:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token\n"}}'
+  when: inventory_hostname == groups['masters'][0]
+
+- name: restart docker and kubelet and keepalived
+  shell: systemctl restart docker kubelet keepalived

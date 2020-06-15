@@ -1,0 +1,284 @@
+---
+- hosts: localhost
+  vars_files:
+    - group_vars/all.yml
+  tasks:
+
+  - name: Create Master nodes
+    block:
+
+    - name: Debug group vars environment
+      debug:
+        msg: "{{ item.key }} - {{ item.value }}"
+      with_dict: "{{ masters }}"
+
+    - name: Create Master VMs
+      include_role:
+        name: ovirt-vm-create
+      vars:
+        ovirt_vm_wait: "{{ masters.ovirt_wait }}"
+        ovirt_vm_cluster: "{{ masters.ovirt_cluster }}"
+        ovirt_vm_name: "{{ masters.ovirt_name }}"
+        ovirt_vm_domain_name: "{{ masters.ovirt_domain_name }}"
+        ovirt_vm_rhv_template: "{{ masters.ovirt_rhv_template }}"
+        ovirt_vm_dns_search: "{{ masters.ovirt_dns_search }}"
+        ovirt_vm_nic_boot_protocol: "{{ masters.ovirt_nic_boot_protocol }}"
+        ovirt_vm_nic_ip_address: "{{ item.1 }}"
+        ovirt_vm_nic_netmask: "{{ masters.ovirt_nic_netmask }}"
+        ovirt_vm_nic_gateway: "{{ masters.ovirt_nic_gateway }}"
+        ovirt_vm_nic_name: "{{ masters.ovirt_nic_name }}"
+        ovirt_vm_nic_on_boot: "{{ masters.ovirt_nic_on_boot }}"
+        ovirt_vm_openshift_cpu_cores: "{{ masters.openshift_cpu_cores }}"
+        ovirt_vm_openshift_memory: "{{ masters.openshift_memory }}"
+        ovirt_vm_disk_storage_domain: "{{ masters.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_count: "{{ item.0 | int + 1 }}"
+      with_indexed_items:
+        - "{{ master_servers }}"
+
+    - name: Create docker disk
+      include_role:
+        name: ovirt-vm-disk
+      vars:
+        ovirt_vm_disk_name: "{{ masters.ovirt_vm_docker_disk_name }}"
+        ovirt_vm_disk_vm_name: "{{ masters.ovirt_name }}-{{ item.0 | int + 1 }}"
+        ovirt_vm_disk_storage_domain: "{{ masters.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_disk_size: "{{ masters.ovirt_vm_docker_disk_size }}"
+      with_indexed_items:
+        - "{{ master_servers }}"
+
+    - name: Create etcd disk
+      include_role:
+        name: ovirt-vm-disk
+      vars:
+        ovirt_vm_disk_name: "{{ masters.ovirt_vm_etcd_disk_name }}"
+        ovirt_vm_disk_vm_name: "{{ masters.ovirt_name }}-{{ item.0 | int + 1 }}"
+        ovirt_vm_disk_storage_domain: "{{ masters.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_disk_size: "{{ masters.ovirt_vm_etcd_disk_size }}"
+      with_indexed_items:
+        - "{{ master_servers }}"
+
+    tags:
+      - masters
+      - create-vm
+
+  - name: Create Infra nodes
+    block:
+
+    - name: Create Infra VMs
+      include_role:
+        name: ovirt-vm-create
+      vars:
+        ovirt_vm_wait: "{{ infras.ovirt_wait }}"
+        ovirt_vm_cluster: "{{ infras.ovirt_cluster }}"
+        ovirt_vm_name: "{{ infras.ovirt_name }}"
+        ovirt_vm_domain_name: "{{ infras.ovirt_domain_name }}"
+        ovirt_vm_rhv_template: "{{ infras.ovirt_rhv_template }}"
+        ovirt_vm_dns_search: "{{ infras.ovirt_dns_search }}"
+        ovirt_vm_nic_boot_protocol: "{{ infras.ovirt_nic_boot_protocol }}"
+        ovirt_vm_nic_ip_address: "{{ item.1 }}"
+        ovirt_vm_nic_netmask: "{{ infras.ovirt_nic_netmask }}"
+        ovirt_vm_nic_gateway: "{{ infras.ovirt_nic_gateway }}"
+        ovirt_vm_nic_name: "{{ infras.ovirt_nic_name }}"
+        ovirt_vm_nic_on_boot: "{{ infras.ovirt_nic_on_boot }}"
+        ovirt_vm_openshift_cpu_cores: "{{ infras.openshift_cpu_cores }}"
+        ovirt_vm_openshift_memory: "{{ infras.openshift_memory }}"
+        ovirt_vm_disk_storage_domain: "{{ infras.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_count: "{{ item.0 | int + 1 }}"
+      with_indexed_items:
+        - "{{ infra_servers }}"
+
+    - name: Create docker disk
+      include_role:
+        name: ovirt-vm-disk
+      vars:
+        ovirt_vm_disk_name: "{{ infras.ovirt_vm_docker_disk_name }}"
+        ovirt_vm_disk_vm_name: "{{ infras.ovirt_name }}-{{ item.0 | int + 1 }}"
+        ovirt_vm_disk_storage_domain: "{{ infras.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_disk_size: "{{ infras.ovirt_vm_docker_disk_size }}"
+      with_indexed_items:
+        - "{{ infra_servers }}"
+
+    - name: Create etcd disk
+      include_role:
+        name: ovirt-vm-disk
+      vars:
+        ovirt_vm_disk_name: "{{ infras.ovirt_vm_etcd_disk_name }}"
+        ovirt_vm_disk_vm_name: "{{ infras.ovirt_name }}-{{ item.0 | int + 1 }}"
+        ovirt_vm_disk_storage_domain: "{{ infras.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_disk_size: "{{ infras.ovirt_vm_etcd_disk_size }}"
+      with_indexed_items:
+        - "{{ infra_servers }}"
+    tags:
+      - infras
+      - create-vm
+
+  - name: Create App nodes
+    block:
+
+    - name: Create App VMs
+      include_role:
+        name: ovirt-vm-create
+      vars:
+        ovirt_vm_wait: "{{ apps.ovirt_wait }}"
+        ovirt_vm_cluster: "{{ apps.ovirt_cluster }}"
+        ovirt_vm_name: "{{ apps.ovirt_name }}"
+        ovirt_vm_domain_name: "{{ apps.ovirt_domain_name }}"
+        ovirt_vm_rhv_template: "{{ apps.ovirt_rhv_template }}"
+        ovirt_vm_dns_search: "{{ apps.ovirt_dns_search }}"
+        ovirt_vm_nic_boot_protocol: "{{ apps.ovirt_nic_boot_protocol }}"
+        ovirt_vm_nic_ip_address: "{{ item.1 }}"
+        ovirt_vm_nic_netmask: "{{ apps.ovirt_nic_netmask }}"
+        ovirt_vm_nic_gateway: "{{ apps.ovirt_nic_gateway }}"
+        ovirt_vm_nic_name: "{{ apps.ovirt_nic_name }}"
+        ovirt_vm_nic_on_boot: "{{ apps.ovirt_nic_on_boot }}"
+        ovirt_vm_openshift_cpu_cores: "{{ apps.openshift_cpu_cores }}"
+        ovirt_vm_openshift_memory: "{{ apps.openshift_memory }}"
+        ovirt_vm_disk_storage_domain: "{{ apps.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_count: "{{ item.0 | int + 1 }}"
+      with_indexed_items:
+        - "{{ app_servers }}"
+
+    - name: Create docker disk
+      include_role:
+        name: ovirt-vm-disk
+      vars:
+        ovirt_vm_disk_name: "{{ apps.ovirt_vm_docker_disk_name }}"
+        ovirt_vm_disk_vm_name: "{{ apps.ovirt_name }}-{{ item.0 | int + 1 }}"
+        ovirt_vm_disk_storage_domain: "{{ apps.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_disk_size: "{{ apps.ovirt_vm_docker_disk_size }}"
+      with_indexed_items:
+        - "{{ app_servers }}"
+
+    - name: Create etcd disk
+      include_role:
+        name: ovirt-vm-disk
+      vars:
+        ovirt_vm_disk_name: "{{ apps.ovirt_vm_etcd_disk_name }}"
+        ovirt_vm_disk_vm_name: "{{ apps.ovirt_name }}-{{ item.0 | int + 1 }}"
+        ovirt_vm_disk_storage_domain: "{{ apps.ovirt_vm_disk_storage_domain }}"
+        ovirt_vm_disk_size: "{{ apps.ovirt_vm_etcd_disk_size }}"
+      with_indexed_items:
+        - "{{ app_servers }}"
+
+    tags:
+      - apps
+      - create-vm
+
+- hosts: tag_rhv-ocp:!rhv-ocp-ansible
+  tasks:
+
+  - name: Deploy common configs
+    block:
+
+    - name: Wait for VMs to become reachable/usable
+      wait_for_connection:
+        timeout: 600
+        sleep: 20
+
+    - name: Deploy common configs
+      include_role:
+        name: common-configs
+      tags:
+        - post-config
+        - common
+
+    - name: Register to satellite
+      include_role:
+        name: satellite-register
+      vars:
+        satellite_url: "{{ satellite_env_vars.satellite_url }}"
+        satellite_katello_rpm_path: "{{ satellite_env_vars.satellite_katello_rpm_path }}"
+        satellite_katello_rpm_version: "{{ satellite_env_vars.satellite_katello_rpm_version }}"
+        satellite_activation_key: "{{ satellite_env_vars.satellite_activation_key }}"
+        satellite_org_id: "{{ satellite_env_vars.satellite_org_id }}"
+        satellite_register_ignore_errors: "{{ satellite_env_vars.satellite_register_ignore_errors }}"
+
+    #  - name: Manually enable repositories
+    #    include_role:
+    #      name: host-repo-enable
+
+    - name: Update hosts
+      include_role:
+        name: update-hosts
+
+    - name: Install and register to freeipa
+      include_role:
+        name: freeipa-register
+      vars:
+        freeipa_password: "{{ ipa_password }}"
+        freeipa_user: "{{ ipa_user }}"
+        freeipa_realm: "{{ ipa_realm }}"
+
+    tags:
+      - post-config
+      - satellite
+      - freeipa
+
+
+- hosts: tag_rhv-ocp:!rhv-ocp-ansible
+  tasks:
+
+  - name: Configure docker storage
+    include_role:
+      name: docker-storage-setup
+    vars:
+      docker_storage_device: "{{ ovirt_environment_vars.docker_origin_storage_device }}"
+    tags:
+      - post-config
+      - docker-storage
+      - docker
+
+- hosts: tag_rhv-ocp-master
+  gather_facts: no
+  become: yes
+  tasks:
+
+  - name: Configure openshift etcd storage
+    include_role:
+      name: openshift-storage-setup
+    vars:
+      openshift_storage_device: "{{ ovirt_environment_vars.docker_etcd_storage_device }}"
+      openshift_storage_vg_name: "{{ ovirt_environment_vars.openshift_etcd_storage_vg_name }}"
+      openshift_storage_lv_name: "{{ ovirt_environment_vars.openshift_etcd_storage_lv_name }}"
+      openshift_storage_lv_size: "{{ ovirt_environment_vars.openshift_etcd_storage_lv_size }}"
+      openshift_storage_lv_path: "{{ ovirt_environment_vars.openshift_etcd_storage_lv_path }}"
+      openshift_storage_mount_path: "{{ ovirt_environment_vars.openshift_etcd_storage_mount_path }}"
+      openshift_storage_fstab_regexp: "{{ ovirt_environment_vars.openshift_etcd_storage_fstab_regexp }}"
+    tags:
+      - post-config
+      - etcd-storage
+      - docker
+
+- hosts: tag_rhv-ocp:!tag_rhv-ocp-master:!rhv-ocp-ansible
+  gather_facts: no
+  become: yes
+  tasks:
+
+  - name: Configure openshift origin storage
+    include_role:
+      name: openshift-storage-setup
+    vars:
+      openshift_origin_storage_device: "{{ ovirt_environment_vars.docker_origin_storage_device }}"
+      openshift_origin_storage_vg_name: "{{ ovirt_environment_vars.openshift_origin_storage_vg_name }}"
+      openshift_origin_storage_lv_name: "{{ ovirt_environment_vars.openshift_origin_storage_lv_name }}"
+      openshift_origin_storage_lv_size: "{{ ovirt_environment_vars.openshift_origin_storage_lv_size }}"
+      openshift_origin_storage_lv_path: "{{ ovirt_environment_vars.openshift_origin_storage_lv_path }}"
+      openshift_origin_storage_mount_path: "{{ ovirt_environment_vars.openshift_origin_storage_mount_path }}"
+      openshift_origin_storage_fstab_regexp: "{{ ovirt_environment_vars.openshift_origin_storage_fstab_regexp }}"
+    tags:
+      - post-config
+      - origin-storage
+      - docker
+
+- hosts: tag_rhv-ocp:!rhv-ocp-ansible
+  gather_facts: no
+  become: yes
+  tasks:
+
+  - name: Container storage setup
+    include_role:
+      name: container-storage-setup
+    tags:
+      - post-config
+      - container-storage
+      - docker

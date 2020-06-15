@@ -1,0 +1,17 @@
+---
+# defaults file for idm-deploy
+#
+
+required_vars:
+ - realm
+ - domain
+ - admin_password
+ - ds_password
+ - hostname
+ - ip_address
+ - forwarder
+ - forward_policy
+ - reverse_zone
+ - subscription_username
+ - subscription_password
+

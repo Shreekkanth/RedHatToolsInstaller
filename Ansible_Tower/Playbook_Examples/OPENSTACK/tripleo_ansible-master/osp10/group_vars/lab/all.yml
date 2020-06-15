@@ -1,0 +1,67 @@
+---
+
+osp_version: 10
+
+repository:
+  server: http://debugs.nrt.redhat.com
+  path: reposync/RHEL7/repos
+
+hostname_fqdn: osp{{ osp_version }}-director.osptest.local
+
+stack_user: stack
+stack_password: stack
+
+ntp_server: 10.11.160.238
+ntp_servers_extra:
+  - 10.16.255.1
+  - 10.5.26.10
+  - 10.5.27.10
+
+undercloud_conf:
+  file: undercloud.conf
+  local_ip: 10.{{ osp_version }}.9.200/24
+  gateway: 10.{{ osp_version }}.9.254
+#  public_vip: 10.{{ osp_version }}.9.201
+#  admin_vip: 10.{{ osp_version }}.9.202
+  local_interface: eth4
+  network_cidr: 10.{{ osp_version }}.9.0/24
+  masquerade_network: 10.{{ osp_version }}.9.0/24
+  dhcp_start: 10.{{ osp_version }}.9.220
+  dhcp_end: 10.{{ osp_version }}.9.229
+  inspection_iprange: 10.{{ osp_version }}.9.230,10.{{ osp_version }}.9.239
+  inspection_enable_uefi: false
+#  enable_telemetry: false
+#  enable_ui: false
+
+undercloud:
+  discovered_data_path: ~/tripleo_configs/discovered_data
+  external_interface: # pseudo ping target / gateway for overcloud
+    name: vlan{{ osp_version }}0
+    vlan: yes
+    physdev: eth5
+
+image_packages:
+  - rhosp-director-images
+  - rhosp-director-images-ipa
+
+image_tarballs:
+  - /usr/share/rhosp-director-images/overcloud-full-latest-{{ osp_version }}.0.tar
+  - /usr/share/rhosp-director-images/ironic-python-agent-latest-{{ osp_version }}.0.tar
+
+overcloud:
+  nodes:
+    - osp{{ osp_version }}-ctrl01
+    - osp{{ osp_version }}-ctrl02
+    - osp{{ osp_version }}-ctrl03
+    - osp{{ osp_version }}-comp01
+    - osp{{ osp_version }}-comp02
+    - osp{{ osp_version }}-ceph01
+    - osp{{ osp_version }}-ceph02
+    - osp{{ osp_version }}-ceph03
+    - osp{{ osp_version }}-networker01
+    - osp{{ osp_version }}-networker02
+  domainname: osptest.local
+  dns_nameservers:
+    - 10.64.255.25
+    - 10.68.5.26
+  external_gateway: 10.{{ osp_version }}.1.1

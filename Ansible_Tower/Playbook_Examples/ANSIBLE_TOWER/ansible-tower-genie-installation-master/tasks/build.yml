@@ -1,0 +1,160 @@
+---
+# Clone Genie repos
+- name: Clone Ansible Tower Genie Repositories
+  git:
+    dest: "{{ temp_dir.path }}/build/{{ item.dest }}"
+    repo: "{{ item.url }}"
+    umask: "0022"
+  with_items:
+    - "{{ genie_role_repos }}"
+    - "{{ genie_playbook_repos }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Clean Genie repos
+- name: Clean Ansible Tower Genie Repositories
+  file:
+    path: "{{ temp_dir.path }}/build/{{ item.dest }}/.git"
+    state: "absent"
+  with_items:
+    - "{{ genie_role_repos }}"
+    - "{{ genie_playbook_repos }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Build list of files to move into place with bonus ugly jinja2 to prepend the tempdir onto the relative pathing
+- name: Build list of files to copy into place
+  find:
+    paths: "{{ genie_playbook_repos | map(attribute='dest') | list | map('regex_replace', '^', temp_dir.path + '/build/') | list }}"
+    file_type: "any"
+    recurse: False
+    excludes:
+      - "README.md"
+  register: playbook_files
+
+# Move files into place
+- name: Move Ansible Tower Genie playbook files into place
+  copy:
+    src: "{{ item }}"
+    dest: "{{ temp_dir.path }}/build/"
+  with_items: "{{ playbook_files.files | map(attribute='path') | list }}"
+
+- name: Create Ansible Tower Genie Documentation Directory
+  file:
+    path: "{{ temp_dir.path }}/build/docs"
+    state: "directory"
+
+- name: Move Ansible Tower Genie Documentation files into place
+  copy:
+    src: "{{ temp_dir.path }}/build/{{ item.dest }}/README.md"
+    dest: "{{ temp_dir.path }}/build/docs/{{ item.name }}-README.md"
+  with_items: "{{ genie_playbook_repos }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Move Ansible Tower Genie Parent Documentation into place
+  copy:
+    src: "README.md"
+    dest: "{{ temp_dir.path }}/build/README.md"
+
+- name: Move Ansible Tower Genie Documentation Logo into place
+  copy:
+    src: "tower-genie.png"
+    dest: "{{ temp_dir.path }}/build/tower-genie.png"
+
+# Clean up source playbook temporary directories
+- name: Cleanup source playbook repositories
+  file:
+    path: "{{ temp_dir.path }}/build/playbooks"
+    state: "absent"
+
+# Clone the user provided Repo if HTTP/HTTPS
+# equail added validation on https/https and user/pass aren't empty
+# for ssh optional compat
+- name: Clone user provided repository | HTTP/HTTPS
+  git:
+    dest: "{{ temp_dir.path }}/stage"
+    repo: "{{ git_repo_url | urlsplit('scheme')}}://{{ git_user }}:{{ git_pass }}@{{ git_repo_url | urlsplit('netloc') }}{{ git_repo_url | urlsplit('path') }}"
+    umask: "0022"
+  environment:
+    GIT_SSL_NO_VERIFY: "true"
+  no_log: True
+  when:
+    - git_repo_url | urlsplit('scheme') == "https" or git_repo_url | urlsplit('scheme') == "http"
+    - git_user | length > 0
+    - git_pass | length > 0
+
+# Clone the user provided Repo if SSH
+# equail SSH support added 05/18/18
+- name: Clone user provided repository | SSH
+  git:
+    dest: "{{ temp_dir.path }}/stage"
+    repo: "{{ git_repo_url }}"
+    umask: "0022"
+  when: git_repo_url | urlsplit('scheme') == "ssh"
+
+- name: Capture new branch name
+  set_fact:
+    git_repo_branch: "build_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}"
+
+# Create a new branch based off of build date
+- name: Create new branch in user provided repository
+  command: 'git checkout -b {{ git_repo_branch }}'
+  args:
+    chdir: "{{ temp_dir.path }}/stage/"
+
+# Build list of files to move
+- name: Build list of Genie files to move to user provided repository
+  find:
+    paths: "{{ temp_dir.path }}/build/"
+    file_type: "any"
+    recurse: False
+  register: genie_files
+
+# Move all the files into place
+- name: Move Ansible Tower Genie files into user provided repository
+  copy:
+    src: "{{ item }}"
+    dest: "{{ temp_dir.path }}/stage/"
+  with_items: "{{ genie_files.files | map(attribute='path') | list }}"
+
+- name: Build onboarding-secrets.yml
+  template:
+    src: "onboarding-secrets.yml.j2"
+    dest: "{{ temp_dir.path }}/stage/vars/onboarding-secrets.yml"
+
+- name: Create Temporary Ansible Vault password file
+  copy:
+    content: "{{ onboarding_vault_pass }}"
+    dest: "{{ temp_dir.path }}/vault_key"
+  no_log: True
+
+- name: Encrypt onboarding-secrets.yml with provided Ansible Vault credential
+  command: 'ansible-vault encrypt {{ temp_dir.path }}/stage/vars/onboarding-secrets.yml --vault-password-file {{ temp_dir.path }}/vault_key'
+  no_log: True
+
+- name: Build onboarding-vars.yml
+  template:
+    src: "onboarding-vars.yml.j2"
+    dest: "{{ temp_dir.path }}/stage/vars/onboarding-vars.yml"
+
+# Stage the git project
+- name: Stage Ansible Tower Genie files
+  command: 'git add --all'
+  args:
+    chdir: "{{ temp_dir.path }}/stage/"
+
+# Commit the git project
+- name: Commit Ansible Tower Genie files
+  command: 'git commit -m "Completing {{ git_repo_branch }}"'
+  args:
+    chdir: "{{ temp_dir.path }}/stage/"
+
+# Push the git project
+- name: Push Ansible Tower Genie files
+  command: 'git push origin {{ git_repo_branch }}'
+  args:
+    chdir: "{{ temp_dir.path }}/stage/"
+  environment:
+    GIT_SSL_NO_VERIFY: "true"
+  no_log: True

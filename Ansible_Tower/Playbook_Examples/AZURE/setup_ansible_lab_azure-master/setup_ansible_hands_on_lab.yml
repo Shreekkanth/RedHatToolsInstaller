@@ -1,0 +1,406 @@
+---
+# # libselinux-python needs to be installed locally, to be able to change the inventory file
+# # using following part requires passwordless sudo access
+# - hosts: localhost
+#   gather_facts: no
+#   become: true
+#   tasks:
+#     - name: install libselinux-python
+#       yum:
+#         name: libselinux-python
+#         state: present
+
+- name: Create SSH keys in the playbook directory
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Check if key files are present
+    stat:
+      path: "{{ playbook_dir }}/id_rsa"
+    register: stat_result
+  - name: ensure SSH key is generated
+    command: ssh-keygen -t rsa -f {{ playbook_dir }}/id_rsa -N ''
+    when: stat_result.stat.exists == False 
+
+- name: Initial configuration of Azure
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Create Azure resource group
+    azure_rm_resourcegroup:
+      name: "{{ resource_group_name }}"
+      location: "{{ location }}"
+      subscription_id: "{{ subscription_id }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+    tags: 
+      - initial_azure_setup
+
+  - name: Create Azure virtual network
+    azure_rm_virtualnetwork:
+      name: "{{ virtual_network_name }}"
+      address_prefixes_cidr:
+        - "10.0.0.0/16"
+      resource_group: "{{ resource_group_name }}" 
+      subscription_id: "{{ subscription_id }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+    tags: 
+      - initial_azure_setup
+
+  - name: Create Azure subnet in this virtual network
+    azure_rm_subnet:
+      name: "{{ subnet_name }}"
+      virtual_network_name: "{{ virtual_network_name }}"
+      address_prefix_cidr: "10.0.0.0/16"
+      resource_group: "{{ resource_group_name }}" 
+      subscription_id: "{{ subscription_id }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+    tags: 
+      - initial_azure_setup
+
+  - name: create (Premium) Azure Storage account for Tower VMs
+    azure_rm_storageaccount:
+      name: "{{ storage_account_tower_name }}"
+      resource_group: "{{ resource_group_name }}"
+      account_type: Premium_LRS
+      subscription_id: "{{ subscription_id }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+    tags: 
+      - initial_azure_setup
+
+  # only create one for VMs if using a different one. 
+  - name: create Azure Storage account for VMs
+    azure_rm_storageaccount:
+      name: "{{ storage_account_vm_name }}"
+      resource_group: "{{ resource_group_name }}"
+      account_type: Standard_LRS
+      subscription_id: "{{ subscription_id }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+    when: storage_account_vm_name != storage_account_tower_name
+    tags: 
+      - initial_azure_setup
+
+  - name: "Create VMs on Azure"
+    azure_rm_virtualmachine:
+      name: "{{ item }}"
+      resource_group: "{{ resource_group_name }}"
+      location: "{{ location }}"
+      vm_size: "{{ vm_size }}"
+      public_ip_allocation_method: Dynamic
+      open_ports: 
+        - 22
+        - 80
+        - 443
+      image:
+        offer: RHEL
+        publisher: RedHat
+        sku: "{{ rhel_sku }}"
+        version: "{{ rhel7_version }}"
+      admin_username: "{{ admin_user }}"
+      ssh_password_enabled: False
+      ssh_public_keys: [{"path": "/home/{{ admin_user }}/.ssh/authorized_keys", "key_data": "{{ lookup('file', playbook_dir + '/id_rsa.pub') }}"}]
+      storage_account_name: "{{ storage_account_tower_name }}"
+      virtual_network_name: "{{ virtual_network_name }}"
+      state: present
+      subscription_id: "{{ subscription_id }}"
+      secret: "{{ secret }}"
+      tenant: "{{ tenant }}"
+      client_id: "{{ client_id }}"
+    with_items:
+      - tower1
+      - tower2
+      - tower3
+      - towerdb  
+    register: results_async
+    # spin up all VMs in parallel
+    async: 1000
+    poll: 0
+
+  - name: Wait for instance creation to complete
+    async_status: jid={{ item.ansible_job_id }}
+    register: results
+    until: results.finished
+    # 1000 seconds seems to be too low
+    retries: 500
+    delay: 10
+    with_items: "{{ results_async.results }}"
+
+  - debug:
+      msg: "The public IP of {{ item.ansible_facts.azure_vm.name }} is {{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+    with_items: "{{ results.results }}"
+  
+  - name: add host to group 'just_created' 
+    add_host:
+      name: "{{ item.ansible_facts.azure_vm.name }}"
+      ansible_host: "{{ item.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+      ansible_user: "{{ admin_user }}"
+      ansible_ssh_private_key_file: "{{ playbook_dir }}/id_rsa"
+      groups: azure_vms
+    with_items: "{{ results.results }}"
+
+- name: Ensure the license file contains the eula_accepted parameter
+  hosts: localhost
+  gather_facts: no
+  vars:
+  tasks:
+    - name: ensure the license file contains the eula_accepted parameter, so the license will be accepted
+      lineinfile:
+        regexp: "eula_accepted"
+        path: "tower_license.json"
+        line: "\"eula_accepted\": true,"
+        insertafter: "{"
+  tags: install_tower
+
+- name: configuration of VMs and installation of Tower
+  hosts: azure_vms
+  gather_facts: yes
+  become: true
+  tasks:
+    - name: Set the hostname of this vm
+      hostname: 
+        name: "{{ inventory_hostname }}.localdomain"
+
+    - name: update /etc/hosts with all hosts
+      lineinfile:
+        path: /etc/hosts
+        regexp: "{{ hostvars[item]['inventory_hostname'] }}"
+        # ! Use private ip to avoid NAT and hitting drop rules on Azure security group
+        line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }}.localdomain"
+      with_items:
+        - "{{ groups['azure_vms']}}"
+
+    - name: Allow password login via ssh for other users
+      # ini_file:
+      #   section: null 
+      #   state: present
+      #   path: /etc/ssh/sshd_config 
+      #   option: PasswordAuthentication 
+      #   value: "yes"
+      #   backup: yes
+      lineinfile:
+        regexp: "^PasswordAuthentication"
+        path: /etc/ssh/sshd_config
+        line: "PasswordAuthentication yes"
+        backup: yes
+        
+    - name: restart sshd service
+      service: 
+        name: sshd
+        state: restarted
+
+    - name: install ansible
+      yum:
+        name: ansible
+        state: present
+
+- name: Copy keys to Tower1 for ssh access to other towers and git
+  hosts: azure_vms
+  gather_facts: yes
+  tasks:
+  # - name: Create .ssh directory
+  #   file: 
+  #     path: /home/{{ admin_user }}/.ssh
+  #     state: directory
+# Make sure the Tower install scripts have passwordless ssh
+  - name: Copy private key
+    copy:
+      src: "{{ playbook_dir }}/id_rsa"
+      dest: "/home/{{ admin_user }}/.ssh/id_rsa"
+      owner: "{{ admin_user }}"
+      group: "{{ admin_user }}"
+      mode: 0600
+
+  - name: Copy public key
+    copy:
+      src: "{{ playbook_dir }}/id_rsa.pub"
+      dest: "/home/{{ admin_user }}/.ssh/id_rsa.pub"
+      owner: "{{ admin_user }}"
+      group: "{{ admin_user }}"
+      mode: 0644
+
+- name: Install Tower
+  hosts: tower1
+  gather_facts: yes
+#  become: true
+  tasks:
+    - name: get Tower installation files
+      get_url:
+        url: "https://releases.ansible.com/ansible-tower/setup/ansible-tower-setup-latest.tar.gz"
+        dest: "/home/{{ admin_user }}/ansible-tower-setup-latest.tar.gz"
+        mode: 0440
+      tags: install_tower
+
+    - name: unarchive Tower installation files
+      unarchive: 
+        src: "/home/{{ admin_user }}/ansible-tower-setup-latest.tar.gz"
+        dest: "/home/{{ admin_user }}/"
+      tags: install_tower
+
+    - name: find file
+      find:
+        patterns: "ansible-tower-setup*"
+        file_type: directory
+        paths: "/home/{{ admin_user }}"
+        recurse: yes
+      register: output
+      tags: install_tower
+
+    - name: Set the tower directory as a fact
+      set_fact:
+        tower_install_directory: "{{ output.files[0].path}}"
+      tags: install_tower
+
+    - debug:
+        msg: "Tower install files unpacked at {{ tower_install_directory }}"
+      tags: install_tower
+
+    - name: copy the inventory
+      template:
+        src: inventory.j2 
+        dest: "{{ tower_install_directory }}/inventory"
+        mode: "0644"
+      tags: install_tower
+
+# Ansible install script must be run as root, but only ssh keys for admin user set
+# Set ANSIBLE_BECOME_METHOD and ANSIBLE_BECOME, to get sudo access.
+    - name: run the install script
+      shell: "ANSIBLE_BECOME_METHOD='sudo' ANSIBLE_BECOME=True ./setup.sh"
+      args:
+        chdir: "{{ tower_install_directory }}"
+      tags: install_tower
+
+    - name: upload license file
+      uri:
+        url: https://{{ ansible_default_ipv4.address }}/api/v2/config/
+        body_format: "json"
+        method: "POST"
+        user: "admin"
+        password: "{{ admin_password }}"
+        force_basic_auth: yes
+        validate_certs: no
+        body: "{{ lookup('file','tower_license.json') }}"
+      tags: install_tower
+
+
+- name: Configuration of hands-on lab
+  hosts: azure_vms
+  gather_facts: yes
+  become: true
+  tasks:
+    # epel already installed by Tower installation script, just to be sure
+    - name: install epel
+      yum:
+        name: epel-release
+        state: present
+
+    - name: "install {{ item }}"
+      yum: 
+        name: "{{ item }}"
+        state: present
+      with_items: 
+        - python2-ansible-tower-cli
+        - git
+
+    - name: Copy the workshop files 
+      copy:
+        src: "{{ playbook_dir }}/tower_setup_scripts/"
+        dest: "/home/{{ admin_user }}/tower_setup_scripts/"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+
+# Make sure other users do not have the right to see these variables, which includes keys and Azure passwords
+    - name: copy variables file
+      template: 
+        src: variables.sh.j2
+        dest: "/home/{{ admin_user }}/tower_setup_scripts/variables.sh"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: 0700
+
+    - name: Copy the addusers shell script
+      template: 
+        src: "{{ playbook_dir }}/tower_setup_scripts/08_addusers.sh"
+        dest: "/home/{{ admin_user }}/tower_setup_scripts/08_addusers.sh"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: 0700
+
+    - name: Create /workshop directory
+      file: 
+        path: /workshop
+        state: directory
+
+    # remote copy does not work recursively
+    - name: copy /workshop files to /workshop, which is accessible for participants
+      copy:
+        src: "/home/{{ admin_user }}/tower_setup_scripts/workshop/{{ item }}"
+        dest: "/workshop/{{ item }}"
+        remote_src: yes
+        mode: 0644
+      with_items:
+        - index.html.j2
+        - install_cockpit.yml
+
+
+- name: Setup environment for each participant
+  hosts: tower1
+  gather_facts: no
+  become: true
+  tasks:
+    - name: Create orgs, users, credentials, projects, inventories, job templates and notification templates
+      shell: "chmod +x {{ item }}; ./{{ item }}"
+      args:
+        chdir: "/home/{{ admin_user }}/tower_setup_scripts/"
+        warn: False
+      with_items:
+        - 01_create_orgs.sh
+        - 02_create_users.sh
+        - 03_create_creds.sh
+        - 04_create_projects.sh
+        - 05_create_inventory.sh
+        - 06_job_templates.sh
+        - 07_notification_templates.sh
+
+- name: Create user accounts on the Towers
+  hosts: azure_vms
+  gather_facts: no
+  become: true
+  tasks:
+    - name: execute {{ item }}
+      shell: "chmod +x {{ item }}; ./{{ item }}"
+      args:
+        chdir: "/home/{{ admin_user }}/tower_setup_scripts/"
+        warn: False
+      with_items:
+        - "08_addusers.sh 1 {{ nr_of_participants }}" 
+
+- name: Create dry run shell script
+  hosts: localhost
+  gather_facts: no
+  tasks: 
+    - name: Create shell script
+      template: 
+        src: "{{ playbook_dir }}/ansible_dryrun.sh.j2"
+        dest: "{{ playbook_dir }}/ansible_dryrun.sh"
+        mode: 0700
+    - debug: 
+        msg: "Created dry run shell script at {{ playbook_dir }}. Only execute for testing and tear down the environment afterwards"
+
+- name: print inventory information
+  hosts: azure_vms
+  gather_facts: no
+  tasks:
+    - name: print inventory information
+      debug:
+        msg: "The public IP of {{ inventory_hostname }} is {{ ansible_host }}"
+
+

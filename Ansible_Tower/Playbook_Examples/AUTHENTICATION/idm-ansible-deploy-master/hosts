@@ -1,0 +1,15 @@
+[idm-server]
+idm.home.mcd
+
+[idm-server:vars]
+realm={{ ansible_domain|upper }}
+domain={{ ansible_domain }}
+admin_password=password
+ds_password=password
+hostname={{ ansible_fqdn }}
+ip_address={{ ansible_default_ipv4.address }}
+forwarder=8.8.8.8
+forward_policy=only
+reverse_zone=124.168.192.in-addr.arpa.
+subscription_username=rhn-gps-jammcder
+subscription_password=

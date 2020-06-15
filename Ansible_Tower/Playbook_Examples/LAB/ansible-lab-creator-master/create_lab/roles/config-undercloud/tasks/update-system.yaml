@@ -1,0 +1,19 @@
+- name: Updating the system...
+  yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+  ignore_errors: yes
+  register: update_result
+
+- debug:
+    msg: "{{ update_result }}"
+
+- name: Update the system again (https://access.redhat.com/solutions/3077461)
+  yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+  when: update_result is failed
+  register: update2_result
+

@@ -1,0 +1,7 @@
+---
+# Configures a Fedora laptop the way I like it.
+- hosts: localhost
+  connection: local
+
+  roles:
+  - fedora_laptop

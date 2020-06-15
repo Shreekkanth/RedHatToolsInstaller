@@ -1,0 +1,66 @@
+---
+##
+# Documentation:
+#
+# https://access.redhat.com/solutions/25404 ---- What are the maximum UID and GID values in Red Hat Enterprise Linux?
+# https://access.redhat.com/solutions/2683411 -- Why do new users added in RHEL 7 start at UID of 1000, and not 500?
+# https://access.redhat.com/solutions/221403 --- How to generate a SHA-2 (sha256 or sha512) hashed password compatible with /etc/shadow
+# https://serversforhackers.com/c/create-user-in-ansible
+# http://docs.ansible.com/ansible/latest/user_module.html
+# http://docs.ansible.com/ansible/latest/group_module.html
+# http://docs.ansible.com/ansible/latest/faq.html#how-do-i-generate-crypted-passwords-for-the-user-module
+#
+#
+#
+#### Remove "mysql" user
+- name: "Remove user {{ mysql_user }}"
+  become: true
+  user:
+    name:   "{{ mysql_user }}"
+    state:  absent
+    remove: yes
+  tags:
+    - mysql_user_remove
+  when: mysql_user_remove == true
+
+####
+- name: Remove group "mysql_group"
+  become: true
+  group:
+    name: "{{ mysql_group }}"
+    state: absent
+  tags:
+    - mysql_user_remove
+  when: mysql_user_remove == true
+
+#### sudo groupadd -r -g 810 mysql
+- name: Create mysql Group
+  become: true
+  group:
+    name:   "{{mysql_group}}"
+    system: yes
+    state:  present
+    gid:    "{{mysql_gui}}"
+  tags:
+    - mysql_user
+  when: mysql_user_create == true
+
+# First of all encrypt the Password:
+# python -c 'import crypt,getpass; print crypt.crypt(getpass.getpass())' <--
+# sudo useradd -r -g mysql -s /bin/bash -c "MySQL User" -M -u 810 mysql
+- name: Create MySQL User
+  become: true
+  user:
+    name:       "{{ mysql_user }}"
+    comment:    "MySQL User"
+    createhome: false
+    uid:        "{{mysql_uid}}"
+    group:      "{{ mysql_group }}"
+    shell:      "/bin/bash"
+    password:   "{{ mysql_user_pwd }}"
+  tags:
+    - mysql_user
+  when: mysql_user_create == true
+
+#
+# EOF

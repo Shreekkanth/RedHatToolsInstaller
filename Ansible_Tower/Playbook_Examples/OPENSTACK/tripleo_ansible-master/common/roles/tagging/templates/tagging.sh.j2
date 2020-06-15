@@ -1,0 +1,9 @@
+#!/bin/bash
+
+source ~/stackrc
+
+ironic node-update bm-osp{{ osp_version }}-ctrl01 replace properties/capabilities='profile:control,node:controller-0,boot_option:local'
+ironic node-update bm-osp{{ osp_version }}-ctrl02 replace properties/capabilities='profile:control,node:controller-1,boot_option:local'
+ironic node-update bm-osp{{ osp_version }}-ctrl03 replace properties/capabilities='profile:control,node:controller-2,boot_option:local'
+ironic node-update bm-osp{{ osp_version }}-comp01 replace properties/capabilities='profile:compute,node:compute-0,boot_option:local'
+ironic node-update bm-osp{{ osp_version }}-comp02 replace properties/capabilities='profile:compute,node:compute-1,boot_option:local'

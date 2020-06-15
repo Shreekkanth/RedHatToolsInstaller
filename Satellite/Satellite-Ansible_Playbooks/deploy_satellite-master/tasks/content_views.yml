@@ -1,0 +1,86 @@
+---
+- name: SATELLITE | content views | Load Hammer variables
+  include_vars: file=vars/content-views.yml
+
+- name: SATELLITE | content views | Foreman is running
+  shell: 'systemctl is-active foreman-tasks.service'
+  register: foreman_status
+
+#- name: SATELLITE | content views | Create Satellite content views
+#  command: hammer --password "{{ satellite_admin_passwd }}" content-view create --name "{{ item.name }}" --description "{{ item.description }}" --organization "{{ satellite_organization }}" --repositories "{{ item.repositories }}" --product "{{ item.product }}"
+#  with_items: "{{ create_content_views }}"
+#  when: foreman_status.stdout == "active"
+
+#- name: SATELLITE | content views | Add specific repositories to content views
+#  command: hammer --password "{{ satellite_admin_passwd }}" content-view add-repository --name "{{ item.name }}" --organization "{{ satellite_organization }}" --repository "{{ item.repositories }}" --product "{{ item.product }}"
+#  with_items: "{{ add_to_content_views }}"
+#  when: foreman_status.stdout == "active"
+
+#- name: Publish content views.  Note This will take a while. 
+#  command: hammer --password "{{ satellite_admin_passwd }}" content-view publish --name "{{ item.name }}" --organization "{{ satellite_organization }}" --async
+#  with_items: "{{ create_content_views }}"
+#  when: foreman_status.stdout == "active"
+
+#- name: SATELLITE | content views | Create Satellite Activation Keys
+#  command: hammer --password "{{ satellite_admin_passwd }}" activation-key create --organization "{{ satellite_organization }}" --name "{{ item.name }}" --description "{{ item.description }}" --content-view "{{ item.content_view }}" --lifecycle-environment "{{ item.lifecycle }}"
+#  with_items: "{{ activation_keys }}"
+#  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | content views | Create Satellite content views
+  katello:
+    username: admin
+    password: '{{ satellite_admin_passwd }}'
+    url: '{{ satellite_url }}'
+    entity: content-view
+    params:
+      name: '{{ item.name }}'
+      organization: '{{ satellite_organization }}'
+      repositories: '{{ item.repositories }}'
+      product: '{{ item.product }}'
+  with_items: "{{ create_content_views }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | content views | Add specific repositories to content views
+  katello:
+    username: admin
+    password: '{{ satellite_admin_passwd }}'
+    url: '{{ satellite_url }}'
+    entity: content-view
+    params:
+      name: '{{ item.name }}'
+      description: '{{ item.description }}'
+      organization: '{{ satellite_organization }}'
+      repositories: '{{ item.repositories }}'
+      product: '{{ item.product }}'
+  with_items: "{{ add_to_content_views }}"
+  when: foreman_status.stdout == "active"
+
+- name: Publish content views.  Note This will take a while. 
+  katello:
+    username: admin
+    password: '{{ satellite_admin_passwd }}'
+    url: '{{ satellite_url }}'
+    entity: content-view
+    params:
+      name: '{{ item.name }}'
+      organization: '{{ satellite_organization }}'
+      async: true
+  with_items: "{{ create_content_views }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | content views | Create Satellite Activation Keys
+  katello:
+    username: admin
+    password: '{{ satellite_admin_passwd }}'
+    url: '{{ satellite_url }}'
+    entity: activation-key
+    params:
+      name: '{{ item.name }}'
+      organization: '{{ satellite_organization }}'
+      description: '{{ item.description }}'
+      content-view: '{{ item.content_view }}'
+      lifecyclt-environment: '{{ item.lifecycle }}'
+      async: true
+  with_items: "{{ activation_keys }}"
+  when: foreman_status.stdout == "active"
+

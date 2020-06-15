@@ -1,0 +1,74 @@
+- name: Get partitioning job id
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/job_templates?search=name=\"{{ partitioning_job_name | regex_replace(' ', '+') }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: partitioning_job_id
+
+- name: Execute partitioning job
+  with_items: "{{ satinfo.all_puppetclasses|selectattr('module_name', 'equalto', 'profile') | map(attribute='name') | map('regex_replace', 'profile::' ) | list }}"
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/job_invocations"
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "POST"
+    body_format: "json"
+    body:
+      job_invocation:
+        inputs:
+          profile: "{{ item }}"
+        job_template_id: "{{ partitioning_job_id.json.results|selectattr('name', 'equalto', partitioning_job_name) | map(attribute='id') | first }}"
+        targeting_type: "static_query"
+        search_query: "name = {{ inventory_hostname }}"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 201
+  changed_when: true
+
+- name: Get hardening job id
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/job_templates?search=name=\"{{ hardening_job_name | regex_replace(' ', '+') }}\""
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "GET"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 200
+  register: hardening_job_id
+
+- name: Execute hardening job
+  delegate_to: localhost
+  uri:
+    url: "{{ satellite_auth.url }}/api/v2/job_invocations"
+    user: "{{ satellite_auth.username }}"
+    password: "{{ satellite_auth.password }}"
+    validate_certs: "{{ not satellite_auth.insecure | default(omit) }}"
+    force_basic_auth: true
+    method: "POST"
+    body_format: "json"
+    body:
+      job_invocation:
+        job_template_id: "{{ hardening_job_id.json.results|selectattr('name', 'equalto', hardening_job_name) | map(attribute='id') | first }}"
+        targeting_type: "static_query"
+        search_query: "name = {{ inventory_hostname }}"
+    timeout: 600
+    return_content: true
+    status_code:
+    - 201
+  changed_when: true

@@ -1,0 +1,11 @@
+---
+# handlers file for kvm_preparation
+- name: restart libvirtd
+  service:
+    name: libvirtd
+    state: restarted
+
+- name: restart NetworkManager
+  service:
+    name: NetworkManager
+    state: restarted

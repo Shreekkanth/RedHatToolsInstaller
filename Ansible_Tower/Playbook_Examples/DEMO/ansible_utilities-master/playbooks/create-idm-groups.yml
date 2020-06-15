@@ -1,0 +1,14 @@
+---
+- name: Create IDM internal and external groups
+  hosts: all
+  gather_facts: no
+  
+  tasks:
+    - name: Assert that idm_groups variable exists
+      assert:
+        that:
+          - idm_groups is defined
+
+    - name: Run IDM groups creation
+      include_tasks: idm-posix-group-tasks.yml
+      with_dict: "{{ idm_groups }}"

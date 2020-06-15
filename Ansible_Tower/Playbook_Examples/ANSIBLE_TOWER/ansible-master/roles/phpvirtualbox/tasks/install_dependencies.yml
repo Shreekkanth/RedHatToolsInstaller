@@ -1,0 +1,24 @@
+---
+- name: Install RPMs dependencies for VirtualBox
+  yum:
+    name:
+    - vim
+    - wget
+    - httpd
+    - php
+    - php-soap
+    - php-json
+    - php-xml
+    - kernel-devel
+    - gcc
+    - make
+    - perl
+    - unzip
+    - screen
+    state: latest
+
+- name: Start and Enable Apache
+  service:
+    name: httpd
+    enabled: true
+    state: started

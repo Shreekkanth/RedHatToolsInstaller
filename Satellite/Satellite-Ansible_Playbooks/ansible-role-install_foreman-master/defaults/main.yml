@@ -1,0 +1,67 @@
+---
+# defaults file for kirikae.install_foreman
+
+install_foreman_manifest: false
+
+install_foreman_installer_cmd: "foreman-installer --scenario katello"
+# Answers in key:value pairs. If an argument does not have a value,
+# leave it blank after the ':' for the key.
+install_foreman_answers:
+  "foreman-initial-organization": "{{ install_foreman_organization }}"
+  "foreman-initial-location": "{{ install_foreman_location }}"
+  "foreman-admin-username": "{{ install_foreman_admin_username }}"
+  "foreman-admin-password": "{{ install_foreman_admin_password }}"
+  "enable-foreman-plugin-ansible":
+  "enable-foreman-proxy-plugin-ansible":
+  "enable-foreman-plugin-remote-execution":
+  "enable-foreman-proxy-plugin-remote-execution-ssh":
+  "enable-foreman-compute-libvirt":
+  "enable-foreman-compute-ovirt":
+
+install_foreman_organization: ORG
+install_foreman_location: LOCATION
+install_foreman_admin_username: admin
+install_foreman_admin_password: password
+
+install_foreman_hostname_fqdn: "{{ ansible_fqdn }}"
+
+install_foreman_satellite: false
+
+install_foreman_is_connected: true
+
+install_foreman_version: "1.20"
+
+install_foreman_firewall_ports:
+  - 53/tcp  # DNS Server
+  - 53/udp  # DNS Server
+  - 67/udp  # DHCP Server
+  - 68/udp  # DHCP Server
+  - 69/udp  # TFTP Server
+  - 80/tcp  # HTTP using Apache + Passenger
+  - 443/tcp  # HTTPS using Apache + Passenger
+  - 3000/tcp  # HTTP using standalone WEBrick service
+  - 3306/tcp  # Separate MySQL DB
+  - 5910-5930/tcp  # Server VNC Consoles
+  - 5432/tcp  # Separate PostgreSQL DB
+  - 5647/tcp  # qdrouterd
+  - 8140/tcp  # Puppet Master
+  - 8443/tcp  # Smart Proxy
+  - 9090/tcp  # Smart Proxy for Katello
+install_foreman_plugin_ports: []
+
+timesync_ntp_servers:
+  - hostname: 0.au.pool.ntp.org
+    iburst: true
+    pool: true
+  - hostname: 1.au.pool.ntp.org
+    iburst: true
+    pool: true
+  - hostname: 2.au.pool.ntp.org
+    iburst: true
+    pool: true
+  - hostname: 3.au.pool.ntp.org
+    iburst: true
+    pool: true
+  - hostname: 4.au.pool.ntp.org
+    iburst: true
+    pool: true

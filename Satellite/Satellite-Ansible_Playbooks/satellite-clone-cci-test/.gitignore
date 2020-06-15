@@ -1,0 +1,20 @@
+#System files
+*.pyc
+*.retry
+*.tar.gz
+*.swp
+*.swo
+
+#Log files
+logs/playbook.log
+logs/satellite-hostname.log
+
+#Varies per deployment
+satellite-clone-vars.yml
+satellite-hostname-vars.yml
+
+# CCI
+.vagrant/hostmanager
+.vagrant/machines
+*.lock
+cache/

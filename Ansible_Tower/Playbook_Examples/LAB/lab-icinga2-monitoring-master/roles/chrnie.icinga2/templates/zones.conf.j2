@@ -1,0 +1,9 @@
+{% set i2o_type = "Endpoint" %}
+{% for i2o_name1 in icinga2_endpoints %}
+{% include './templates/_object_endpoints.conf.j2' %}
+{% endfor %}
+
+{% set i2o_type = "Zone" %}
+{% for i2o_name, i2o_attr in icinga2_zones.items() %}
+{% include './templates/_object.conf.j2' %}
+{% endfor %}

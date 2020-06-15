@@ -1,0 +1,18 @@
+---
+# handlers file for fedora_laptop
+- name: restart libvirtd
+  service:
+    name: libvirtd
+    state: restarted
+
+- name: restart dnsmasq
+  service:
+    name: dnsmasq
+    state: restarted
+
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted
+  become: yes
+  become_user: root

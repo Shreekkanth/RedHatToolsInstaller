@@ -1,0 +1,29 @@
+---
+- hosts: server
+  become: true
+  roles:
+    - etc_hosts
+    - register
+
+- hosts: server
+  become: true
+  tasks:
+    - name: 'Configure 6.0 repo'
+      yum_repository:
+        name: satellite-6.0
+        description: Satellite 6.0.4
+        baseurl: http://download.devel.redhat.com/released/RHEL-7-Satellite/6.0.4/Satellite/x86_64/os/
+        enabled: yes
+        gpgcheck: no
+
+    - name: 'Downgrade packages'
+      shell: 'yum downgrade libdb-5.3.21-17.el7_0.1.x86_64 libdb-utils-5.3.21-17.el7_0.1.x86_64'
+
+    - name: 'Install katello-installer'
+      yum:
+        name: 'katello'
+        state: present
+
+    - name: 'Run installer'
+      shell: 'katello-installer --foreman-admin-password changeme'
+

@@ -1,0 +1,17 @@
+---
+- name: "Unmount VMWare Tools from VM"
+  vmware_guest_tools:
+    hostname: "{{ vctr_hostname }}"
+    username: "{{ vctr_user }}"
+    password: "{{ vctr_pass }}"
+    validate_certs: "{{ vctr_validate_certs }}"
+    datacenter: "{{ vctr_datacenter }}"
+    folder: "{{ vctr_vm_folder }}"
+    name: "{{ vctr_vm_name }}"
+    state: "unmount"
+  no_log: True
+  register: "vmtools_unmount_result"
+
+- debug:
+    var: "vmtools_unmount_result"
+    verbosity: "1"

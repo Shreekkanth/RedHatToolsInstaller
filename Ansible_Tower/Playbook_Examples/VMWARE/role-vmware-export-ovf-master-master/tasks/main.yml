@@ -1,0 +1,21 @@
+---
+# This role currently contains a vmware.py and vmware_export_ovf.py in the library
+#  directory.  When the module is brought into a future version of Ansible, you may
+#  remove the "library" and "module_utils" directory from this role to pick up the code from your Ansible install
+
+- name: "Export VM to OVF"
+  vmware_export_ovf:
+    username: "{{ vctr_user }}"
+    password: "{{ vctr_pass }}"
+    hostname: "{{ vctr_hostname }}"
+    validate_certs: "{{ vctr_validate_certs }}"
+    datacenter: "{{ vctr_datacenter }}"
+    name: "{{ vctr_vm_template_name }}"
+    folder: "{{ vctr_vm_template_folder }}"
+    export_dir: "{{ vm_export_ovf_export_folder }}"
+    export_with_images: "{{ vm_export_ovf_with_images }}"
+  register: "export_ovf_result"
+  # no_log: True
+
+- debug:
+    var: "export_ovf_result"

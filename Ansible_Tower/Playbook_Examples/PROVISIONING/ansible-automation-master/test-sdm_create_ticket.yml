@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Include sdm_create_ticket role
+      include_role:
+        name: sdm_create_ticket
+      vars:
+        sdm_create_ticket_env: test

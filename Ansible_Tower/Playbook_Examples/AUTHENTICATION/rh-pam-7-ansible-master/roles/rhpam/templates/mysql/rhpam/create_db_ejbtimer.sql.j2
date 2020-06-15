@@ -1,0 +1,25 @@
+-- ============================================================
+-- Database name-: {{mysql_ejbtimer_db_name}}
+-- Version-------: ${project.version}
+-- Created on----: ${build.timestamp}
+-- Environment---: ${environment}
+--
+-- https://dev.mysql.com/doc/refman/5.7/en/mysql-batch-commands.html
+-- https://dev.mysql.com/doc/refman/5.7/en/charset-mysql.html
+--
+-- ./mysql --defaults-file={{ mysql_conf_file}} -u {{mysql_user_ejbtimer_name}} --password={{mysql_user_ejbtimer_pwd}} {{mysql_ejbtimer_db_name}}
+-- ./mysql --defaults-file={{ mysql_conf_file}} -u EJBTIMER --password={{mysql_user_ejbtimer_pwd}} EJBTIMER
+--
+-- ============================================================
+
+DROP DATABASE IF EXISTS {{mysql_ejbtimer_db_name}};
+
+-- CREATE DATABASE IF NOT EXISTS {{mysql_ejbtimer_db_name}} CHARACTER SET utf8 COLLATE utf8_general_cs;
+CREATE DATABASE IF NOT EXISTS {{mysql_ejbtimer_db_name}} CHARACTER SET utf8 COLLATE utf8_general_ci;
+-- Grant Users:
+GRANT ALL PRIVILEGES ON {{mysql_ejbtimer_db_name}}.* TO '{{mysql_user_ejbtimer_name}}'@'localhost'             IDENTIFIED BY '{{mysql_user_ejbtimer_pwd}}' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON {{mysql_ejbtimer_db_name}}.* TO '{{mysql_user_ejbtimer_name}}'@'localhost.localdomain' IDENTIFIED BY '{{mysql_user_ejbtimer_pwd}}' WITH GRANT OPTION;
+-- ANYWHERE COMPUTERS
+GRANT ALL PRIVILEGES ON {{mysql_ejbtimer_db_name}}.* TO '{{mysql_user_ejbtimer_name}}'@'%'                     IDENTIFIED BY '{{mysql_user_ejbtimer_pwd}}' WITH GRANT OPTION;
+
+-- End

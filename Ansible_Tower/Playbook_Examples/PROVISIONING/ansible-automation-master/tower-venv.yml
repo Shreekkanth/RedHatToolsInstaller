@@ -1,0 +1,49 @@
+- name: perform post install tasks
+  hosts: tower:instance_group*:isolated_group*
+  gather_facts: no
+  vars:
+    mirror_url: {{ mirror }}
+    tower_venv_path: /var/lib/awx/venv
+    tower_tmp_path: /tmp
+    tower_venv_installs:
+      - name: vsphere-venv
+        packages:
+          - pyvmomi
+        # reqts_file: pip-reqts-vsphere.txt
+      # - name: network-inventory-venv
+      #   package_path: pip-deps
+      #   reqts_file: pip-reqts-inventory.txt
+      # - name: networking-automation-venv
+      #   package_path: pip-deps
+      #   reqts_file: pip-reqts-networking.txt
+      # - name: provisioner-general-venv
+      #   package_path: pip-deps
+      #   reqts_file: pip-reqts-provisioner.txt
+    # tower_pkg_deps:
+      # - krb5-devel
+  tasks:
+
+  # - name: copy over files
+  #   copy:
+  #     src: "{{ item.package_path }}"
+  #     dest: "{{ tower_tmp_path }}"
+  #   with_items: "{{ tower_venv_installs }}"
+
+  # - name: ensure dep pks are installed
+  #   yum:
+  #     name: "{{ tower_pkg_deps }}"
+  #     state: installed
+
+  - name: create virtual venv
+    pip:
+      virtualenv: "{{ tower_venv_path }}/{{ item.name }}"
+      name: "{{ item.packages }}"
+      # requirements: "{{ tower_tmp_path }}/{{ item.package_path }}/{{ item.reqts_file }}"
+      virtualenv_site_packages: yes
+      umask: "0022"
+      extra_args: "-i {{ mirror_url }}"
+      # extra_args: "--no-index --find-links file://{{ tower_tmp_path }}/{{ item.package_path }}"
+    with_items: "{{ tower_venv_installs }}"
+
+
+#pip install --no-index --find-links file:///ansible/tower-management/pip-deps -r pip-reqts-inventory.txt

@@ -1,0 +1,25 @@
+---
+# pre-build/tasks/main.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Create overlay network
+  docker_network:
+    name: wf_net
+    state: present
+
+- name: Delete ./build directory
+  file:
+    path: "{{ playbook_dir }}/build"
+    state: absent
+
+- name: Create ./build directory
+  file:
+    path: "{{ playbook_dir }}/build"
+    state: directory
+
+- name: Create ./build directory
+  file:
+    path: "{{ playbook_dir }}/build/{{ item }}"
+    state: directory
+  with_items:
+    - "{{ envs }}"

@@ -1,0 +1,15 @@
+[webs]
+ansible001.mobile.mth
+ansible002.mobile.mth
+
+[app1]
+ansible001.mobile.mth
+ansible002.mobile.mth
+
+[app2]
+ansible003.mobile.mth
+ansible004.mobile.mth
+
+[prx]
+haproxy2.mobile.mth keepalived_priority=11 keepalived_state=MASTER dr_keepalived_state=BACKUP dr_keepalived_priority=10
+haproxy3.mobile.mth keepalived_priority=10 keepalived_state=BACKUP dr_keepalived_state=MASTER dr_keepalived_priority=11

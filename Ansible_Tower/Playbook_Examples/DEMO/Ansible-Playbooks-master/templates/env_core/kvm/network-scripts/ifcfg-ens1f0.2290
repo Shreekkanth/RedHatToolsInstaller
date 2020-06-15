@@ -1,0 +1,6 @@
+BOOTPROTO=none
+NAME=ens1f0.2290
+DEVICE=ens1f0.2290
+ONBOOT=yes
+BRIDGE=br-externalapi
+VLAN=yes

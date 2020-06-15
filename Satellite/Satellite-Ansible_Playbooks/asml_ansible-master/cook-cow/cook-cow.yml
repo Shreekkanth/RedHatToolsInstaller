@@ -1,0 +1,17 @@
+---
+# Run this with --extra-vars "vm_name=<vm_name>"
+
+
+# Roles here only talk to Satellite api, so running on bastion host (satellite)
+- name: Provision VM from Satellite and ensure it's built
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - sat_create_host
+
+# At the end of the previous play the VM is added to in-memory inventory and included in group below
+- hosts: "{{ vm_name | replace('-', '_') }}_group"
+  roles:
+    - post_install
+...

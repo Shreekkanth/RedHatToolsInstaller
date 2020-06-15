@@ -1,0 +1,55 @@
+{
+    "variables": {
+        "user": "vagrant",
+        "password": "vagrant",
+        "disk_size": "100000"
+    },
+
+    "builders":
+    [
+        {
+            "name": "rhel-7.3-x86_64-server-vagrant",
+
+            "type": "qemu",
+            "format": "qcow2",
+            "accelerator": "kvm",
+            "headless": true,
+            "disk_size": "{{ user `disk_size`}}",
+
+            "iso_url": "http://download.devel.redhat.com/released/RHEL-7/7.3/Server/x86_64/iso/RHEL-7.3-20161019.0-Server-x86_64-boot.iso",
+            "iso_checksum": "35fae539051c372767621d6887db10a3",
+            "iso_checksum_type": "md5",
+
+            "http_directory": "http",
+
+            "ssh_username": "{{user `user`}}",
+            "ssh_password": "{{user `password`}}",
+            "ssh_wait_timeout": "20m",
+            "shutdown_command": "echo '{{user `password`}}'|sudo -S shutdown -P now",
+
+            "boot_wait": "2s",
+            "boot_command": [
+               "<tab> linux text biosdevname=0 net.iframes=0 ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/vagrant.sh",
+                "scripts/cleanup.sh"
+            ]
+        }
+    ],
+
+    "post-processors": [
+        {
+            "keep_input_artifact": false,
+            "output": "box/rhel-7.3_x86_64-server.box",
+            "type": "vagrant"
+        }
+    ]
+}

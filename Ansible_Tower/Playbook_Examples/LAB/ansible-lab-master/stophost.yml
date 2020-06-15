@@ -1,0 +1,11 @@
+---
+- name: Stop a vm
+  hosts: localhost
+  become: yes
+
+  tasks:
+  - name: Virt stop
+    virt:
+      name: "{{ thevm  }}"
+      command: shutdown
+...

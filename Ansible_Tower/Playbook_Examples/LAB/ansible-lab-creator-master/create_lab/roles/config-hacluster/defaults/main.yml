@@ -1,0 +1,7 @@
+---
+config_hacluster_rpm_packages: 
+  - pcs 
+  - pacemaker
+  - fence-agents-all
+
+hacluster_password: "password"

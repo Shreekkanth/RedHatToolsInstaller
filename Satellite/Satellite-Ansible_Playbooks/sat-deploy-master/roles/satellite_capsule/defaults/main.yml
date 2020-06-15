@@ -1,0 +1,6 @@
+---
+satellite_version: 6.2
+satellite_capsule_environment: QA
+capsule_certs_tar: "/root/{{ ansible_nodename }}.tar.gz"
+capsule_ip: "{{ ansible_default_ipv4.address }}"
+foreman_directory: "/etc/foreman/"

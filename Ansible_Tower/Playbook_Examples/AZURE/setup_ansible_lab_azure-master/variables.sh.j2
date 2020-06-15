@@ -1,0 +1,26 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+# the Tower password to run API calls with
+export TOWERPW="{{ admin_password }}"
+
+# VCS URL - project that holds playbook to create and destroy VMs on Azure
+export VCS_URL="https://github.com/dieterdm/azure_create_vms.git"
+
+# amount of organizations to create
+export orgs={{ nr_of_participants }}
+
+# temporary password for the wsuserX and wsadminX accounts
+export TEMPPW={{ participant_password }}
+
+# azure service principal credentials
+export SUB_ID={{ subscription_id }} 				# this is the ID of your subscription itself
+export TENANT={{ tenant }}				# this is the ID of the AD you use in Azure 
+export CLIENTID={{ client_id }} 				# this is the ID of the application (app registration) you created
+export SECRET={{ secret }}			# this is the secret key you assigned to that application
+
+# Slack token
+export TOKEN={{ slack_token }}
+
+# Name of Slack channel to send notifications to; variable is only used in comment
+export SLACK_CHANNEL={{ slack_channel }}

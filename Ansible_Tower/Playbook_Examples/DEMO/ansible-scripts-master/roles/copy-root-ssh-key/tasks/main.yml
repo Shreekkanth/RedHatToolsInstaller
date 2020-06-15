@@ -1,0 +1,11 @@
+---
+
+# Copy ssh id
+- name: Add ssh key
+  connection: local
+  expect:
+    command: 'ssh-copy-id {{ item }}'
+    responses:
+      (?i)password: "{{ r_password }}"
+      (?i)word: "{{ r2_password }}"
+  with_items: "{{ groups['all'] }}"

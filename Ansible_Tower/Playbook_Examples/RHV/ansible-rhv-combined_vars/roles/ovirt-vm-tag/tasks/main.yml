@@ -1,0 +1,9 @@
+---
+# tasks file for ovirt-vm-tag
+
+- name: Tag as a rhv-ocp system
+  ovirt_tags:
+    name: "{{ ovirt_tag_name }}"
+    state: attached
+    vms:
+      - "{{ ovirt_tag_vm }}"

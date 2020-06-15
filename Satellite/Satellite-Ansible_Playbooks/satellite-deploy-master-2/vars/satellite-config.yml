@@ -1,0 +1,76 @@
+---
+##################################################
+# satellite-preintall config for satellite server
+##################################################
+
+data_disk: vdb
+data_vgname: data
+data_lv:
+  - { name: 'pulp', lv_name: 'lv_pulp', lv_size: '70%FREE', mount_dir: '/var/lib/pulp'}
+  - { name: 'pgsql', lv_name: 'lv_pgsql', lv_size: '10%FREE', mount_dir: '/var/lib/pgsql'}
+  - { name: 'mongodb', lv_name: 'lv_mongodb', lv_size: '50%FREE', mount_dir: '/var/lib/mongodb'}
+  - { name: 'pulpcache', lv_name: 'lv_pulpcache', lv_size: '50%FREE', mount_dir: '/var/cache/pulp'}
+  - { name: 'qpid', lv_name: 'lv_qpid', lv_size: '10%FREE', mount_dir: '/var/lib/qpidd'}
+data_fs: xfs
+satellite_deployment_fw_ports:
+    - 22/tcp
+    - 80/tcp
+    - 443/tcp
+    - 5646/tcp
+    - 5647/tcp
+    - 5671/tcp
+    - 5674/tcp
+    - 8000/tcp
+    - 8140/tcp
+    - 8443/tcp
+    - 9090/tcp
+    - 53/udp
+    - 53/tcp
+    - 67/udp
+    - 68/udp
+    - 69/udp
+satellite_deployment_plugin_ports: []
+
+##################################################
+# rhsm config
+##################################################
+
+rhsm_pool: '*Satellite*'
+
+##################################################
+# satellite-install config
+##################################################
+
+sat_install_source: cdn
+sat_cdn_reponame: 'rhel-{{ ansible_distribution_major_version }}-server-satellite-6.2-rpms'
+sat_installer_pkg: satellite
+sat_installer_cmd: satellite-installer --scenario satellite
+sat_ca_expiration: 4400
+
+# satellite-populate
+sat_manifest: ../../../files/satellite_manifest.zip
+sat_remote_manifest: /root/satellite_manifest.zip
+sat_sync_method: on_demand
+sat_repos_sync:
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server (Kickstart)', rel: '7Server', architecture: 'x86_64', state: enable}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server (RPMs)', rel: '7Server', architecture: 'x86_64', state: enable}
+  ###- { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server - RH Common (RPMs)', rel: '7Server', architecture: 'x86_64', state: enable}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Satellite Tools {{ satellite_deployment_version }} (for RHEL 7 Server) (RPMs)', architecture: 'x86_64', state: enable}
+  - { product_name: 'Red Hat Satellite Capsule', name_repo: 'Red Hat Satellite Capsule {{ satellite_deployment_version }} (for RHEL 7 Server) (RPMs)', architecture: 'x86_64', state: enable}
+  - { product_name: 'Red Hat Software Collections for RHEL Server', name_repo: 'Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server', rel: '7Server', architecture: 'x86_64', state: enable}
+capsule_repos:
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'} 
+  - { product_name: 'Red Hat Satellite Capsule', name_repo: 'Red Hat Satellite Capsule {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64'}
+  - { product_name: 'Red Hat Software Collections for RHEL Server', name_repo: 'Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server x86_64 7Server'}
+rhel7_repos:
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'}
+  - { product_name: 'Red Hat Enterprise Linux Server', name_repo: 'Red Hat Satellite Tools {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64'}
+sat_puppet_product: 'Custom Puppet'
+sat_puppet_repo: 'Dummy Puppet Modules'
+sat_puppet_dummy: 'custom-dummy-0.0.2.tar.gz'
+sat_pdummy_file: '../../../files/{{ sat_puppet_dummy }}'
+sat_remote_pdummy: '/root/{{ sat_puppet_dummy }}'
+sat_pdummy_author: 'custom'
+sat_pdummy_name: 'dummy'
+sat_base_hostgroup: 'hg_{{ sat_location }}-rhel{{ ansible_distribution_major_version }}'
+...

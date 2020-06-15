@@ -1,0 +1,23 @@
+$TTL 60
+
+@                       IN              SOA     example.com. root.example.com. (
+                                        17062201        ; Serial
+                                        3600            ; Refresh
+                                        900             ; Retry
+                                        3600000         ; Expire
+                                        3600            ; Minimum
+                                )
+                        IN      NS      ns.example.com.
+
+11			IN	PTR	ns.example.com.
+
+18			IN	PTR	ocp36-lb1.example.com.
+19			IN	PTR	ocp36-lb2.example.com.
+20			IN	PTR	ocp36-lb.example.com.
+21			IN	PTR	ocp36-master1.example.com.
+22			IN	PTR	ocp36-master2.example.com.
+23			IN	PTR	ocp36-master3.example.com.
+31			IN	PTR	ocp36-infra1.example.com.
+32			IN	PTR	ocp36-infra2.example.com.
+41			IN	PTR	ocp36-node1.example.com.
+42			IN	PTR	ocp36-node2.example.com.

@@ -1,0 +1,16 @@
+---
+# tasks file for tower_roles
+
+- name: Tower roles
+  tower_role:
+    credential: "{{ item.credential }}"
+    job_template: "{{ item.job_template }}"
+    inventory: "{{ item.inventory }}"
+    organization: "{{ item.organization }}"
+    project: "{{ item.project }}"
+    role: "{{ item.role }}"
+    state: "{{ item.state }}"
+    target_team: "{{ item.target_team }}"
+    team: "{{ item.team }}"
+    tower_verify_ssl: "{{ check_ssl }}"
+    user: "{{ item.user }}"

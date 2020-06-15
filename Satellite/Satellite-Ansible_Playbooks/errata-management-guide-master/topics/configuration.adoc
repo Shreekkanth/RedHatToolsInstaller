@@ -1,0 +1,11 @@
+
+= Chapter 2 - Configuration
+
+This chapter explains how to configure Satellite 6.
+
+== Updating the Satellite Repositories
+Red Hat Satellite's repositories should be kept up to date with the latest errata available from Red Hat. Run the `hammer repository synchronize --product "prod_name" --name "repo_name" --organization-id="id"` command often to ensure that Red Hat Satellite is kept up to date.
+
+In order for the procedures in this guide to work as intended, systems registered to Red Hat Satellite must be registered not to the Red Hat-provided channels, but instead must be updated by means of the content views that are defined in this chapter.
+
+Synchronization plans define the automated updating of repositories for a certain product over a selected interval of time. See the Hammer CLI Guide for up-to-date information on defining synchronization plans: `https://access.redhat.com/documentation/en-us/red_hat_satellite/6.2/html/hammer_cli_guide/chap-cli_guide-organizations_locations_repositories#sect-CLI_Guide-Creating_a_Synchronization_Plan`

@@ -1,0 +1,40 @@
+---
+
+- name: get inspector password
+  become: yes
+  shell: crudini --get /etc/ironic-inspector/inspector.conf swift password
+  changed_when: false
+  check_mode: no
+  register: password
+- debug: msg={{ password.stdout }}
+
+- name: create output directory
+  file: path={{ undercloud.discovered_data_path }} state=directory
+
+- name: get node list
+  shell: . ~/stackrc && ironic node-list | awk '/available/ {print $2}'
+  changed_when: false
+  check_mode: node
+  register: node_uuid_list
+#- debug: msg={{ node_uuid_list.stdout_lines }}
+
+- name: get node list
+  shell: . ~/stackrc && ironic node-list | awk '/available/ {print $4}'
+  changed_when: false
+  check_mode: node
+  register: node_name_list
+#- debug: msg={{ node_name_list.stdout_lines }}
+
+#- name: test
+#  debug: msg="### {{ item.0 }} - {{ item.1 }}"
+#  with_together:
+#    - "{{ node_uuid_list.stdout_lines }}"
+#    - "{{ node_name_list.stdout_lines }}"
+
+- name: download discovered data
+  shell: . ~/stackrc && swift -U service:ironic -K {{ password.stdout }} download ironic-inspector inspector_data-{{ item.0 }} -o {{ undercloud.discovered_data_path }}/inspector_data-{{ item.1 }}.txt
+  changed_when: false
+  check_mode: node
+  with_together:
+    - "{{ node_uuid_list.stdout_lines }}"
+    - "{{ node_name_list.stdout_lines }}"

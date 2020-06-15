@@ -1,0 +1,23 @@
+le_pairs:
+  - name: Appserver-Dev
+  - name: Appserver-Test
+    prior: Appserver-Dev
+  - name: Appserver-Prod
+    prior: Appserver-Test
+  - name: Appserver-DR
+    prior: Appserver-Prod
+  - name: Webserver-Dev
+  - name: Webserver-Test
+    prior: Webserver-Dev
+  - name: Webserver-Prod
+    prior: Webserver-Test
+  - name: Webserver-DR
+    prior: Webserver-Prod
+  - name: DBserver-Dev
+  - name: DBserver-Test
+    prior: DBserver-Dev
+  - name: DBserver-Prod
+    prior: DBserver-Test
+  - name: DBserver-DR
+    prior: DBserver-Prod
+

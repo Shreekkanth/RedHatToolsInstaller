@@ -1,0 +1,27 @@
+---
+
+- name: graphite etc directory
+  file:
+    path: "/etc/icingaweb2/modules/graphite"
+    state: directory
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: "icingaweb2"
+    mode: "2770"
+  tags:
+    - install
+
+- name: write graphite ini files from templates
+  template:
+    dest: "/etc/icingaweb2/{{ item.key | regex_replace('^(.*)_(...).j2$', '\\1.\\2') }}"
+    src: "templates/{{ item.key }}"
+    owner: "{{ item.value.owner }}"
+    group: "{{ item.value.group }}"
+    mode: "{{ item.value.mode }}"
+  with_dict: "{{ graphite_config_templates }}"
+  tags:
+    - install
+
+- git:
+    repo: 'https://github.com/Icinga/icingaweb2-module-graphite.git'
+    dest: /usr/share/icingaweb2/modules/graphite
+    version: "{{ graphite_release }}"

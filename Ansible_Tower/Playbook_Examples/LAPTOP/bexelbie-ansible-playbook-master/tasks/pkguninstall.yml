@@ -1,0 +1,9 @@
+---
+# Remove packages I don't need
+
+- name: Package Uninstall
+  become: yes
+  dnf:
+    state: absent
+    name:
+      - spice-vdagent # This causes a lot of spurious journal errors and isn't needed

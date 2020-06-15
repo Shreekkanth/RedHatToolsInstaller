@@ -1,0 +1,16 @@
+# This playbook makes the RPMFusion (http://rpmfusion.org/) repository available.
+#
+# Copyright (c) 2013-2014 Fabian Affolter <fabian@affolter-engineering.ch>
+#
+# Licensed under CC BY 3.0. All rights reserved.
+#
+# Modified to use become, dnf and ansible_distribution_version by bex
+#
+---
+- name: install the rpmfusion repo packages
+  become: yes
+  dnf:
+    state: present
+    name:
+      - http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_version }}.noarch.rpm
+      - http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ ansible_distribution_version }}.noarch.rpm

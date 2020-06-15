@@ -1,0 +1,63 @@
+---
+# awx-add-role/tasks/main.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- block: # This block exists to provide global vars
+  # Generate token if one isn't provided
+  - block:
+    - name: Generate an oAuth Token from Tower
+      uri:
+        method: "POST"
+        url: "{{ tower_url }}/api/v2/tokens/"
+        user: "{{ tower_user | default(admin) }}"
+        password: "{{ tower_password | default(nothing01) }}"
+        validate_certs: no
+        force_basic_auth: yes
+        status_code: 201
+        return_content: yes
+      register: new_token
+
+    - set_fact:
+        tower_token: "{{ new_token.json.token }}"
+
+    - name: Debug Token
+      debug:
+        msg: "{{ new_token.json.token }}"
+    when: tower_token is undefined
+
+  # Get list of teams so we can parse names from end user
+  - name: List teams
+    uri:
+      method: "GET"
+      url: "{{ tower_url }}/api/v2/teams/"
+      headers:
+        Authorization: "Bearer {{ tower_token }}"
+        Content-Type: "application/json"
+      validate_certs: no
+      follow_redirects: all
+      return_content: yes
+    register: teams
+
+  - set_fact:
+      team_id: "{{ item.id }}"
+      team_name: "{{ item.name }}"
+    with_items:
+      - "{{ teams.json.results }}"
+    when: team == item.name
+
+  - name: Add role to team
+    uri:
+      method: "POST"
+      url: "{{ tower_url }}/api/v2/teams/"
+      body: ""
+      body_format: "json"
+      headers:
+        Authorization: "Bearer {{ tower_token }}"
+        Content-Type: "application/json"
+      validate_certs: no
+      follow_redirects: all
+      return_content: yes
+    register: teams
+
+  vars:
+    tower_url: "http://{{ tower_domain | default(localhost) }}:{{ ports.http }}"

@@ -1,0 +1,15 @@
+---
+- name: update apt packages
+  apt: upgrade=dist update_cache=yes
+  when: ansible_pkg_mgr == 'apt'
+
+- name: update yum packages
+  yum: name=* state=latest update_cache=yes
+  when: ansible_pkg_mgr == 'yum'
+
+- name: update zypper packages
+  zypper: name=* state=latest
+  when: ansible_pkg_mgr == 'zypper'
+
+- fail: msg="No supported package manager detected"
+  when: ansible_pkg_mgr != 'zypper' and ansible_pkg_mgr != 'apt' and ansible_pkg_mgr != 'yum'

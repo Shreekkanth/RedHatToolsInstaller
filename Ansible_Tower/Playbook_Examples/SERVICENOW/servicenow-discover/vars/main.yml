@@ -1,0 +1,146 @@
+---
+# variables for using the API
+servicecatalog_url: "https://discoverdev.service-now.com/api/sn_sc/servicecatalog/items"
+standardchange_lookup_url: "https://discoverdev.service-now.com/api/sn_sc/servicecatalog/items?sysparm_limit=10&sysparm_text="
+
+# EXAMPLE
+#
+#  vars:
+#    severity: 2
+#    priority: 2
+#    short_description: "Colin's Ticket"
+#    category: network
+#    table: change_request
+#    comments: "{{ comments }}"
+
+# These are the possible vars for the data portion of a change_request ticket
+# any active vars are added to your playbook as shown in EXAMPLE
+servicenow_data_vars:
+  - active
+  - activity_due
+  - additional_assignee_list
+  - approval
+  - approval_history
+  - approval_set
+  - assigned_to
+  - assignment_group
+  - backout_plan
+  - business_duration
+  - business_service
+  - cab_date
+  - cab_delegate
+  - cab_recommendation
+  - cab_required
+  - caller_id
+  - calendar_duration
+  - category
+  - change_plan
+  - close_code
+  - close_notes
+  - closed_at
+  - closed_by
+  - cmdb_ci
+  - comments
+  - comments_and_work_notes
+  - company
+  - conflict_last_run
+  - conflict_status
+  - contact_type
+  - correlation_display
+  - correlation_id
+  - delivery_plan
+  - delivery_task
+  - description
+  - due_date
+  - end_date
+  - escalation
+  - expected_start
+  - follow_up
+  - group_list
+  - impact
+  - implementation_plan
+  - justification
+  - knowledge
+  - location
+  - made_sla
+  - on_hold
+  - on_hold_reason
+  - on_hold_task
+  - opened_at
+  - opened_by
+  - order
+  - outside_maintenance_schedule
+  - parent
+  - phase
+  - phase_state
+  - priority
+  - production_system
+  - reason
+  - reassignment_count
+  - requested_by
+  - requested_by_date
+  - review_comments
+  - review_date
+  - review_status
+  - risk
+  - risk_impact_analysis
+  - scope
+  - severity
+  - short_description
+  - sla_due
+  - sponsor_group
+  - start_date
+  - state
+  - subcategory
+  - std_change_producer_version
+  - sys_class_name
+  - sys_created_by
+  - sys_created_on
+  - sys_domain
+  - sys_domain_path
+  - sys_id
+  - sys_mod_count
+  - sys_tags
+  - sys_updated_by
+  - sys_updated_on
+  - test_plan
+  - time_worked
+  - type
+  - u_additional_approvers
+  - u_backout_validation
+  - u_baseline_label
+  - u_cab_prior_to_install
+  - u_cab_review
+  - u_class
+  - u_clear_case
+  - u_code_repository_system
+  - u_communication_method
+  - u_completion_code
+  - u_engaged_by
+  - u_environment
+  - u_far
+  - u_freeze"
+  - u_hold_note
+  - u_ihs_flag
+  - u_incident_type
+  - u_livequeue_details
+  - u_maintenance_mode
+  - u_no_cab_reason
+  - u_point_of_contact
+  - u_project_related
+  - u_psi_flag
+  - u_related_to
+  - u_service_outage
+  - u_site
+  - u_stage
+  - u_standard_change
+  - u_template
+  - upon_approval
+  - upon_reject
+  - urgency
+  - user_input
+  - watch_list
+  - work_end
+  - work_notes
+  - work_notes_list
+  - work_start

@@ -1,0 +1,56 @@
+# The following variables need to be passed in:
+# input_folder (the folder containing the templates to generate)
+# output_folder (where templates get generated to)
+
+- name: Create output folder
+  file:
+    path: "{{ output_folder }}"
+    state: directory
+    mode: 0755
+
+- name: Create template folder structure in output folder
+  file:
+    path: "{{ output_folder }}/{{ item.path }}"
+    state: directory
+  with_filetree: "{{ input_folder }}"
+  # Files in roles-templates/ are handled specially nic-config task
+  when: item.state == 'directory' and not 'role-templates' in item.path
+
+- name: Create template folder structure in output folder for custom env templates
+  file:
+    path: "{{ output_folder }}/{{ item.path }}"
+    state: directory
+  with_filetree: "{{ path_overcloud_stack_templates }}"
+  # Files in roles-templates/ are handled specially nic-config task
+  when: item.state == 'directory' and not 'role-templates' in item.path
+
+#############
+# Global variables to use in templates
+#############
+
+- name: debug global facts
+  debug:
+    var: "{{ item }}"
+  with_items:
+    - controller_facts
+    - storage_facts
+
+- name: Put all templates in place in output folder (except for nic-configs)
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ output_folder }}/{{ item.path }}"
+    mode: "{{ item.mode }}"
+  with_filetree: "{{ input_folder }}"
+  register: template_result
+  # Templating os-net-config-wrapper requires with_subelements...(look at the next task)
+  when: item.state == 'file' and not 'os-net-config-wrapper.yaml' in item.path and not 'role-templates/' in item.path
+
+- name: Put all custom env templates in place in output folder (except for nic-configs)
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ output_folder }}/{{ item.path }}"
+    mode: "{{ item.mode }}"
+  with_filetree: "{{ path_overcloud_stack_templates }}"
+  register: template_result
+  # Templating os-net-config-wrapper requires with_subelements...(look at the next task)
+  when: item.state == 'file' and not 'os-net-config-wrapper.yaml' in item.path and not 'role-templates/' in item.path

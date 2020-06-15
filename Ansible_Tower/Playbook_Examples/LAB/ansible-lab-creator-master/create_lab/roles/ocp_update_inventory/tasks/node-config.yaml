@@ -1,0 +1,142 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Updated [OSEv3:children] with glusterfs group
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}" 
+    regexp: 'glusterfs'
+    insertafter: '^\[OSEv3:children]'
+    line: 'glusterfs'
+    state: present
+  with_dict: "{{ guests }}"
+  when: "glusterconfig == 'yes'"
+
+- name: Add masters to masters section in inventory
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}" 
+    regexp: '{{ item.key }}.{{ domain_name }} #master'
+    insertafter: '^\[masters]'
+    line: '{{ item.key }}.{{ domain_name }} #master'
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'master'"
+
+- name: Add masters to etcd section in inventory
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: '{{ item.key }}.{{ domain_name }} #etcd'
+    insertafter: '^\[etcd]'
+    line: '{{ item.key }}.{{ domain_name }} #etcd'
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'master'"
+
+- name: Add masters to nodes in inventory
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'region': 'infra', 'zone': 'default'}\""
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'region': 'infra', 'zone': 'default'}\""
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'master' and ocp_ver != 3.11"
+
+- name: Add masters to nodes in inventory for Openshift 3.11
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_group_name='node-config-master'"
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_group_name='node-config-master'"
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'master' and ocp_ver == 3.11"
+
+- name: Add infranodes to inventory For Openshift 3.10 and under
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'region': 'infra', 'zone': 'default'}\" openshift_schedulable=true"
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'region': 'infra', 'zone': 'default'}\" openshift_schedulable=true"
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'infranode' and ocp_ver != 3.11"
+
+- name: Add infranodes to inventory for Openshift 3.11
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_group_name='node-config-infra'"
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_group_name='node-config-infra'"
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'infranode' and ocp_ver == 3.11"
+
+- name: Add appnodes to inventory
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'region': 'primary', 'zone': 'default'}\" openshift_schedulable=true"
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'region': 'primary', 'zone': 'default'}\" openshift_schedulable=true"
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'appnode' and ocp_ver != 3.11"
+
+- name: Add appnodes to inventory for Openshift 3.11
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_group_name='node-config-compute'"
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_group_name='node-config-compute'"
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'appnode' and ocp_ver == 3.11"
+
+- name: Add glusterfs group to inventory
+  delegate_to: localhost
+  blockinfile:
+    path: "{{ tmp_inv_loc }}"
+    marker_begin: glusterfs node section
+    block: |
+           #glusterfs nodes
+           [glusterfs]
+
+    insertbefore: '^\[nodes]'
+    marker_end: glusterfs node section end
+    state: present
+  when: "glusterconfig == 'yes'"
+
+- name: Add CNS nodes glusterfs group to inventory
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "^{{ item.key }}.{{ domain_name }} glusterfs_devices="
+    insertafter: '^\[glusterfs]'
+    line: "{{ item.key }}.{{ domain_name }} glusterfs_devices='[\"{{ gluster_device_name }}\"]'"
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'cnsnode' and glusterconfig == 'yes' and ocp_ver != 3.11"
+
+- name: Add CNS nodes to inventory
+  delegate_to: localhost
+  lineinfile:
+    path: "{{ tmp_inv_loc }}"
+    regexp: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'env':'glusterfs', 'cluster': CNSCluster, 'zone': 'default'}\""
+    insertafter: '^\[nodes]'
+    line: "{{ item.key }}.{{ domain_name }} openshift_node_labels=\"{'env':'glusterfs', 'cluster': CNSCluster, 'zone': 'default'}\""
+    state: present
+  with_dict: "{{ guests }}"
+  when: "item.value.ocp_role == 'cnsnode' and glusterconfig == 'yes' and ocp_ver != 3.11"
+
+# Need to add 3.11 section here for cnsnodes
+

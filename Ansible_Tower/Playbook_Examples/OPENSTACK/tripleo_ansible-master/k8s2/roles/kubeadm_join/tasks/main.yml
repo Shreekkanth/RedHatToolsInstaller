@@ -1,0 +1,11 @@
+---
+
+- name: get token
+  shell: kubeadm token list | grep -v TOKEN | awk '{print $1}'
+  register: token
+  delegate_to: 10.0.1.121
+
+- debug: msg="{{ token.stdout }}"
+
+- name: add nodes
+  shell: kubeadm join --token {{ token.stdout }} 10.0.1.120:8443

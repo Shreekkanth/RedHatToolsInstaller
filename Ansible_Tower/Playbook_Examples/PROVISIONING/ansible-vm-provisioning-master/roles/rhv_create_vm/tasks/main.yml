@@ -1,0 +1,44 @@
+- name: Create RHV VM
+  delegate_to: rhvm
+  ovirt_vm:
+    timeout: 600
+    auth: "{{ ovirt_auth }}"
+    state: "running"
+    wait: true
+    name: "{{ hostinfo.name }}-rhv"
+    template: "{{ hostinfo.rhv_template | default('RHEL7_Satellite6_RHV_1_2') }}"
+    graphical_console: 
+      protocol: "vnc"
+    cluster: "{{ hostinfo.rhv_cluster | default('TEST_INFRA_LB') }}"
+    clone: "{{ hostinfo.rhv_clone | default(true) }}"
+    memory: "{{ hostinfo.rhv_memory }}"
+    nics:
+    - name: "eth0"
+      profile_name: "{{ hostinfo.rhv_net_profile }}"
+    cloud_init:
+      host_name: "{{ hostinfo.fqdn }}"
+      timezone: "{{ hostinfo.timezone }}"
+      user_name: root
+      root_password: "{{ hostinfo.root_password | default('linux') }}"
+      custom_script: |
+        runcmd:
+        - |
+          #!/bin/bash
+          rm -vf /root/bdi-post-deploy.sh /etc/rc.d/init.d/bdi-post-setup /root/.post_deploy_credentials /etc/rc?.d/*bdi-post-setup
+          pkill bdi-post-setup
+          /usr/bin/cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-eth0
+          NAME=eth0
+          DEVICE=eth0
+          BOOTPROTO=static
+          IPADDR={{ hostinfo.ip }}
+          NETMASK={{ hostinfo.netmask }}
+          GATEWAY={{ hostinfo.gw }}
+          DNS1={{ hostinfo.dns1 | default('172.22.4.104') }}
+          DNS2={{ hostinfo.dns2 | default('172.22.4.105') }}
+          ONBOOT=yes
+          EOF
+          hostnamectl set-hostname {{ hostinfo.fqdn }}
+          echo {{ hostinfo.fqdn }} >> /etc/hostname
+          ifdown eth0
+          ifup eth0
+  register: rhvmcreate

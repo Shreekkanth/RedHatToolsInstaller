@@ -1,0 +1,28 @@
+{
+    "asset_relation": {
+        "roles": [
+            {
+                "name": "Member", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Admin", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Read", 
+                "team": [], 
+                "user": []
+            }, 
+            {
+                "name": "Auditor", 
+                "team": [], 
+                "user": []
+            }
+        ]
+    }, 
+    "asset_type": "organization", 
+    "name": "Default"
+}

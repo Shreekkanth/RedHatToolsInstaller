@@ -1,0 +1,78 @@
+---
+- hosts: "{{ server_name }}"
+  # connection: local
+  gather_facts: false
+  vars:
+    server_state: lab
+
+  tasks:
+
+    - name: Gather VM facts
+      vmware_vm_facts:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        vm_type: vm
+      delegate_to: localhost
+      register: vm_facts
+
+    - name: Gather guest facts
+      vmware_guest_facts:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        datacenter: "{{ vcenter_map[server_state]['datacenter'] }}"
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name }}"
+        schema: vsphere
+      delegate_to: localhost
+      register: guest_facts
+
+    - name: Gather disk facts
+      vmware_guest_disk_facts:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        datacenter: "{{ vcenter_map[server_state]['datacenter'] }}"
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name }}"
+      delegate_to: localhost
+      register: disk_facts
+
+    - name: Gather disk info from OS before adding HDD
+      setup:
+        filter: ansible_devices
+      register: hdd_before_change
+
+    - name: Debug ansible_devices
+      debug:
+        var: hdd_before_change
+        verbosity: 1
+
+    - name: Debug keys
+      debug:
+        msg: "{{ hdd_before_change.ansible_facts.ansible_devices.keys() }}"
+        verbosity: 1
+
+    # - name: Debug ansible facts
+    #   debug:
+    #     var: hostvars[inventory_hostname]
+    #     verbosity: 1
+
+    - name: Debug vm_facts
+      debug:
+        var: vm_facts
+        verbosity: 1
+
+    - name: Debug guest_facts
+      debug:
+        var: guest_facts
+        verbosity: 1
+
+    - name: Debug disk_facts
+      debug:
+        var: disk_facts
+        verbosity: 1

@@ -1,0 +1,32 @@
+# patch linux entrypoint
+---
+- hosts: all
+  gather_facts: yes
+  ignore_unreachable: yes
+  ignore_errors: yes
+
+  tasks:
+    - name: include role converge
+      include_role:
+        name: role-converge
+      
+  post_tasks:
+    - name: set state for patching status COMPLETE
+      set_stats:
+        data:
+          patching_status: "complete"
+        per_host: no
+        aggregate: no
+      when: 
+        - linux_patching_status == "complete"
+        - windows_patching_status == "complete"
+      ignore_unreachable: true
+
+    - name: set state for patching status FAILED
+      set_stats:
+        data:
+          patching_status: "failed"
+        per_host: no
+        aggregate: no
+      when: linux_patching_status == "failed" or windows_patching_status == "failed"
+      ignore_unreachable: true

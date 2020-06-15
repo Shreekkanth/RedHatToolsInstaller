@@ -1,0 +1,10 @@
+---
+- tasks:
+  
+  name: Install insights
+  yum:
+    name: redhat-access-insights
+    state: latest
+    
+  name: Register insights
+  command: redhat-access-insights --register

@@ -1,0 +1,11 @@
+---
+# file: main.yml
+
+- name: validate availability of target cluster
+  uri:
+    url: https://{{ ocp_cluster_hostname }}:8443
+    validate_certs: false
+  register: ocp_url
+  failed_when: ocp_url.status != 200
+  delegate_to: localhost
+  run_once: true

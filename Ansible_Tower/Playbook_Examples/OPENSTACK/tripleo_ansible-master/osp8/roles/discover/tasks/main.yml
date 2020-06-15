@@ -1,0 +1,22 @@
+---
+
+- name: get first node uuid
+  shell: . ~/stackrc && ironic node-list | awk '/available/ {print $2}' | head -n 1
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: first_node
+- debug: msg="{{ first_node.stdout }}"
+
+- name: check if introspection is already run
+  shell: ". ~/stackrc && ironic node-show {{ first_node.stdout }} | grep -E \"'memory_mb': u'[0-9]+'\""
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: baremetal introspection
+  shell: . ~/stackrc && time openstack baremetal introspection bulk start
+  when: result|failed
+  register: result
+- debug: msg="{{ result }}"

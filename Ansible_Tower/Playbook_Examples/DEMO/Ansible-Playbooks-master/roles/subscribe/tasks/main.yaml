@@ -1,0 +1,21 @@
+- name: Install Satellite RPM
+  yum:
+    name: http://{{ redhat_satellite_host }}/pub/katello-ca-consumer-latest.noarch.rpm
+    state: present
+  when: redhat_subscription_method == 'satellite'
+
+- name: Register to Satellite
+  redhat_subscription:
+    server_hostname: "{{ redhat_satellite_host }}"
+    org_id: "{{ redhat_satellite_org }}"
+    activationkey: "{{ activation_key }}"
+  when: redhat_subscription_method == 'satellite'
+
+- name: Register to portal
+  redhat_subscription:
+    state: present
+    username: "{{ redhat_portal_user }}"
+    password: "{{ redhat_portal_pass }}"
+    pool_ids:
+    - "{{ redhat_portal_pool }}"
+  when: redhat_subscription_method == 'portal'

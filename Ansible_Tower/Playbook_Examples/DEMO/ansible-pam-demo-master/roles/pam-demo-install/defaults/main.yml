@@ -1,0 +1,15 @@
+# deployment parameters
+pam_demo_project: pam
+pam_demo_working_dir: /tmp/pam
+pam_demo_route_base: pam.apps.skylake.demolab.local
+
+# config parameters 
+git_username: bholmes
+git_access_token: changeme
+
+# nexus parameters
+
+# jenkins parameters
+jenkins_maven_agent_image: registry.access.redhat.com/openshift3/jenkins-agent-maven-35-rhel7:v3.11
+
+# s2i parameters

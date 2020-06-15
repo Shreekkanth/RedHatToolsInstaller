@@ -1,0 +1,11 @@
+---
+# vars file for phpvirtualbox
+virtualbox_url: https://download.virtualbox.org/virtualbox/6.0.4/VirtualBox-6.0-6.0.4_128413_el7-1.x86_64.rpm
+virtualbox_user: vbox
+virtualbox_password: pass
+phpvirtualbox_url: https://github.com/phpvirtualbox/phpvirtualbox/archive/develop.zip
+phpvirtualbox_location: /var/www/html
+phpvirtualbox_extension_pack_name: Oracle_VM_VirtualBox_Extension_Pack-6.0.4.vbox-extpack
+phpvirtualbox_extension_pack_url: "https://download.virtualbox.org/virtualbox/6.0.4/{{ phpvirtualbox_extension_pack_name }}"
+phpvirtualbox_extension_pack_location: /root
+phpvirtualbox_extension_pack_license: 56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb

@@ -1,0 +1,7 @@
+- name: Remove all Servers
+  hosts: all
+  gather_facts: False
+  connection: local
+    
+  roles:
+  - destroy

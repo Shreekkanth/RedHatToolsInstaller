@@ -1,0 +1,8 @@
+---
+# defaults file for satellite-register
+satellite_url: "https://satellite.example.com"
+satellite_katello_rpm_path: "pub/katello-ca-consumer-latest.noarch.rpm"
+satellite_katello_rpm_version: "present"
+satellite_activation_key: "default-key"
+satellite_org_id: "Default-org"
+satellite_register_ignore_errors: "true"

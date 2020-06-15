@@ -1,0 +1,98 @@
+---
+
+- name: check if kube-apiserver runs
+  shell: pgrep kube-apiserver
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+  when: inventory_hostname == groups['masters'][0]
+
+- debug: msg="{{ result }}"
+- name: kubeadm init
+  shell: kubeadm init --config=/root/kubeadm-ha/kubeadm-init.yaml
+  when: inventory_hostname == groups['masters'][0] and result|failed
+
+- name: update kube-apiserver manifest
+  lineinfile: >-
+    dest=/etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp='^    - --admission-control=.*'
+    line='    - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds'
+    backup=no
+#  notify: retsart docker and kubelet
+  when: inventory_hostname == groups['masters'][0]
+  register: result
+
+- debug: msg="{{ result }}"
+
+- name: wait for kube-apiserver to start
+  shell: kubectl -n kube-system get pods | grep 'kube-apiserver.*Running'
+  register: result
+  until: result|success
+  retries: 20
+  delay: 10
+  changed_when: false
+  when: inventory_hostname == groups['masters'][0]
+
+- name: check if kube-flannel is deployed
+  shell: kubectl get pod -n kube-system | grep ^kube-flannel
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+  when: inventory_hostname == groups['masters'][0]
+
+- name: deploy kube-flannel
+  shell: kubectl create -f /root/kubeadm-ha/kube-flannel
+  when: inventory_hostname == groups['masters'][0] and result|failed
+
+- name: check if kubernetes-dashboard is deployed
+  shell: kubectl get pod -n kube-system | grep ^kubernetes-dashboard
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+  when: inventory_hostname == groups['masters'][0]
+
+- name: deploy kubernetes-dashboard
+  shell: kubectl create -f /root/kubeadm-ha/kube-dashboard
+  when: inventory_hostname == groups['masters'][0] and result|failed
+
+# kubectl proxy --address='0.0.0.0' &
+
+- name: check if master node is tainted
+  shell: kubectl describe node k8s-master1.k8stest.local | grep 'Taints:.*NoSchedule'
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+  when: inventory_hostname == groups['masters'][0]
+
+- name: taints master node
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+  when: inventory_hostname == groups['masters'][0] and result|success
+
+- name: check if kube-heapster is deployed
+  shell: kubectl get pod -n kube-system | grep ^heapster
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+  when: inventory_hostname == groups['masters'][0]
+
+- name: deploy heapster
+  shell: kubectl create -f /root/kubeadm-ha/kube-heapster
+  when: inventory_hostname == groups['masters'][0] and result|failed
+
+- name: restart docker and kubelet
+  shell: systemctl restart docker kubelet
+  when: inventory_hostname == groups['masters'][0] and result|failed
+
+- name: wait for heapster to start
+  shell: kubectl -n kube-system get pods | grep 'heapster.*Running'
+  register: result
+  until: result|success
+  retries: 20
+  delay: 10
+  when: inventory_hostname == groups['masters'][0]
+

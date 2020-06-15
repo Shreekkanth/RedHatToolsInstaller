@@ -1,0 +1,13 @@
+- debug:
+    msg: "Creating {{ rtable }} Route Table..."
+
+- name: "Create route table"
+  ec2_vpc_route_table:
+    aws_access_key: "{{ key }}"
+    aws_secret_key: "{{ secret }}"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    tags:
+      Name: "{{ rtable }}"
+    subnets: "{{ subnets }}"
+    validate_certs: no

@@ -1,0 +1,19 @@
+---
+# file: 01-nexus-tasks.yml
+
+- name: deploy persistent nexus from template
+  shell: 'oc process -f {{ pam_demo_working_dir }}/nexus/nexus3-persistent-template.yaml | oc create -f -'
+
+- name: get nexus route
+  command: 'oc get route nexus --template=\{\{.spec.host\}\}'
+  register: nexus_route
+
+- name: wait for nexus to become ready
+  uri:
+    url: 'http://{{ nexus_route.stdout }}'
+    status_code: 200
+  retries: 15
+  delay: 10
+  register: nresult
+  until: ('status' in nresult) and (nresult.status == 200)
+  changed_when: false

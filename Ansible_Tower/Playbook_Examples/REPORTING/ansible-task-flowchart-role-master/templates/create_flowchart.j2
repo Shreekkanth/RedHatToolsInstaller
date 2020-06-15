@@ -1,0 +1,16 @@
+st=>start: Start
+e=>end
+{% set yaml_entries = role_yaml.content | from_yaml %}
+{% set mylife = []  %}
+{% for entry in yaml_entries %}
+{% if  entry.name is defined %}
+op{{ loop.index0 }}=>operation: {{ entry.name }}
+{{ mylife.append('op' + loop.index0|string) -}}
+{% endif %}
+{% endfor %}
+
+st
+{%- for entry in mylife -%}
+->{{entry}}
+{%- endfor -%}
+->e

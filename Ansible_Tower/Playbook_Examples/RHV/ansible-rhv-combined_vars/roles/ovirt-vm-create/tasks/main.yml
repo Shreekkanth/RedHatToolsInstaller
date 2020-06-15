@@ -1,0 +1,54 @@
+---
+# tasks file for ovirt-vm-create
+
+## Create the VMs
+#- name: Obtain SSO token
+#  ovirt_auth:
+#    state: present
+
+- name: Debug
+  debug:
+    msg: "{{ ovirt_vm_nic_ip_address }}"
+
+- name: "Creates OCP Virtual Machine {{ ovirt_vm_name }}-{{ ovirt_vm_count }} from template"
+  ovirt_vms:
+    state: running
+    name: "{{ ovirt_vm_name }}-{{ ovirt_vm_count }}"
+    template: "{{ ovirt_vm_rhv_template }}"
+    cluster: "{{ ovirt_vm_cluster }}"
+    cpu_cores: "{{ ovirt_vm_openshift_cpu_cores }}"
+    memory: "{{ ovirt_vm_openshift_memory }}"
+    wait: "{{ ovirt_vm_wait }}"
+    storage_domain: "{{ ovirt_vm_disk_storage_domain }}"
+    cloud_init:
+      host_name: "{{ ovirt_vm_name }}-{{ ovirt_vm_count }}.{{ ovirt_vm_domain_name }}"
+      dns_search: "{{ ovirt_vm_dns_search }}"
+      nic_boot_protocol: "{{ ovirt_vm_nic_boot_protocol }}"
+      nic_ip_address: "{{ ovirt_vm_nic_ip_address }}"
+      nic_netmask: "{{ ovirt_vm_nic_netmask }}"
+      nic_gateway: "{{ ovirt_vm_nic_gateway }}"
+      nic_name: "{{ ovirt_vm_nic_name }}"
+      nic_on_boot: "{{ ovirt_vm_nic_on_boot }}"
+  register: ovirt_vm_created
+
+- name: "Tag {{ ovirt_vm_name }}-{{ ovirt_vm_count }} VM"
+  include_role:
+    name: ovirt-vm-tag
+  vars:
+    ovirt_tag_name: "{{ item }}"
+    ovirt_tag_vm: "{{ ovirt_vm_created.vm.name }}"
+  with_items:
+    - "rhv-ocp"
+    - "{{ ovirt_vm_name }}"
+
+- name: "Add DNS entries for {{ ovirt_vm_name }}-{{ ovirt_vm_count }} VM"
+  include_role:
+    name: freeipa-dns-add
+  vars:
+    ipa_dns_entry: "{{ ovirt_vm_name }}-{{ ovirt_vm_count }}.{{ ovirt_vm_domain_name }}"
+    ipa_server_hostname: "{{ dns_ipa_host }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_password: "{{ ipa_password }}"
+    ipa_zone_name: "{{ dns_zone_name }}"
+    ipa_nic_ip_address: "{{ ovirt_vm_nic_ip_address }}"
+    ipa_reverse_zone_name: "{{ dns_reverse_zone_name }}"

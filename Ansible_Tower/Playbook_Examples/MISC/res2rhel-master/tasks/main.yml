@@ -1,0 +1,25 @@
+---
+- name: Fail if Ansible version is lower than 2.4
+  fail: msg="Ansible version is {{ ansible_version.string }} < 2.4"
+  when: ansible_version.string is version_compare(2.4, '<')
+
+- name: Fail if not RedHat distribution
+  fail: msg="{{ ansible_distribution }} - System is not of RedHat distribution"
+  when: ansible_distribution != 'RedHat'
+
+- name: Verify system
+  include_tasks: "verify_{{ ansible_distribution_major_version }}.yml"
+  when: (res2rhel_mode == 'verify') or
+        (res2rhel_mode == 'check')
+
+- name: Check for leftovers
+  include_tasks: "leftovers_{{ ansible_distribution_major_version }}.yml"
+  when: (res2rhel_mode == 'verify') or
+        (res2rhel_mode == 'check') or
+        (res2rhel_mode == 'scan') or
+        (res2rhel_mode == 'leftovers')
+
+- name: Transition system
+  include_tasks: "transition_{{ ansible_distribution_major_version }}.yml"
+  when: (res2rhel_mode == 'transition') or
+        (res2rhel_mode == 'transform')

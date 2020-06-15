@@ -1,0 +1,9 @@
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.soap.usm.ca.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:getRequestItemRow soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <sessionID xsi:type="xsd:string">{{ session_id }}</sessionID>
+         <subscriptionDetailID xsi:type="xsd:int">{{ sc_close_ticket_request_item_id }}</subscriptionDetailID>
+      </ser:getRequestItemRow>
+   </soapenv:Body>
+</soapenv:Envelope>

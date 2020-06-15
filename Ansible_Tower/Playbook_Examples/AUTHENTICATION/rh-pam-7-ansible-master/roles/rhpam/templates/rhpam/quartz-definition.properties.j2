@@ -1,0 +1,41 @@
+#
+# https://access.redhat.com/documentation/en-us/red_hat_jboss_bpm_suite/6.4/single/installation_guide/index#setting_up_quartz
+#
+#============================================================================
+# Configure Main Scheduler Properties
+#============================================================================
+org.quartz.scheduler.instanceName={{org_quartz_scheduler_instanceName }}
+org.quartz.scheduler.instanceId={{org_quartz_scheduler_instanceId}}
+org.quartz.scheduler.skipUpdateCheck={{org_quartz_scheduler_skipUpdateCheck}}
+org.quartz.scheduler.idleWaitTime={{org_quartz_scheduler_idleWaitTime}}
+#============================================================================
+# Configure ThreadPool
+#============================================================================
+org.quartz.threadPool.class={{org_quartz_threadPool_class}}
+org.quartz.threadPool.threadCount={{org_quartz_threadPool_threadCount}}
+org.quartz.threadPool.threadPriority={{org_quartz_threadPool_threadPriority}}
+#============================================================================
+# Configure JobStore
+#============================================================================
+org.quartz.jobStore.misfireThreshold={{org_quartz_jobStore_misfireThreshold}}
+org.quartz.jobStore.class={{org_quartz_jobStore_class}}
+org.quartz.jobStore.useProperties={{org_quartz_jobStore_useProperties}}
+org.quartz.jobStore.dataSource={{org_quartz_jobStore_dataSource}}
+org.quartz.jobStore.nonManagedTXDataSource={{org_quartz_jobStore_nonManagedTXDataSource}}
+org.quartz.jobStore.tablePrefix={{org_quartz_jobStore_tablePrefix}}
+org.quartz.jobStore.isClustered={{org_quartz_jobStore_isClustered}}
+org.quartz.jobStore.clusterCheckinInterval ={{org_quartz_jobStore_clusterCheckinInterval}}
+
+#============================================================================
+# Other Example Delegates
+#============================================================================
+org.quartz.jobStore.driverDelegateClass={{org_quartz_jobStore_driverDelegateClass}}
+
+#============================================================================
+# Configure Datasources
+#============================================================================
+org.quartz.dataSource.{{org_quartz_jobStore_dataSource}}.jndiURL={{org_quartz_dataSource_kieDS_jndiURL}}
+org.quartz.dataSource.{{org_quartz_jobStore_nonManagedTXDataSource}}.jndiURL={{org_quartz_dataSource_quartzDS_jndiURL}}
+
+#
+# EOF

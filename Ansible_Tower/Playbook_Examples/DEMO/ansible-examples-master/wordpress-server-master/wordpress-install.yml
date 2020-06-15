@@ -1,0 +1,20 @@
+---
+- name: MAIN TASK | Installing and configuring WordPress
+  hosts: all
+  vars_files:
+    - defaults/main.yml
+    - vars/main.yml
+  remote_user: root
+  tasks:
+
+## Please notice that HOSTS is set to ALL by default.  This is because I use this in Ansible Tower
+## and I limit my hosts accordingly.  Please use the syntax in the README file to specify hosts.
+##	Just for one extra step....
+## This requires the safety word to be passed in order for this playbook to do anything.
+## I really want to make sure you read through this and know what you're doing.  So read
+## the README or just remove the next 3 lines to avoid passing a safety word.
+    - fail:
+        msg: "Please pass the safety word or remove this fail section from wordpress-install.yml"
+      when: safety_word is undefined or safety_word != "wordpress-install"
+
+    - include: tasks/main.yml

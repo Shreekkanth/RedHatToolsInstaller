@@ -1,0 +1,9 @@
+TYPE=Ethernet
+BOOTPROTO=static
+NAME={{ tunnel_interface }}
+UUID={{ tunnel_interface_uuid.stdout.split('=').1 }}
+DEVICE={{ tunnel_interface }}
+ONBOOT=yes
+IPADDR={{ tunnel_network.split('/').0.split('.').0 + '.' + tunnel_network.split('/').0.split('.').1 + '.' + cluster_id + '.' + hostvars[inventory_hostname]['ansible_' + mgmt_interface].ipv4.address.split('.').3 }}
+NETMASK=255.255.255.0
+NM_CONTROLLED=no

@@ -1,0 +1,13 @@
+---
+
+- name: create organizations
+  tower_organization:
+    name: "{{ org.name }}"
+    description: "Organization created through Ansible"
+
+- name: create teams and apply roles
+  include_tasks:
+    file: configure_team.yml
+  loop: "{{ org.teams | subelements('roles') }}"
+  loop_control:
+    loop_var: team

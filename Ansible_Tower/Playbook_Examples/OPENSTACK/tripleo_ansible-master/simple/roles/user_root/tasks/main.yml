@@ -1,0 +1,19 @@
+---
+
+- name: dot files (root)
+  unarchive: src=dotfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: ssh files (root)
+  unarchive: src=sshfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: TERM
+  lineinfile:
+    dest: /root/.bashrc
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - regexp: '^export TERM'
+      line: 'export TERM=xterm'
+    - regexp: '^export SYSTEMD_LESS'
+      line: 'export SYSTEMD_LESS=FRXMK'

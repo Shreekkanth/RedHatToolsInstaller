@@ -1,0 +1,9 @@
+---
+
+ipa_master_config_db:
+  nsslapd-auditfaillog-logging-enabled: "on"
+  nsslapd-auditlog-logrotationtimeunit: minute
+  nsslapd-auditlog-logrotationtime: 5
+  nsslapd-accesslog-logrotationtimeunit: minute
+  nsslapd-accesslog-maxlogsperdir: 10
+  nsslapd-accesslog-logrotationtime: 5

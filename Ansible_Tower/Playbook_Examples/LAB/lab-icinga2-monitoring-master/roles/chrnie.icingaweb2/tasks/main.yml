@@ -1,0 +1,84 @@
+---
+- name: "Install icingaweb2 on Linux"
+  include_tasks: "install-{{ ansible_os_family }}.yml"
+
+- name: create initial directories
+  file:
+    path: "/etc/icingaweb2/{{ item.key }}"
+    state: directory
+    owner: "{{ item.value.owner }}"
+    group: "{{ item.value.group }}"
+    mode: "{{ item.value.mode }}"
+  with_dict: "{{ icingaweb2_config_dirs }}"
+  tags:
+    - install
+
+- name: write initial ini files from templates
+  template:
+    dest: "/etc/icingaweb2/{{ item.key | regex_replace('^(.*)_(...).j2$', '\\1.\\2') }}"
+    src: "templates/{{ item.key }}"
+    owner: "{{ item.value.owner }}"
+    group: "{{ item.value.group }}"
+    mode: "{{ item.value.mode }}"
+    force: "{{ 'yes' if item.value.force is defined and item.value.force == 'yes' else 'no'}}"
+  with_dict: "{{ icingaweb2_config_templates }}"
+  tags:
+    - install
+
+- name: Check icingaweb2 schema version
+  command: mysql -u "{{ icingaweb2_db_user }}" -p"{{ icingaweb2_db_password }}" "{{ icingaweb2_db_name }}" -Ns -e "select name from icingaweb_user where name = '{{icingaweb2_admin_user}}';"
+  ignore_errors: yes
+  changed_when: False
+  register: schema_result
+
+- name: Import icingaweb2 schema
+  mysql_db:
+    state: import
+    name: "{{ icingaweb2_db_name }}"
+    target: "{{ os_icingaweb2_schema[ansible_os_family] }}"
+  ignore_errors: yes
+  register: schema_import
+  when: schema_result.stderr | match("ERROR.*Table 'icingaweb.icingaweb_user'")
+
+- name: Import initial icingaweb user
+  mysql_db:
+    state: import
+    name: "{{ icingaweb2_db_name }}"
+    target: /etc/icingaweb2/icingaweb_add_user.sql
+  ignore_errors: yes
+  when: ( schema_result.rc == 0 and not ( schema_result.stdout | match(icingaweb2_admin_user)) )
+        or schema_import.changed
+
+- name: copy api users to icinga2
+  template:
+    dest: "{{ icingaweb2_icinga_conf_path }}"
+    src: "templates/api-user-icingaweb_conf.j2"
+    owner: "{{os_icinga2_user[ansible_os_family]}}"
+    group: "{{os_icinga2_group[ansible_os_family]}}"
+    mode: "0660"
+  when: create_icingaweb2_api_users
+  notify: Test config before restart icinga 2
+  tags:
+    - install
+
+- name: restart icinga after change
+  meta: flush_handlers
+  tags:
+    - install
+    - config
+
+- name: "include director"
+  include_tasks: "module_director.yml"
+
+- name: "include graphite"
+  include_tasks: "module_graphite.yml"
+
+- name: Enable icingaweb2 modules
+  file:
+    src: "/usr/share/icingaweb2/modules/{{item}}"
+    dest: "/etc/icingaweb2/enabledModules/{{item}}"
+    owner: "{{os_apache_user[ansible_os_family]}}"
+    group: icingaweb2
+    state: link
+  with_items: "{{icingaweb2_modules}}"
+

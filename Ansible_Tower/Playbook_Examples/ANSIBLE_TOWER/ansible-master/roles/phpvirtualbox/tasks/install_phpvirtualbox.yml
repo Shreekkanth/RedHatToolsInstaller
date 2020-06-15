@@ -1,0 +1,74 @@
+---
+- name: check if phpvirtualbox is already deployed
+  stat:
+    path: "/var/www/html/config.php"
+    register: config_status
+
+- name: "Unarchive PHPVirtalBox to {{ phpvirtualbox_location }}"
+  unarchive:
+    src: "{{ phpvirtualbox_url }}"
+    dest: "{{ phpvirtualbox_location }}"
+    remote_src: yes
+  when: config_status.stat.exists == False
+
+- name: "move PHPVirtalBox folder content to {{ phpvirtualbox_location }}"
+  synchronize:
+    src: "{{ phpvirtualbox_location }}/phpvirtualbox-develop/"
+    dest: "{{ phpvirtualbox_location }}/"
+  delegate_to: "{{ inventory_hostname }}"
+  when: config_status.stat.exists == False
+
+- name: "remove {{ phpvirtualbox_location }}/phpvirtualbox-develop/ folder"
+  file:
+    path: "{{ phpvirtualbox_location }}/phpvirtualbox-develop/"
+    state: absent
+  when: config_status.stat.exists == False
+
+- name: rename PHPVirtalBox config file
+  file:
+    src: "{{ phpvirtualbox_location }}/config.php-example"
+    dest: "{{ phpvirtualbox_location }}/config.php"
+    state: link
+
+- name: allow Apache to listen on port TCP/18083
+  seport:
+    ports: 18083
+    proto: tcp
+    setype: http_port_t
+    state: present
+
+- name: downlaod PHPVirtalBox Extension Pack
+  get_url:
+    url: "{{ phpvirtualbox_extension_pack_url }}"
+    dest: "{{ phpvirtualbox_extension_pack_location }}"
+
+- name: install PHPVirtalBox Extension Pack
+  shell: "vboxmanage extpack install {{ phpvirtualbox_extension_pack_location}}/{{ phpvirtualbox_extension_pack_name }} --accept-license={{ phpvirtualbox_extension_pack_license }}"
+  register: extpack_installation
+  failed_when: "'is already installed' not in extpack_installation.stderr"
+
+# - name: review PHPVirtalBox Extension Pack installation
+#   debug:
+#     var: extpack_installation
+
+- name: is vboxwebsrv running?
+  wait_for:
+    port: 18083
+    timeout: 10
+    state: present
+  register: vboxwebsrv_status
+  ignore_errors: true
+
+- name: start PHPVirtalBox Web Service
+  shell: vboxwebsrv -b
+  register: vboxwebsrv_execution
+  failed_when: vboxwebsrv_execution.rc != 0
+  when: vboxwebsrv_status.failed
+
+# - name: review PHPVirtalBox Web Service execution
+#   debug:
+#     var: vboxwebsrv_execution
+
+- name: PHPVirtalBox Web Service URL
+  debug:
+    msg: "You can connecto to PHPVirtalBox now at http://{{ inventory_hostname }}/"

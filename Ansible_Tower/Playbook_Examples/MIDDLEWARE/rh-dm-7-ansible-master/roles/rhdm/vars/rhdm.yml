@@ -1,0 +1,80 @@
+---
+#
+# RHDM systemproperties Default values:
+sys_org_kie_server_user:               "kieserver"
+sys_org_kie_server_pwd:                "{{password_to_dev}}"
+sys_org_kie_server_controller_user:    "controllerUser"
+sys_org_kie_server_controller_pwd:     "{{password_to_dev}}"
+kie_server_port:                       "{{ jboss_socket_binding_port_offset + 8080}}"
+kie_controller_port:                   "{{ jboss_socket_binding_port_offset + 8080}}"
+sys_org_kie_server_location:           "{{'http://'  + inventory_hostname + ':' + kie_server_port + '/kie-server/services/rest/server'}}"
+sys_org_kie_server_controller_connect: 10000
+kie_server_controller_protocol_http:   "http://"
+kie_server_controller_protocol_ws:     "ws://"
+#
+kie_server_controller_url_http:        "/decision-central/rest/controller"
+kie_server_controller_url_ws:          "/decision-central/websocket/controller"
+#
+kie_server_controller_url_controller:  "/controller/websocket/controller"
+kie_server_controller_protocol:        "{{kie_server_controller_protocol_ws}}"
+#
+sys_org_kie_server_controller:         "{{kie_server_controller_protocol_http  + inventory_hostname + ':' + kie_controller_port + kie_server_controller_url_http}}"
+sys_org_kie_server_controller_ws:      "{{kie_server_controller_protocol_ws    + inventory_hostname + ':' + kie_controller_port + kie_server_controller_url_ws }}"
+#
+env_mailsession_debug:       "true"
+env_sun_security_krb5_debug: "false"
+#
+rhdmSystemProperties:
+  - name: "org.uberfire.nio.git.dir"
+    value: "{{ rhdm_runtime_path_base + 'git/' }}"
+  - name: "org.uberfire.nio.git.dirname"
+    value: ".niogit"
+  - name: "org.uberfire.nio.git.hooks"
+    value: "{{ rhdm_runtime_path_base + 'git-hooks/' }}"
+  - name: "org.uberfire.metadata.index.dir"
+    value: "{{ rhdm_runtime_path_base + 'index/' }}"
+  - name: "org.guvnor.m2repo.dir"
+    value: "{{ rhdm_runtime_path_base + 'm2rhdmrepo' }}"
+  - name: "org.guvnor.project.gav.check.disabled"
+    value: "false"
+  - name: "org.kie.build.disable-project-explorer"
+    value: "false"
+  - name: "org.kie.verification.disable-dtable-realtime-verification"
+    value: "false"
+  - name: "kie.maven.settings.custom"
+    value: "{{ rhdm_runtime_path_base + 'maven/custom-maven-settings.xml' }}"
+  - name: "org.kie.server.repo"
+    value: "{{ rhdm_runtime_path_base + 'repo/'}}"
+  - name: "org.kie.server.id"
+    value: "{{ 'kie-server-' + inventory_hostname.split('.')[0] + '_' + inventory_hostname.split('.')[1] }}"
+  - name: "org.kie.server.user"
+    value: "{{ sys_org_kie_server_user }}"
+  - name: "org.kie.server.pwd"
+    value: "{{ sys_org_kie_server_pwd }}"
+  - name: "org.kie.server.location"
+    value: "{{ sys_org_kie_server_location }}"
+  - name: "org.kie.server.controller.connect"
+    value: "{{ sys_org_kie_server_controller_connect }}"
+  - name: "org.kie.server.controller.user"
+    value: "{{ sys_org_kie_server_controller_user }}"
+  - name: "org.kie.server.controller.pwd"
+    value: "{{ sys_org_kie_server_controller_pwd }}"
+  - name: "org.kie.executor.interval"
+    value: "5"
+  - name: "org.kie.executor.timeunit"
+    value: "SECONDS"
+  - name: "org.kie.executor.pool.size"
+    value: "1"
+  - name: "org.kie.executor.retry.count"
+    value: "5"
+  - name: "jboss.node.name"
+    value: "{{'rhdm_'+ inventory_hostname}}"
+  - name: "org.kie.mail.debug"
+    value: "{{ env_mailsession_debug }}"
+
+#
+rhdmSystemPropertiesUpd:
+  - name:  "org.kie.example"
+    value: "false"
+
+# EOF

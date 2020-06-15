@@ -1,0 +1,159 @@
+---
+  # Check Satellite sees Capsule
+  - name: "Make sure Satellite can ping Capsule"
+    command:
+      ping -c 3 "{{ inventory_hostname }}"
+    delegate_to: "{{ groups['satellite']|first }}"
+  
+  - name: "Capsule repository enabled, rhel7 + rhscl + capsule"
+    command:
+      subscription-manager repos --disable '*' --enable 'rhel-{{ ansible_distribution_major_version }}-server-rpms' --enable 'rhel-server-rhscl-{{ ansible_distribution_major_version }}-rpms' --enable 'rhel-{{ ansible_distribution_major_version }}-server-satellite-capsule-{{ satellite_deployment_version }}-rpms'
+    register: enabling
+    until: "{{ enabling.rc }} == 0"
+    retries: 5
+    delay: 10
+
+  # Install packages required for capsule install
+  - name: "Install capsule package"
+    yum:
+      name: "{{ capsule_installer_pkg }}" 
+      state: present
+
+  # Prepare for capsule installation
+  - name: "Generate capsule puppet cert on Satellite"
+    shell:
+      "puppet cert generate {{ item }}"
+    delegate_to: "{{ groups['satellite']|first }}"
+    run_once: true
+    ignore_errors: yes
+    with_items: "{{ groups['capsules'] }}"
+    when: cap_puppetca_sat == true
+
+  - name: "Run capsule-certs-generate on Satellite"
+    shell:
+      "capsule-certs-generate --capsule-fqdn {{ item }} --certs-tar /var/www/html/pub/{{ item }}-certs.tar >/var/www/html/pub/{{ item }}-out.raw"
+    delegate_to: "{{ groups['satellite']|first }}"
+    run_once: true
+    with_items: "{{ groups['capsules'] }}"
+  
+  - name: "Download tarball created by capsule-certs-generate"
+    get_url:
+      url: "http://{{ groups['satellite']|first }}/pub/{{ inventory_hostname }}-certs.tar"
+      dest: "/root/{{ inventory_hostname }}-certs.tar"
+      force: yes
+  
+  - name: "Download output produced by capsule-certs-generate"
+    get_url:
+      url: "http://{{ groups['satellite']|first }}/pub/{{ inventory_hostname }}-out.raw"
+      dest: "/root/{{ inventory_hostname }}-out.raw"
+      force: yes
+  
+  - name: "Get only commands we need to run"
+    shell:
+      sed 's/\x1B\[[0-9;]*[JKmsu]//g' "/root/{{ inventory_hostname }}-out.raw" | grep -e '^\s\+satellite-installer ' -e '^\s\+foreman-installer ' -e '^\s\+capsule-installer ' -e '^\s\+--' | sed 's|\(^\s\+--certs-tar\s\+"\).*$|\1/root/{{ inventory_hostname }}-certs.tar"\\|' > "/root/{{ inventory_hostname }}-script.sh"
+  
+  - name: "Fix certificate tarball path"
+    shell:
+      sed -i 's|/var/www/html/pub/{{ inventory_hostname }}-certs.tar|/root/{{ inventory_hostname }}-certs.tar|' "/root/{{ inventory_hostname }}-script.sh"
+
+  # Add capsule installation options
+  - name: "Add capsule installation options"
+    lineinfile:
+      dest: "/root/{{ inventory_hostname }}-script.sh"
+      line: '                    {{ item }}\\'
+      insertafter: '.*-installer .*'
+    with_items: "{{ cap_install_options }}"  
+
+  # Copy puppetca certs from satellite to capsule, if cap_puppetca_sat == true
+  - name: "Copy puppetca certs from satellite, create dirs on capsule"
+    file:
+      path: '{{ item.dst_dir }}'
+      state: directory
+    with_items: '{{ cap_puppetca_dirs }}'
+    when: cap_puppetca_sat == true
+
+  - name: "Fetch puppetca certs from satellite on tmp playbook local dir"
+    fetch:
+      src: '{{ item.src_file }}'
+      dest: "tmp/"
+      fail_on_missing: yes
+    delegate_to: "{{ groups['satellite']|first }}"  
+    with_items: '{{ cap_puppetca_dirs }}'
+    when: cap_puppetca_sat == true
+
+  - name: "Copy puppetca certs from satellite, copy files on capsule"
+    copy:
+      src: "tmp/{{ inventory_hostname }}/{{ item.src_file }}"
+      dest: "{{ item.dst_file }}"
+      force: yes
+    with_items: '{{ cap_puppetca_dirs }}'  
+    when: cap_puppetca_sat == true  
+
+#TODO: clean tmp/ dir used to fetch files every playbook run ¿?
+
+  # Finally install capsule
+  - name: "Run Capsule configuration"
+    command:
+      bash "/root/{{ inventory_hostname }}-script.sh"
+    register: configuration
+    until: "{{ configuration.rc }} == 0"
+    retries: 3
+    delay: 30
+
+  # Configure puppetca on capsule puppet agent pointing to satellite, if cap_puppetca_sat
+  - name: "Configure ca_server pointing to satellite on capsule puppet agent"
+    lineinfile:
+      dest: "/etc/puppet/puppet.conf"
+      line: "    ca_server         = {{ groups['satellite']|first }}"
+      insertafter: '^\s*server\s*=\s*.*$'
+    notify: 
+    - restart_puppet
+    - puppet_noop
+    when: cap_puppetca_sat == true
+
+  # Configure puppetca on capsule puppet master pointing to satellite, if cap_puppetca_sat
+  - name: "Configure ca_server pointing to satellite on capsule puppet master"
+    replace:
+      dest: "/etc/puppet/puppet.conf"
+      regexp: '^(\s*ca\s*=\s*false.*)\n(\s*ssldir\s*=\s*/var/lib/puppet/ssl.*)$'
+      replace: '\1\n    ca_server       = {{ groups["satellite"]|first }}\n\2'
+    notify: 
+    - restart_puppet
+    - puppet_noop
+    when: cap_puppetca_sat == true
+
+  # Configure puppetca proxy on capsules to forward clients puppetca requests to satellite  
+  - name : "Check if puppetca proxy is configured"
+    shell: "grep -i 'Puppetca proxy' /etc/httpd/conf.d/25-puppet.conf | wc -l"
+    register: puppetca
+    when: cap_puppetca_sat == true
+
+  - name: "Configure puppetca proxy on capsules to forward clients puppetca requests to satellite"
+    lineinfile:
+      dest: "/etc/httpd/conf.d/25-puppet.conf"
+      line: "\n  ## Puppetca proxy  
+             \n  SSLProxyEngine On  
+             \n  ProxyPassMatch ^/([^/]+/certificate.*)$ https://{{ groups['satellite']|first }}:8140/$1\n\n"
+      insertbefore: "^</VirtualHost>$"
+    notify: 
+    - restart_katello  
+    when: cap_puppetca_sat == true and puppetca.stdout == "0"
+
+  # Fix puppet file permissions
+  - name: "Fix puppet file permissions"
+    shell:
+      "chown -R puppet:puppet /var/lib/puppet/ssl/ca"
+
+  # Install katello-agent package on capsule
+  - name: "Install katello-agent package on capsule"
+    yum:
+      name: "katello-agent" 
+      state: present
+    notify: 
+    - restart_goferd
+    - restart_katello
+
+  # Force handler actions to be executed here
+  - name: "Force handler actions to be executed here"
+    meta: flush_handlers
+...

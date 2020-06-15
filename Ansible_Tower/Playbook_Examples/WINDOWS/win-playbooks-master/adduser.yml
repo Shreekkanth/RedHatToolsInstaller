@@ -1,0 +1,10 @@
+---
+- hosts: all
+  tasks:
+    - name: Ensure user '{{ username }}' is present
+      win_user:
+        name: '{{ username }} '
+        password: '{{ password }}'
+        state: present
+        groups:
+          - Users

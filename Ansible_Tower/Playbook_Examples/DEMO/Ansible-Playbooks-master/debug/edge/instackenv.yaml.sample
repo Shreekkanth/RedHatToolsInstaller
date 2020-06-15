@@ -1,0 +1,100 @@
+---
+nodes:
+  - name: controller-0
+    arch: x86_64
+    pm_type: ipmi
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.59.50.8
+    pm_port: 6230
+    capabilities: profile:control,boot_option:local
+    mac: [dummy]
+
+  - name: compute-0
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.220
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-1
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.221
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-2
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.222
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-3
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.223
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-4
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.224
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-5
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.225
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-6
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.226
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-7
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.227
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-8
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.228
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-9
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.229
+    capabilities: profile:compute,boot_option:local
+
+  - name: compute-10
+    arch: x86_64
+    pm_type: pxe_ipmitool
+    pm_user: root
+    pm_password: root1234
+    pm_addr: 10.55.50.230
+    capabilities: profile:compute,boot_option:local
+

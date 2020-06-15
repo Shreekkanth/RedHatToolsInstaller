@@ -1,0 +1,363 @@
+- name: Play to configure firewall
+  hosts: satnodes
+  user: root
+  tasks:
+  - name: install packages
+    yum:
+          name: "{{item}}"
+          state: latest
+    with_items:
+         - fence-agents
+         - resource-agents
+         - pcs
+         - pacemaker
+         - fence-virt
+         - fence-virtd
+
+# For configuring fencing with libvirt I used something like => http://wiki.clusterlabs.org/wiki/Guest_Fencing
+# for the pcs stonith:
+#  pcs stonith create satnode1-fence fence_xvm pcmk_host_list="satnode1" pcmk_host_map="satnode1:ktordeur-satnode1"  action="reboot" key_file=/etc/cluster/fence_xvm.key
+#  pcs stonith create satnode2-fence fence_xvm pcmk_host_list="satnode2" pcmk_host_map="satnode2:ktordeur-satnode2"  action="reboot" key_file=/etc/cluster/fence_xvm.key
+#  pcs stonith create satnode3-fence fence_xvm pcmk_host_list="satnode3" pcmk_host_map="satnode3:ktordeur-satnode3"  action="reboot" key_file=/etc/cluster/fence_xvm.key
+
+  - name: Allow fence port in FW to libvirt hypervisor
+    shell: >
+          firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="172.31.1.1" port port="1229" protocol="tcp" accept'
+          && firewall-cmd --reload
+
+
+
+  - name: Create directory for xvm.key
+    file: path=/etc/cluster state=directory mode=0775
+
+  - name: copy fence_xvm.key to /etc/cluster
+    copy: src=fence_xvm.key dest=/etc/cluster/fence_xvm.key
+
+  - name: Set password for hacluster
+    shell: echo "redhat" | passwd hacluster --stdin
+
+  - name: start/enable pcs service
+    service: name=pcsd state=running enabled=true
+
+  - name: pcs cluster auth 
+    shell: pcs cluster auth -u hacluster -p redhat satnode1 satnode2 satnode3
+
+  - name: pcs cluster setup
+    shell: pcs cluster setup --start --name cluster satnode1 satnode2 satnode3
+
+  - name: pcs cluster enable
+    shell:  pcs cluster enable --all
+     
+  tags:
+    - cluster
+
+
+- name: Play to configure libvirt host
+  user: root
+  hosts: libvirt
+  tasks:
+  - name: Install pakages for fencing
+    yum:
+      name: "{{item}}"
+      state: latest
+    with_items:
+      - fence-virt
+      - fence-virtd
+      - fence-virtd-multicast
+      - fence-virtd-libvirtd
+
+
+
+  tags:
+   - libvirt
+
+
+
+- name: Play to configure firewall
+  hosts: satnodes
+  user: root
+  tasks:
+
+  - name: Make sure the firewall is running
+    service: 
+      name: firewalld
+      state: running
+
+  - name: install chrony
+    yum: name=chrony state=latest
+    tags:
+      - chrony
+
+  - name: chrony server
+    service: name=chronyd enabled=true state=running
+    tags:
+      - chronyd
+  
+      
+
+  - name: Firewall configuration
+    firewalld:
+        immediate: true
+        state: enabled
+        permanent: true
+        port: "{{item}}"
+    with_items: 
+          - 53/tcp
+          - 53/udp 
+          - 67/udp
+          - 68/udp
+          - 69/udp
+          - 80/tcp
+          - 443/tcp
+          - 5647/tcp
+          - 8140/tcp
+          - 2224/tcp
+          - 3121/tcp
+          - 5404/udp
+          - 5405/udp
+          - 21064/tcp
+    tags:
+      - fw 
+
+   
+  - name: Firewall ha service
+    firewalld:
+         immediate: true
+         state: enabled
+         permanent: true
+         service: high-availability
+    tags:
+      - fwha
+
+
+  - name: Install  iscsi-initiator-utils
+    yum:
+     name:  iscsi-initiator-utils
+     state: present
+
+
+  - name: Start/enable iscsi initiator
+    service:
+      name: iscsid
+      state: running
+      enabled: true
+
+  - name: create iscsi initiatorname ansible fact
+    shell: mkdir -p /etc/ansible/facts.d && cat /etc/iscsi/initiatorname.iscsi | cut -d = -f 2 &> /etc/ansible/facts.d/initiatorname.facts
+    tags:
+      - customfact
+
+     
+  #- name: Discover iscsi
+  #  shell: iscsiadm --mode discoverydb --type sendtargets --portal satstorage --discover
+
+  #- name: login iscsi
+  #  shell:  iscsiadm --mode node --targetname iqn.2003-01.org.linux-iscsi.vmware-141.x8664:sn.1951343d7904 --portal satstorage --login
+ 
+
+
+- name: Create FS
+  hosts: satnode1
+  user: root
+  tasks:
+  - name: HA FS
+    shell: >
+      pvcreate -f /dev/sda && vgcreate sat_vg /dev/sda && lvcreate -L 500G -n lv_pulp sat_vg && lvcreate -L 10G -n lv_foreman sat_vg && lvcreate -L 10G -n lv_puppet sat_vg && lvcreate -L 10G -n lv_wwwpulp sat_vg 
+      && lvcreate -L 10G -n lv_candlepin sat_vg && lvcreate -L 100G -n lv_mongodb sat_vg && lvcreate -L 10G -n lv_psqldata sat_vg && lvcreate -L 10G -n lv_puppetenv sat_vg && lvcreate -L 10G -n lv_tftpboot sat_vg 
+      && lvcreate -L 10G -n lv_dhcp sat_vg && lvcreate -L 10G -n lv_named sat_vg &&  for i in $(lvs | grep sat_vg | awk '{print $1}'); do mkfs.xfs /dev/sat_vg/$i; done
+  tags:
+     - ha_fs 
+   
+
+- name: play
+  hosts: satnodes
+  user: root
+  tasks:
+  - name: stop and disable named service on all nodes
+    shell: for HOST in satnode1 satnode2 satnode3; do systemctl stop named.service; sysmtemctl disable named.service; done  
+    tags:
+     - named
+
+  - name: Move named contents
+    shell:  for HOST in satnode1 satnode2 satnode3; do ssh $HOST mv /var/named /var/named.orig; done 
+    
+- name: play
+  hosts: satnode3
+  user: root
+  tasks:
+  - name: create mount points and mount fs
+    shell: >
+       mkdir -p /var/lib/pulp  &&  mkdir -p /var/lib/candlepin  &&  mkdir -p /var/lib/foreman  && mkdir -p /var/lib/puppet &&  mkdir -p /var/www/pulp  
+       && mkdir -p /var/lib/mongodb  && mkdir -p /var/lib/pgsql && mkdir -p /etc/puppet/environments  && mkdir -p /var/lib/tftpboot && mkdir -p /var/lib/dhcpd 
+       && mkdir -p /var/lib/named && mount /dev/mapper/sat_vg-lv_pulp /var/lib/pulp && mount /dev/mapper/sat_vg-lv_candlepin /var/lib/candlepin
+       && mount /dev/mapper/sat_vg-lv_foreman /var/lib/foreman && mount /dev/mapper/sat_vg-lv_puppet /var/lib/puppet
+       && mount /dev/mapper/sat_vg-lv_wwwpulp /var/www/pulp  && mount /dev/mapper/sat_vg-lv_mongodb /var/lib/mongodb 
+       && mount /dev/mapper/sat_vg-lv_psqldata /var/lib/pgsql &&  mount /dev/mapper/sat_vg-lv_puppetenv /etc/puppet/environments 
+       && mount /dev/mapper/sat_vg-lv_tftpboot /var/lib/tftpboot  && mount /dev/mapper/sat_vg-lv_dhcp /var/lib/dhcpd
+       && mount /dev/mapper/sat_vg-lv_named /var/lib/named
+    tags:
+      - mounts 
+  
+  - name: yum update
+    yum: name=* state=latest
+    tags:
+     - update
+
+  - name: Install Satellite
+    yum: name=satellite state=latest
+    tags:
+     - satellite
+
+  - name: satellite installer
+    shell: satellite-installer --scenario satellite
+    tags:
+     - satinstaller
+ 
+
+
+- name: capsule
+  hosts: satnode3
+  user: root
+  tasks:
+  - name: capsule install
+    shell: >
+     satellite-installer --scenario satellite  --foreman-proxy-dns-interface "ens4" --foreman-proxy-dns "true" --foreman-proxy-dns-zone "sysmgmt.lan" --foreman-proxy-dns-forwarders "172.31.2.10" 
+     --foreman-proxy-dns-reverse "2.31.172.in-addr.arpa" --foreman-proxy-dhcp "true" --foreman-proxy-dhcp-interface "ens4" --foreman-proxy-dhcp-range "172.31.2.50 172.31.2.100" 
+     --foreman-proxy-dhcp-gateway "172.31.2.1" 
+     --foreman-proxy-dhcp-nameservers "172.31.2.10" --foreman-proxy-tftp "true" --foreman-proxy-tftp-servername "172.31.2.10" 
+  tags:
+    - capsule
+
+
+- name: cleanup satellite
+  hosts: satnode3
+  user: root
+  tasks:
+  - name: stop satellite services
+    service:
+       name: "{{item}}" 
+       state: stopped
+    with_items:
+         - dhcpd
+         - puppet
+         - postgresql
+ 
+  - name: katello
+    shell: katello-service stop
+
+  - name: umount fs
+    shell: >
+      umount /var/lib/pulp 
+      && umount /var/lib/candlepin
+      && umount /var/lib/foreman
+      && umount /var/lib/puppet 
+      && umount /var/www/pulp
+      && umount /var/lib/mongodb 
+      && umount /var/lib/pgsql 
+      && umount /etc/puppet/environments 
+      && umount /var/lib/tftpboot 
+      && umount /var/lib/dhcpd 
+      && umount /var/lib/named
+      && vgchange -a n sat_vg
+
+  tags:
+    - cleanup
+
+
+- name: Play Exclusive Activation Of Shared Volumes
+  hosts: satnodes
+  user: root
+  tasks:
+  - name: Exclusive Activation Of Shared Volume Group
+    shell: vgchange -a n sat_vg && lvchange -aey sat_vg
+
+  - name: Ensure shared volume group does not get activated at boot
+    shell: echo "volume_list = [\"`vgs | grep -v sat_vg|head | tail -n +2 | awk '{print $1}'`\"]" >> /etc/lvm/lvm.conf
+
+  - name: Ensure the change is reflected in the kernel
+    shell: dracut -H -f /boot/initramfs-$(uname -r).img $(uname -r)
+
+  tags:
+    - exclusive
+
+
+- name: Play Creating Pacemaker Resources
+  hosts: satnode1
+  user: root
+  tasks:
+  - name: Creating Pacemaker Resources
+    shell: >
+            pcs cluster standby satnode2 
+            && pcs cluster standby satnode3 
+            && pcs resource create VirtualIP IPaddr2 ip=172.31.2.10 cidr_netmask=24 nic=ens4
+            && pcs resource create sat_vg LVM volgrpname=sat_vg exclusive=true
+            && pcs resource create fs_pulp Filesystem device="/dev/sat_vg/lv_pulp" directory="/var/lib/pulp" fstype="xfs"
+            && pcs resource create fs_candlepin Filesystem  device="/dev/sat_vg/lv_candlepin" directory="/var/lib/candlepin" fstype="xfs"
+            && pcs resource create fs_foreman Filesystem  device="/dev/sat_vg/lv_foreman" directory="/var/lib/foreman" fstype="xfs"
+            && pcs resource create fs_puppet Filesystem  device="/dev/sat_vg/lv_puppet" directory="/var/lib/puppet" fstype="xfs"
+            && pcs resource create fs_wwwpulp Filesystem  device="/dev/sat_vg/lv_wwwpulp" directory="/var/www/pulp" fstype="xfs"
+            && pcs resource create fs_mongodb Filesystem  device="/dev/sat_vg/lv_mongodb" directory="/var/lib/mongodb" fstype="xfs" --group sat-group
+            && pcs resource create fs_pgsql Filesystem  device="/dev/sat_vg/lv_psqldata" directory="/var/lib/pgsql" fstype="xfs"
+            && pcs resource create fs_puppetenv Filesystem   device="/dev/sat_vg/lv_puppetenv" directory="/etc/puppet/environments" fstype="xfs"
+            && pcs resource create fs_tftpboot Filesystem  device="/dev/sat_vg/lv_tftpboot" directory="/var/lib/tftpboot" fstype="xfs"
+            && pcs resource create fs_dhcp Filesystem  device="/dev/sat_vg/lv_dhcp" directory="/var/lib/dhcpd" fstype="xfs"
+            && pcs resource create fs_named Filesystem device="/dev/sat_vg/lv_named" directory="/var/lib/named" fstype="xfs"
+            && pcs resource create rs_dhcp systemd:dhcpd op monitor interval=10s op start interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_named systemd:named op monitor interval=10s op start interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_puppet systemd:puppet op monitor interval=10s op start interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_pgsql systemd:postgresql op monitor interval=10s op start interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_mongodb systemd:mongod op monitor interval=10s op start interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_qpidd systemd:qpidd op  monitor interval=10s op start interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_qdrouterd systemd:qdrouterd  op monitor interval=10s op start interval=0s timeout=100s op stop  interval=0s timeout=100s
+            && pcs resource create rs_tomcat systemd:tomcat op  monitor interval=10s op start interval=0s timeout=100s op stop  interval=0s timeout=100s
+            && pcs resource create rs_pulp_workers  systemd:pulp_workers op monitor interval=10s op start interval=0s  timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_foreman-proxy  systemd:foreman-proxy op monitor interval=10s
+            && pcs resource create rs_pulp_resource_manager  systemd:pulp_resource_manager op monitor interval=10s op start  interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_pulp_celerybeat  systemd:pulp_celerybeat op monitor interval=10s op start interval=0s  timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_pulp_streamer  systemd:pulp_streamer op monitor interval=10s op start interval=0s  timeout=100s op stop interval=0s timeout=100s
+            && pcs resource create rs_httpd systemd:httpd op  monitor interval=10s
+            && pcs resource create rs_foreman-tasks  systemd:foreman-tasks op monitor interval=10s timeout=30s op start  interval=0s timeout=100s op stop interval=0s timeout=100s
+            && pcs constraint colocation add sat_vg with VirtualIP
+            && pcs constraint colocation set fs_dhcp fs_named fs_puppet fs_puppetenv fs_pgsql fs_mongodb fs_pulp fs_wwwpulp fs_foreman fs_candlepin fs_tftpboot sequential=false set sat_vg
+            && pcs constraint colocation add rs_dhcp with  fs_dhcp
+            && pcs constraint colocation add rs_named with fs_named
+            && pcs constraint colocation add rs_pgsql with fs_pgsql
+            && pcs constraint colocation add rs_mongodb with fs_mongodb
+            && pcs constraint colocation add rs_foreman-proxy with fs_foreman
+            && pcs constraint colocation set fs_puppet fs_puppetenv rs_puppet
+            && pcs constraint colocation set fs_pulp fs_wwwpulp rs_pulp_workers
+            && pcs constraint colocation set VirtualIP rs_qpidd rs_qdrouterd
+            && pcs constraint colocation add rs_tomcat with VirtualIP
+            && pcs constraint colocation add rs_httpd with VirtualIP
+            && pcs constraint colocation set fs_pulp fs_wwwpulp rs_pulp_resource_manager
+            && pcs constraint colocation set fs_pulp fs_wwwpulp rs_pulp_celerybeat
+            && pcs constraint colocation set fs_pulp fs_wwwpulp rs_pulp_streamer
+            && pcs constraint colocation add rs_foreman-tasks with fs_foreman
+            && pcs constraint order set sat_vg set fs_dhcp  fs_named fs_puppet fs_puppetenv fs_pgsql fs_mongodb fs_pulp fs_wwwpulp fs_foreman fs_candlepin fs_tftpboot sequential=false
+            && pcs constraint order VirtualIP then sat_vg
+            && pcs constraint order set sat_vg fs_dhcp rs_dhcp
+            && pcs constraint order set sat_vg fs_puppet fs_puppetenv rs_puppet
+            && pcs constraint order set sat_vg fs_pgsql rs_pgsql
+            && pcs constraint order set sat_vg fs_named rs_named
+            && pcs constraint order set sat_vg fs_mongodb rs_mongodb
+            && pcs constraint order set sat_vg fs_pulp fs_wwwpulp rs_pulp_workers rs_pulp_celerybeat rs_pulp_streamer
+            && pcs constraint order set sat_vg fs_foreman  rs_foreman-proxy
+            && pcs constraint order start fs_wwwpulp then  rs_httpd
+            && pcs constraint order set VirtualIP rs_qpidd  rs_qdrouterd
+            && pcs constraint order VirtualIP then rs_dhcp
+            && pcs constraint order VirtualIP then rs_named
+            && pcs constraint order set rs_puppet rs_dhcp rs_named rs_pgsql sequential=false set rs_mongodb set rs_qpidd rs_qdrouterd sequential=false set rs_tomcat rs_pulp_workers \
+            rs_pulp_celerybeat rs_pulp_resource_manager rs_pulp_streamer rs_foreman-proxy sequential=false set rs_httpd rs_foreman-tasks  sequential=false
+    tags: 
+      - pacemaker
+
+
+# Modified pcs resource VirtualIP so it also contains nic=ens4
+# nic: The base network interface on which the IP address will be brought online. If left empty, the script will try and determine this from the routing table. Do NOT specify an alias interface in
+# the form eth0:1 or anything here; rather, specify the base interface only. If you want a label, see the iflabel parameter. Prerequisite: There must be at least one static IP address, which is
+# not managed by the cluster, assigned to the network interface. If you can not assign any static IP address on the interface, modify this kernel parameter: sysctl -w
+# net.ipv4.conf.all.promote_secondaries=1 # (or per device)
+#
+
+
+

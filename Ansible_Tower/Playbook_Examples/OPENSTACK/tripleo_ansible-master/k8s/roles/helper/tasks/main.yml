@@ -1,0 +1,7 @@
+---
+
+- name: git clone kubeadm-ha
+  git:
+    repo: git@github.com:orimanabu/kubeadm-ha.git
+    dest: kubeadm-ha
+    version: mine

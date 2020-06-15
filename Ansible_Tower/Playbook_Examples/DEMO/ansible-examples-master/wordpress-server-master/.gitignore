@@ -1,0 +1,4 @@
+hosts.target
+tasks/tmp.txt
+wordpress-install.retry
+wordpress-remove.retry

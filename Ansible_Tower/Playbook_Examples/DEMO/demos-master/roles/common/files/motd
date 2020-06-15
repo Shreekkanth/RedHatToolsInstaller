@@ -1,0 +1,2 @@
+{{ ansible_managed }}
+Greetings User, you are logged into {{ ansible_hostname }}!

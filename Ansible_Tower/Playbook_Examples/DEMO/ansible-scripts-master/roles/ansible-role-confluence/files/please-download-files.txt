@@ -1,0 +1,29 @@
+You will need to download the following RPMs and Tar balls for Confluence install to succeed:
+
+Oracle JRE Download Link
+https://java.com/en/download/linux_manual.jsp
+
+Oracle JDK Download Link
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+Atlassian Download
+wget https://www.atlassian.com/software/confluence/downloads/binary/atlassian-confluence-6.9.1.tar.gz
+
+Generate Checksum for download
+sha1sum /tmp/atlassian-confluence-6.9.1.tar.gz
+
+Change number in the defaults/main.yml file
+
+
+Confluence License:
+AAABMQ0ODAoPeNp9kG1LwzAQx9/nUxR8oy8yls5pNwiobZXN7kE7FcQ3Z7xpIEtHHsb27U1bh1NEy
+EG4u///fndHpdfROATrhjeM42GvF6XZIoq7LCEZWmHk2slK87TSS+VRC4yOSzQbNCcvwyjfgPJQN
+5DUYPPJwCGv5bR7RhkjQehAuCmskCu0Dk1HKPBvsroQ1UqAdR2Njojg3wl9coPcGY9tonRggoIvQ
+VncW+UTkOo/r2+qA6tCCtQWF7s1NizpbDLJ79PRZUFUW3pEY2tNTMIA7VBD2DbfrqXZHSx1Xi81M
+++gpW1nFA0Jaa8yyvjV/JbRp9PnMb0pBtc0zu/6pMynPAQtGEt6yaDfJ188ob8YZT9LDe/Ur17Rz
+JYPNmBxyvaCv4Hm3ogPsPj7+p+pMZ5bMCwCFCpDPpnZEf9WUFUmkiFPOotlYkC5AhQdO3rbMQZiA
+UaUgkN2cX/fTswmWg==X02fb
+
+Cut and paste the above onto a Confluence server.
+
+

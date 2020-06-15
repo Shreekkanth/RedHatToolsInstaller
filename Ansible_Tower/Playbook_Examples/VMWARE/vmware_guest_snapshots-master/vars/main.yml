@@ -1,0 +1,5 @@
+---
+# vars file for vmware_guest_snapshots
+tower_ansible_virtualenv: /var/lib/awx/venv/ansible/
+tower_ansible_py_modules:
+  - pyvmomi

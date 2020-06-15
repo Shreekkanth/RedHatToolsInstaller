@@ -1,0 +1,188 @@
+---
+- name: 'Alias proxy'
+  set_fact:
+    satellite_seeder_smart_proxy: '{{ foreman_provisioning_smart_proxy }}'
+
+- name: 'Update proxy location'
+  shell: >
+    {{ satellite_seeder_hammer }} proxy update
+    --id {{ satellite_seeder_smart_proxy.Id }}
+    --locations '{{ satellite_provisioning_location }}'
+
+# Copy manifest from files to remote system
+- copy:
+    src: "{{ role_path }}/files/manifest-{{ satellite_seeder_version }}.zip"
+    dest: "/"
+
+- name: 'Upload manifest'
+  shell: >
+    {{ satellite_seeder_hammer }} subscription upload
+    --organization '{{ satellite_seeder_organization }}'
+    --file "/manifest-{{ satellite_seeder_version }}.zip"
+  register: upload_manifest_result
+  failed_when: "{{ upload_manifest_result.stderr != '' and 'Error: Import is older than existing data' not in upload_manifest_result.stderr and
+    'Error: Import is the same as existing data' not in upload_manifest_result.stderr and 'running' not in upload_manifest_result.stderr }}"
+
+- name: 'Refresh manifest'
+  shell: >
+    {{ satellite_seeder_hammer }} subscription refresh-manifest --organization '{{ satellite_seeder_organization }}'
+
+# Create a content view
+- name: 'Find RHEL SOE content view'
+  shell: >
+    {{ satellite_seeder_hammer }} content-view info
+    --organization '{{ satellite_seeder_organization }}'
+    --name "RHEL 7 SOE"
+  register: satellite_provisioning_content_view
+  ignore_errors: True
+
+- name: 'Create RHEL SOE content view'
+  shell: >
+    {{ satellite_seeder_hammer }} content-view create
+    --organization '{{ satellite_seeder_organization }}'
+    --name "RHEL 7 SOE"
+    --description "Standard Operating Environment for RHEL7"
+  when: satellite_provisioning_content_view.stderr.find('not found') != -1
+
+# Add repos
+- name: 'Find kickstart repo'
+  shell: >
+    {{ satellite_seeder_hammer }} repository info
+    --organization '{{ satellite_seeder_organization }}'
+    --product 'Red Hat Enterprise Linux Server'
+    --name 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 {{ satellite_seeder_rhel_version }}'
+  register: satellite_provisioning_kickstart_repo
+  ignore_errors: True
+
+- name: 'Add kickstart repo'
+  shell: >
+    {{ satellite_seeder_hammer }} repository-set enable
+    --organization '{{ satellite_seeder_organization }}'
+    --product 'Red Hat Enterprise Linux Server'
+    --basearch 'x86_64'
+    --releasever '{{ satellite_seeder_rhel_version }}'
+    --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
+  when: satellite_provisioning_kickstart_repo.stderr.find('not found') != -1
+
+- name: 'Find RHEL repo'
+  shell: >
+    {{ satellite_seeder_hammer }} repository info
+    --organization '{{ satellite_seeder_organization }}'
+    --product 'Red Hat Enterprise Linux Server'
+    --name 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
+  register: satellite_provisioning_rhel_repo
+  ignore_errors: True
+
+- name: 'Add RHEL repo'
+  shell: >
+    {{ satellite_seeder_hammer }} repository-set enable
+    --organization '{{ satellite_seeder_organization }}'
+    --product 'Red Hat Enterprise Linux Server'
+    --basearch 'x86_64'
+    --releasever '7Server'
+    --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
+  when: satellite_provisioning_rhel_repo.stderr.find('not found') != -1
+
+# Sync repos
+- name: 'Sync kickstart repo'
+  shell: >
+    {{ satellite_seeder_hammer }} repository synchronize
+    --organization '{{ satellite_seeder_organization }}'
+    --name 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 {{ satellite_seeder_rhel_version }}'
+    --product 'Red Hat Enterprise Linux Server'
+
+- name: 'Sync RHEL repo'
+  shell: >
+    {{ satellite_seeder_hammer }} repository synchronize
+    --organization '{{ satellite_seeder_organization }}'
+    --name 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
+    --product 'Red Hat Enterprise Linux Server'
+
+- name: 'Add kickstart repo to RHEL SOE content view'
+  shell: >
+    {{ satellite_seeder_hammer }} content-view add-repository
+    --organization '{{ satellite_seeder_organization }}'
+    --repository 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 {{ satellite_seeder_rhel_version }}'
+    --name "RHEL 7 SOE"
+    --product "Red Hat Enterprise Linux Server"
+
+- name: 'Add RHEL repo to RHEL SOE content view'
+  shell: >
+    {{ satellite_seeder_hammer }} content-view add-repository
+    --organization '{{ satellite_seeder_organization }}'
+    --repository 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
+    --name "RHEL 7 SOE"
+    --product "Red Hat Enterprise Linux Server"
+
+# Tools repository
+- include: tools_latest.yml
+  when: 6.7 == {{ satellite_seeder_version }}
+
+- include: tools.yml
+  when: 6.7 != {{ satellite_seeder_version }}
+
+- name: 'Publish content view'
+  shell: >
+    {{ satellite_seeder_hammer }} content-view publish
+    --organization '{{ satellite_seeder_organization }}'
+    --name "RHEL 7 SOE"
+
+- name: 'Find an activation key'
+  shell: >
+    {{ satellite_seeder_hammer }} activation-key info
+    --organization '{{ satellite_seeder_organization }}'
+    --name 'ak-rhel-7'
+  register: satellite_provisioning_activation_key
+  ignore_errors: True
+
+- name: 'Create an activation key'
+  shell: >
+    {{ satellite_seeder_hammer }} activation-key create
+    --organization '{{ satellite_seeder_organization }}'
+    --name 'ak-rhel-7'
+    --content-view 'RHEL 7 SOE'
+    --lifecycle-environment 'Library'
+  when: '"activation_key not found" in satellite_provisioning_activation_key.stderr'
+
+- name: 'Get all the subscriptions'
+  shell: >
+    {{ satellite_seeder_hammer }} --output json subscription list
+    --organization '{{ satellite_seeder_organization }}'
+  register: subscriptions_json
+
+- name: 'Add subscriptions to activation key'
+  shell: >
+    {{ satellite_seeder_hammer }} activation-key add-subscription
+    --organization '{{ satellite_seeder_organization }}'
+    --name 'ak-rhel-7'
+    --subscription-id {{ item.ID }}
+  with_items: "{{ subscriptions_json.stdout | from_json }}"
+
+# on 6.4, it is 'RedHat 7.6', on 6.5 it is 'RHEL Server 7.6', so just search for the version
+- name: 'Find RHEL OS'
+  shell: >
+    {{ satellite_seeder_hammer }} --output json os list --search '{{ satellite_seeder_rhel_version }}'
+  register: satellite_seeder_os_json
+
+- name: 'Set RHEL OS fact'
+  set_fact:
+    satellite_provisioning_os: "{{ satellite_seeder_os_json.stdout | from_json | first }}"
+
+- name: 'Find RHEL hostgroup'
+  shell: >
+    {{ satellite_seeder_hammer }} hostgroup info --name 'RHEL 7 SOE'
+  register: satellite_seeder_hostgroup
+  ignore_errors: True
+
+- include: create_hostgroup_latest.yml
+  when: "{{ satellite_seeder_version is version('6.5', '>=') }}"
+
+- include: create_hostgroup.yml
+  when: "{{ satellite_seeder_version is version('6.5', '<') }}"
+
+- name: 'Add activation key to hostgroup'
+  shell: >
+    {{ satellite_seeder_hammer }} hostgroup set-parameter
+    --hostgroup 'RHEL 7 SOE'
+    --name kt_activation_keys
+    --value ak-rhel-7

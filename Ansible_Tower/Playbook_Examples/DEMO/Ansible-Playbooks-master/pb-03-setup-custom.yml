@@ -1,0 +1,67 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: prompt_env
+      prompt: Confirm the environment to target
+      private: no
+  tasks:
+    - assert:
+        that:
+          - prompt_env == named_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not {{ named_env }}"
+        success_msg: "Targeting {{ prompt_env }} environment"
+
+  tags:
+    - always
+
+
+
+- hosts: director
+  name: Setup custom openstack-volume container for Dell Unity
+  become: yes
+  become_user: stack
+  vars:
+    stack_name: overcloud-node-flavors
+  tasks:
+    - name: Ensure directory for heat templates exists
+      file:
+        path: ~/cinder-unity-container
+        state: directory
+        mode: 0755
+
+    - name: Copy drivers tarball to directory
+      copy:
+        src: files/storops_rpms.tar.gz
+        dest: ~/cinder-unity-container/storops_rpms.tar.gz
+
+    - name: Template out Dockerfile
+      template:
+        src: templates/Dockerfile.j2
+        dest: ~/cinder-unity-container/Dockerfile
+
+    - name: Build Dell Unity docker image
+      docker_image:
+        build:
+          path: /home/stack/cinder-unity-container
+          rm: yes
+          pull: yes
+        name: "{{ undercloud.gateway }}:8787/sea-osp13_containers-cinder-volume"
+        tag: dellunity
+        push: yes
+        source: build
+  tags:
+    - docker
+
+
+- hosts: director
+  name: Copy images
+  become: yes
+  become_user: stack
+  tasks:
+    - name: Place cirros image into ~/images
+      copy:
+        src: files/cirros-0.4.0-x86_64-disk.img
+        dest: ~/images/cirros-0.4.0-x86_64-disk.img
+  tags:
+    - images

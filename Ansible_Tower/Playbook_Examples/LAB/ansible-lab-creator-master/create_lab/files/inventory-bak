@@ -1,0 +1,28 @@
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+etcd
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+ansible_ssh_user=root
+#ansible_sudo=true
+deployment_type=openshift-enterprise
+
+# uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+[masters]
+
+[etcd]
+
+[nodes]
+
+
+#eof
+#master.example.com openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+#node1.example.com openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
+#node2.example.com openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
+
+

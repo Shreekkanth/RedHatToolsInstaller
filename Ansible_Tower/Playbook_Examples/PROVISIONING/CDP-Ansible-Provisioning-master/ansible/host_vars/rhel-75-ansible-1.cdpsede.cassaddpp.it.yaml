@@ -1,0 +1,25 @@
+
+# machine_name: "rhel-75-ansible-1"
+# machine_memory_mb: "3072"
+# machine_num_cpus: "2"
+# machine_hardware:
+#   memory_mb: "2048"
+#   num_cpus: "1"
+#   scsi: "paravirtual"
+# machine_disk:
+# - size_gb: 40
+#   type: thick
+#   autoselect_datastore: true
+# machine_networks:
+# - name: "PG_10"
+#   ip: "192.168.18.24"
+#   netmask: "255.255.252.0"
+#   gateway: "192.168.16.1"
+#   device_type: vmxnet3
+#   start_connected: true
+# machine_register_to_satellite: true
+# machine_activation_keys:
+# - "TALEND_TEST"
+# machine_skip_update: false
+# machine_register_to_puppet: false
+

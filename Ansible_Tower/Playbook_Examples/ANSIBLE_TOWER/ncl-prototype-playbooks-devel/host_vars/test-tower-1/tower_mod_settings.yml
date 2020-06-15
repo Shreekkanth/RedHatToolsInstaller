@@ -1,0 +1,4 @@
+---
+tower_mod_settings:
+  - name: SESSION_COOKIE_AGE
+    value: 3601

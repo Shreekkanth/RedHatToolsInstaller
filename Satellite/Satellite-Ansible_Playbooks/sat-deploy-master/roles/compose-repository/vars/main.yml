@@ -1,0 +1,2 @@
+---
+compose_repository_tools_path: "composes/latest-SatTools-{{ compose_repository_version }}-RHEL-{{ ansible_distribution_major_version }}/compose/{{ 'Base' if ansible_distribution_major_version|int > 7 else 'Server' }}/x86_64/os/"

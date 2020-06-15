@@ -1,0 +1,8 @@
+---
+# - install packages for other functionality not in base Fedora Workstation
+- name: Package install - RPMFusion
+  become: yes
+  dnf:
+    state: present
+    name:
+      - vlc

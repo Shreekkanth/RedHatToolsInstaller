@@ -1,0 +1,53 @@
+version: 1
+
+# Groups
+dn: ou=Groups,dc={{ domain.split('.')[-3] }},dc={{ domain.split('.')[-2] }},dc={{ domain.split('.')[-1] }}
+objectclass: organizationalUnit
+objectclass: top
+ou: Groups
+
+# Users
+dn: ou=Users,dc={{ domain.split('.')[-3] }},dc={{ domain.split('.')[-2] }},dc={{ domain.split('.')[-1] }}
+objectclass: organizationalUnit
+objectclass: top
+ou: Users
+
+{% for group in ldap_groups %}
+dn: cn={{ group }},ou=Groups,dc={{ domain.split('.')[-3] }},dc={{ domain.split('.')[-2] }},dc={{ domain.split('.')[-1] }}
+cn: {{ group }}
+gidnumber: {{ 500 + loop.index }}
+objectclass: posixGroup
+objectclass: top
+
+{% endfor %}
+
+{% for user in ldap_users %}
+dn: cn={{ user }},ou=Users,dc={{ domain.split('.')[-3] }},dc={{ domain.split('.')[-2] }},dc={{ domain.split('.')[-1] }}
+cn: {{ ldap_users[user].firstname }} {{ ldap_users[user].lastname }}
+gidnumber: {{ ldap_users[user].gidnumber }}
+givenname: {{ ldap_users[user].firstname }}
+homedirectory: /home/{{ user }}
+loginshell: /bin/bash
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: {{ ldap_users[user].lastname }}
+uid: {{ user }}
+uidnumber: {{ ldap_users[user].uidnumber }}
+userpassword: {SSHA}iYLKH3DeRu83s1ABFYSD8Hq1CgH/ZgBD
+
+{% endfor %}
+
+dn: cn=aloukinas,ou=Users,dc={{ domain.split('.')[-3] }},dc={{ domain.split('.')[-2] }},dc={{ domain.split('.')[-1] }}
+cn: aloukinas
+gidnumber: 500
+givenname: Anthony
+homedirectory: /home/aloukinas
+loginshell: /bin/bash
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: Loukinas
+uid: aloukinas
+uidnumber: 1000
+userpassword: {SSHA}cfg70H3WQMuufo3PyLpDG1nTAye3fX4I

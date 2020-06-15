@@ -1,0 +1,8 @@
+---
+# defaults file for ovirt-vm-disk
+ovirt_vm_disk_name: "etcd-example"
+ovirt_vm_disk_vm_name: "server.example.come"
+ovirt_vm_disk_storage_domain: "fast-store"
+ovirt_vm_disk_size: "50g"
+ovirt_vm_disk_format: "cow"
+ovirt_vm_disk_interface: "virtio"

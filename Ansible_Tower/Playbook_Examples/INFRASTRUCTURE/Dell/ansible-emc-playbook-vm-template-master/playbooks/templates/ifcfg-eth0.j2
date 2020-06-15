@@ -1,0 +1,10 @@
+DNS2={{ ansible_dns.nameservers[0] }}
+DNS1={{ ansible_dns.nameservers[1] }}
+IPADDR={{ ansible_default_ipv4.address }}
+GATEWAY={{ ansible_default_ipv4.gateway }}
+IPV6_AUTOCONF=no
+NETMASK={{ ansible_default_ipv4.netmask }}
+BOOTPROTO=static
+DEVICE=eth0
+ONBOOT=yes
+IPV6INIT=no

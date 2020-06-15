@@ -1,0 +1,11 @@
+---
+- hosts: webdrupal-app
+
+  gather_facts: true
+
+  tasks:
+    - name: Flush memcache
+      shell: webdrupal flush_memcache
+      ignore_errors: yes
+      tags:
+        - memcache

@@ -1,0 +1,52 @@
+---
+- copy:
+    dest: /etc/yum.repos.d/capsule.repo
+    content: |
+      [sat-capsule]
+      name=Satellite Capsule Download Devel - $basearch
+      baseurl=http://pulp-read.dist.prod.ext.phx2.redhat.com/content/dist/rhel/server/{{ ansible_distribution_major_version }}/$releasever/x86_64/sat-capsule/6.1/os/
+      enabled=1
+      gpgcheck=0
+
+      [rhel-download-devel]
+      name=RHEL Download Devel - $basearch
+      baseurl=http://pulp-read.dist.prod.ext.phx2.redhat.com/content/dist/rhel/server/{{ ansible_distribution_major_version }}/$releasever/x86_64/os/
+      enabled=1
+      gpgcheck=0
+
+- name: 'Update All Packages'
+  yum: name=* state=latest
+
+- name: 'Install Capsule Installer RPM'
+  yum: name=capsule-installer state=latest
+
+- name: 'Install boostrap RPM'
+  shell: yum -y localinstall "http://{{ server_fqdn.stdout }}/pub/katello-ca-consumer-latest.noarch.rpm"
+
+- name: 'Register to Server'
+  shell: subscription-manager register --org Default_Organization --username admin --password changeme
+
+- name: 'Run Install'
+  shell: >
+    capsule-installer
+    --parent-fqdn "{{ server_fqdn.stdout }}"
+    --register-in-foreman "true"
+    --foreman-oauth-key "{{ oauth_consumer_key.stdout }}"
+    --foreman-oauth-secret "{{ oauth_consumer_secret.stdout }}"
+    --pulp-oauth-secret "{{ pulp_oauth_secret.stdout }}"
+    --certs-tar "{{ capsule_certs_tar }}"
+    --puppet "true"
+    --puppetca "true"
+    --pulp "true"
+  ignore_errors: true
+
+# There is often a race condition not handled properly by the installer
+# where the nssdb is created prior to the CA cert being layed down
+- name: 'Remove nssdb'
+  shell: 'rm -rf /etc/pki/katello/nssdb'
+
+- name: 'Re-run installer'
+  shell: capsule-installer
+
+- name: 'Unregister'
+  shell: subscription-manager unregister

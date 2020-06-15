@@ -1,0 +1,20 @@
+---
+- name: clean a do environment
+  hosts: local
+  vars_files:
+  - group_vars/vaultfile.yml
+  - group_vars/hostnames.yml
+  vars:
+    http_port: 80
+
+  tasks:
+  - name: Delete instance
+    digital_ocean:
+      state: deleted
+      command: droplet
+      name: "{{ item }}"
+      unique_name: yes
+      api_token: "{{ vault_api_token }}" 
+      wait_timeout: 600
+    with_items: 
+      - "{{ hostnames }}"

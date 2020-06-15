@@ -1,0 +1,6 @@
+ext_domain: example.com
+app_domain: apps.example.com
+ext_infra_1_ip: 10.3.11.67
+ext_infra_2_ip: 10.3.11.194
+ext_lb_ip: 10.3.10.229
+ext_dns_ip: 10.3.10.222

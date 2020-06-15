@@ -1,0 +1,167 @@
+---
+# defaults file for rhdm-download
+#
+rhdm_user_os:   quicklab
+rhdm_group_os:  quicklab
+rhdm_user_home: "/home/{{rhdm_user_os}}"
+
+base_dir_download: "{{rhdm_user_home}}/Downloads/software/"
+
+
+# Red Hat JBoss Enterprise Application Platform 7.1.0
+rh_jboss_eap_7_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=55301
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 01
+rh_jboss_eap_patch_7_1_01: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56861
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 02
+rh_jboss_eap_patch_7_1_02: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=57891
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 03
+rh_jboss_eap_patch_7_1_03: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=59221
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 04
+rh_jboss_eap_patch_7_1_04: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=60841
+
+# Red Hat JBoss Enterprise Application Platform 7.1 Update 05
+rh_jboss_eap_patch_7_1_05: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62781
+
+# Red Hat Decision Manager 7.0.0 Decision Server for All Supported EE7 Containers
+rhdm_decision_server_ee7_7_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56511
+
+# Red Hat Decision Manager 7.0.0 Decision Central Deployable for EAP 7
+rhdm_decision_central_eap_7_7_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56501
+
+# Red Hat Decision Manager 7.0.0 Decision Central Standalone
+rhdm_decision_central_standalone_7_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56491
+
+# Red Hat Decision Manager 7.0.0 Add-On's
+rhdm_add_ons_7_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56481
+
+# Red Hat Decision Manager 7.0.0 Source Distribution
+rhdm_sources_7_0: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=56461
+
+
+# Red Hat Decision Manager 7.1.1 Decision Server for All Supported EE7 Containers
+rhdm_decision_server_ee7_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62521
+
+# Red Hat Decision Manager 7.1.1 Decision Server Deployable for EAP 7
+rhdm_decision_central_eap_7_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62511
+
+# Red Hat Decision Manager 7.1.1 Decision Central Standalone
+rhdm_decision_central_standalone_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62501
+
+# Red Hat Decision Manager 7.1.1 Add-Ons
+rhdm_add_ons_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62491
+
+# Red Hat Decision Manager 7.1.1 Source Distribution
+rhdm_sources_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62471
+
+# Red Hat Decision Manager 7.1.1 OpenShift Templates
+rhdm_openshift_templates_7_1_1: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=62461
+
+#
+#
+rhdm_soft_7_0_0:
+  decision_server_ee7_7_0:
+    url:  "{{rhdm_decision_server_ee7_7_0}}"
+    name: rhdm-7.0.0.GA-kie-server-ee7.zip
+  decision_central_eap_7_7_0:
+    url:  "{{rhdm_decision_central_eap_7_7_0}}"
+    name: rhdm-7.0.0.GA-decision-central-eap7-deployable.zip
+  decision_central_standalone_7_0:
+    url:  "{{ rhdm_decision_central_standalone_7_0 }}"
+    name: rhdm-7.0.0.GA-decision-central-standalone.jar
+  add_ons_7_0:
+    url:  "{{rhdm_add_ons_7_0}}"
+    name: rhdm-7.0.0.GA-add-ons.zip
+  sources_7_0:
+    url:  "{{rhdm_sources_7_0}}"
+    name: rhdm-7.0.0.GA-sources.zip
+
+rhdm_soft_7_1_1:
+  decision_server_ee7_7_1.1:
+    url:  "{{rhdm_decision_server_ee7_7_1_1}}"
+    name: rhdm-7.1.1-kie-server-ee7.zip
+  decision_central_eap_7_7_1_1:
+    url:  "{{rhdm_decision_central_eap_7_7_1_1}}"
+    name: rhdm-7.1.1-decision-central-eap7-deployable.zip
+  decision_central_standalone_7_1_1:
+    url:  "{{ rhdm_decision_central_standalone_7_1_1 }}"
+    name: rhdm-7.1.1-decision-central-standalone.jar
+  add_ons_7_1_1:
+    url:  "{{rhdm_add_ons_7_1_1}}"
+    name: rhdm-7.1.1-add-ons.zip
+  sources_7_1_1:
+    url:  "{{rhdm_sources_7_1_1}}"
+    name: rhdm-7.1.1-sources.zip
+  openshift_templates_7_1_1:
+    url:  "{{rhdm_openshift_templates_7_1_1}}"
+    name: rhdm-7.1.1-openshift-templates.zip
+
+
+rhdm_soft:  "{{ rhdm_soft_7_1_1 }}"
+
+rh_jboss_soft:
+  eap_7_1:
+    url: "{{rh_jboss_eap_7_1}}"
+    name: jboss-eap-7.1.0.zip
+  eap_patch_7_1_01:
+    url: "{{rh_jboss_eap_patch_7_1_01}}"
+    name: jboss-eap-7.1.1-patch.zip
+  eap_patch_7_1_02:
+    url: "{{rh_jboss_eap_patch_7_1_02}}"
+    name: jboss-eap-7.1.2-patch.zip
+  eap_patch_7_1_03:
+    url: "{{rh_jboss_eap_patch_7_1_03}}"
+    name: jboss-eap-7.1.3-patch.zip
+  eap_patch_7_1_04:
+    url: "{{rh_jboss_eap_patch_7_1_04}}"
+    name: jboss-eap-7.1.4-patch.zip
+  eap_patch_7_1_05:
+    url: "{{rh_jboss_eap_patch_7_1_05}}"
+    name: jboss-eap-7.1.5-patch.zip
+
+#
+#
+# MySQL:
+mysql_server_url:    https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+mysql_connector_url: https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.45.zip
+mysql_connector_java_version: 5.1.45
+
+mysql_soft:
+  mysql_server:
+    url: "{{ mysql_server_url }}"
+    name: mysql-5.7.20-linux-glibc2.12-x86_64.tar.gz
+  mysql_jdbc_driver:
+    url: "{{ mysql_connector_url }}"
+    name: mysql-connector-java-5.1.45.zip
+
+# Oracle:
+# https://blogs.oracle.com/dev2dev/get-oracle-jdbc-drivers-and-ucp-from-oracle-maven-repository-without-ides
+oracle_jdbc_java_version: 12.2.0.1
+oracle_maven_repo_url:    https://maven.oracle.com/
+curl_proxy: "-x http://proxy2.intranet.xxxxxxx.es:8080"
+#
+#
+jmeter_bip_zip_url:     http://apache.uvigo.es//jmeter/binaries/apache-jmeter-4.0.zip
+jmeter_plugins_manager: https://jmeter-plugins.org/get/
+jmeter_soft:
+  jmeter_zip:
+    url: "{{jmeter_bip_zip_url}}"
+    name: apache-jmeter-4.0.zip
+  jmeter_plugin:
+    url: "{{jmeter_plugins_manager}}"
+    name: jmeter-plugins-manager-0.20.jar
+
+#
+# Messages
+MSG_001_TRANSFER_METHOD:  "ANSRHDOW-001: This role requires 'transfer_method' to be set and non empty. See the README"
+MSG_002_USERNAME_MISSING: "ANSRHDOW-002: This role requires 'rhn_username' to be set and non empty."
+MSG_003_PASSWORD_MISSING: "ANSRHDOW-003: This role requires 'rhn_password' to be set and non empty."
+
+# Constants
+TRANSFER_METHOD_CSP_TO_HOST: csp-to-host
+
+#
+# EOF

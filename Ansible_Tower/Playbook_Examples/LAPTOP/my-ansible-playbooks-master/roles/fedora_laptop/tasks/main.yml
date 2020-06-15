@@ -1,0 +1,15 @@
+---
+# tasks file for fedora_laptop
+- include: fedora.yml
+- include: third_party_packages.yml
+- include: atom.yml
+- include: docker.yml
+- include: wireshark.yml
+- include: golang.yml
+- include: libvirt.yml
+- include: vagrant.yml
+- include: tilix.yml
+- include: openshift_origin.yml
+- include: openstack.yml
+- include: redhat.yml
+  when: configure_red_hat_internal

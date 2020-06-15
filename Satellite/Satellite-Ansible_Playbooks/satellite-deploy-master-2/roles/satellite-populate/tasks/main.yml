@@ -1,0 +1,148 @@
+---
+
+#Verify that satellite services are running as expexcted
+- name: "Verify that satellite services are running as expexcted"
+  command: 
+    "/usr/bin/katello-service status"
+
+#Create Hammer directory on /root
+- name: "Configure | create .hammer directory on user"
+  file:
+    path: "~/.hammer"
+    state: "directory"
+    mode: "0755"
+
+#Copy the hammer configuration from template to the .hammer directory
+- name: "Configure | set configuration for hammer from template"
+  template:
+    src: "hammer_config.yml.j2"
+    dest: "~/.hammer/cli_config.yml"
+
+#Copy the manifest
+- name: "Configure | copy manifest"
+  copy:
+    src: "{{ sat_manifest }}"
+    dest: "{{ sat_remote_manifest }}"
+
+#Upload the manifest to the satellite
+- name: "Configure | upload the manifest"
+  shell: "hammer subscription upload --file '{{ sat_remote_manifest }}' --organization '{{ sat_org }}'"
+
+#Change sync policy to on_demand (lazy sync) if required
+- name: "Configure | set on_demand lazy sync method as default"
+  shell: "hammer settings set --name default_download_policy --value '{{ sat_sync_method }}'"
+  when: "sat_sync_method == 'on_demand'"
+
+#Enabling repos on satellite
+- name: "Configure | enable repos"
+  shell: "hammer repository-set '{{ item.state }}' --organization '{{ sat_org }}'
+    --product '{{ item.product_name }}' --name '{{ item.name_repo }}'
+    {% if item.rel is defined %} --releasever '{{ item.rel }}' {% endif %}
+    --basearch '{{ item.architecture}}'"
+  with_items: "{{ sat_repos_sync }}"
+  ignore_errors: yes
+
+#Get the repos ids and sync the repos
+- name: "Configure | grab repositories uuid"
+  shell: "hammer repository list --organization '{{ sat_org }}' | grep yum | awk '{print $1}'"
+  register: "repos"
+
+- name: "Configure | sync repos on satellite"
+  shell: "hammer repository synchronize --id '{{ item }}' --organization '{{ sat_org }}'"
+  with_items: "{{ repos.stdout_lines }}"
+  register: "sync_repos_result"
+  retries: 3
+  ###until: "{{ sync_repos_result | success }}"
+
+#Create capsule CV to install capsules
+- name: "Configure | Create capsule CV on Library"
+  shell: "hammer content-view create --organization '{{ sat_org }}' --name '{{ capsule_cv_name }}'"
+
+#Add repos to  capsule CV to install capsules
+- name: "Configure | Add repos to capsule CV"
+  shell: "hammer content-view add-repository --organization '{{ sat_org }}'  --product '{{ item.product_name }}'  --repository '{{ item.name_repo }}' --name '{{ capsule_cv_name }}'"
+  with_items: "{{ capsule_repos }}"
+
+#Publish capsule CV
+- name: "Configure | Publish capsule CV"
+  shell: "hammer content-view publish --organization '{{ sat_org }}' --name '{{ capsule_cv_name }}'"
+
+#Create AK for capsule CV
+- name: "Configure | Create AK for capsule CV"
+  shell: "hammer activation-key create --name '{{ capsule_ak_name }}' --organization '{{ sat_org }}' --content-view '{{ capsule_cv_name }}'  --lifecycle-environment Library"
+
+#Get capsule susbcription id
+- name: "Configure | Get capsule subscription id"
+  shell: "hammer subscription list --organization '{{ sat_org }}' --search 'name=\"Red Hat Satellite Capsule Server\"' | grep Capsule |  cut -d\"|\" -f1"
+  register: "capsule_subs_id"
+
+#Attach subscription to capsule AK
+- name: "Configure | Attach subscription to capsule AK"
+  shell: "hammer activation-key add-subscription --organization '{{ sat_org }}' --name '{{ capsule_ak_name }}' --subscription-id '{{ capsule_subs_id.stdout }}' "
+
+#Create Custom Puppet product needed for register clients via bootstrap.py
+- name: "Configure | Create Custom Puppet product"
+  shell: "hammer product create --name '{{ sat_puppet_product }}' --organization '{{ sat_org }}'"
+
+#Create dummy puppet repo on Custom Product product
+- name: "Configure | Create dummy puppet repo on Custom Product product "
+  shell: "hammer repository create --organization '{{ sat_org }}' --product '{{ sat_puppet_product }}' --name '{{ sat_puppet_repo }}' --content-type=puppet"
+
+#Copy dummy puppet module to satellite
+- name: "Configure | copy dummy puppet module to satellite"
+  copy:
+    src: "{{ sat_pdummy_file }}"
+    dest: "{{ sat_remote_pdummy }}"
+
+#Add custom-dummy puppet module on dummy puppet repo
+- name: "Configure | Add custom-dummy puppet module ion dummy puppet repo"
+  shell: "hammer repository upload-content --name  '{{ sat_puppet_repo }}' --path '{{ sat_remote_pdummy }}' --organization '{{ sat_org }}' --product '{{ sat_puppet_product }}'"
+
+#Create rhel7 CV 
+- name: "Configure | Create rhel7 CV on Library"
+  shell: "hammer content-view create --organization '{{ sat_org }}' --name '{{ rhel7_cv_name }}'"
+
+#Add repos to rhel7 CV
+- name: "Configure | Add repos to rhel7 CV"
+  shell: "hammer content-view add-repository --organization '{{ sat_org }}'  --product '{{ item.product_name }}'  --repository '{{ item.name_repo }}' --name '{{ rhel7_cv_name }}'"
+  with_items: "{{ rhel7_repos }}"
+
+#Add dummy puppet module to rhel7 CV
+- name: "Configure | Add dummy puppet module to rhel7 CV"
+  shell: "hammer content-view puppet-module add --author '{{ sat_pdummy_author }}' --name '{{ sat_pdummy_name }}' --content-view '{{ rhel7_cv_name }}' --organization  '{{ sat_org }}'"
+
+#Publish rhel7 CV
+- name: "Configure | Publish rhel7 CV"
+  shell: "hammer content-view publish --organization '{{ sat_org }}' --name '{{ rhel7_cv_name }}'"
+
+#Create AK for rhel7 CV
+- name: "Configure | Create AK for rhel7 CV"
+  shell: "hammer activation-key create --name '{{ rhel7_ak_name }}' --organization '{{ sat_org }}' --content-view '{{ rhel7_cv_name }}'  --lifecycle-environment Library"
+
+#Get rhel7 susbcription id
+- name: "Configure | Get rhel7 subscription id"
+  shell: "hammer subscription list --organization '{{ sat_org }}' --search 'name=\"Red Hat Enterprise Linux Server, Standard (Physical or Virtual Nodes)\"' | grep Server |  cut -d\"|\" -f1"
+  register: "rhel7_subs_id"
+
+#Attach subscription to capsule AK
+- name: "Configure | Attach subscription to rhel7 AK"
+  shell: "hammer activation-key add-subscription --organization '{{ sat_org }}' --name '{{ rhel7_ak_name }}' --subscription-id '{{ rhel7_subs_id.stdout }}'"
+
+#Create base hostgroup needed by bootstrap.py script to register clients, get cv puppet env 
+- name: "Configure | Create base hostgroup, get rhel7_cv_name puppetenv id"
+  shell: "hammer environment list --organization '{{ sat_org }}' --location  '{{ sat_location }}'  | grep KT_{{ sat_org }}_Library_{{ rhel7_cv_name }}_ |  cut -d\"|\" -f1 | tail -1"
+  register: "environment_id"
+
+#Create base hostgroup needed by bootstrap.py script to register clients
+- name: "Configure | Create base hostgroup"
+  shell: "hammer hostgroup create --content-view '{{ rhel7_cv_name }}' --lifecycle-environment Library --organization '{{ sat_org }}' --locations '{{ sat_location }}'
+         --environment-id '{{ environment_id.stdout }}' --puppet-classes '{{ sat_pdummy_name }}' --name '{{ sat_base_hostgroup }}'"
+
+#Create puppetca autosign entry if any
+- name: "Configure | Configure puppetca autosign entry"
+  lineinfile:
+    dest: "/etc/puppet/autosign.conf"
+    line: "{{ puppetca_autosign }}"
+    insertafter: EOF
+  when: puppetca_autosign is defined
+...

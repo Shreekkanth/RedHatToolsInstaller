@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    user_id: W16864C
+    manager_id: m11513c
+    env: test
+
+  tasks:
+    - name: Get Manager ID
+      include_role:
+        name: ansible-role_get-manager-id
+      vars:
+        get_manager_id_user_id: "{{ user_id }}"
+        get_manager_id_env: "{{ env }}"
+
+    - name: Assert return value
+      assert:
+        that:
+          - get_manager_id['manager_id'] == "{{ manager_id }}"

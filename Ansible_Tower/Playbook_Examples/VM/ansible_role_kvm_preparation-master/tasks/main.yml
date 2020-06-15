@@ -1,0 +1,73 @@
+---
+# TODO: configure GOPATH environment variable for root users
+#
+- name: Ensure required packages are installed
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libvirt
+    - libvirt-devel
+    - libvirt-daemon-kvm
+    - qemu-kvm
+    - python3-lxml
+
+- name: Ensure libvirtd is started and enabled
+  service:
+    name: libvirtd
+    state: started
+    enabled: true
+
+- name: Ensure IP forwarding is enabled
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+
+- name: Ensure required parameter is set to libvirtd.conf
+  lineinfile:
+    path: /etc/libvirt/libvirtd.conf
+    state: present
+    insertafter: EOF 
+    line: "{{ item }}"
+  loop: "{{ libvirtd_conf }}"
+  notify: restart libvirtd
+
+- name: Ensure required parameter is set to /etc/sysconfig/libvirtd
+  lineinfile:
+    path: /etc/sysconfig/libvirtd
+    state: present
+    insertafter: EOF 
+    line: 'LIBVIRTD_ARGS="--listen"'
+  notify: restart libvirtd
+
+- name: Ensure firewalld is started and enabled
+  service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Ensure libvirt service is permitted by firewalld
+  firewalld:
+    zone: libvirt
+    service: libvirt
+    state: enabled
+    immediate: true
+    permanent: true
+  when: ansible_facts['distribution_major_version'] == "8"
+
+- name: Ensure storage pool is defined
+  virt_pool:
+    command: define
+    name: default
+    xml: '{{ lookup("template", "storage_pool_definition.j2") }}'
+
+- name: Ensure storage pool is started
+  virt_pool:
+    name: default
+    state: active
+
+- name: Ensure autostart is enabled for storage pool
+  virt_pool:
+    name: default
+    autostart: true

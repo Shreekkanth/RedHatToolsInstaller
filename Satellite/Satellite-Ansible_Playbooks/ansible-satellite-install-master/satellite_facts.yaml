@@ -1,0 +1,68 @@
+# satellite_install.yaml calls for this file to be placed here:
+# /etc/ansible/satellite_facts.yaml
+
+# This should be your Red Hat login for entitlement
+redhat_user: my-redhat-login-name
+
+# This is your Red Hat password associated with the login above.
+redhat_pass: my-supersecret-redhat-password
+
+# Your FQDN of the new satellite server you are installing
+sat_hostname: mysatelliteserver.local
+cap_hostname: mycapsuleserver.local
+
+# Set your ORG  (ex:  GoKEV)
+sat_organization: MyORG
+
+# Set your default LOCation (ex:  BNA)
+sat_location: MyLOC
+
+# This is your login password once Satellite is up and running:
+# http://"{{ ansible_default_ipv4["interface"] }}"
+# admin / (this password below)
+sat_password: sat-password
+
+###########################################
+### Some satellite network settings
+sat_domain: mydomain
+
+# The static IP you want set for the Satellite server
+sat_ipaddr: 192.168.1.100
+
+# The server from which Satellite gets its DNS
+sat_ns: 8.8.8.8
+
+# The gateway through which Satellite communicates
+sat_gateway: 192.168.1.1
+sat_netmask: 255.255.255.0
+
+# The DHCP forwarder Satellite uses 
+sat_dhcpns: 192.168.1.1
+
+##### IF BOTH VALUES BELOW (DHCP low and high) EXIST, THE
+##### INSTALLER WILL INSTALL BIND AND ACT AS THE DHCP SERVER
+##### FOR THIS NETWORK.  COMMENT THESE OUT IF YOU WANT TO USE
+##### THE VALUE ABOVE FOR DHCP INSTEAD AND THE ABOVE DHCPNS 
+##### VALUE WILL BE IGNORED.
+
+# The lowest and highest DHCP available in the range
+sat_dhcp_lo: 192.168.1.201
+sat_dhcp_hi: 192.168.1.225
+
+# It was a pain to parse the IP and reverse the octets, so
+# just enter this statically:   OCT3.OC2.OCT1.in-addr.arpa
+sat_zone_arpa: 124.168.192.in-addr.arpa
+
+
+###########################################
+### Some capsule network settings
+
+# The gateway through which capsule communicates
+cap_ipaddr: 192.168.2.100
+cap_gateway: 192.168.2.1
+cap_netmask: 255.255.255.0
+
+# The DHCP server that assigns IPs
+cap_dhcpns: 192.168.2.1
+
+

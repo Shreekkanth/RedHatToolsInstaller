@@ -1,0 +1,80 @@
+---
+- name: import the network-engine role
+  import_role:
+    name: network-engine
+
+- name: Run commands
+  ios_command:
+    commands:
+      - show interfaces
+      - show macro auto interface
+  register: output
+
+- name: Debug output
+  debug:
+    var: output
+    verbosity: 1
+
+- name: Generate macro facts as JSON
+  command_parser:
+    file: "parser_templates/show_macro_auto_interface.yml"
+    content: "{{ output.stdout.1 }}"
+  register: macro_info
+
+- name: Create macro_details variable
+  set_fact:
+    macro_details: "{{ macro_info.ansible_facts.cisco_ios.macro_info }}"
+
+- name: Generate interface facts as JSON
+  command_parser:
+    file: "parser_templates/show_interfaces.yml"
+    content: "{{ output.stdout.0 }}"
+  register: interface_info
+
+- name: Debug interface_info
+  debug:
+    msg: "{{ interface_info | to_nice_json }}"
+    verbosity: 2
+
+- name: Debug macro_info
+  debug:
+    msg: "{{ macro_info | to_nice_json }}"
+    verbosity: 1
+
+- name: Debug list of available ports
+  debug:
+    msg: "{{ interface_info.ansible_facts.cisco_ios | json_query('interfaces[?is_available]') }}"
+    verbosity: 2
+
+- name: Create cisco_ports variable
+  set_fact:
+    cisco_ports: "{{ interface_info.ansible_facts.cisco_ios.interfaces }}"
+
+#########################################
+# Filter ports using provided role vars #
+#########################################
+- name: Filter cisco_ports by interface type
+  set_fact:
+    cisco_ports: "{{ cisco_ports | json_query(type_filter) }}"
+  vars:
+    type_filter: "[?type=='{{ cisco_ios_get_ports_interface_type }}']"
+  when: cisco_ios_get_ports_interface_type != ''
+
+- name: Filter cisco_ports by availability
+  set_fact:
+    cisco_ports: "{{ cisco_ports | json_query(available_filter) }}"
+  vars:
+    available_filter: "[?is_available]"
+  when: cisco_ios_get_ports_available_only | bool
+
+- name: Filter cisco_ports by name
+  set_fact:
+    cisco_ports: "{{ cisco_ports | json_query(name_filter) }}"
+  vars:
+    name_filter: "[?name=='{{ cisco_ios_get_ports_name }}']"
+  when: cisco_ios_get_ports_name != ''
+
+- name: Register return value (cisco_ios_get_ports)
+  set_fact:
+    cisco_ios_get_ports:
+      ports: "{{ cisco_ports }}"

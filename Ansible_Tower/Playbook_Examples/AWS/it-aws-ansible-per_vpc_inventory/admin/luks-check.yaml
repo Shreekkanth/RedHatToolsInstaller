@@ -1,0 +1,14 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Copy Script
+      copy: src=../scripts/luks-check.py dest=/usr/local/bin/luks-check.py owner=root mode=755
+    - name: LUKS Check
+      command: /usr/local/bin/luks-check.py
+      register: lukscheck
+      remote_user: root
+      ignore_errors: yes
+    - debug: msg="{{ lukscheck.stdout }}"
+    - debug: msg="{{ lukscheck.stderr }}"
+

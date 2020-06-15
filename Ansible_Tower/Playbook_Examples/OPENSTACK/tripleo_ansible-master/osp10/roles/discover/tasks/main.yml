@@ -1,0 +1,25 @@
+---
+
+- name: get first node uuid
+  shell: . ~/stackrc && openstack baremetal node list -f value -c UUID | head -n 1
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: first_node
+
+- name: check if introspection is already run
+  shell: ". ~/stackrc && openstack baremetal node show {{ first_node.stdout }} | grep -E \"'memory_mb': u'[0-9]+'\""
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: baremetal introspection
+  shell: . ~/stackrc && openstack baremetal node list -f value -c UUID | while read id; do openstack baremetal node manage $id; done
+  when: result|failed
+
+- name: baremetal introspection
+  shell: . ~/stackrc && time openstack overcloud node introspect --all-manageable --provide
+  when: result|failed
+  register: result
+- debug: msg="{{ result }}"

@@ -1,0 +1,6 @@
+---
+ansible_winrm_server_cert_validation: ignore
+ansible_winrm_transport: credssp
+ansible_winrm_kerberos_delegation: yes
+dns_server1: 10.0.101.56
+dns_server2: 10.0.101.10

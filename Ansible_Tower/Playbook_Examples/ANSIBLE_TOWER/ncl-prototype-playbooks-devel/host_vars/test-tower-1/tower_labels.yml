@@ -1,0 +1,9 @@
+---
+tower_labels:
+  - name: My label 1
+    organization: Default
+    state: present
+
+  - name: My label 2
+    organization: Default
+    state: present

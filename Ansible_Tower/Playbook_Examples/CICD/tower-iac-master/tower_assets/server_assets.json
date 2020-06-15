@@ -1,0 +1,279 @@
+[
+  {
+    "inputs": {
+      "username": "admin", 
+      "host": "localhost", 
+      "password": ""
+    }, 
+    "name": "SR Dev Tower Credential", 
+    "asset_type": "credential", 
+    "credential_type": "Ansible Tower", 
+    "organization": "SR Org", 
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }
+      ]
+    }
+  }, 
+  {
+    "inputs": {
+      "username": "admin", 
+      "host": "10.0.1.193", 
+      "password": ""
+    }, 
+    "name": "SR Prod Tower Credential", 
+    "asset_type": "credential", 
+    "credential_type": "Ansible Tower", 
+    "organization": "SR Org", 
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }
+      ]
+    }
+  }, 
+  {
+    "inputs": {
+      "username": "jowestco", 
+      "ssh_key_data": ""
+    }, 
+    "name": "SR SCM Credential", 
+    "asset_type": "credential", 
+    "credential_type": "Source Control", 
+    "organization": "SR Org", 
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }
+      ]
+    }
+  }, 
+  {
+    "inputs": {
+      "username": "root", 
+      "password": ""
+    }, 
+    "name": "SR Machine Credential", 
+    "asset_type": "credential", 
+    "credential_type": "Machine", 
+    "organization": "SR Org", 
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }
+      ]
+    }
+  }, 
+  {
+    "inputs": {
+      "username": "jowestco", 
+      "commitname": "John Westcott", 
+      "password": "", 
+      "email": "jowestco@redhat.com"
+    }, 
+    "name": "SR GitLab Credential", 
+    "asset_type": "credential", 
+    "credential_type": "SR GitLab Credential Type", 
+    "organization": "SR Org", 
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": [
+            "admin"
+          ]
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }
+      ]
+    }
+  }, 
+  {
+    "injectors": {
+      "extra_vars": {
+        "gitlab_pass": "{{ password }}", 
+        "gitlab_name": "{{ commitname }}", 
+        "gitlab_email": "{{ email }}", 
+        "gitlab_user": "{{ username }}"
+      }
+    }, 
+    "inputs": {
+      "fields": [
+        {
+          "help_text": "The username to connect to gitlab as", 
+          "type": "string", 
+          "id": "username", 
+          "label": "Username"
+        }, 
+        {
+          "help_text": "The password to connect to gitlab as", 
+          "secret": true, 
+          "type": "string", 
+          "id": "password", 
+          "label": "Password"
+        }, 
+        {
+          "help_text": "The name you want in the commit message", 
+          "type": "string", 
+          "id": "commitname", 
+          "label": "Commit name"
+        }, 
+        {
+          "help_text": "The email you want in the commit message", 
+          "type": "string", 
+          "id": "email", 
+          "label": "Commit email"
+        }
+      ], 
+      "required": [
+        "username", 
+        "password", 
+        "email", 
+        "commitname"
+      ]
+    }, 
+    "kind": "cloud", 
+    "asset_type": "credential_type", 
+    "name": "SR GitLab Credential Type"
+  }, 
+  {
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [], 
+          "name": "Member", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Auditor", 
+          "user": []
+        }
+      ]
+    }, 
+    "asset_type": "organization", 
+    "name": "SR Org"
+  }, 
+  {
+    "organization": "SR Org", 
+    "variables": "---", 
+    "asset_relation": {
+      "inventory_source": [], 
+      "host": [
+        {
+          "name": "localhost"
+        }
+      ], 
+      "group": [], 
+      "roles": [
+        {
+          "team": [], 
+          "name": "Ad Hoc", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Admin", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Read", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Use", 
+          "user": []
+        }, 
+        {
+          "team": [], 
+          "name": "Update", 
+          "user": []
+        }
+      ]
+    }, 
+    "asset_type": "inventory", 
+    "name": "SR Inventory"
+  }
+]

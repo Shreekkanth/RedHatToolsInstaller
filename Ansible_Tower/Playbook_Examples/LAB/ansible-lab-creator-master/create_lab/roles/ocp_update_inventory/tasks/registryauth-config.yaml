@@ -1,0 +1,19 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Add Logging configuration
+  delegate_to: localhost
+  blockinfile:
+    path: "{{ tmp_inv_loc }}" 
+    marker_begin: Auth to Red Hat Registry configuration start
+    block: |
+           oreg_auth_user={{ oreg_user }}
+           oreg_auth_password={{ oreg_token }}
+ 
+    marker_end: Auth to Red Hat Registry Configuration End
+    insertbefore: '^\[masters]'
+    state: present
+  when: "ocp_ver == 3.11"
+

@@ -1,0 +1,20 @@
+---
+#### Defensive Programming To Check If SSO Is Already Downloaded
+- name: "Check Existence of Libraries {{itemKey}} - {{ softName }}"
+  stat:
+    path: "{{  base_dir_download + softName  }}"
+  register: jboss_exists
+
+#### Download software from Red Hat Customer Portal
+- name: Sync Download "{{ softName }}" from Red Hat Customer Portal
+  redhat_csp_download:
+    url:      "{{ softUrl }}"
+    dest:     "{{ base_dir_download + softName }}"
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+  register: csp_jboss_download
+  no_log: True
+  when: transfer_method == TRANSFER_METHOD_CSP_TO_HOST and jboss_exists.stat.exists == false
+
+#
+# EOF

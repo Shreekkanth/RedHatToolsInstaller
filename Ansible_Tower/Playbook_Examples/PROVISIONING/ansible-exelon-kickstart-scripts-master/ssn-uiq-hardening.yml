@@ -1,0 +1,307 @@
+---
+- hosts: "all"
+  vars_files:
+    - "vars/uiq-hardening.yml"
+  handlers:
+    - name: Restart SSHD
+      service:
+        name: "sshd"
+        state: "restarted"
+    - name: Restart network
+      service:
+        name: "network"
+        state: "restarted"
+  tasks:
+    - name: Linux OS is either RHEL5/6
+      block:
+        - name: Ensure hard_dir exists
+          file:
+            path: "{{ hard_dir }}"
+            state: "directory"
+            mode: "0600"
+
+        - name: Copy original files to {{ hard_dir }}
+          fetch:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
+            flat: True
+          delegate_to: "{{ inventory_hostname }}"
+          with_items: "{{ pre_hardening_files }}"
+
+        - name: Output chkconfig to {{ hard_dir }}
+          shell: 'chkconfig --list > {{ hard_dir}}/chkconfig.before_hardening'
+
+        - name: Output services to {{ hard_dir }}
+          shell: 'service --status-all > {{ hard_dir }}/service.before_hardening'
+
+        - name: Turn off services
+          shell: 'egrep -v "{{ svcs_turn_off | join('|') }}" {{ hard_dir }}/services.before_hardening > /etc/services'
+
+        - name: Disable services
+          service:
+            name: "{{ item }}"
+            enabled: False
+          with_items: "{{ svcs_disable }}"
+
+        - name: Get run-level 5 services
+          shell: "awk '/5:on/ {print $1}' {{ hard_dir }}/chkconfig.before_hardening"
+          register: runlevel_5_svcs
+          ignore_errors: True
+
+        - name: Disable run-level 5 services
+          service:
+            name: "{{ item }}"
+            enabled: False
+            state: "stopped"
+          with_items: "{{ runlevel_5_svcs.stdout_lines }}"
+          when: runlevel_5_svcs.rc == 0
+
+        - name: Update inittab
+          shell: 'grep -v X11 {{ hard_dir }}/inittab.before_hardening > /etc/inittab'
+          ignore_errors: True
+
+        - name: Ensure X is not installed
+          yum:
+            name: "@x-window-system"
+            state: "absent"
+
+        - name: Ensure samba is not installed
+          package:
+            name: "samba"
+            state: "absent"
+
+        - name: Update grub.conf with auditing
+          replace:
+            path: "/boot/grub/grub.conf"
+            regexp: "{{ item.search }}"
+            replace: "{{ item.replace }}"
+          with_items:
+            - search: "^    kernel"
+              replace: "|$| audit=1"
+            - search: "^ *kernel"
+              replace: "|$| audit=1"
+
+        - name: Update audit.rules
+          lineinfile:
+            path: "/etc/audit/audit.rules"
+            state: "present"
+            block: |
+
+              # system logs
+              -w /var/log/faillog -p wa -k logins
+              -w /var/log/lastlog -p wa -k logins
+              -w /var/log/tallylog -p wa -k logins
+              -w /var/log/btmp -p wa -k session
+
+              # privileged commands
+
+        - name: Collect ext3 mountpoints for fstab
+          shell: "grep ext3 /etc/fstab | awk '{print $2}'"
+          register: "mounts"
+          ignore_errors: True
+
+        - name: Update audit.rules
+          shell: "find {{ item }} -xdev ( -perm -4000 -o -perm -2000 ) -type f | awk '{print "-a always,exit -F path=" $1 " -F perm=x -F auid>=500 -F auid!=4294967295 -k privileged" } >> /etc/audit/audit.rules"
+          ignore_errors: True
+          with_items: "{{ mounts.stdout_lines }}"
+
+        - name: Update logrotate.conf
+          replace:
+            path: "/etc/logrotate.conf"
+            regexp: "{{ item.search }}"
+            replace: "{{ item.replace }}"
+          with_items:
+            - search: "rotate 4"
+              replace: "rotate 25"
+            - search: "#compress"
+              replace: "compress"
+
+        - name: Collect list of system accounts to lock
+          getent:
+            database: "passwd"
+            key: "{{ item }}"
+            fail_key: False
+            split: ":"
+          register: "lock_users"
+          with_items: "{{ range(0, 501, 1) | list }}"
+
+        - name: Lock system accounts
+          user:
+            name: "{{ item.key }}"
+            uid: "{{ item.value[1] }}"
+            password_lock: True
+          with_dict: "{{ lock_users.results|json_query('[*].ansible_facts.getent_passwd') }}"
+          when:
+            - 'item.value'
+            - 'item.key != "root"'
+
+        - name: SSHD Configuration
+          block:
+            - name: Configure SSHD
+              replace:
+                path: "/etc/ssh/sshd_config"
+                regexp: "{{ item.search }}"
+                replace: "{{ item.replace }}"
+              with_items:
+                - search: "#PermitRootLogin yes"
+                  replace: "PermitRootLogin no"
+                - search: "#RSAAuthentication yes"
+                  replace: "RSAAuthentication yes"
+                - search: "#ClientAliveInterval 600"
+                  replace: "ClientAliveInterval 0"
+                - search: "#ClientAliveCountMax 3"
+                  replace: "ClientAliveCountMax 0"
+                - search: "^#Banner /some/path"
+                  replace: "Banner /etc/ssh/sshd-banner"
+
+            - name: Ensure Ciphers and Users set in SSHD Configuration
+              lineinfile:
+                path: "/etc/ssh/sshd_config"
+                regexp: "^{{ item }}"
+                line: "{{ item }}"
+              with_items:
+                - "Ciphers aes256-ctr,aes192-ctr,aes128-ctr,arcfour256,aes128-cbc"
+                - "Allowusers unixsa noc ssn sgs-scan bacmon netmgr ssnsupport uc4user uiqrsync oracle"
+          notify: "Restart SSHD"
+
+        - name: Ensure at.deny and cron.deny does not exist
+          file:
+            path: "{{ item }}"
+            state: "absent"
+          with_items:
+            - "/etc/at.deny"
+            - "/etc/cron.deny"
+
+        - name: Configure umask
+          blockinfile:
+            block: |
+               # Set daemon umask
+               umask 027
+            create: True
+            path: "/etc/sysconfig/init"
+
+        - name: Update temporary filesystems in fstab
+          mount:
+            fstype: "{{ item.fstype }}"
+            opts: "{{ item.options | join(',') }}"
+            src: "{{ item.device }}"
+            path: "{{ item.path }}"
+            state: "mounted"
+          with_items:
+            - fstype: "ext4"
+              device: "/dev/mapper/vg00-tmp"
+              path: "/tmp"
+              options:
+                - "defaults"
+                - "nodev"
+            - fstype: "tmpfs"
+              device: "tmpfs"
+              path: "/dev/shm"
+              options:
+                - "defaults"
+                - "nosuid"
+
+        - name: Ensure files removed
+          file:
+            path: "{{ item }}"
+            state: "absent"
+          with_items:
+            - "/etc/auto.master"
+            - "/etc/auto.misc"
+            - "/etc/auto.net"
+            - "/etc/auto.smb"
+            - "/etc/init.d/httpd"
+            - "/etc/build.cfg"
+
+        - name: Ensure audit rules exist
+          blockinfile:
+            block: |
+              # sudoers
+              -w /etc/sudoers -p wa -k scope
+              -w /var/log/sudo.log -p wa -k actions
+
+              # kernel load/unload
+              -w /sbin/insmod -p x -k modules
+              -w /sbin/rmmod -p x -k modules
+              -w /sbin/modprobe -p x -k modules
+              -a always,exit -F arch=b32 -S init_module -S delete_module -k modules
+              -a always,exit -F arch=b64 -S init_module -S delete_module -k modules
+            path: "/etc/audit/audit.rules"
+
+        - name: Ensure sudo.log exists
+          file:
+            path: "/var/log/sudo.log"
+            state: "touch"
+
+        - name: Configure syslog
+          lineinfile:
+            path: "/etc/syslog.conf"
+            regexp: "^syslog.*   /var/log/syslog"
+            line: "syslog.*   /var/log/syslog"
+            state: "present"
+
+        - name: Create NOC user
+          include_role:
+            name: "users"
+          vars:
+            users:
+              - name: "noc"
+                groups: []
+                uid: "908"
+                primary_group: "users"
+                comment: "Network Operation Center User"
+                password: "$1$zPfk0hPJ$VXKN4UjkgIqdDh1cCfyiH."
+                home: "/opt/users/noc"
+                home_mode: "0750"
+                home_owner: "noc"
+                home_group: "users"
+                shell: "/usr/bin/ksh"
+
+        - name: Configure Netbackup bp.conf for DMZ
+          template:
+            dest: "/opt/openv/netbackup/bp.conf"
+            src: "bp.conf.j2"
+
+        - name: Configure GMT
+          block:
+            - name: Configure /etc/sysconfig/clock for GMT
+              replace:
+                path: "/etc/sysconfig/clock"
+                regexp: "America/New_York"
+                replace: "GMT"
+              register: clock_config
+
+            - name: Remove /etc/localtime
+              file:
+                path: "/etc/localtime"
+                state: "absent"
+              register: localtime_removed
+              when: clock_config is changed
+
+            - name: Update /etc/localtime with GMT
+              file:
+                path: "/etc/localtime"
+                src: "/usr/share/zoneinfo/GMT"
+                state: "link"
+              when: localtime_removed is changed
+
+        - name: Configure eth0 | VMWare
+          block:
+            - name: Configure eth0
+              template:
+                src: "ifcfg-eth0.j2"
+                dest: "/etc/sysconfig/network-scripts/ifcfg-eth0"
+              notify: "Restart network"
+
+            - name: Remove unnecessary network configurations
+              file:
+                path: "{{ item }}"
+                state: "absent"
+              with_items:
+                - "/etc/sysconfig/network-scripts/ifcfg-bond0"
+                - "/etc/sysconfig/network-scripts/ifcfg-eth1"
+              notify: "Restart network"
+          when: 'ansible_virtualization_type == "VMware"'
+      when:
+        - ansible_system == "Linux"
+        - (ansible_distribution_major_version == "6") or (ansible_distribution_major_version == "5")

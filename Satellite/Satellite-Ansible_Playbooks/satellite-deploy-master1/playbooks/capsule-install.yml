@@ -1,0 +1,14 @@
+---
+#TODO ntp config
+- hosts: satellite-capsules
+  environment:
+    - PYTHONPATH: "{{ python_path }}"
+
+  roles:
+    - satellite-preinstall
+    - rhsm-satellite
+    - update-restart
+    - capsule-install
+    - capsule-populate
+    - { role: capsule-ha, when: capsule_ha_vip is defined }
+...

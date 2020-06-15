@@ -1,0 +1,37 @@
+---
+# tasks file for configure_host
+
+- name: Remove unneeded packages
+  yum:
+    state: absent
+    name: "{{ unneeded_packages }}"
+
+- when: register_to_satellite
+  block:
+
+  - name: Register system to Satellite
+    include_tasks: register_to_satellite.yml
+
+  - name: Set up QEMU guest agent
+    include_tasks: qemu-guest-agent.yml
+
+  - name: Update all system packages
+    when: update_all_system
+    include_tasks: update_system.yml
+
+  - name: Install and configure Puppet
+    when: install_puppet
+    include_tasks: install_puppet.yml
+
+  - name: Install and configure IPA Client
+    when: install_ipaclient
+    include_tasks: install_ipaclient.yml
+
+- name: Set up ssh authorized keys
+  include_tasks: ssh_authorized_keys.yml
+
+- name: Execute Satellite jobs
+  when: 
+  - execute_satellite_jobs
+  - createsathost is changed
+  include_tasks: execute_satellite_jobs.yml

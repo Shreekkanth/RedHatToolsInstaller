@@ -1,0 +1,75 @@
+---
+
+# Centos Docker images prevent docs from being installed by default
+# We want to change this!
+- hosts: all
+  become: True
+  tasks:
+    - lineinfile:
+        path: /etc/yum.conf
+        regexp: '^tsflags='
+        state: absent
+      when: ansible_os_family == 'RedHat'
+
+
+# Install and configure icingaweb2, its modules and add-ons
+- hosts: all
+  become: True
+  vars:
+    mysql_root_password: super-secure-password
+    mysql_databases:
+      - name: icinga
+        collation: utf8_general_ci
+        encoding: utf8
+      - name: icingaweb
+        collation: utf8_general_ci
+        encoding: utf8
+    mysql_users:
+      - name: icinga
+        host: "%"
+        password: icinga
+        priv: "icinga.*:ALL"
+      - name: icingaweb
+        host: "%"
+        password: icingaweb
+        priv: "icingaweb.*:ALL"
+  roles:
+    - geerlingguy.mysql
+
+- hosts: all
+  become: True
+  tasks:
+    - meta: flush_handlers 
+
+# Install and configure icingaweb2, its modules and add-ons
+- hosts: all
+  become: True
+  vars:
+    icinga2_master_fqdn: localhost
+    icinga2_role: master
+    icinga2_features: [ "ido-mysql", "checker", "api", "notification", "mainlog" ]
+    icinga2_manage_mysql: true
+    icinga2_feature_ido_dbname: icinga
+    icinga2_feature_ido_user: icinga
+    icinga2_feature_ido_password: icinga
+  roles:
+    - chrnie.icinga2
+
+- hosts: all
+  become: True
+  tasks:
+    - meta: flush_handlers 
+
+# Install and configure icingaweb2, its modules and add-ons
+- hosts: all
+  become: True
+  vars:
+    icinga2_master_fqdn: localhost
+    icinga2_role: master
+    icinga2_features: [ "ido-mysql", "checker", "api", "notification", "mainlog" ]
+    icinga2_manage_mysql: true
+    icinga2_feature_ido_dbname: icinga
+    icinga2_feature_ido_user: icinga
+    icinga2_feature_ido_password: icinga
+  roles:
+    - role_under_test

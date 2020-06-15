@@ -1,0 +1,25 @@
+---
+- name: "Convert built VM to template"
+  hosts: "localhost"
+  gather_facts: False
+  tasks:
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "../vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+
+    - name: "Convert VM to template"
+      vmware_guest:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        folder: "{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        is_template: True
+        state: "present"
+      register: "vm_convert"
+      no_log: True
+
+    - debug:
+        var: "vm_convert"
+        verbosity: "1"

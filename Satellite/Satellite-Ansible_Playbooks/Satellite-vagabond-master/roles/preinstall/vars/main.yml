@@ -1,0 +1,20 @@
+---
+sat_firewalld:
+  # https
+  - port: 443/tcp
+  # http
+  - port: 80/tcp
+  # tftp
+  - port: 69/udp
+  # katello Qpid
+  - port: 5647/tcp
+  # Anaconda to download kickstart
+  - port: 8000/tcp
+  # tomcat
+  - port: 8080/tcp
+  # puppet
+  - port: 8140/tcp
+  # foreman
+  - port: 9090/tcp
+  # sshd
+  - port: 22/tcp

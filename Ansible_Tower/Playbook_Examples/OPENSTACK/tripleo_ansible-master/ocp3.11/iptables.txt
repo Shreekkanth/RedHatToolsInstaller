@@ -1,0 +1,3 @@
+iptables -I INPUT -m state --state NEW -p tcp --dport 2049 -j ACCEPT
+
+iptables -I INPUT -p udp -m udp --dport 53 -j ACCEPT

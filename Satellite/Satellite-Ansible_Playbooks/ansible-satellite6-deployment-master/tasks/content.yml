@@ -1,0 +1,45 @@
+---
+# content tasks file for ansible-satellite6-deployment/
+#url: "https://{{ ansible_fqdn }}/katello/api/organizations?search={{ initial_org }}"
+
+- name: Content|Getting Orgnization Id on {{ ansible_fqdn }}
+  uri:
+    url: "https://{{ ansible_fqdn }}/katello/api/organizations?search={{ initial_org }}"
+    user: "{{ foreman_admin }}"
+    password: "{{ admin_password }}"
+    force_basic_auth: yes
+    body_format: json
+    return_content: yes
+    validate_certs: no
+    follow_redirects: all
+  register: org_id
+  tags:
+    - subscriptions
+    - manifests
+    - content
+
+- name: Content|Uploading manifests on {{ ansible_fqdn }}
+  uri:
+    url: "https://{{ ansible_fqdn }}/katello/api/organizations/{{ org_id.json.results[0].id }}/subscriptions/upload"
+    headers:
+      Content-Type: "multipart/form-data"
+    user: "{{ foreman_admin }}"
+    password: "{{ admin_password }}"
+    force_basic_auth: yes
+    #body_format: json
+    validate_certs: no
+    follow_redirects: all
+    method: POST
+    body: "{{ lookup('file','../files/manifest.zip') }}"
+  register: load_id
+  tags:
+    - subscriptions
+    - manifests
+    - content
+
+- name: debug variable
+  debug: var=load_id.json.results[0]
+  tags:
+    - subscriptions
+    - manifests
+    - content

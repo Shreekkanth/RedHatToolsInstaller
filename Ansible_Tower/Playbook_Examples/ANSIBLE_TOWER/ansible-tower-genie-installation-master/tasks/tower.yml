@@ -1,0 +1,135 @@
+---
+# Create a Tower SCM Credential
+- name: Create Ansible Tower Genie SCM Credential in Ansible Tower | HTTP/HTTPS
+  include_role:
+    name: "genie-credentials"
+  vars:
+    tower_cred_name: "Ansible Tower Genie Repo - {{ git_user }}"
+    tower_cred_user: "{{ git_user }}"
+    tower_cred_pass: "{{ git_pass }}"
+    tower_cred_desc: "Credential for Ansible Tower Genie Repository."
+    tower_cred_type: "scm"
+  when:
+    - git_repo_url | urlsplit('scheme') == "https" or git_repo_url | urlsplit('scheme') == "http"
+    - git_user | length > 0
+    - git_pass | length > 0
+  no_log: True
+
+- name: Create Ansible Tower Genie SCM Credential in Ansible Tower | SSH
+  include_role:
+    name: "genie-credentials"
+  vars:
+    tower_cred_name: "Ansible Tower Genie Repo - {{ git_user }}"
+    tower_cred_user: "{{ git_user }}"
+    tower_cred_ssh_key_path: "{{ git_ssh_private_key_path }}"
+    tower_cred_desc: "Credential for Ansible Tower Genie Repository."
+    tower_cred_type: "scm"
+  when: git_repo_url | urlsplit('scheme') == "ssh"
+  no_log: True
+
+- name: Create Ansible Tower Genie Vault Credential in Ansible Tower
+  include_role:
+    name: "genie-credentials"
+  vars:
+    tower_cred_name: "Ansible Tower Genie Vault"
+    tower_cred_desc: "Credential for Ansible Tower Genie onboarding-secrets.yml"
+    tower_cred_vault_pass: "{{ onboarding_vault_pass }}"
+    tower_cred_type: "vault"
+  no_log: True
+
+# Create a Tower Project
+- name: Create Ansible Tower Genie Project in Ansible Tower
+  include_role:
+    name: "genie-projects"
+  vars:
+    tower_proj_name: "Ansible Tower Genie - {{ git_repo_branch }}"
+    tower_proj_branch: "{{ git_repo_branch }}"
+    tower_proj_url: "{{ git_repo_url }}"
+    tower_proj_credential: "Ansible Tower Genie Repo - {{ git_user }}"
+    tower_proj_update_on_launch: True
+  no_log: True
+
+- name: Wait for Ansible Tower Genie Project to Synchronize
+  pause:
+    seconds: "60"
+
+- name: Create Ansible Tower Genie Job Templates
+  include_role:
+    name: "genie-job-templates"
+  vars:
+    tower_jt_name: "{{ item.name }}"
+    tower_jt_desc: "{{ item.desc }}"
+    tower_jt_proj: "Ansible Tower Genie - {{ git_repo_branch }}"
+    tower_jt_playbook: "{{ item.file }}"
+    tower_jt_limit: "localhost"
+    tower_jt_vault_cred: "Ansible Tower Genie Vault"
+    tower_jt_ask_inventory: True
+    tower_jt_ask_cred: True
+    tower_jt_survey: True
+  with_items: "{{ genie_job_templates }}"
+  no_log: True
+
+# Get Job Template IDs
+- name: Collect Ansible Tower Genie Job Template IDs
+  block:
+    - name: Configure tower-cli
+      template:
+        src: 'tower_cli.cfg.j2'
+        dest: '~/.tower_cli.cfg'
+        mode: '0400'
+      changed_when: False
+
+    - name: Grab Job Template IDs
+      shell: 'tower-cli                                          \
+                job_template                                     \
+                  get                                            \
+                    --name {{ item.name | quote }}               \
+                    --format id                                  \
+                    {% if not tower_verify_ssl %}
+                    --insecure
+                    {% endif %}
+             '
+      register: jt_ids
+      with_items: "{{ genie_job_templates }}"
+
+    - name: Destroy tower_cli config
+      file:
+        path:  "~/.tower_cli.cfg"
+        state: "absent"
+      changed_when: False
+
+# Ensure Directory exists
+- name: Ensure Files Directory exists
+  file:
+    state: "directory"
+    path: "./files/surveys"
+
+# Build customized Job template Surveys
+- name: Build Customized {{ item.name }} Job Template Survey
+  template:
+    src: "surveys/{{ item.survey }}.j2"
+    dest: "./files/surveys/{{ item.survey }}"
+  with_items: "{{ genie_job_templates }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Get Tower API Token
+- name: Retrieve Ansible Tower API Token
+  uri:
+    url: "{{ tower_url }}/api/v2/authtoken/"
+    method: "POST"
+    body: {"username":"{{ tower_user }}","password":"{{ tower_pass }}"}
+    body_format: json
+    validate_certs: "{{ tower_verify_ssl }}"
+    return_content: yes
+  register: tower_api_token
+  no_log: True
+
+# Using with_indexed_items so we get the correct result for the jt_ids corresponding to the appropriate job_template job template and survey spec to POST
+# When are we going to be able to loop on a block :\?  I hate having to do this for single tasks...
+- name: Create Ansible Tower Genie Job Template Surveys
+  include_tasks: "tasks/surveys.yml"
+  with_indexed_items: "{{ genie_job_templates }}"
+  loop_control:
+    loop_var: playbook
+    label: "{{ playbook.1.name }}"

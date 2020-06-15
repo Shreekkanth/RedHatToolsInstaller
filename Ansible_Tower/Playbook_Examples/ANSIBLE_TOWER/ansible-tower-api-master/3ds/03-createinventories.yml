@@ -1,0 +1,109 @@
+
+---
+- name: Create 3DS Inventories
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    org_id: 3
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Create 3DS Web Server
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "3DS Web Server"
+        }
+      body_format: json
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create 3DS Apps Server Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "3DS Apps Server"
+        }
+      body_format: json
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create 3DS DB Server Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "3DS DB Server"
+        }
+      body_format: json
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create 3DS SPMGR Servers Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "3DS SPMGR Servers"
+        }
+      body_format: json
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create  3DS Oracle Servers Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "3DS Oracle Servers"
+        }
+      body_format: json
+      status_code: 201
+    ignore_errors: yes

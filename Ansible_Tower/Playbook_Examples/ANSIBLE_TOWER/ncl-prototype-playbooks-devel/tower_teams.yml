@@ -1,0 +1,9 @@
+---
+# Tower teams
+
+- hosts: all
+  tasks:
+  - name: Tower teams
+    include_role:
+      name: tower_teams
+    loop: "{{ tower_teams }}"

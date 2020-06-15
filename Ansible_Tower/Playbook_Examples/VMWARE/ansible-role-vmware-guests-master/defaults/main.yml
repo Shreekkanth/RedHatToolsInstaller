@@ -1,0 +1,25 @@
+---
+# defaults file for create-vm
+# by default, create the vm
+state: "present"
+use_ipam: false
+
+vc_hostname: "127.0.0.1"
+vm_name: "test-vm.example.com"
+vm_guest: "test-vm"
+vm_datastore: "datastore"
+vm_network: "network"
+vm_templname: "test-template"
+vc_username: "admin"
+vc_pwd: "changeme"
+vc_datacenter: "default"
+vc_cluster: "default"
+vc_folder: "default"
+vm_ip: ""
+vm_netmask: ""
+vm_gateway: ""
+
+dns_server1: 10.0.0.1
+dns_server2: 10.0.0.2
+
+created_vms: []

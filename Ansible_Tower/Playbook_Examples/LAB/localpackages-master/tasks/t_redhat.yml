@@ -1,0 +1,46 @@
+---
+
+# NOTE: This will save time later on with conditional installs.
+- name: "Check Package Facts"
+  package_facts:
+    manager: "auto"
+
+- name: "Copy Rsync Package Across for Installation"  
+  copy:
+    src: rpm/rsync/
+    dest: /var/run/rpm/rsync  
+  when: "'rsync' not in ansible_facts.packages"
+
+- name: "Install Rsync Packages"
+  package:
+    name: "{{ rsync_item }}"
+    state: present
+  loop: "{{ packages.rsync }}"
+  loop_control:
+    loop_var: rsync_item
+  when: "'rsync' not in ansible_facts.packages"
+
+- name: "Copy (Sync) Files Across for Installation"
+  synchronize:
+    src: rpm/
+    dest: /var/run/rpm
+
+- name: "Install NFS Packages"
+  package:
+    name: "{{ nfs_item }}"
+    state: present
+  loop: "{{ packages.nfs }}"
+  loop_control:
+    loop_var: nfs_item
+  when: "'nfs-utils' not in ansible_facts.packages"
+
+- name: "Install Cloud-init Packages"
+  package:
+    name: "{{ cinit_item }}"
+    state: present
+  loop: "{{ packages.cloud_init }}"
+  loop_control:
+    loop_var: cinit_item
+  when: "'cloud-init' not in ansible_facts.packages"
+
+...

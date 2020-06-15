@@ -1,0 +1,10 @@
+---
+
+supported_distrobution:
+  RedHat:
+    version: 6.9
+  CentOS:
+    version: 6.9
+
+common_external_dns: false
+common_realm_name: false

@@ -1,0 +1,48 @@
+---
+
+- name: Deploy IPA server
+  args:
+    creates: /etc/dirsrv/ds.keytab
+  command: >
+    {{ ipaserver_install_command }}
+    --unattended
+    --realm={{ realm_name | upper }}
+    --domain={{ realm_name | lower }}
+    --admin-password={{ ipa_server_admin_secret }}
+    --ds-password={{ ipa_server_ds_secret }}
+    {% if not ipa_server_enable_ca %}
+    --http-cert-file {{ ipa_server_http_cert_file }}
+    --http-cert-file {{ ipa_server_http_key_file }}
+    --http-pin {{ ipa_server_http_pin }}
+    --dirsrv-cert-file {{ ipa_server_dirsrv_cert_file }}
+    --dirsrv-cert-file {{ ipa_server_cert_key_file }}
+    --dirsrv-pin {{ ipa_server_dirsrv_pin }}
+    --ca-cert-file {{ ipa_server_ca_cert_file }}
+    {% endif %}
+    {% if ipa_server_start_uid %}--idstart={{ ipa_server_start_uid }}{% endif %}
+    {% if ipa_server_max_uid %}--idmax={{ ipa_server_max_uid }}{% endif %}
+    {{ '--setup-krb' if ipa_server_enable_kra else '' }}
+    {{ '--setup-dns' if ipa_server_enable_dns else '' }}
+    {{ '--no-ntp' if not ipa_server_enable_ntp else '' }}
+    {{ '--no-hbac-allow' if ipa_server_no_hbac_allow_all else '' }}
+  register: _ipa_installed
+  no_log: True
+
+- name: CA Key Recovery
+  block:
+    - name: Fetch CA packages
+      fetch:
+        src: "{{ item }}"
+        dest: "{{ ipa_server_recovery_path }}"
+      with_items:
+        - "{{ ipa_server_ca_root_key }}"
+        - "{{ ipa_server_ca_agent_key }}"
+
+    - name: Destroy remote CA packages
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ ipa_server_ca_root_key }}"
+        - "{{ ipa_server_ca_agent_key }}"
+  when: ipa_server_recovery_path != ""

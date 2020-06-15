@@ -1,0 +1,26 @@
+- uri:
+    url: https://your.form.based.auth.example.com/index.php
+    method: POST
+    body: "name=your_username&password=your_password&enter=Sign%20in"
+    status_code: 302
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+  register: login
+
+- uri:
+    url: https://developer.servicenow.com/instance_hibernate.do?action=wake_up
+    method: GET
+    return_content: yes
+    headers:
+      Cookie: "{{login.set_cookie}}"
+
+# - name: reset instance
+#   uri:
+#     url: https://developer.servicenow.com/instance_hibernate.do?action=wake_up
+#     method: GET
+#     user: "{{ snow_username }}"
+#     password: "{{ snow_password }}"
+#     force_basic_auth: yes
+#     return_content: yes
+#     status_code: 201
+#     validate_certs: no

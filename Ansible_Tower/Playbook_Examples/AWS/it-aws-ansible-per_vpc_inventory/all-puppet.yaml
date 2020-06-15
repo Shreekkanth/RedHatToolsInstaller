@@ -1,0 +1,7 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes

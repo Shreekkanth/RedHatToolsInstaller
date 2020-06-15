@@ -1,0 +1,24 @@
+- name: Install ca-certificates
+  yum:
+    name: ca-certificates
+    state: present
+
+- name: Install openssl
+  yum:
+    name: openssl
+    state: present
+
+- name: Retrieve the starbucks.net certificate
+  get_url:
+    url: http://crl.starbucks.com/pki/MSORCA11_Starbucks%20Root%20CA.crt
+    dest: /tmp/starbucks.crt
+    mode: 700
+  register: certificate
+
+- name: Convert the certificate and add
+  shell: openssl x509 -in /tmp/starbucks.crt -inform der -out /etc/pki/ca-trust/source/anchors/starbucks.crt -outform PEM
+  when: certificate.changed
+
+- name: Update the certifcates
+  shell: update-ca-trust
+  when: certificate.changed

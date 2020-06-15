@@ -1,0 +1,25 @@
+---
+tower_projects:
+  - name: Test Project 1
+    description: Test Project
+    organization: Default
+    scm_branch: devel
+    scm_clean: true
+    scm_credential: SCM Test Cred
+    scm_delete_on_update: false
+    scm_type: git
+    scm_update_on_launch: true
+    scm_url: ssh://git@github.com/mcdmike74/mike-ncl
+    state: present
+
+  - name: Test Project 2
+    description: Test Project
+    organization: Default
+    scm_branch: master
+    scm_clean: true
+    scm_credential: SCM Test Cred
+    scm_delete_on_update: false
+    scm_type: git
+    scm_update_on_launch: true
+    scm_url: ssh://git@github.com/mcdmike74/mike-ncl
+    state: present

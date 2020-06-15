@@ -1,0 +1,15 @@
+---
+- name: check OS requirements
+  debug:
+    msg: "Operating System is {{ ansible_distribution }}"
+  failed_when: ansible_distribution != 'CentOS' and ansible_distribution != 'RedHat'
+
+- name: check memory requirements
+  debug:
+    msg: "Total memory is {{ ansible_memtotal_mb }}"
+  failed_when: ansible_memtotal_mb < 4000
+
+- name: check arch requirements
+  debug:
+    msg: "System architecture is {{ ansible_architecture }}"
+  failed_when: ansible_architecture != 'x86_64'

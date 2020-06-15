@@ -1,0 +1,15 @@
+---
+
+- hosts: masters
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - master_unschedulable
+
+- hosts: nodes
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - kubeadm_join

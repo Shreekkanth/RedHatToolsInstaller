@@ -1,0 +1,12 @@
+DEVICE={{ undercloud.external_interface.name }}
+ONBOOT=yes
+HOTPLUG=no
+NM_CONTROLLED=no
+PEERDNS=no
+BOOTPROTO=static
+IPADDR={{ overcloud.external_gateway }}
+NETMASK=255.255.255.0
+{% if undercloud.external_interface.vlan == True %}
+PHYSDEV={{ undercloud.external_interface.physdev }}
+VLAN=yes
+{% endif %}

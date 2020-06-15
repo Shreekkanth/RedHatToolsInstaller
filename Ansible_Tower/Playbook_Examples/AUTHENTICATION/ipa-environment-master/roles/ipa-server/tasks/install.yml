@@ -1,0 +1,26 @@
+---
+# RedHat repository
+- block:
+  - name: RedHat - Add repository
+    yum: name="{{ ipaserver_os_repo_url }}" state=present
+
+  - name: RedHat - Import repository key
+    rpm_key: key="{{ ipaserver_os_repo_key }}" state=present
+    when: ipaserver_os_repo_key is not none
+
+  when: >
+    ansible_os_family == 'RedHat'
+    and not ipaserver_os_packages
+
+- name: RedHat - Merge optional packages
+  set_fact:
+    ipaserver_packages: "{{ ipaserver_packages | default({}) | combine(ipaserver_packages_ad) }}"
+  when: ipa_server_trust_ad
+
+- name: RedHat - Install required packages
+  yum:
+    name: "{{ item.key if ('version' not in item.value) else ('%s-%s' % (item.key, item.value['version'])) }}"
+    state: "{{ item.value.state | default('present') }}"
+  with_dict: "{{ ipaserver_packages }}"
+  when: ansible_os_family == 'RedHat'
+  register: __ipaserver_installed_rh

@@ -1,0 +1,29 @@
+- name: Install director packages
+  yum: name=python-rdomanager-oscplugin state=present
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 10
+  when: osp_version == "osp7"
+
+- name: Install ceph-ansible package
+  yum: name=ceph-ansible state=present
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 10
+  when:
+        - ceph_docker|default(false)|bool == true
+        - osp_version == "osp12" or osp_version == "osp13"
+
+- name: Install overcloud images (OSP8+ only)
+  yum: name={{ item }} state=present
+  with_items:
+          - python-tripleoclient
+          - rhosp-director-images 
+          - rhosp-director-images-ipa
+  when: osp_version != "osp7"
+  register: result
+  until: result.rc == 0
+  retries: 5
+  delay: 10

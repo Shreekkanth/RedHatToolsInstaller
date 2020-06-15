@@ -1,0 +1,46 @@
+---
+- hosts: "localhost"
+  vars_prompt:
+    - name: "vctr_datacenter_input"
+      prompt: "Enter the datacenter where you would like to create the VM template.  Choices are 'hoppoc', 'duprd3'"
+      default: "hoppoc"
+      private: False
+    - name: "vctr_user_input"
+      prompt: "Enter the vCenter admin username"
+      default: "openadmin@vsphere.local"
+      private: False
+    - name: "vctr_pass_input"
+      prompt: "Enter the vCenter admin user's password"
+      private: True
+    - name: "vctr_vm_template_name_input"
+      prompt: "Enter the name of the VM template to destroy"
+      default: "zzz-rob-tst02"
+      private: False
+  tasks:
+    - name: "Ensure provided input variables are available across plays"
+      set_fact:
+        vctr_user: "{{ vctr_user_input }}"
+        vctr_pass: "{{ vctr_pass_input }}"
+        vctr_vm_template_name: "{{ vctr_vm_template_name_input }}"
+        vctr_datacenter_name: "{{ vctr_datacenter_input }}"
+      no_log: True
+      tags:
+        - "always"
+
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+      tags:
+        - "always"
+
+    - name: "Destroy VM Template"
+      vmware_guest:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        cluster: "{{ vctr_cluster }}"
+        folder: "{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        force: True
+        state: "absent"

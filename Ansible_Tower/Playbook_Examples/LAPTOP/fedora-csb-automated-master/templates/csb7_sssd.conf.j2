@@ -1,0 +1,35 @@
+[domain/redhat.com]
+access_provider = simple
+auth_provider = krb5
+cache_credentials = True
+chpass_provider = krb5
+create_homedir = True
+enumerate = False
+hbase_directory= /home
+id_provider = ldap
+krb5_kpasswd = kerberos.corp.redhat.com
+krb5_realm = REDHAT.COM
+krb5_server = kerberos.rdu.redhat.com,kerberos.corp.redhat.com
+krb5_store_password_if_offline = True
+ldap_search_base = dc=redhat,dc=com
+ldap_uri = ldap://ldap.corp.redhat.com/
+lookup_family_order = ipv4_only
+offline_credentials_expiration = 0
+override_homedir = /home/%u
+simple_allow_users = {{ kerberos_user }}
+
+[sssd]
+services = nss, pam
+config_file_version = 2
+reconnection_retries = 3
+sbus_timeout = 30
+domains = redhat.com
+debug_level = 9
+
+[nss]
+filter_groups = root
+filter_users = root
+reconnection_retries = 3
+
+[pam]
+reconnection_retries = 3

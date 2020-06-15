@@ -1,0 +1,16 @@
+---
+# defaults file for servicenow_read_write
+# If using a standard change provide a template name to use
+standard_change_template_name: "Add DNS host record"
+
+#this state var refers to absent or present not the state in the data portion of the task
+servicenow_state: present
+
+#table var must be specified to determing what type of ticket to open/close ie.. change_request, incident, etc..
+servicenow_table: change_request
+
+#Use this variable to create a standard change ticket using the template
+servicenow_use_standard_change_template: true
+
+#Use this ticket to force the role to create a new ticket
+servicenow_force_new: false

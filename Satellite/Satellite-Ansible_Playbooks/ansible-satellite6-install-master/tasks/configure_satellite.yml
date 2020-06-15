@@ -1,0 +1,27 @@
+---
+#Create Hammer directory on /root
+- name: configure | create .hammer directory on user
+  file: 
+    path=~/.hammer
+    state=directory
+    mode=0755
+
+#Copy the hammer configuration from template to the .hammer directory
+- name: configure | set configuration for hammer from template
+  template:
+    src=hammer_config.yml.j2
+    dest=~/.hammer/cli_config.yml
+
+#Copy the manifest
+- name: configure | copy manifest 
+  become: yes
+  copy: 
+    src=/root/Downloads/manifest*.zip
+    dest=/root/satellite_manifest.zip
+
+#Upload the manifest to the satellite
+- name: configure | upload the manifest
+  become: yes
+  shell: hammer subscription upload --file  /root/satellite_manifest.zip --organization {{ organization }}
+
+

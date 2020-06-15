@@ -1,0 +1,30 @@
+---
+- name: "Packages | Install RedHat CSB"
+  package:
+    name: "{{ csb_packages }}"
+    state: latest
+  when: csb_install_packages
+
+- name: "Packages | Install RedHat CSB from local files"
+  package:
+    name: "{{ csb_packages_offline | map('regex_replace', '^(.*)$', '/tmp/\\1') | list }}"
+    state: present
+  when: csb_install_packages_offline
+
+- name: "Packages | Install Chat Apps"
+  package:
+    name: "{{ chat_packages }}"
+    state: latest
+  when: chat_install_packages
+
+- name: "Packages | Install default applications"
+  package:
+    name: "{{ default_packages }}"
+    state: latest
+  when: default_install_packages
+
+- name: "Packages | Install BlueJeans"
+  package:
+    name: "{{ bluejeans_packages }}"
+    state: latest
+  when: bluejeans_install_packages

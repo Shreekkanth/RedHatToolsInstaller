@@ -1,0 +1,91 @@
+---
+# vars available across all roles
+
+env_name: development
+realm_name: IPA.DEF.IC.COM.AU
+identity_parcel_remote_realm: CORP.DEF.IC.COM.AU
+
+ipa_server_recovery_path: recovery/
+
+ipa_server_ds_secret: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          66613339656236396138373636356635356437333735323661383565643734646336343232353134
+          3663633862353865383262383032383030643764303935330a353939386461303831376436376533
+          61353162666339366366323663646236643830643862303336636332306330316338636331396661
+          3038373938653163340a613732383366343232616539666263633235333835376261646561376465
+          3033
+
+ipa_server_admin_secret: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31643265643238636237636337623535383137373663623834363465326263326437626664346133
+          3930613830396466313861626662303933383866653535640a613635333166353038653035363735
+          31613333663633333661633033313934356333666363366531366538306631623739323965373038
+          6565356530366230650a636537623964663664326438346339646663656231653434376631363466
+          6461
+
+test_framework_hosting_provider: bitbucket.org
+test_framework_hosted_pip_dependencies:
+  - "git+ssh://git@{{ test_framework_hosting_provider }}/redhat-anzservices/parcels.git#egg=parcels"
+
+identityParcel:
+  owner: devilhorn-service-principal
+  description: "IPA Provider Parcel"
+  users:
+    - username: solarisproxy
+      qualified: sysaccounts
+      password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          61333232623763343136316462333163346466306239653937353766353132623635323163343231
+          6163336434316631616337626664646339333832633064610a666339366635393430363635656337
+          61346164656538623232393735613430613839643039633863306231363164393535393764326432
+          3133613339336366330a303134633236373164306161613430343561663632663338643132653238
+          3764
+    - username: sudo
+      qualified: sysaccounts
+      password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          64383861383166653332366466646461363066393665346334313833626664396435636433623836
+          6534333636336233303539376539646265353038613432620a383334303130633633343536343061
+          37313363306634623136326332623530313032356137363337666561626437613432353963343061
+          3166303134656639390a346465626332396636666461633031613534613032346535643866636433
+          3335
+  authorisation_roles: []
+  resource_pools:
+    - name: ipaservers
+      # we have direct access to the api. Not something a customer can do at this time.
+      members: "{{ groups['ipa-masters'] | map('extract', hostvars, 'ansible_fqdn') | list }}"
+  authorisation_vectors:
+    - name: Provider - system auth
+      description: >
+        For client systems that cannot perform kerberos authentication the
+        system-auth facility provides a mechanism for IPA to perform the
+        authenication on the user's behalf (proxy).
+      type: hbac
+      enabled: True
+      service:
+        - system-auth
+      authorisation_usercategory: all
+      resource_pools:
+        - ipaservers
+  service_principals:
+    - owner: devilhorn-service-principal
+  provider_permissions:
+    - bindtype: all # Permissions applied to authenticated users
+      rules:
+        - rule: Provider - Read Group Membership
+          rights:
+            - read
+            - compare
+            - search
+          attrs:
+            - member
+            - memberhost
+            - memberof
+            - memberuid
+            - memberuser
+            - uniquemember
+          subtree: cn=groups,cn=accounts,dc=ipa,dc=def,dc=ic,dc=com,dc=au
+    - bindtype: anonymous # Permissions applied to anonymous and unauthenticated users
+      rules: []
+    - bindtype: permission # Permissions designated for use in RBAC rules
+      rules: []

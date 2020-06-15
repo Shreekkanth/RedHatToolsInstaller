@@ -1,0 +1,17 @@
+[rhel]
+name=RHEL
+baseurl=http://{{ repo_server }}/pub/content/dist/rhel/server/{{ ansible_distribution_major_version }}/{{ ansible_distribution_major_version }}Server/{{ ansible_architecture }}/os/
+gpgcheck=1
+enabled=1
+
+[rhscl]
+name=RHSCL
+baseurl=http://{{ repo_server }}/pub/content/dist/rhel/server/{{ ansible_distribution_major_version }}/{{ ansible_distribution_major_version }}Server/{{ ansible_architecture }}/rhscl/1/os/
+gpgcheck=1
+enabled=1
+
+[satellite]
+name=Satellite
+baseurl=http://{{ repo_server }}/pub/content/dist/rhel/server/{{ ansible_distribution_major_version }}/{{ ansible_distribution_major_version }}Server/{{ ansible_architecture }}/satellite/{{ sat6_version }}/os/
+gpgcheck=1
+enabled=1

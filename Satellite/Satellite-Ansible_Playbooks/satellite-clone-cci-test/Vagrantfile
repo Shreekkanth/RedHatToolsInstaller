@@ -1,0 +1,99 @@
+required_plugins = %w( vagrant-openstack-provider vagrant-triggers
+  vagrant-hostmanager)
+required_plugins.each do |plugin|
+  unless Vagrant.has_plugin? plugin || ARGV[0] == 'plugin'
+    exec "vagrant plugin install #{plugin};vagrant #{ARGV.join(" ")}"
+  end
+  require plugin
+end
+require 'yaml'
+
+current_dir = File.dirname(File.expand_path(__FILE__))
+config_yml  = YAML.load_file("#{current_dir}/.vagrant/vagrant.yml")
+basename = ENV['BASENAME']
+ruby_ver = ENV['RUBY_VER']
+$set_environment_variables = <<SCRIPT
+tee "/etc/profile.d/myvars.sh" > "/dev/null" <<EOF
+export TERM=xterm
+EOF
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAmyNc91bc6jdFWULISQlkOpkOsA96kMeWWreNXVJF5ebTPgm6VBSJmGY8M/8tq/ERhRJp+078ixunUb2Ks3ftqcQTLgGmT1lVbKrJ0b7y7rlh2N7u87rcIH914yTAZYhMwMK+vM+xgh9BzKxqhtYWJrUL8occtJLBREDf6pYnHBTVuAs8pSZ2au7xsgRZKqeFw4DS33CuINXqsR+wkw55Es3c2XPV+TrLrVXJPohJO4Az5IdpK0TdRK9hwW8sdM6mAW2hGI1BJ3au5vJTie63/arbEJt8Uku8mwlNASVbyDTYPjhERoe7vEi2PenqBwwgXYKdptbiZy2jDC3BInPoUQ==" >> $HOME/.ssh/authorized_keys
+if [ -e "/etc/fedora-release" ]; then
+  yum clean all
+  yum --disablerepo=updates install -y python libselinux-python python2-rpm yum
+fi
+SCRIPT
+
+
+Vagrant.configure('2') do |config|
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_guest = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.ignore_private_ip = true
+  config.hostmanager.include_offline = false
+  config.vm.provider :openstack do |os, override|
+    os.username           = "ci-ops-central"
+    os.password           = "changeme"
+    os.openstack_auth_url = "https://ci-rhos.centralci.eng.rdu2.redhat.com:13000/v2.0/tokens"
+    os.tenant_name        = "QE-test"
+    os.floating_ip_pool   = "10.8.240.0"
+    os.server_create_timeout = 400
+    os.server_active_timeout = 400
+    os.server_stop_timeout = 400
+    os.server_delete_timeout = 400
+  end
+
+  # The trigger will make sure there is ip address to allocate
+  config.trigger.before :up do
+    unless @machine.state.id == :active then
+      auth_url = "https://ci-rhos.centralci.eng.rdu2.redhat.com:13000"
+      credentials = "--os-username #{@machine.provider_config.username} " \
+        "--os-password #{@machine.provider_config.password} " \
+        "--os-auth-url #{auth_url} " \
+        "--os-project-name #{@machine.provider_config.tenant_name} "
+      floating_ip_list = "openstack #{credentials} floating ip list | grep ' None ' | wc -l"
+      floating_ips = %x[ #{floating_ip_list} ].to_i
+      if floating_ips < 1 then
+        run "openstack " + credentials + " floating ip create 10.8.240.0"
+      end
+    end
+  end
+
+
+  config.vm.provision "shell", inline: $set_environment_variables, run: "always"
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.inventory_path = "inventory"
+    ansible.config_file = "ansible.cfg"
+    ansible.playbook = "satellite-clone-playbook.yml"
+    ansible.raw_arguments = ["--skip-tags=rhn"]
+    ansible.become = true
+    ansible.verbose = "vv"
+  end
+
+  # Hack to run Inspec using vagrant, it replaces the command 'resume'
+  config.trigger.instead_of :resume do
+    ssh_info = @machine.ssh_info
+    run "rvm use #{ruby_ver}@cfme exec \
+    inspec exec .inspec/#{@machine.name} \
+    -i #{ssh_info[:private_key_path][0]} \
+    -t ssh://#{ssh_info[:username]}@#{ssh_info[:host]} \
+    --attrs .inspec/#{@machine.name}/profile-attribute.yml"
+  end
+
+  config_yml['systems'].each do |hostname, settings|
+    system = config_yml['types'][settings['type']]
+    config.vm.define hostname do |host|
+      host.hostmanager.aliases = %W(#{hostname}.test.redhat.com #{hostname})
+      host.vm.synced_folder '.', '.', disabled: true
+      host.ssh.username = system['username']
+      host.ssh.password = system['password']
+      host.ssh.pty = false
+      host.ssh.insert_key = true
+      host.vm.provider :openstack do |os|
+        os.server_name = "#{basename}#{hostname}"
+        os.flavor = system['flavor']
+        os.image  = system['image']
+      end
+    end
+  end
+end

@@ -1,0 +1,39 @@
+---
+  # Check client sees satellite
+  - name: "Make sure client can ping satellite"
+    command:
+      ping -c 3 "{{ satellite_reg }}"
+  
+  # Download bootstrap.py script to register the client
+  - name: "Download bootstrap.py script to register the client"
+    get_url:
+      url: "http://{{ satellite_reg }}/pub/bootstrap.py"
+      dest: "/root/bootstrap.py"
+      mode: 0744
+      validate_certs: no
+      force: yes
+
+  # Execute bootstrap.py to perform the client registry      
+  - name: "Execute bootstrap.py to perform the client registry"
+    command:
+      "/root/bootstrap.py -l '{{ sat_user }}' -p '{{ sat_pass }}' -s '{{ satellite_reg }}' -o '{{ sat_org }}' -L '{{ client_location }}' -g 'hg_{{ client_location }}-rhel{{ ansible_distribution_major_version }}' -a '{{ rhel7_ak_name }}' --enablerepos='{{ client_repos }}'  --unmanaged --force"
+    no_log: True
+
+  # Check that registered system has access to yum repos
+  - name: "Check that registered system has access to yum repos"
+    command:
+      "yum repolist"
+    register: yumrepolist
+    until: "{{ yumrepolist.rc }} == 0"
+    retries: 3
+    delay: 30
+
+  # Check that registered system can perform a puppetrun noop
+  - name: "Check that registered system can perform a puppetrun noop"
+    command:
+      "puppet agent --test --noop"
+    register: puppetnoop
+    until: "{{ puppetnoop.rc }} == 0"
+    retries: 3
+    delay: 30
+...

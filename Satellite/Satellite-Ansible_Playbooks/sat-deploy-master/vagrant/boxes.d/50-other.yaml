@@ -1,0 +1,6 @@
+prometheus:
+  box: 'rhel7'
+  memory: 8192
+  ansible:
+    group: 'monitoring'
+    playbook: 'playbooks/prometheus.yml'

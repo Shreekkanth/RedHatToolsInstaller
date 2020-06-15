@@ -1,0 +1,33 @@
+---
+# file: 02-jenkins-tasks.yml
+- name: deploy persistent jenkins from template
+  shell: 'oc process jenkins-persistent -p DISABLE_ADMINISTRATIVE_MONITORS=true -p MEMORY_LIMIT=2Gi -n {{ pam_demo_project }} | oc create -f - -n {{ pam_demo_project }}'
+
+- name: get jenkins route
+  command: 'oc get route jenkins --template=\{\{.spec.host\}\}'
+  register: jenkins_route
+
+- name: wait for jenkins to become ready
+  uri:
+    url: 'https://{{ jenkins_route.stdout }}'
+    validate_certs: false
+    status_code: 200,403
+  retries: 10
+  delay: 60
+  register: jresult
+  until: ('status' in jresult) and (jresult.status == 200 or jresult.status == 403)
+  changed_when: false
+
+- name: create secret for pipeline
+  command: 'oc create secret generic gitlab --type=kubernetes.io/basic-auth --from-literal=username={{ git_username }} --from-literal=password={{ git_access_token }}'
+
+- name: create work-item-handlers pipeline
+  command: 'oc new-build {{ pam_demo_working_dir }}/pam-demo/work-item-handlers/ --name=work-item-handlers --strategy=pipeline --source-secret=gitlab'
+
+- name: wait for work-item-handlers to finish building before progressing
+  command: 'oc get build/work-item-handlers-1 --template=\{\{.status.phase\}\}'
+  retries: 30
+  delay: 30
+  register: build_result
+  until: build_result.stdout == 'Complete'
+  changed_when: false

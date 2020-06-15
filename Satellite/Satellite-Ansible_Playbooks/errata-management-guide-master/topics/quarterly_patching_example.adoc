@@ -1,0 +1,57 @@
+= Quarterly Patching Example
+
+This chapter explains how to deploy errata to systems only once each quarter.
+
+In this example, we assume that we are patching systems in March of 2016, at the end of the first quarter of 2016.
+
+[NOTE]
+This procedure replicates the functionality of the `spacewalk-clone-by-date` command that was present in Satellite 5, and was described in a document written by Rich Jerrido. The command-line tool `hammer` is used in Satellite 6 to perform the same functions that the `spacewalk-clone-by-date` command performed in Satellite 5.
+
+== Defining a Content View to Filter Errata
+
+In this procedure, we create a content view, add a filter to the content view to include the errata in the content view, and then restrict the filter by date by means of a filter rule.
+
+. Create a content view.
++
+----
+# hammer -p PASSWORD content-view create --name='filter_test' --organization="Default Organization"
+----
++
+. Create a filter for the errata.
++
+----
+# hammer -p PASSWORD content-view filter create --name='filter_test' --organization="Default Organization" --name='my-filter' --content-view='filter_test'   --type=erratum
+----
++
+. Create the filter rule with the date.
++
+In this example, the date is 30 Mar 2016. This rule means that all errata on or after 30 Mar 2016 will be excluded.
++
+----
+# hammer -p PASSWORD content-view filter rule create --content-view='filter_test'  --organization="Default Organization"  --content-view-filter='my-filter' --start-date=2016-03-30  --types=security,enhancement,bugfix
+----
++
+. Promote the content view to the lifecycle environment so that the errata in it are availalble to that lifecycle environment:
++
+----
+$ hammer content-view version promote
+  --content-view cv_name \
+  --organization-label org_label --to-lifecycle-environment env_name
+----
++
+. Use the following command to add a repository to a content view without clobbering the existing list of repositories that have been added to that content view:
++
+----
+$ hammer content-view add-repository --organization-label org_label --name cv_name --repository-id repo_ID
+----
+
+[NOTE]
+Repeat this procedure in three months, substituting `06-01-2016` for the date `03-01-2016` in the step in which the filter rule is created.
+
+
+== External Links
+
+. https://access.redhat.com/documentation/en-us/red_hat_satellite/6.2/html-single/hammer_cli_guide/#chap-CLI_Guide-Managing_Errata[Applying specific Errata to hosts using the Hammer CLI] - This section from the Hammer CLI Guide explains how to apply specific Errata to hosts.
+
+. https://access.redhat.com/documentation/en-us/red_hat_satellite/6.2/html-single/hammer_cli_guide/#sect-CLI_Guide-Adding_Repositories_to_a_Content_View[Section in the Hammer CLI Guide for Adding Repositories to a Content View]
+

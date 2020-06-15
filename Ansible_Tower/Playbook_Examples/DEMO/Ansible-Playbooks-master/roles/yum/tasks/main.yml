@@ -1,0 +1,35 @@
+---
+- name: install yum plugins and helpers
+  yum: name={{item}} state=installed
+  when: ansible_distribution_release != 'Tikanga'
+  with_items:
+    - yum-utils
+    - yum-plugin-changelog
+    - yum-plugin-downloadonly
+    - yum-plugin-security
+    - yum-plugin-versionlock
+
+- name: install el5 yum plugins and helpers
+  yum: name={{item}} state=installed
+  when: ansible_distribution_release == 'Tikanga'
+  with_items:
+    - yum-utils
+    - yum-downloadonly
+    - yum-security
+    - yum-versionlock
+
+- name: Copy over versionlock.list
+  copy: src={{item}} dest=/etc/yum/pluginconf.d/versionlock.list
+        owner=root group=root mode=0644
+  first_available_file:
+      - versionlock.list.{{ansible_hostname}}
+      - versionlock.list.{{ansible_distribution}}
+      - versionlock.list
+
+- include: repos_rpmfusion.yml
+
+- include: repos_livna.yml
+
+- include: repos_epel.yml
+
+- include: repos_elrepo.yml

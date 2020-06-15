@@ -1,0 +1,18 @@
+---
+- name: Network Inventory Test
+  description: This is description
+
+  teams:
+    - name: Network Operations
+      role: use
+    - name: Network Engineering
+      role: use
+    - name: Network Administrators
+      role: admin
+
+  sources:
+    - name: hosts.network
+      project: Network Inventory
+      path: hosts.network
+      source: scm
+

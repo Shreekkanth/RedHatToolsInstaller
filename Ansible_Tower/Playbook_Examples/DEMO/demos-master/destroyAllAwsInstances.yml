@@ -1,0 +1,30 @@
+---
+- name: Gather EC2 facts
+  hosts: "{{ ec2_hosts }}"
+  gather_facts: false
+
+  vars:
+    ec2_region: us-west-2
+    ec2_hosts: tag_Name_dsilva_demo
+
+  tasks:
+  - name: Gather EC2 facts
+    ec2_facts:
+
+- name: Terminate EC2 hosts
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    ec2_hosts: tag_Name_dsilva_demo
+    ec2_region: us-west-2
+
+  tasks:
+  - name: Terminate EC2 hosts
+    ec2:
+      region: "{{ ec2_region }}"
+      instance_tags:
+        Name: dsilva_demo
+      state: absent
+      wait: True

@@ -1,0 +1,50 @@
+---
+- name: "Repositories | Setup CSB Repo"
+  yum_repository:
+    name: rhel7-csb
+    description: RHEL7 CSB packages Staging
+    baseurl: http://hdn.corp.redhat.com/rhel7-csb-stage/
+    gpgcheck: false
+    enabled: true
+    file: rhel7-csb-stage
+    exclude: "{{ csb_exclude_packages }}"
+  register: reg_csb
+  when: enable_csb
+
+- name: "Repositories | Install RPM Fusion (Free)"
+  package:
+    name: "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+  when: enable_rpmfusion_free
+
+- name: "Repositories | Install RPM Fusion (Non-Free)"
+  package:
+    name: "https://download1.rpmfusion.org/free/fedora/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm"
+    state: present
+  when: enable_rpmfusion_nonfree
+
+# NOTE: As per linphone documentation:
+# https://wiki.linphone.org/xwiki/wiki/public/view/Flexisip/Installation/
+# Firewall needs configuring if repo is enabled
+- name: "Repositories | Setup Linphone"
+  yum_repository:
+    name: linphone
+    description: Linphone
+    baseurl: "https://www.linphone.org/snapshots/centos7/"
+    gpgcheck: false
+    enabled: true
+    file: linphone
+  register: reg_linphone
+  when: enable_linphone
+
+- name: "Repositories | Setup RocketChat-Dev (COPR)"
+  yum_repository:
+    name: xenithorb-rocketchat-dev
+    description: Copr repo for rocketchat-dev owned by xenithorb
+    baseurl: "https://copr-be.cloud.fedoraproject.org/results/xenithorb/rocketchat-dev/fedora-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
+    gpgcheck: true
+    gpgkey: "https://copr-be.cloud.fedoraproject.org/results/xenithorb/rocketchat-dev/pubkey.gpg"
+    enabled: true
+    file: rocketchat-dev
+  register: reg_rocketchat
+  when: enable_rocketchat

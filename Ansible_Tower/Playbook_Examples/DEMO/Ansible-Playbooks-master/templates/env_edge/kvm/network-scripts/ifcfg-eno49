@@ -1,0 +1,5 @@
+BOOTPROTO=none
+NAME=eno49
+UUID=ae9329d2-b495-441c-b1f3-b3fa5eedd978
+DEVICE=eno49
+ONBOOT=no

@@ -1,0 +1,125 @@
+---
+#
+# Configuration jboss-cli.xml
+#
+# <default-controller>
+#   <protocol>remote</protocol>
+#   <host>localhost</host>
+#   <port>9999</port>
+# </default-controller>
+#
+# <resolve-parameter-values>true</resolve-parameter-values>
+#
+#
+- name: Set Configuration JBoss CLI Facts
+  set_fact:
+    jboss_cli_xml_path: "{{ jboss_eap_home + 'bin/jboss-cli.xml'}}"
+    namespace_jboss_cli: "urn:jboss:cli:3.1"
+  tags:
+    - config_jboss_cli
+
+####
+#- name: Update protocol element of the default-controller element
+#  xml:
+#    path: "{{ jboss_cli_xml_path }}"
+#    xpath: /x:jboss-cli/x:default-controller/x:protocol
+#    value: "remote"
+#    state: present
+#    backup: yes
+#    namespaces:
+#      x: "{{namespace_jboss_cli}}"
+#  tags:
+#    - config_jboss_cli
+
+####
+- name: Update port element of the default-controller element
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:default-controller/x:port
+    value: "{{ jboss_socket_binding_port_offset + 9990 }}"
+    state: present
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+
+####
+- name: Update resolve-parameter-values element
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:resolve-parameter-values
+    value: "true"
+    state: present
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+
+####
+- name: Update host element of the default-controller element
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:default-controller/x:host
+    value: "{{inventory_hostname}}"
+    state: present
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+  when: jboss_iam_dev == false
+
+#### Restore jboss-cli.xml configuration default
+- name: Update protocol element of the default-controller element to default value
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:default-controller/x:protocol
+    value: "http-remoting"
+    state: present
+    backup: yes
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+  when: jboss_cli_config_original
+
+####
+- name: Update port element of the default-controller element to default value
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:default-controller/x:port
+    value: "9990"
+    state: present
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+  when: jboss_cli_config_original
+
+####
+- name: Update resolve-parameter-values element to default value
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:resolve-parameter-values
+    value: "false"
+    state: present
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+  when: jboss_cli_config_original
+
+####
+- name: Update host element of the default-controller element to default value
+  xml:
+    path: "{{ jboss_cli_xml_path }}"
+    xpath: /x:jboss-cli/x:default-controller/x:host
+    value: "localhost"
+    state: present
+    namespaces:
+      x: "{{namespace_jboss_cli}}"
+  tags:
+    - config_jboss_cli
+  when: jboss_cli_config_original
+
+#
+# EOF

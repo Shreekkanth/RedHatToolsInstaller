@@ -1,0 +1,4 @@
+---
+
+- name: copy repo file
+  template: src=local.repo.j2 dest=/etc/yum.repos.d/local.repo

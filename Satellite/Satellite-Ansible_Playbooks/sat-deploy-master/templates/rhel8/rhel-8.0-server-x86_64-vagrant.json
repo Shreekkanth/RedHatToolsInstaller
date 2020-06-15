@@ -1,0 +1,71 @@
+{
+    "variables": {
+        "user": "vagrant",
+        "password": "vagrant",
+        "disk_size": "100000"
+    },
+
+    "builders":
+    [
+        {
+            "name": "rhel-8.0-x86_64-server-vagrant",
+
+            "type": "qemu",
+            "format": "qcow2",
+            "accelerator": "kvm",
+            "headless": true,
+            "disk_size": "{{ user `disk_size`}}",
+            "disk_discard": "unmap",
+            "disk_interface": "virtio-scsi",
+
+            "iso_url": "http://download.devel.redhat.com/released/RHEL-8/8.0.0/BaseOS/x86_64/iso/RHEL-8.0.0-20190404.2-BaseOS-x86_64-boot.iso",
+            "iso_checksum": "7f4cf708cef1514a6b018c456cb10e3a",
+            "iso_checksum_type": "md5",
+
+            "http_directory": "http",
+
+            "memory": "2048",
+
+            "ssh_username": "{{user `user`}}",
+            "ssh_password": "{{user `password`}}",
+            "ssh_wait_timeout": "20m",
+            "shutdown_command": "echo '{{user `password`}}'|sudo -S shutdown -P now",
+
+            "boot_wait": "2s",
+            "boot_command": [
+                "<tab> linux text biosdevname=0 net.ifnames=0 ip=dhcp ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>"
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/vagrant.sh"
+            ]
+        },
+        {
+            "type": "ansible",
+            "extra_arguments": [ "--extra-vars", "activation_key={{user `activation_key`}} ansible_python_interpreter=/usr/libexec/platform-python" ],
+            "playbook_file": "../../playbooks/register.yml",
+            "ansible_env_vars": [ "ANSIBLE_CONFIG=../ansible.cfg" ]
+        },
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/cleanup.sh"
+            ]
+        }
+    ],
+
+    "post-processors": [
+        {
+            "keep_input_artifact": false,
+            "output": "{{user `build_dir`}}rhel-8.0_x86_64-server.box",
+            "type": "vagrant"
+        }
+    ]
+}

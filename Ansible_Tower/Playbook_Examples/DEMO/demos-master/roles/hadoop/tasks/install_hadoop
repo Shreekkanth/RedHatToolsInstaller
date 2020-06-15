@@ -1,0 +1,15 @@
+---
+
+- name: install docker-python package
+  yum: name=docker-python state=installed
+
+- name: application container
+  docker:
+    name: hadoop
+    hostname: quickstart.cloudera
+    image: cloudera/quickstart:latest
+    pull: always
+    state: running
+    privileged: True
+    detach: True
+    command: /usr/bin/docker-quickstart

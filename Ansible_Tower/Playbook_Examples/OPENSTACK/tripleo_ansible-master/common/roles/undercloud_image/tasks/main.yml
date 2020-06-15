@@ -1,0 +1,28 @@
+---
+
+- name: install overcloud images
+  become: yes
+  yum: name={{ item }} state=latest
+  with_items: "{{ image_packages }}"
+
+- name: create image directory
+  file: path="/home/{{ stack_user }}/images" state=directory
+
+- name: image extract
+  unarchive: src={{ item }} dest="/home/{{ stack_user }}/images" remote_src=yes 
+  with_items: "{{ image_tarballs }}" 
+
+- name: check if images are already uploaded
+  shell: . ~/stackrc && openstack image list | grep overcloud-full
+  changed_when: false
+  check_mode: no
+  ignore_errors: true
+  register: result
+
+- name: image upload
+  shell: . ~/stackrc && openstack overcloud image upload --image-path /home/stack/images
+  register: result
+  when: result|failed
+
+#- debug: var=result
+

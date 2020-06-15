@@ -1,0 +1,9 @@
+[satellite]
+satellite.info.net satellite_deployment_version=6.2
+
+[capsules]
+capsule01.info.net satellite_deployment_version=6.2 capsule_location=Caixa
+capsule02.info.net satellite_deployment_version=6.2 capsule_location=Caixa
+
+[clients]
+client7.info.net satellite_deployment_version=6.2 satellite_reg=satellite.info.net  client_location=Caixa 

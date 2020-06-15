@@ -1,0 +1,14 @@
+---
+# tasks file for tower_inventories
+
+
+- name: Tower inventories
+  tower_inventory:
+    description: "{{ item.description }}"
+    host_filter: "{{ item.host_filter }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    organization: "{{ item.organization }}"
+    state: "{{ item.state }}"
+    tower_verify_ssl: "{{ check_ssl }}"
+    variables: "{{ item.variables }}"

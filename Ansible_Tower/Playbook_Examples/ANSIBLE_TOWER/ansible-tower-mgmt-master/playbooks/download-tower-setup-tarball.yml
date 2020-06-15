@@ -1,0 +1,15 @@
+---
+
+- name: Download the Ansible Tower Installer Tarball
+  hosts: localhost
+  vars:
+    ansible_tower_setup_version: '3.2.4'
+  connection: local
+  gather_facts: no
+  become: no
+  tasks:
+
+    - name: Download the Ansible Tower Installer
+      import_role:
+        name: ansible-tower-downloader
+

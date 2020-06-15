@@ -1,0 +1,44 @@
+---
+####
+- name: Create JBoss EAP Base Destination
+  file:
+    path:  "{{ jboss_eap_base }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode:  "0775"
+  tags:
+    - jboss_eap
+
+#### Defensive Programming To Check If EAP Is Already Installed
+- name: Check Existence of Libraries JBoss EAP
+  stat:
+    path: "{{ jboss_eap_version_txt_path }}"
+  register: jboss_eap_exists
+  tags:
+    - jboss_eap
+
+####
+- name: Extract JBoss EAP Libraries
+  unarchive:
+    src:        "{{ jboss_eap_artifact }}"
+    dest:       "{{ jboss_eap_base }}"
+    remote_src: no
+    owner:      "{{ jboss_eap_user }}"
+    group:      "{{ jboss_eap_group }}"
+  tags:
+    - jboss_eap
+  when: jboss_eap_exists.stat.exists == false
+
+#### Patches: JBoss EAP
+- name: Applying the JBoss EAP Patches
+  include_tasks: jboss_eap_patches.yml
+  vars:
+    eapPatch: "{{ item }}"
+  with_items: "{{ jboss_eap_patches_list }}"
+  when: jboss_eap_apply_patches == true
+  tags:
+    - jboss_eap_patch
+
+#
+# EOF

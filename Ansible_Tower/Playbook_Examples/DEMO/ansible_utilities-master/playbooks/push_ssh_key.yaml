@@ -1,0 +1,18 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Check if SSH key exists
+      local_action: stat path=files/{{ key_name }}
+      register: ssh_key
+
+    - name: Fail if SSH key does not exist
+      fail:
+        msg: "Expected SSH key {{ key_name }} cannot be found"
+      when: ssh_key.stat.exists == False
+  
+    - name: Push SSH key
+      authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "{{ lookup('file', 'files/{{ key_name }}') }}"

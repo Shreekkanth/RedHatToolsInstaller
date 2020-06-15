@@ -1,0 +1,10 @@
+---
+
+- name: wait for cluster healthiness
+  shell: docker exec etcd etcdctl cluster-health
+  register: result
+  until: result.stdout.find("cluster is healthy") != -1
+  retries: 5
+  delay: 10
+  when: inventory_hostname == groups['masters'][0]
+

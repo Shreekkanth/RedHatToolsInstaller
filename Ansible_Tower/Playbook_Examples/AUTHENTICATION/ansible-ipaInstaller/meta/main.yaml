@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  authors: David Sanz Moreno (dsanz@redhat.com)
+  description: Red Hat IDM Installation Guide
+  company: Red Hat
+  license: TBD
+  min_ansible_version: 2.2.1.0
+  platforms:
+  - name: EL
+    versions:
+    - 7.3
+  galaxy_tags:
+    - idm
+    - freeipa
+dependencies:

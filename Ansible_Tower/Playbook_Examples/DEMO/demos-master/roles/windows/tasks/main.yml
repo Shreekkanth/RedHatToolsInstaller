@@ -1,0 +1,4 @@
+---
+- include: ping.yml
+- include: user.yml
+- include: services.yml

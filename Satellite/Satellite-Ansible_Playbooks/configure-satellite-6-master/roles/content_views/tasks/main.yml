@@ -1,0 +1,13 @@
+---
+# tasks file for content_views
+- name: Create Content Views
+  katello_content_view:
+    username: "{{ satellite_user }}"
+    password: "{{ satellite_password }}"
+    server_url: "https://{{ satellite_host }}"
+    verify_ssl: false
+    organization: "{{ org_name }}"
+    name: "{{ item.name }}"
+    repositories: "{{ item.repositories }}"
+  loop: "{{ content_views }}"
+

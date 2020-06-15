@@ -1,0 +1,4 @@
+---
+# defaults file for subscribe_repository
+subscribe_repository_repo_file:
+- openshift.repo

@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    my_subnet: 192.168.1.0/24
+
+  tasks:
+    - name: Render 'network'
+      debug:
+        msg: "Network: {{ my_subnet | ipaddr('network') }}"
+
+    - name: Render 'netmask'
+      debug:
+        msg: "Netmask: {{ my_subnet | ipaddr('netmask') }}"
+
+    - name: Render 'next_usable'
+      debug:
+        msg: "Next Usable: {{ my_subnet | ipaddr('next_usable') }}"
+
+    - name: Render 'prefix'
+      debug:
+        msg: "Prefix: {{ my_subnet | ipaddr('prefix') }}"

@@ -1,0 +1,6 @@
+[Unit]
+Description=Audit my files for actions needed
+
+[Service]
+Type=oneshot
+ExecStart=/home/bexelbie/bin/personal-audit

@@ -1,0 +1,3 @@
+DEVICE=br-externalapi
+TYPE=Bridge
+ONBOOT=yes

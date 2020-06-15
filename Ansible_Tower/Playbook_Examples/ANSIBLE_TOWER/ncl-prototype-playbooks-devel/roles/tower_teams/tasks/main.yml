@@ -1,0 +1,10 @@
+---
+# tasks file for tower_teams
+
+- name: Add teams to Tower
+  tower_team:
+    description: "{{ item.description }}"
+    name: "{{ item.name }}"
+    organization: "{{ item.organization }}"
+    state: "{{ item.state }}"
+    tower_verify_ssl: "{{ check_ssl }}"

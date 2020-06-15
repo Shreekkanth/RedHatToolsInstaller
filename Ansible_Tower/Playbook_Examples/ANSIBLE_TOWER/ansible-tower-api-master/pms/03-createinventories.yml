@@ -1,0 +1,122 @@
+
+---
+- name: Create PMS Inventories
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    org_id: 3
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Create PMS DB Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "PMS DB Server"
+        }
+      body_format: json
+      status_code: 201
+
+  - name: Create PMS ESB Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "PMS ESB Server"
+        }
+      body_format: json
+      status_code: 201
+
+  - name: Create PMS App Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "PMS App Server"
+        }
+      body_format: json
+      status_code: 201
+
+  - name: Create PMS Tomcat Report  Server Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "PMS Tomcat Report Server"
+        }
+      body_format: json
+      status_code: 201
+
+  - name: Create PMS Batch Server Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "PMS Batch Server"
+        }
+      body_format: json
+      status_code: 201
+
+  - name: Create PMS Tomcat Web Server Inventory
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+         "organization": "{{ org_id }}",
+         "kind": "",
+         "name": "PMS Tomcat Web Server"
+        }
+      body_format: json
+      status_code: 201

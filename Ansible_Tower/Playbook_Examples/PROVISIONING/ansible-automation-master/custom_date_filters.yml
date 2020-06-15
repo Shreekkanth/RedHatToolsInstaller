@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Get datetime from local system
+      setup:
+        filter: ansible_date_time
+      register: info
+
+    - name: Debug Filter - epoch to_iso8601
+      debug:
+        msg: "{{ info.ansible_facts.ansible_date_time.epoch + 300 | to_iso8601 }}"

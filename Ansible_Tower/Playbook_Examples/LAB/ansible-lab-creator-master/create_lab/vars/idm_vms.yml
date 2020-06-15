@@ -1,0 +1,28 @@
+---
+# Set this to true if you want to delete lab before rebuilding
+local_lab_delete: "true"
+
+# Environmental variables
+platform_group_name: "idm"
+
+# Tower passwords to override. 
+#admin_password: "password"
+#pg_password: "password"
+#rabbitmq_password: "password"
+
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+
+# Virtual Machine details for build roles
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  rhel7-idm01:
+    mem: 8192 
+    cpus: 4
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.10
+

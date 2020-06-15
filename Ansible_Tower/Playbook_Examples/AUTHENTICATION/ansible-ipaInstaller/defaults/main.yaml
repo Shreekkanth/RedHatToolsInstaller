@@ -1,0 +1,13 @@
+ipa_domain: 'example.org'
+dspassword: 'temporal'
+adminpassword: 'temporal'
+register_username: 'register'
+register_password: 'temporal'
+passwordpolicy_name: 'serviceaccounts'
+ipa_server: 'ipa-server.example.org'
+package_list:
+  - ipa-server-4.4.0-14.el7_3.6.x86_64
+  - ipa-server-trust-ad-4.4.0-14.el7_3.6.x86_64
+  - rng-tools-5-8.el7.x86_64
+  - samba-4.4.4-12.el7_3.x86_64
+  - samba-client-4.4.4-12.el7_3.x86_64

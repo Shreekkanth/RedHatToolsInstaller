@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Create Training Users to JBoss EAP & DM
+# Created-------: {{ansible_date_time.iso8601}}
+# ============================================================
+#
+# chmod 774 *.sh
+#
+#
+#
+# EOH
+#
+# Users PoC
+{% for item in poc_users %}
+{{ jboss_eap_home }}bin/add-user.sh -a -u {{item.name}} -p {{item.password}} --role "{{item.roles}}"
+{% endfor %}
+
+#
+# EOF

@@ -1,0 +1,13 @@
+---
+- name: "Tuned | Install tuned"
+  package:
+    name: "{{ tuned_packages }}"
+    state: latest
+  register: reg_tuned_packages
+
+- name: "Tuned | Enabled and Start the Tuned services"
+  package:
+    name: tuned
+    state: started
+    enabled: true
+  when: "'tuned' in reg_tuned_packages['results']"

@@ -1,0 +1,25 @@
+---
+
+- name: restart nova
+  become: yes
+  service: name={{ item }} state=restarted
+  with_items:
+    - openstack-nova-api
+    - openstack-nova-cert
+    - openstack-nova-compute
+    - openstack-nova-conductor
+    - openstack-nova-scheduler
+
+- name: restart neutron
+  become: yes
+  service: name={{ item }} state=restarted
+  with_items:
+    - neutron-dhcp-agent
+    - neutron-openvswitch-agent
+    - neutron-server
+
+- name: restart dhcp_agent
+  become: yes
+  service: name={{ item }} state=restarted
+  with_items:
+    - neutron-dhcp-agent

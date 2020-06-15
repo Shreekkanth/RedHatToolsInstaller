@@ -1,0 +1,171 @@
+--- 
+  "capsule::params::parent_fqdn": satnode1.sysmgmt.bos.redhat.com
+  "capsule::params::certs_tar": !ruby/sym undef
+  "capsule::params::pulp": false
+  "capsule::params::pulp_master": false
+  "capsule::params::pulp_admin_password": du8LwxYi2vABC6WMwqJrYEzCCwHaFvAW
+  "capsule::params::pulp_oauth_effective_user": admin
+  "capsule::params::pulp_oauth_key": katello
+  "capsule::params::pulp_oauth_secret": !ruby/sym undef
+  "capsule::params::foreman_proxy_port": "9090"
+  "capsule::params::foreman_proxy_http": true
+  "capsule::params::foreman_proxy_http_port": "8000"
+  "capsule::params::puppet": false
+  "capsule::params::puppetca": false
+  "capsule::params::puppet_ca_proxy": ""
+  "capsule::params::reverse_proxy": false
+  "capsule::params::reverse_proxy_port": "8443"
+  "capsule::params::tftp": false
+  "capsule::params::tftp_syslinux_root": !ruby/sym undef
+  "capsule::params::tftp_syslinux_files": !ruby/sym undef
+  "capsule::params::tftp_root": /var/lib/tftpboot/
+  "capsule::params::tftp_dirs": 
+    - /var/lib/tftpboot//pxelinux.cfg
+    - /var/lib/tftpboot//boot
+  "capsule::params::tftp_servername": !ruby/sym undef
+  "capsule::params::bmc": false
+  "capsule::params::bmc_default_provider": ipmitool
+  "capsule::params::dhcp": false
+  "capsule::params::dhcp_listen_on": https
+  "capsule::params::dhcp_option_domain": 
+    - sysmgmt.bos.redhat.com
+  "capsule::params::dhcp_managed": true
+  "capsule::params::dhcp_interface": eth0
+  "capsule::params::dhcp_gateway": "192.168.100.1"
+  "capsule::params::dhcp_range": false
+  "capsule::params::dhcp_nameservers": default
+  "capsule::params::dhcp_vendor": isc
+  "capsule::params::dhcp_config": /etc/dhcp/dhcpd.conf
+  "capsule::params::dhcp_leases": /var/lib/dhcpd/dhcpd.leases
+  "capsule::params::dhcp_key_name": ""
+  "capsule::params::dhcp_key_secret": ""
+  "capsule::params::dns": false
+  "capsule::params::dns_managed": true
+  "capsule::params::dns_provider": nsupdate
+  "capsule::params::dns_zone": sysmgmt.bos.redhat.com
+  "capsule::params::dns_reverse": "100.168.192.in-addr.arpa"
+  "capsule::params::dns_interface": eth0
+  "capsule::params::dns_server": "127.0.0.1"
+  "capsule::params::dns_ttl": "86400"
+  "capsule::params::dns_tsig_keytab": /etc/foreman-proxy/dns.keytab
+  "capsule::params::dns_tsig_principal": "foremanproxy/satnode1.sysmgmt.bos.redhat.com@SYSMGMT.BOS.REDHAT.COM"
+  "capsule::params::dns_forwarders": []
+  "capsule::params::virsh_network": default
+  "capsule::params::realm": false
+  "capsule::params::realm_provider": freeipa
+  "capsule::params::realm_keytab": /etc/foreman-proxy/freeipa.keytab
+  "capsule::params::realm_principal": "realm-proxy@EXAMPLE.COM"
+  "capsule::params::freeipa_remove_dns": true
+  "capsule::params::register_in_foreman": false
+  "capsule::params::foreman_oauth_effective_user": admin
+  "capsule::params::foreman_oauth_key": "6YeishxzC3NPUgTSVNnf9iAQVo6rvnk3"
+  "capsule::params::foreman_oauth_secret": gTTbLvQebqJuRtaDomD28VdC7xG6bGYK
+  "capsule::params::rhsm_url": /rhsm
+  "capsule::params::templates": true
+  "capsule::params::qpid_router": true
+  "capsule::params::qpid_router_hub_addr": "0.0.0.0"
+  "capsule::params::qpid_router_hub_port": "5646"
+  "capsule::params::qpid_router_agent_addr": "0.0.0.0"
+  "capsule::params::qpid_router_agent_port": "5647"
+  "capsule::params::qpid_router_broker_addr": satnode1.sysmgmt.bos.redhat.com
+  "capsule::params::qpid_router_broker_port": "5671"
+  "certs::params::log_dir": /var/log/certs
+  "certs::params::node_fqdn": satnode1.sysmgmt.bos.redhat.com
+  "certs::params::generate": true
+  "certs::params::regenerate": false
+  "certs::params::regenerate_ca": false
+  "certs::params::deploy": true
+  "certs::params::ca_common_name": satnode1.sysmgmt.bos.redhat.com
+  "certs::params::country": US
+  "certs::params::state": "North Carolina"
+  "certs::params::city": Raleigh
+  "certs::params::org": Katello
+  "certs::params::org_unit": SomeOrgUnit
+  "certs::params::expiration": "7300"
+  "certs::params::ca_expiration": "36500"
+  "certs::params::server_cert": !ruby/sym undef
+  "certs::params::server_key": !ruby/sym undef
+  "certs::params::server_cert_req": !ruby/sym undef
+  "certs::params::server_ca_cert": !ruby/sym undef
+  "certs::params::pki_dir": /etc/pki/katello
+  "certs::params::ssl_build_dir": /root/ssl-build
+  "certs::params::password_file_dir": "certs::params::password_file_dir"
+  "certs::params::user": root
+  "certs::params::group": root
+  "certs::params::default_ca_name": katello-default-ca
+  "certs::params::server_ca_name": katello-server-ca
+  "foreman::params::foreman_url": "https://satnode1.sysmgmt.bos.redhat.com"
+  "foreman::params::unattended": true
+  "foreman::params::authentication": true
+  "foreman::params::passenger": true
+  "foreman::params::passenger_scl": !ruby/sym undef
+  "foreman::params::passenger_ruby": /usr/bin/ruby193-ruby
+  "foreman::params::passenger_ruby_package": ruby193-rubygem-passenger-native
+  "foreman::params::use_vhost": true
+  "foreman::params::servername": satnode1.sysmgmt.bos.redhat.com
+  "foreman::params::ssl": true
+  "foreman::params::custom_repo": false
+  "foreman::params::repo": stable
+  "foreman::params::configure_epel_repo": true
+  "foreman::params::configure_scl_repo": false
+  "foreman::params::configure_brightbox_repo": false
+  "foreman::params::selinux": !ruby/sym undef
+  "foreman::params::gpgcheck": true
+  "foreman::params::version": present
+  "foreman::params::db_manage": true
+  "foreman::params::db_type": postgresql
+  "foreman::params::db_username": foreman
+  "foreman::params::db_password": KuRztQTGM7zLpGSNVXTyTMJn87r5K4ZH
+  "foreman::params::app_root": /usr/share/foreman
+  "foreman::params::user": foreman
+  "foreman::params::group": foreman
+  "foreman::params::user_groups": 
+    - puppet
+  "foreman::params::environment": production
+  "foreman::params::puppet_home": /var/lib/puppet
+  "foreman::params::locations_enabled": false
+  "foreman::params::organizations_enabled": false
+  "foreman::params::passenger_interface": ""
+  "foreman::params::server_ssl_ca": /var/lib/puppet/ssl/certs/ca.pem
+  "foreman::params::server_ssl_chain": /var/lib/puppet/ssl/certs/ca.pem
+  "foreman::params::server_ssl_cert": /var/lib/puppet/ssl/certs/satnode1.sysmgmt.bos.redhat.com.pem
+  "foreman::params::server_ssl_key": /var/lib/puppet/ssl/private_keys/satnode1.sysmgmt.bos.redhat.com.pem
+  "foreman::params::oauth_active": true
+  "foreman::params::oauth_map_users": false
+  "foreman::params::oauth_consumer_key": "6YeishxzC3NPUgTSVNnf9iAQVo6rvnk3"
+  "foreman::params::oauth_consumer_secret": gTTbLvQebqJuRtaDomD28VdC7xG6bGYK
+  "foreman::params::passenger_prestart": true
+  "foreman::params::passenger_min_instances": "1"
+  "foreman::params::passenger_start_timeout": "600"
+  "foreman::params::admin_username": admin
+  "foreman::params::admin_password": wKtzXjxSpDXB8XzW
+  "foreman::params::admin_first_name": !ruby/sym undef
+  "foreman::params::admin_last_name": !ruby/sym undef
+  "foreman::params::admin_email": !ruby/sym undef
+  "foreman::params::initial_organization": !ruby/sym undef
+  "foreman::params::initial_location": !ruby/sym undef
+  "foreman::params::ipa_authentication": false
+  "foreman::params::http_keytab": /etc/httpd/conf/http.keytab
+  "foreman::params::pam_service": foreman
+  "foreman::params::configure_ipa_repo": false
+  "foreman::params::ipa_manage_sssd": true
+  "foreman::params::websockets_encrypt": true
+  "foreman::params::websockets_ssl_key": /var/lib/puppet/ssl/private_keys/satnode1.sysmgmt.bos.redhat.com.pem
+  "foreman::params::websockets_ssl_cert": /var/lib/puppet/ssl/certs/satnode1.sysmgmt.bos.redhat.com.pem
+  "katello::params::user": foreman
+  "katello::params::group": foreman
+  "katello::params::user_groups": foreman
+  "katello::params::oauth_key": katello
+  "katello::params::oauth_secret": q4SF997mGhAvnzaUJaFpouw6ez6emeSk
+  "katello::params::post_sync_token": bkV3jvk89LsjEaZWxHg5tz7gLPb3bc2i
+  "katello::params::log_dir": /var/log/foreman/plugins
+  "katello::params::config_dir": /etc/foreman/plugins
+  "katello::params::use_passenger": "katello::params::use_passenger"
+  "katello::params::proxy_url": !ruby/sym undef
+  "katello::params::proxy_port": !ruby/sym undef
+  "katello::params::proxy_username": !ruby/sym undef
+  "katello::params::proxy_password": !ruby/sym undef
+  "katello::params::cdn_ssl_version": !ruby/sym undef
+  "katello::params::package_names": 
+    - katello
+    - ruby193-rubygem-katello

@@ -1,0 +1,5 @@
+forklift_name: "pipeline-upgrade-satellite-{{ pipeline_version }}-{{ pipeline_os }}"
+satdeploy_server_name: "pipeline-up-satellite-{{ pipeline_version }}-{{ pipeline_os }}"
+satdeploy_capsule_name: "pipeline-up-capsule-{{ pipeline_version }}-{{ pipeline_os }}"
+forklift_boxes: "{{ {satdeploy_server_name: server_box} }}"
+bats_tests_additional: []

@@ -1,0 +1,10 @@
+---
+
+- hosts: all_nodes
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - kubernetes_repo
+    - kubelet
+    - helper

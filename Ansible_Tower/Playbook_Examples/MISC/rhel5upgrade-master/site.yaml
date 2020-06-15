@@ -1,0 +1,12 @@
+---
+# This playbook deploys the whole application stack in this site.
+
+- name: Upgrades servers to RHEL 7
+  hosts: all
+  remote_user: root
+  roles:
+    - rhel5
+
+
+
+

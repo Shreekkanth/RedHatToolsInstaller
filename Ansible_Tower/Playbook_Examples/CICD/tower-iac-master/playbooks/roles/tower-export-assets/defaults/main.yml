@@ -1,0 +1,5 @@
+---
+gitlab_user: ""
+gitlab_pass: "" #store this in a vault
+gitlab_repo: ""
+change_comment: ""

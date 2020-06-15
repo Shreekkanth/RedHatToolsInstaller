@@ -1,0 +1,112 @@
+- name: Discover the tag for the latest images 
+  shell: >
+          . /home/stack/stackrc && sudo openstack overcloud container image tag discover
+          --image registry.access.redhat.com/rhosp12/openstack-base:latest
+          --tag-from-label version-release
+  register: tag
+  become: false
+  changed_when: false
+  when: osp_version == "osp12"
+
+- name: "[RHOSP12] Create a template to pull the images to the local registry (without contenarized Ceph)"
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image prepare
+          --namespace=registry.access.redhat.com/rhosp12
+          --prefix=openstack-
+          --tag={{ tag.stdout | quote }}
+          --output-images-file /home/stack/local_registry_images.yaml
+  become: false
+  when: 
+    - ceph_docker|default(false)|bool == false
+    - osp_version == "osp12"
+
+- name: "[RHOSP12] Create a template to pull the images to the local registry (with contenarized Ceph)"
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image prepare
+          -e /usr/share/openstack-tripleo-heat-templates/environments/ceph-ansible/ceph-ansible.yaml
+          --namespace=registry.access.redhat.com/rhosp12
+          --prefix=openstack-
+          --tag={{ tag.stdout | quote }}
+          --set ceph_namespace=registry.access.redhat.com/rhceph
+          --set ceph_image=rhceph-2-rhel7
+          --set ceph_tag=latest
+          --output-images-file /home/stack/local_registry_images.yaml
+  become: false
+  when: 
+    - ceph_docker|default(false)|bool == true
+    - osp_version == "osp12"
+
+- name: "[RHOSP12] Find the namespace of the local images"
+  shell: . /home/stack/stackrc && docker images | grep -v redhat.com | grep -o '^.*rhosp12' | sort -u
+  register: namespace
+  become: false
+  changed_when: false
+
+- name: "[RHOSP12] Create a template for using the images in our local registry (without Ceph)"
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image prepare
+          --namespace={{ namespace.stdout | quote }}
+          --prefix=openstack-
+          --tag={{ tag.stdout | quote }}
+          --output-env-file=/home/stack/templates/overcloud_images.yaml
+  become: false
+  when: 
+    - ceph_docker|default(false)|bool == false
+    - osp_version == "osp12"
+
+- name: "[RHOSP12] Create a template for using the images in our local registry (with Ceph)"
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image prepare
+          -e /usr/share/openstack-tripleo-heat-templates/environments/ceph-ansible/ceph-ansible.yaml
+          --namespace={{ namespace.stdout | quote }}
+          --prefix=openstack-
+          --tag={{ tag.stdout | quote }}
+          --set ceph_namespace={{ namespace.stdout | quote | regex_replace('\/[A-z0-9]+$') }}/rhceph
+          --set ceph_image=rhceph-2-rhel7
+          --set ceph_tag=latest
+          --output-env-file=/home/stack/templates/overcloud_images.yaml
+  become: false
+  when:
+    - ceph_docker|default(false)|bool == false
+    - osp_version == "osp12"
+
+- name: "[RHOSP13] Create a template to pull the images to the local registry (without contenarized Ceph)"
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image prepare \
+          --namespace=registry.access.redhat.com/rhosp13 \
+          --push-destination={{ undercloud_config.local_ip | regex_replace('\/[0-9]+$') }}:8787 \
+          --prefix=openstack- \
+          --tag-from-label {version}-{release} \
+          --output-env-file=/home/stack/templates/overcloud_images.yaml \
+          --output-images-file /home/stack/local_registry_images.yaml
+  become: false
+  when: 
+    - ceph_docker|default(false)|bool == false
+    - osp_version == "osp13"
+
+- name: "[RHOSP13] Create a template to pull the images to the local registry (with contenarized Ceph)"
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image prepare
+          -e /usr/share/openstack-tripleo-heat-templates/environments/ceph-ansible/ceph-ansible.yaml
+          --namespace=registry.access.redhat.com/rhosp13 \
+          --push-destination={{ undercloud_config.local_ip | regex_replace('\/[0-9]+$') }}:8787 \
+          --prefix=openstack- \
+          --tag-from-label {version}-{release} \
+          --output-env-file=/home/stack/templates/overcloud_images.yaml \
+          --output-images-file /home/stack/local_registry_images.yaml \
+          --set ceph_namespace=registry.access.redhat.com/rhceph \
+          --set ceph_image=rhceph-3-rhel7 \
+          --tag-from-label {version}-{release} 
+  become: false
+  when:
+    - ceph_docker|default(false)|bool == true
+    - osp_version == "osp13"
+
+- name: Pull the required images
+  shell: >
+          . /home/stack/stackrc && openstack overcloud container image upload
+          --config-file /home/stack/local_registry_images.yaml
+          --verbose
+  become: true
+
+

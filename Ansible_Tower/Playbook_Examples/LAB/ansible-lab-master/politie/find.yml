@@ -1,0 +1,19 @@
+---
+- name: Start lab
+  hosts: localhost
+  become: yes
+
+  tasks:     
+  - name: Make array
+    find:    
+      paths: /var/log
+      recurse: no
+      file_type: directory
+    register: file_entries
+
+  - name: Print output
+    debug:    
+      msg: "{{ ansible_hostname }} {{ item.path }}"
+    register: 
+    with_items: "{{ file_entries.files }}"
+

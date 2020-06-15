@@ -1,0 +1,3 @@
+forklift_name: "pipeline-satellite-{{ pipeline_version }}-{{ pipeline_os }}"
+satdeploy_server_name: "pipeline-satellite-{{ pipeline_version }}-{{ pipeline_os }}"
+satdeploy_capsule_name: "pipeline-capsule-{{ pipeline_version }}-{{ pipeline_os }}"

@@ -1,0 +1,9 @@
+---
+
+tower_api_settings:
+  - endpoint: 'v2/settings/jobs/'
+    body: '{"AWX_PROOT_ENABLED":false}'
+  - endpoint: 'v2/settings/jobs/'
+    body: '{"DEFAULT_JOB_TIMEOUT":0}'
+  - endpoint: 'v2/settings/system/'
+    body: '{"ACTIVITY_STREAM_ENABLED_FOR_INVENTORY_SYNC":true}'

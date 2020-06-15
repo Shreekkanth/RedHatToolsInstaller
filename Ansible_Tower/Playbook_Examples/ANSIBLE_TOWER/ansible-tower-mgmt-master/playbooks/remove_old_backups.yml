@@ -1,0 +1,17 @@
+---
+
+- hosts: tower[0]
+  tasks:
+    - name: "find all tarballs older than {{ tower_backup_max_age }} old"
+      find:
+        path: "{{ backup_dest }}"
+        age: "{{ tower_backup_max_age }}"
+        patterns: '*.tar.gz'
+        file_type: file
+      register: old_tarballs
+
+    - name: "remove any file older than {{ tower_backup_max_age }} old"
+      file:
+        path: "{{ item['path'] }}"
+        state: absent
+      with_items: "{{ old_tarballs['files'] }}"

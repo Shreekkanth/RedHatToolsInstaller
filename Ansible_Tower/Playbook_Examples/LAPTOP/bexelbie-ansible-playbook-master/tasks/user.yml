@@ -1,0 +1,58 @@
+---
+# User level Configs
+
+- name: Create ~/bin directory
+  file:
+    path: "~/bin/"
+    state: directory
+    mode: 0700
+
+- name: Install ~/bin files
+  shell: "stow -d {{ playbook_dir }}/dot-files -t ~/bin/ bin"
+
+- name: Create autostart user directory
+  file:
+    path: "~/.config/autostart/"
+    state: directory
+    mode: 0700
+
+- name: Install autostart user files
+  shell: "stow -d {{ playbook_dir }}/dot-files -t ~/.config/autostart/ autostart"
+
+- name: Create systemd user directory
+  file:
+    path: "~/.config/systemd/user/"
+    state: directory
+    mode: 0700
+
+- name: Install systemd user files
+  shell: "systemctl --user link {{ item }}"
+  with_fileglob: "{{ playbook_dir }}/dot-files/systemd-user/*"
+
+- name: enable personal-audit timer
+  systemd:
+    name: personal-audit.timer
+    scope: user
+    state: started
+    enabled: yes
+
+- name: enable gocryptfs-mounter service
+  systemd:
+    name: gocryptfs-mounter.service
+    scope: user
+    enabled: yes
+
+- name: enable restic-backup timer
+  systemd:
+    name: restic-backup.timer
+    scope: user
+    state: started
+    enabled: yes
+
+- name: enable restic-prune timer
+  systemd:
+    name: restic-prune.timer
+    scope: user
+    state: started
+    enabled: yes
+

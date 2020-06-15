@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+
+  roles:
+    # satellite preinstall
+    - role: preinstall
+
+    # satellite install
+    - role: install
+
+    # satellite configure
+    - role: postinstall

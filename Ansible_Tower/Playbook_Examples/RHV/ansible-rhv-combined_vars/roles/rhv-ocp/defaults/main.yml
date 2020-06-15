@@ -1,0 +1,7 @@
+---
+# defaults file for rhv-ocp
+master_name: rhv-ocp-master
+rhv_template: rhel-server-7.6-template
+master_cpu_cores: 2
+master_memory: 4096MiB
+master_count: 3

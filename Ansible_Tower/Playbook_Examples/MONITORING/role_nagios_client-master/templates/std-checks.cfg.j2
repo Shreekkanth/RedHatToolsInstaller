@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+#
+command[check_disk]={{ nagios_plugin_directory }}/check_disk $ARG1$
+command[check_load]={{ nagios_plugin_directory }}/check_load $ARG1$
+command[check_procs]={{ nagios_plugin_directory }}/check_procs $ARG1$
+command[check_updates]={{ nagios_plugin_directory }}/check_updates --boot-check-warning -t 180
+command[check_users]={{ nagios_plugin_directory }}/check_users $ARG1$
+command[check_swap]={{ nagios_plugin_directory }}/check_swap  $ARG1$
+
+# Binaries not packaged as RPM
+command[check_cpu_stats]={{ nagios_plugin_directory }}/check_cpu_stats $ARG1$
+command[check_mem]={{ nagios_plugin_directory }}/check_mem -n $ARG1$
+command[check_mount]={{ nagios_plugin_directory }}/check_mount $ARG1$
+
+# Binaries not packaged as RPM that require sudo
+command[check_open_files]=sudo {{ nagios_plugin_directory }}/check_open_files $ARG1$
+command[check_systemd_service]=sudo {{ nagios_plugin_directory }}/check_systemd_service $ARG1$
+command[check_init_service]=sudo {{ nagios_plugin_directory }}/check_init_service $ARG1$

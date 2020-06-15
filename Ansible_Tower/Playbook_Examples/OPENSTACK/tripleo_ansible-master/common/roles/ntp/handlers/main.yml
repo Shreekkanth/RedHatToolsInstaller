@@ -1,0 +1,9 @@
+---
+
+- name: run ntpdate
+  become: yes
+  shell: ntpdate -u 10.5.26.10
+
+- name: restart ntpd
+  become: yes
+  service: name=ntpd state=restarted enabled=yes

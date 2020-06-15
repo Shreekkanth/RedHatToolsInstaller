@@ -1,0 +1,43 @@
+---
+
+# OVERVIEW
+#  TODO
+#
+# VARS
+#   satellite_vg     - Volume Group for Satellite to use
+#   satellite_mounts - list of satellite mounts
+#     lv    - Logical Volume name
+#     size  - size of the mount
+#     mount - directory to mount
+
+- name: "Create {{ satellite_vg }} Volume Group"
+  lvg:
+    vg: "{{ satellite_vg }}"
+    pvs: "{{ satellite_pvs }}"
+
+- name: Create Logical Volumes
+  lvol:
+    vg: "{{ satellite_vg }}"
+    lv: "{{ item.lv }}"
+    size: "{{ item.size }}"
+    force: yes
+  when: ( item.size | regex_replace('^([0-9]*).*', '\\1') | int ) != 0
+  with_items: "{{ satellite_mounts }}"
+
+- name: Create File Systems
+  filesystem:
+    fstype: xfs
+    dev: "/dev/{{ satellite_vg }}/{{ item.lv }}"
+  when: ( item.size | regex_replace('^([0-9]*).*', '\\1') | int ) != 0
+  with_items: "{{ satellite_mounts }}"
+
+- name: Create Mounts
+  mount:
+    name: "{{ item.mount }}"
+    src: "/dev/{{ satellite_vg }}/{{ item.lv }}"
+    fstype: xfs
+    dump: 1
+    passno: 2
+    state: mounted
+  when: ( item.size | regex_replace('^([0-9]*).*', '\\1') | int ) != 0
+  with_items: "{{ satellite_mounts }}"

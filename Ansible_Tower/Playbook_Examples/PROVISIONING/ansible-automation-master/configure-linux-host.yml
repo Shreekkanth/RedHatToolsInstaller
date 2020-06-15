@@ -1,0 +1,76 @@
+---
+- hosts: "{{ server_name | upper }}"
+  gather_facts: true
+  become: true
+  vars:
+    linux_allowed_groups:
+      - vSphere_Linux_Admins
+    linux_exception_groups:
+      - root
+
+  tasks:
+    # ServiceDesk: Create Change Order
+    # Notifications: (when provision)
+    #   - Requesting user (in playbook?)
+    #   - Linux Support, Backup Team, Security Team (via Tower?)
+
+    # ISDirect: (when provision)
+    #   - Submit DNS request?
+    #   - Automate DNS A record creation?
+    # ServiceDesk: Close Change Order
+
+    # Clear yum & subscription info
+    - block:
+      - name: Clean yum cache
+        command: yum clean all
+        args:
+          warn: false
+        ignore_errors: true
+
+      # - name: Clean Subscription
+      #   redhat_subscription:
+      #     state: absent
+      #     force_register: true
+
+      # THIS IS UGLY - remove registration from template VM
+      - name: Unregister from RedHat
+        command: subscription-manager unregister
+
+      when: provision | default(false) | bool
+
+    - name: Register with RedHat
+      redhat_subscription:
+        state: present
+        username: "{{ subscription_username }}"
+        password: "{{ subscription_password }}"
+        # activationkey: 1-222333444
+        # org_id: 222333444
+        pool_ids: "{{ subscription_pool_id }}"
+        # force_register: true
+
+    # Configure /opt/usr storage
+    - name: Run disk expansion role
+      include_role:
+        name: linux_disk_management
+
+    # Configure server remote access
+    - name: Display contents of access.conf file
+      debug:
+        msg: "{{ lookup('template', 'access.conf.j2') }}"
+        verbosity: 1
+
+    - name: Create access.conf file
+      template:
+        backup: true
+        dest: /etc/security/access.conf
+        src: access.conf.j2
+      register: access_conf_output
+
+    - name: Set root password
+      user:
+        name: root
+        password: nope
+    # Is this needed?
+    # - name: Update security policies from access.conf
+    #   command: authconfig --enablepamaccess --update
+    #   when: access_conf_output is changed

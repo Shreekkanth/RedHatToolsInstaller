@@ -1,0 +1,11 @@
+[rhel73]
+name=rhel73
+baseurl=http://192.168.122.1/rhel73
+enabled=1
+gpgcheck=0
+
+[satellite]
+name=satellite
+baseurl=http://192.168.122.1/satellite6210
+enabled=1
+gpgcheck=0

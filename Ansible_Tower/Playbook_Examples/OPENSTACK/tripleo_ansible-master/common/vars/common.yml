@@ -1,0 +1,30 @@
+
+common_packages:
+  - git
+  - subversion
+  - zsh
+  - sudo
+  - vim-enhanced
+  - lftp
+  - curl
+  - wireshark
+  - rsync
+  - mtr
+  - traceroute
+  - wget
+  - tcpdump
+  - ntp
+  - man
+  - bind-utils
+  - telnet
+  - strace
+  - sysstat
+  - dstat
+  - bash-completion
+  - lsof
+  - screen
+  - nmap-ncat
+  - socat
+
+osp_packages:
+  - crudini

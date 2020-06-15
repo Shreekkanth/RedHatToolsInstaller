@@ -1,0 +1,28 @@
+---
+
+- name: bashrc
+  lineinfile: >-
+    dest=.bashrc
+    state=present
+    regexp={{ item.regexp }}
+    line={{ item.content }}
+    backup=yes
+  with_items:
+    - regexp: '^alias ls='
+      content: "alias ls='ls --color=always'"
+    - regexp: '^export TERM='
+      content: 'export TERM=xterm'
+    - regexp: '^export KUBECONFIG='
+      content: 'export KUBECONFIG=/etc/kubernetes/admin.conf'
+    - regexp: 'kubectl completion bash'
+      content: 'source <(kubectl completion bash)'
+
+- name: /etc/fstab
+  lineinfile: >-
+    dest=/etc/fstab
+    state=absent
+    regexp='swap'
+    backup=yes
+
+- name: swapoff
+  shell: swapoff -a

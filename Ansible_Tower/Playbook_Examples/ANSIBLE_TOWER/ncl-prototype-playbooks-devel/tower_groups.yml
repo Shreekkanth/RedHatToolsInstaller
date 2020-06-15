@@ -1,0 +1,9 @@
+---
+# Tower groups
+
+- hosts: all
+  tasks:
+  - name: Tower groups
+    include_role:
+      name: tower_groups
+    loop: "{{ tower_groups }}"

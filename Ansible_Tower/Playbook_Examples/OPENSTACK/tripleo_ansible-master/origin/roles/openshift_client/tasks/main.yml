@@ -1,0 +1,13 @@
+---
+
+#- name: install gpg keys for openshift repository
+#  shell: cp ~/openshift-ansible/roles/openshift_repos/files/origin/gpg_keys/openshift-ansible-CentOS-SIG-PaaS /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-PaaS creates=/etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-PaaS
+#
+#- name: install openshift repo
+#  shell: cp ~/openshift-ansible/roles/openshift_repos/files/origin/repos/openshift-ansible-centos-paas-sig.repo /etc/yum.repos.d/CentOS-OpenShift-Origin.repo creates=/etc/yum.repos.d/CentOS-OpenShift-Origin.repo
+
+- name: setup openshift repository
+  yum: name=centos-release-openshift-origin36 state=latest
+
+- name: install openshift client
+  yum: name=origin-clients state=latest

@@ -1,0 +1,4 @@
+# defaults for role-vmware-snapshot
+ linux_patching_status: "started"
+ windows_patching_status: "started"
+ vmware_snapshot_vcenter_password: "{{ survey_vmware_snapshot_vcenter_password }}"

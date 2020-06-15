@@ -1,0 +1,38 @@
+---
+- name: Create PMS Creds
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    org_id: 3
+    os_creds_type: 1
+    team_id: 2  
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Create PMS-CRED
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/credentials/'
+      method: POST
+      validate_certs: false
+      return_content: yes
+      body: >
+        {
+          "credential_type": "{{ os_creds_type }}",
+          "organization": "{{ org_id }}",
+          "team": "{{ team_id }}",
+          "name": "pms-creds",
+          "inputs": {
+            "password": "ASK",
+            "username": "pms"
+          }
+        }
+      body_format: json
+      status_code: 201

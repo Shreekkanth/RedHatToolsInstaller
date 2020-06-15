@@ -1,0 +1,7 @@
+---
+- name: Test
+  hosts: all
+  tasts:
+    - name: Debug
+      debug:
+        msg: "Test"

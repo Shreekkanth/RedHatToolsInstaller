@@ -1,0 +1,157 @@
+---
+# tasks file for role-vmware-guest
+
+- name: deploy stock vm
+  vmware_guest:
+    name: "{{vmware_guest_name}}"
+    folder: "{{vmware_folder}}"
+    datacenter: "{{vmware_datacenter}}"
+    cluster: "{{vmware_cluster}}"
+    state: present
+    disk: "{{vmware_guest_disk}}"
+    template: "{{vmware_guest_template}}"
+    hardware: "{{vmware_guest_hardware}}"
+    hostname: "{{vcenter}}"
+    username: "{{vcenter_username}}"
+    password: "{{vcenter_password}}"
+    wait_for_ip_address: yes
+    validate_certs: "{{vmware_validate_certs}}"
+  delegate_to: localhost
+  when:
+    - vmware_guest_customization is not defined
+    - vmware_guest_networks is not defined
+
+- name: deploy networks
+  vmware_guest:
+    name: "{{vmware_guest_name}}"
+    folder: "{{vmware_folder}}"
+    datacenter: "{{vmware_datacenter}}"
+    cluster: "{{vmware_cluster}}"
+    disk: "{{vmware_guest_disk}}"
+    state: present
+    template: "{{vmware_guest_template}}"
+    hardware: "{{vmware_guest_hardware}}"
+    networks: "{{vmware_guest_networks}}"
+    hostname: "{{vcenter}}"
+    username: "{{vcenter_username}}"
+    password: "{{vcenter_password}}"
+    wait_for_ip_address: yes
+    validate_certs: "{{vmware_validate_certs}}"
+  delegate_to: localhost
+  when:
+    - vmware_guest_customization is not defined
+    - vmware_guest_networks is defined
+
+- name: deploy with customization
+  vmware_guest:
+    name: "{{vmware_guest_name}}"
+    folder: "{{vmware_folder}}"
+    datacenter: "{{vmware_datacenter}}"
+    cluster: "{{vmware_cluster}}"
+    state: present
+    disk: "{{vmware_guest_disk}}"
+    hardware: "{{vmware_guest_hardware}}"
+    template: "{{vmware_guest_template}}"
+    customization: "{{vmware_guest_customization}}"
+    hostname: "{{vcenter}}"
+    username: "{{vcenter_username}}"
+    password: "{{vcenter_password}}"
+    wait_for_ip_address: yes
+    validate_certs: "{{vmware_validate_certs}}"
+  delegate_to: localhost
+  when:
+    - vmware_guest_customization is defined
+    - vmware_guest_networks is not defined
+
+- name: deploy with customization and networks
+  vmware_guest:
+    name: "{{vmware_guest_name}}"
+    folder: "{{vmware_folder}}"
+    datacenter: "{{vmware_datacenter}}"
+    cluster: "{{vmware_cluster}}"
+    disk: "{{vmware_guest_disk}}"
+    state: present
+    hardware: "{{vmware_guest_hardware}}"
+    customization: "{{vmware_guest_customization}}"
+    networks: "{{vmware_guest_networks}}"
+    template: "{{vmware_guest_template}}"
+    hostname: "{{vcenter}}"
+    username: "{{vcenter_username}}"
+    password: "{{vcenter_password}}"
+    wait_for_ip_address: yes
+    validate_certs: "{{vmware_validate_certs}}"
+  delegate_to: localhost
+  when:
+    - vmware_guest_customization is defined
+    - vmware_guest_networks is defined
+
+- pause:
+    prompt: wait for ip
+    seconds: "{{vmware_ip_delay}}"
+
+- name: wait for ip
+  vmware_guest_facts:
+    name: "{{vmware_guest_name}}"
+    folder: "{{vmware_folder}}"
+    datacenter: "{{vmware_datacenter}}"
+    hostname: "{{vcenter}}"
+    username: "{{vcenter_username}}"
+    password: "{{vcenter_password}}"
+    validate_certs: "{{vmware_validate_certs}}"
+  delegate_to: localhost
+  register: guest_facts
+
+- name: attempt to insert ssh key for user
+  block:
+    - name: create .ssh dir for user
+      vmware_vm_shell:
+        vm_id: "{{vmware_guest_name}}"
+        vm_shell: /bin/mkdir
+        vm_shell_args: "/home/{{vmware_guest_key_user}}/.ssh/"
+        vm_username: "{{vmware_guest_username}}"
+        vm_password: "{{vmware_guest_password}}"
+        folder: "{{vmware_folder}}"
+        datacenter: "{{vmware_datacenter}}"
+        hostname: "{{vcenter}}"
+        username: "{{vcenter_username}}"
+        password: "{{vcenter_password}}"
+        validate_certs: "{{vmware_validate_certs}}"
+
+    - name: insert key
+      vmware_vm_shell:
+        vm_id: "{{vmware_guest_name}}"
+        vm_shell: /bin/echo
+        vm_shell_args: "{{vmware_guest_public_key}} > /home/{{vmware_guest_key_user}}/.ssh/authorized_keys"
+        vm_username: "{{vmware_guest_username}}"
+        vm_password: "{{vmware_guest_password}}"
+        folder: "{{vmware_folder}}"
+        datacenter: "{{vmware_datacenter}}"
+        hostname: "{{vcenter}}"
+        username: "{{vcenter_username}}"
+        password: "{{vcenter_password}}"
+        validate_certs: "{{vmware_validate_certs}}"
+
+    - name: set directory permissions
+      vmware_vm_shell:
+        vm_id: "{{vmware_guest_name}}"
+        vm_shell: /bin/chmod
+        vm_shell_args: "-R {{vmware_guest_key_user}}:{{vmware_guest_key_user}} /home/{{vmware_guest_key_user}}/.ssh/"
+        vm_username: "{{vmware_guest_username}}"
+        vm_password: "{{vmware_guest_password}}"
+        folder: "{{vmware_folder}}"
+        datacenter: "{{vmware_datacenter}}"
+        hostname: "{{vcenter}}"
+        username: "{{vcenter_username}}"
+        password: "{{vcenter_password}}"
+        validate_certs: "{{vmware_validate_certs}}"
+  rescue:
+    - debug:
+        msg: "Could not login. Continuing"
+  delegate_to: localhost
+  when: vmware_guest_public_key is defined
+
+- name: add new host to in memory inventory
+  add_host:
+    name: "{{guest_facts['instance']['ipv4'] or guest_facts['instance']['ipv6']}}"
+    groups: newly_created
+  delegate_to: localhost

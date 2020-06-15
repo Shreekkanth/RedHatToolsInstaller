@@ -1,0 +1,154 @@
+---
+# tasks file for SNOW
+
+
+- debug:
+    var: servicenow_username
+
+- debug:
+    var: servicenow_instance
+
+- name: Initialize SNOW data dictionary
+  set_fact:
+    snow_record_data: {}
+
+- block:
+    - name: Set Start Date/Time
+      set_fact:
+        snow_current_date_epoch: "{{ lookup('pipe', 'date +\"%s\"') }}"
+        snow_tz_offset: "{{ lookup('pipe', 'date +\"%:z\"') | regex_replace('(.?\\d\\d)[:]\\d\\d', '\\1') }}"
+      delegate_to: localhost
+
+    - name: Set End Date/Time and add back the timezone offset in hours
+      set_fact:
+        snow_start_date: "{{ lookup('pipe', 'date -d @$((' + snow_current_date_epoch + ' - (3600 * ' + snow_tz_offset + ')  )) +\"%Y-%m-%d %H:%M:%S\" ' ) }}"
+        snow_end_date: "{{ lookup('pipe', 'date -d @$((' + snow_current_date_epoch + ' + 900 - (3600 * ' + snow_tz_offset + ')  )) +\"%Y-%m-%d %H:%M:%S\" ' ) }}"
+      delegate_to: localhost
+
+    - name: Add dates and CMDB CI to the servicenow data dictionary
+      set_fact:
+        servicenow: "{{ servicenow | default ({}) | combine( { item.0: item.1 } ) }}"
+      loop:
+         - "{{ [ 'start_date', snow_start_date  ] }}"
+         - "{{ [ 'end_date', snow_end_date ] }}"
+         - "{{ [ 'cmdb_ci', servicenow_cmdb_ci ] }}"
+         #- "{{ [ 'cmdb_ci', inventory_hostname ] }}"
+
+  when:
+    - servicenow_number is not defined
+    - servicenow_table == "change_request"
+
+
+- name: Build SNOW data dictionary
+  set_fact:
+    snow_record_data: "{{ snow_record_data|default({}) | combine( { item: servicenow[item] } ) }}"
+  with_items: "{{ servicenow_data_vars }}"
+  when: servicenow[item] is defined
+
+- debug: var=snow_record_data
+
+
+- name: Open a standard change using the template
+  block:
+
+    - name: Retrieve standard change template id
+      uri:
+        url: "{{ servicecatalog_url + '?sysparm_limit=10&sysparm_text=' + servicenow.u_template|urlencode }}"
+        method: GET
+        validate_certs: no
+        return_content: yes
+        user: "{{ servicenow_username }}"
+        password: "{{ servicenow_password }}"
+      register: servicenow_response
+      delegate_to: localhost
+
+    - name: Set the template sysid and submit_producer url
+      set_fact:
+        template_sysid: "{{ servicenow_response.json.result.0.sys_id }}"
+
+    - name: Set the submit_producer url
+      set_fact:
+        standard_change_submit_url: "{{ servicecatalog_url + '/' +  template_sysid }}/submit_producer"
+
+    - name: Open a standard change using the template id
+      uri:
+        url: "{{ standard_change_submit_url }}"
+        method: POST
+        validate_certs: no
+        return_content: yes
+        user: "{{ servicenow_username }}"
+        password: "{{ servicenow_password }}"
+      register: servicenow_response
+      delegate_to: localhost
+
+    - name: Set Current Ticket Number (from template)
+      set_fact:
+        servicenow_ticket:
+          record:
+            number: "{{ servicenow_response.json.result.number }}"
+        servicenow_number: "{{ servicenow_response.json.result.number }}"
+
+    - debug: var=servicenow_number
+
+  when:
+    - servicenow_use_standard_change_template
+    - servicenow_number is not defined
+    - not servicenow_force_new
+    - servicenow_table == "change_request"
+
+
+- block:
+    - name: Read or update the given ticket, create one if no ticket exists Record
+      snow_record:
+        username: "{{ servicenow_username }}"
+        password: "{{ servicenow_password }}"
+        instance: "{{ servicenow_instance }}"
+        table: "{{ servicenow_table }}"
+        data: "{{ snow_record_data }}"
+        state: "{{ servicenow_state | default(omit) }}"
+        number: "{{ servicenow_number | default(omit) }}"
+        attachment: "{{ servicenow.attachment | default(omit) }}"
+      register: servicenow_api_ticket
+      delegate_to: localhost
+
+    - name: Set Current Ticket
+      set_fact:
+        servicenow_ticket: "{{ servicenow_api_ticket }}"
+        servicenow_number: "{{ servicenow_api_ticket.record.number }}"
+
+    - debug: var=servicenow_number
+
+  when:
+    - not servicenow_force_new
+
+
+- block:
+    - name: Create a new ticket
+      snow_record:
+        username: "{{ servicenow_username }}"
+        password: "{{ servicenow_password }}"
+        instance: "{{ servicenow_instance }}"
+        table: "{{ servicenow_table }}"
+        data: "{{ snow_record_data }}"
+        state: "{{ servicenow_state }}"
+        attachment: "{{ servicenow.attachment | default(omit) }}"
+      register: servicenow_api_ticket
+      delegate_to: localhost
+
+    - name: Set Current Ticket
+      set_fact:
+        servicenow_ticket: "{{ servicenow_api_ticket }}"
+        servicenow_number: "{{ servicenow_api_ticket.record.number }}"
+        servicenow_force_new: false
+
+    - debug: var=servicenow_number
+
+  when:
+    - servicenow_force_new
+
+
+- name: Initialize the servicenow dictionary
+  set_fact:
+    servicenow: {}
+
+- debug: var=servicenow_number

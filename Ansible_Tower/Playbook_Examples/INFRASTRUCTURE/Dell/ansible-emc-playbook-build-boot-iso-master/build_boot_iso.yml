@@ -1,0 +1,28 @@
+---
+- name: "Build RHEL7 kickstart ISO"
+  hosts: "localhost"
+  vars:
+    rhel_iso_url: "http://rhnsat6prd01.isus.emc.com/pulp/isos/Dell_IT/Library/content/dist/rhel/server/7/7.6/x86_64/iso/rhel-server-7.6-x86_64-dvd.iso"
+    rhel_iso_dl_path: "/apps/data/source_iso"
+  tasks:
+    - name: "Ensure ISO Download path exists"
+      file:
+        path: "{{ rhel_iso_dl_path }}"
+        state: "directory"
+
+    - name: "Ensure RHEL Source ISO Exists"
+      get_url: 
+        url: "{{ rhel_iso_url }}"
+        dest: "{{ rhel_iso_dl_path }}" 
+    
+    - name: "Build RHEL7 kickstart ISO"
+      include_role:
+        name: "create-kickstart-iso"
+      vars:
+        ks_iso_install_media_path: "{{ rhel_iso_dl_path }}/rhel-server-7.6-x86_64-dvd.iso"
+        ks_iso_kickstart_file: "/apps/data/kickstart/rhel7-ks.cfg"
+        ks_iso_built_path: "/built_iso"
+        ks_iso_built_filename: "rhel7.6_emc_ks.iso"
+        ks_iso_volume_id: "RHEL-7.6 EMC Kickstart Install"
+        ks_iso_boot_timeout: "100" #10 secs
+        ks_iso_boot_total_timeout: "600" #1 minute

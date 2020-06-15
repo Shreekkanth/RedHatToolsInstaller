@@ -1,0 +1,36 @@
+ - hosts: all
+   remote_user: root
+   become: yes
+   become_method: sudo
+   vars:
+       - sosreport_cmd: sosreport
+       - sosreport_target_basepath: /mnt/storeeasy/rhs-sos
+       - sosreport_target_path: "{{ sosreport_target_basepath }}/{{ ansible_nodename }}"
+   tasks:
+       - name: install sos
+         yum:
+             name: sos
+             state: latest
+       - name: check that the target base path exists
+         stat:
+             path: "{{ sosreport_target_basepath }}"
+         register: target_basepath
+       - name: exit if the target base path does not exist
+         fail: 
+           msg: "Target base path does not exist: {{ sosreport_target_basepath }}"
+         when: not target_basepath.stat.exists
+       - name: ensure the target path exists
+         file:
+             path: "{{ sosreport_target_path }}"
+             state: directory
+       - name: execute sosreport
+         shell: >
+           "{{ sosreport_cmd }}"
+           --batch
+           --tmp-dir {{ sosreport_target_path }}
+       - name: list the 5 most recently generated archives for this node
+         shell: "ls -lc {{ sosreport_target_path }} | head -n 11"
+         register: ls
+
+       - debug: var=ls.stdout_lines
+

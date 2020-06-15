@@ -1,0 +1,45 @@
+---
+- name: "Remove VM Template Folder"
+  hosts: "localhost"
+  gather_facts: False
+  vars_prompt:
+    - name: "vctr_datacenter_input"
+      prompt: "Enter the datacenter where you would like to remove the VM folder.  Choices are 'hoppoc', 'duprd3'"
+      default: "hoppoc"
+      private: False
+    - name: "vctr_user_input"
+      prompt: "Please enter the vCenter user."
+      default: "openadmin@vsphere.local"
+      private: False
+    - name: "vctr_pass_input"
+      prompt: "Please enter the vCenter user's password."
+      private: True
+    - name: "vctr_vm_folder_input"
+      prompt: "Enter the name of the vCenter template folder to remove. ***WARNING***: this will remove all VMs and Templates contained in the folder"
+      private: False
+  tasks:
+    - name: "Ensure provided input variables are available across plays"
+      set_fact:
+        vctr_user: "{{ vctr_user_input }}"
+        vctr_pass: "{{ vctr_pass_input }}"
+        vctr_datacenter_name: "{{ vctr_datacenter_input }}"
+        vctr_vm_folder: "{{ vctr_vm_folder_input }}"
+      no_log: True
+      tags:
+        - "always"
+
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+      tags:
+        - "always"
+
+    - name: "Ensure VM Folder does not exist in vCenter"
+      vcenter_folder:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        folder_name: "{{ vctr_vm_folder }}"
+        folder_type: "vm"
+        state: "absent"

@@ -1,0 +1,65 @@
+---
+
+# Manage package repos
+icingaweb2_manage_repo_icinga: true
+icingaweb2_manage_repo_epel: true
+icingaweb2_manage_repo_scl: true
+
+# Version can be installed,latest,removed,absent,present,build-dep
+icingaweb2_state: present
+icingaweb2_admin_user: icingaadmin
+icingaweb2_admin_password: icinga
+icingaweb2_admin_group: Administrators
+
+# icingaweb2 modules: monitoring, ...
+#               todo: director, businessprocess, graphite
+
+icingaweb2_modules: 
+  - doc
+  - monitoring
+  - director
+  - graphite
+
+# icinga2 api-user
+create_icingaweb2_api_users: yes
+icingaweb2_icinga_conf_path: /etc/icinga2/custom_conf.d/icingaweb2-api-users.conf
+icingaweb2_api_user: icingaweb2
+icingaweb2_api_password: notsecuredefault
+icingaweb2_master_fqdn: localhost.localdomain
+director_api_user: director
+director_api_password: notsecuredefault
+
+### Set php timezone
+icingaweb2_php_timezone: "Europe/Amsterdam"
+
+### icingweb2 db connection
+icingaweb2_db_type: mysql
+icingaweb2_db_host: "127.0.0.1"
+icingaweb2_db_port: 3306
+icingaweb2_db_name: icingaweb
+icingaweb2_db_user: icingaweb
+icingaweb2_db_password: icingaweb
+
+# icinga2 ido connection (same as in chrnie.icinga2)
+icinga2_ido_type: mysql
+icinga2_ido_user: icinga
+icinga2_ido_password: icinga
+icinga2_ido_dbname: icinga
+icinga2_ido_host: "127.0.0.1"
+icinga2_ido_port: 3306
+
+# Modules
+## director settings
+director_release: v1.4.2
+director_db_type: mysql
+director_db_user: director
+director_db_password: director
+director_db_name: director
+director_db_host: "127.0.0.1"
+director_db_port: 3306
+
+## graphite settings
+graphite_release: master
+graphite_backend_url: http://127.0.0.1:8080
+graphite_backend_user: foo
+graphite_backend_pass: bar

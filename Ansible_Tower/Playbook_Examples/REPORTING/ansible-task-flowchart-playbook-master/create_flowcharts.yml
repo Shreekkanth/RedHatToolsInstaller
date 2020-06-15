@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  connection: local
+  roles:
+    - role: ansible-task-flowchart-role
+      npm_config_prefix: /Users/skarundi/.nvm/versions/node/v8.6.0
+      list_of_roles:
+        - linux-ansible-deploy-artifact-role
+        - linux-ansible-stage-artifact-role
+      git_repo_base_url: "http://stash.cdk.com"
+      git_repo_prefix: "{{ git_repo_base_url}}/projects/PSSAP/repos"

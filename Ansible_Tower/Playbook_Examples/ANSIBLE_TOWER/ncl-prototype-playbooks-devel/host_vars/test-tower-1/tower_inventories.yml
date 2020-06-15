@@ -1,0 +1,9 @@
+---
+tower_inventories:
+  - name: Tower inventory 1
+    description: Tower inventory 1
+    host_filter:
+    kind:
+    organization: Default
+    state: present
+    variables:

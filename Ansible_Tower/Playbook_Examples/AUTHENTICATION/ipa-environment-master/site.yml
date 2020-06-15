@@ -1,0 +1,56 @@
+---
+# site.yml
+  - hosts: all
+    vars_files:
+      - "{{ env_name }}/secrets.yml"
+    # Lowest common denominator, ran concurrently across all hosts in the
+    # environment
+    roles:
+      - role: common
+      - role: test-framework
+        vars:
+          testframework_virtual_env: /opt/devilhorn/testframework
+
+  - hosts: ipa-server
+    vars:
+      ipa_server_enable_ca: true
+      ipa_server_enable_dns: false
+      ipa_server_trust_ad: true
+      ipa_server_trust_ad_legacy_support: true
+    roles:
+      - role: ipa-server
+        ipa_server_no_hbac_allow_all: true
+      - role: provider-identity-parcel
+        identity_parcel_ipa_server: "{{ ansible_fqdn }}"
+        identity_parcel_ipa_user: admin
+        identity_parcel_ipa_pass: "{{ ipa_server_admin_secret }}"
+        identity_parcel_directory_manager_secret: "{{ ipa_server_ds_secret}}"
+        identity_parcel_validate_certs: false
+
+  - hosts: ipa-replica
+    serial: 1
+    vars:
+      ipa_replica_enable_ca: true
+      ipa_replica_enable_dns: false
+      ipa_replica_ad_trust_agent: true
+      ipa_replica_ad_trust_legacy_support: true
+    roles:
+      - role: ipa-replica
+
+  - hosts: ipa-masters
+    serial: 1
+    roles:
+      - role: ipa-master
+        ipa_master_ds_secret: "{{ ipa_server_ds_secret }}"
+
+  # Include environment-specific local.yml, so we can pull in
+  # environment-specific roles - use sparingly.
+  - hosts: all
+    tasks:
+      - include: "{{ item }}"
+        with_first_found:
+          - files:
+              - local.yml
+            paths:
+              - "{{ env_name }}/"
+            skip: true

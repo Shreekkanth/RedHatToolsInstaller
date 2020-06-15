@@ -1,0 +1,27 @@
+---
+- name: Check cobbler netboot status
+  local_action: command ssh {{ provisioning_user }}@{{ provisioning_server }} cobbler system report --name={{ hostvars[inventory_hostname].ansible_hostname }} | grep Netboot
+  register: cobbler
+
+- debug:
+    var:
+      cobbler.stdout_lines
+
+- name: Set cobbler netboot enabled
+  local_action: command ssh {{ provisioning_user }}@{{ provisioning_server }} cobbler system edit --name={{ hostvars[inventory_hostname].ansible_hostname }} --netboot-enabled=1
+
+- name: Recheck cobbler netboot status
+  local_action: command ssh {{ provisioning_user }}@{{ provisioning_server }} cobbler system report --name={{ hostvars[inventory_hostname].ansible_hostname }} | grep Netboot
+  register: cobbler
+
+- debug:
+    var:
+      cobbler.stdout_lines
+
+- name: Redeploy Hosts
+  command: redeploy {{ boot_disk }} -y
+  notify:
+    - reboot server
+    - wait for reboot
+
+- meta: flush_handlers

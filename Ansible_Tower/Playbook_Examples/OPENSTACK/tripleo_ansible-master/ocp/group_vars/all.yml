@@ -1,0 +1,16 @@
+ose_version: 3.6
+ose_packages:
+  - wget
+  - git
+  - net-tools
+  - bind-utils
+  - iptables-services
+  - bridge-utils
+  - bash-completion
+#  - kexec
+  - kexec-tools
+  - sos
+  - psacct
+  - atomic-openshift-utils
+  - atomic-openshift-excluder
+  - atomic-openshift-docker-excluder

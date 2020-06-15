@@ -1,0 +1,51 @@
+
+- name: Create Virtual Machine from Template
+  delegate_to: "{{ vcenter_jumphost }}"
+  vmware_guest:
+    hostname: "{{ vcenter_ip }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    datacenter: "{{ item.datacenter | default(vcenter_datacenter) }}"
+    cluster: "{{ item.cluster | default(vcenter_cluster) }}"
+    folder: "{{ vcenter_vmfolder | default(omit) }}"
+    validate_certs: "{{ vcenter_validate_certs | default(false) }}"
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('poweredon') }}"
+    wait_for_ip_address: "{{ item.wait_for_ip_address | default(false) }}"
+    guest_id: "{{ item.guest_id | default ('rhel7_64Guest') }}"
+    template: "{{ item.template | default ('RHEL-7.5-Server-Template') }}"
+    disk: "{{ item.disk | default(omit) }}"
+    hardware: "{{ item.hardware | default(omit) }}"
+    networks: "{{ item.networks | default(omit) }}"
+    customization:
+      dns_servers: "{{ item.dns_servers | default(common_dns_servers) | default(omit) }}"
+      domain: "{{ item.domain | default(common_domain) | default ('cdpsede.cassaddpp.it') }}"
+  register: vm_provisioning
+  ignore_errors: true
+
+- name: Add host to Ansible inventory
+  add_host:
+    hostname: "{{ item.name }}"
+    ansible_host: "{{ item.networks[0].ip }}"
+    groups:
+    - provisioned
+    register_to_satellite: "{{ item.register_to_satellite | default(false) }}"
+    activation_keys: "{{ item.activation_keys | join(',') | default(omit) }}"
+    register_to_puppet: "{{ item.register_to_puppet | default(false) }}"
+    set_local_facts: "{{ item.set_local_facts | default(false) }}"
+    update_packages: "{{ item.update_packages | default(false) }}"
+    local_facts: "{{ item.local_facts | default(omit) }}"
+  changed_when: no
+
+- name: Wait for instances up
+  wait_for:
+    host: "{{ item.networks[0].ip }}"
+    port: 22
+    search_regex: OpenSSH
+    connect_timeout: 600
+    sleep: 5
+    delay: 30
+  when:
+  - item.networks is defined
+  - vm_provisioning is changed
+

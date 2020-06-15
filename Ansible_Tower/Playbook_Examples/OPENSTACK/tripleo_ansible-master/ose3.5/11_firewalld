@@ -1,0 +1,14 @@
+firewall-cmd --get-default-zone
+firewall-cmd --list-all
+firewall-cmd --list-services
+firewall-cmd --get-services
+
+#firewall-cmd --get-zones
+#firewall-cmd --list-all-zones
+
+firewall-cmd --add-service dns
+firewall-cmd --add-service dns --permanent
+firewall-cmd --add-port 53/tcp
+firewall-cmd --add-port 53/udp
+firewall-cmd --add-port 53/tcp --permanent
+firewall-cmd --add-port 53/udp --permanent

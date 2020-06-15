@@ -1,0 +1,19 @@
+---
+# awx-target-nodes/tasks/prebuild.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Pull docker images
+  docker_image:
+    name: "{{ item }}"
+    docker_host: unix://var/run/docker.sock 
+    tag: latest 
+    pull: true
+    debug: false
+    state: present
+  loop:
+    - centos:7
+    # - ubuntu:latest
+    # - debian:latest
+
+- name: Build CentOS7 OpenSSH container
+  command: "docker build -t redhat-automation/centos-7-ssh:1.0.0 ../files/"

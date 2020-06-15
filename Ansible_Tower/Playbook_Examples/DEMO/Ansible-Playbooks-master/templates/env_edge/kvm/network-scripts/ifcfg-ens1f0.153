@@ -1,0 +1,6 @@
+BOOTPROTO=none
+NAME=ens1f0.153
+DEVICE=ens1f0.153
+ONBOOT=yes
+BRIDGE=br-tenant
+VLAN=yes

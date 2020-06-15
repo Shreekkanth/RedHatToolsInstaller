@@ -1,0 +1,5 @@
+---
+# defaults file for roles/ansible-role-gitlab
+gitlab_edition: "gitlab-ce"
+gitlab_version: '10.8.3-ce.0.el7.x86_64'
+gitlab_package_version_separator: '-'

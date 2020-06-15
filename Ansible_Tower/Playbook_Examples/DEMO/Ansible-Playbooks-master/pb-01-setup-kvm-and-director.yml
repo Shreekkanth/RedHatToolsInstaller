@@ -1,0 +1,313 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: prompt_env
+      prompt: Confirm the environment to target
+      private: no
+  tasks:
+    - assert:
+        that:
+          - prompt_env == named_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not {{ named_env }}"
+        success_msg: "Targeting {{ prompt_env }} environment"
+
+  tags:
+    - always
+
+
+
+- hosts: kvm
+  name: Check variables
+  gather_facts: no
+  tasks:
+    - assert:
+        that:
+          - named_env is defined
+          - redhat_subscription_method == 'satellite' or redhat_subscription_method == 'portal'
+
+    - assert:
+        that:
+          - redhat_satellite_host is defined
+          - redhat_satellite_org is defined
+          - redhat_satellite_kvm_ak is defined
+          - redhat_satellite_director_ak is defined
+          - redhat_satellite_overcloud_ak is defined
+      when: redhat_subscription_method == 'satellite'
+
+    - assert:
+        that:
+          - redhat_portal_user is defined
+          - redhat_portal_pass is defined
+          - redhat_portal_pool is defined
+      when: redhat_subscription_method == 'portal'
+  tags:
+    - always
+
+
+
+- hosts: kvm
+  name: Debug tests
+  gather_facts: no
+  tasks:
+    - name: Gather facts
+      setup:
+
+    - name: Ping test
+      ping:
+
+    - name: Write hostvars to /tmp/hostvars for inspection
+      copy:
+        content: "{{ hostvars }}"
+        dest: /tmp/hostvars
+      delegate_to: localhost
+  tags:
+    - debug
+    - never
+
+
+
+- hosts: kvm
+  name: Setup NICs for {{ environment }} environment
+  become: yes
+  vars:
+    input_folder: "{{ path_kvm_nic_configs }}"
+    output_folder: /etc/sysconfig/network-scripts
+  tasks:
+    - name: Put ifcfg files in place
+      include_role:
+        name: template_dir
+
+    # Note: this is currently ALWAYS executed.
+    # include_role doesn't support notify, unfortunately:
+    # https://github.com/ansible/ansible/issues/26537
+    - name: Restart network
+      systemd:
+        name: network
+        state: restarted
+
+  tags:
+    - nic
+
+
+
+- hosts: kvm
+  name: Set hostname and register to Satellite
+  become: yes
+  tasks:
+    - name: Set hostname
+      hostname:
+        name: "{{ kvm.hostname }}"
+
+    - name: Subscribe the system
+      vars:
+        activation_key: "{{ redhat_satellite_kvm_ak | default(omit) }}"
+      include_role:
+        name: subscribe
+
+    - name: Enable the needed repositories
+      rhsm_repository:
+        name:
+          - rhel-7-server-rpms
+        state: enabled
+  tags:
+    - subscribe
+
+
+
+- hosts: kvm
+  name: Update and install needed packages
+  become: yes
+  tasks:
+    - name: Find out if virt-viewer installed
+      shell: "rpm -q virt-viewer"
+      args:
+        warn: false
+      register: rpm_query
+      changed_when: false
+      failed_when: false
+
+    - name: yum update
+      yum:
+        name: '*'
+        state: latest
+      when: rpm_query.rc == 1
+
+    - name: Install packages
+      yum:
+        name:
+          - libguestfs-tools
+          - libguestfs-xfs
+          - libvirt
+          - ntpdate
+          - qemu-kvm
+          - vim
+          - virt-install
+          - virt-manager
+          - virt-viewer
+          - xauth
+          - xorg-x11-apps
+        state: present
+
+    - name: Sync NTP
+      shell: /usr/sbin/ntpdate -u {{ kvm.ntp_servers }}
+
+    - name: Sync HW clock
+      shell: /usr/sbin/hwclock -w
+
+  tags:
+    - yum
+
+
+
+- hosts: kvm
+  name: Setup libvirt and director domain
+  become: yes
+  vars:
+    script_run_path: /tmp/setup-director-domain.sh
+    template_folder: "{{ path_director_nic_configs }}"
+    tmp_nic_config_folder: /tmp/director/network-scripts
+  tasks:
+    - name: Start and enable libvirt
+      systemd:
+        name: libvirtd
+        state: started
+        enabled: yes
+
+    - name: Copy the backing image to /var/lib/libvirt/images
+      copy:
+        src: ./files/rhel-server-7.6-x86_64-kvm.qcow2
+        dest: /var/lib/libvirt/images/rhel-server-7.6-x86_64-kvm.qcow2
+      register: copy_result
+
+    - name: Create directory to hold director nic-configs
+      file:
+        path: "{{ tmp_nic_config_folder }}"
+        state: directory
+        mode: 0755
+
+    - name: Template out Director nic configs to /tmp/director-network-scripts/ifcfg-*
+      vars:
+        input_folder: "{{ template_folder }}"
+        output_folder: "{{ tmp_nic_config_folder }}"
+      include_role:
+        name: template_dir
+      register: template_result
+
+    - name: Place setup-director-domain.sh in place
+      template:
+        src: "{{ path_templates }}/setup-director-domain.sh.j2"
+        dest: "{{ script_run_path }}"
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Run director install script, output logged to /tmp/setup-director-domain.log
+      shell: "{{ script_run_path }}"
+      register: shell_output
+      changed_when: shell_output.rc == 2
+      failed_when: shell_output.rc == 1
+
+  tags:
+    - libvirt
+    - director
+
+
+
+- hosts: kvm
+  name: Extra configuration for virtualized controller domain
+  become: yes
+  vars:
+    script_run_path: /tmp/setup-controller-domain.sh
+    copy_result:
+      dest: /var/lib/libvirt/images/rhel-server-7.6-x86_64-kvm.qcow2
+    domain_name: "controller-{{ named_env }}"
+  tasks:
+    - name: Enable the needed repositories
+      rhsm_repository:
+        name:
+          - rhel-7-server-openstack-13-rpms
+        state: enabled
+
+    - name: Install packages
+      yum:
+        name:
+          - python-virtualbmc
+        state: present
+
+    - name: Place setup-controller-domain.sh in place
+      template:
+        src: "{{ path_templates }}/setup-controller-domain.sh.j2"
+        dest: "{{ script_run_path }}"
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Run controller install script, output logged to /tmp/setup-controller-domain.log
+      shell: "{{ script_run_path }}"
+      register: shell_output
+      changed_when: shell_output.rc == 2
+      failed_when: shell_output.rc == 1
+
+    - name: Open firewall port for VBMC IPMI UDP connection
+      firewalld:
+        port: 6230/udp
+        permanent: yes
+        state: enabled
+      tags:
+        - vbmc
+
+    - name: Find out of VBMC domain already exists
+      shell: "vbmc show {{ domain_name }}"
+      register: vbmc_output
+      ignore_errors: true
+      changed_when: false
+      failed_when: false
+
+    - name: Setup VBMC domain
+      shell: "vbmc add {{ domain_name }} --port 6230 --username root --password root1234"
+      when: vbmc_output.rc == 1
+      tags:
+        - vbmc
+
+  tags:
+    - libvirt
+    - controller
+
+
+
+- hosts: kvm
+  name: Create and enable virtualbmc service. This will start vbmc on system reboots.
+  become: yes
+  vars:
+    domain_name: "controller-{{ named_env }}"
+  tasks:
+    - name: Create the VirtualBMC systemd service (virtualbmc < 1.4.0)
+      copy:
+        mode: 0664
+        dest: "/usr/lib/systemd/system/virtualbmc@.service"
+        content: |
+          [Unit]
+          Description=VirtualBMC %i service
+          After=network.target
+
+          [Service]
+          Type=forking
+          PIDFile=/root/.vbmc/%i/pid
+          ExecStart=/bin/vbmc start %i
+          ExecStop=/bin/vbmc stop %i
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+      become: true
+
+    - name: Start the Virtual BMCs (virtualbmc < 1.4.0)
+      service:
+        name: "virtualbmc@{{ domain_name }}"
+        state: started
+        enabled: true
+      become: true
+  tags:
+    - libvirt
+    - controller

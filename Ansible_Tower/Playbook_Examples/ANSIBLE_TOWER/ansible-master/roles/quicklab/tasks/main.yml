@@ -1,0 +1,10 @@
+---
+# tasks file for quicklab
+- name: "Include Dependencies tasks"
+  include_tasks: register_vms.yml
+
+- name: "Include Dependencies tasks"
+  include_tasks: install_basic_packages.yml
+
+- name: "Include Dependencies tasks"
+  include_tasks: update_os.yml

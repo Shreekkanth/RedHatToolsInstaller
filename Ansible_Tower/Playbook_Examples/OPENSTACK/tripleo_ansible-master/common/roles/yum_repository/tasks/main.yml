@@ -1,0 +1,13 @@
+---
+
+- name: deploy yum repo file
+  template: src=local.repo.j2 dest=/etc/yum.repos.d/local.repo 
+
+- name: yum update
+  yum: name=* state=latest
+  register: result
+
+#- debug: msg="{{ result }}"
+
+- include: ../common/roles/reboot/tasks/main.yml
+  when: result.changed == true

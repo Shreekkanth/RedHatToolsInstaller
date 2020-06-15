@@ -1,0 +1,115 @@
+---
+# tasks file for icinga2-dynetics
+- name: Enable and allow HTTP/S and icinga2 agent on firewalld
+  firewalld:
+    port: "{{ item }}"
+    immediate: true
+    permanent: true
+    state: enabled
+  with_items: "{{ firewalld_ports }}"
+  when: inventory_hostname in groups['master-nodes'] and icinga2_node_firewalld and icinga2_master
+
+- name: Verify and install icinga2 repo if not present
+  command: yum repolist icinga-stable-release
+  register: icinga2_repo_state
+
+- name: Install icinga2 repo
+  yum_repository:
+    name: "{{ icinga2_yum_repo.name }}"
+    description: icinga2 latest repository
+    baseurl: "{{ icinga2_yum_repo.baseurl }}"
+    gpgkey: "{{ icinga2_yum_repo.gpgkey }}"
+  when: icinga2_repo_state.rc != 0
+
+- name: Install icinga2 selinux packages
+  yum:
+    name: icinga2-selinux
+    state: present
+  register: icinga2_selinux
+  when: icinga2_node_selinux
+  notify: Test config before restart icinga 2
+
+- name: Install icingaweb2 selinux packages
+  yum:
+    name: icingaweb2-selinux
+    state: present
+  register: icingaweb2_selinux
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master
+  notify: Test config before restart icinga 2
+
+- name: Set httpd_can_connect_ldap flag on and keep it persistent across reboots
+  seboolean:
+    name: "{{ icinga2_http_bool }}"
+    state: yes
+    persistent: yes
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master and icinga2_node_selinux_bool
+
+- name: Add chech_mem Nagios plugin
+  copy:
+    src: files/check_mem.pl
+    dest: "{{ icinga2_plugin_dir }}/check_mem.pl"
+    owner: root
+    group: root
+    mode: 0755
+    force: true
+
+- name: Fetch Openshift plugins  
+  git:
+    repo: 'https://github.com/appuio/nagios-plugins-openshift.git'
+    dest: "{{ icinga2_plugin_dir }}/nagios-plugins-openshift"
+  run_once: true
+  ignore_errors: true
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master and icinga2_master_plugins
+
+- name: Copy check_mem template settings
+  copy:
+    src: files/operating-system.conf
+    dest: "{{ icinga2_contrib_plugin_dir }}/operating-system.conf"
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+    force: true
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master
+  notify: Test config before restart icinga 2
+
+- name: Check Custom Object Directory Exists
+  stat:
+    path: "{{ icinga2_dynetics_config_dir }}"
+  run_once: True
+  register: confd_dynetics
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master
+
+- name: create directory /etc/icinga2/conf.d/dynetics
+  file:
+    dest: "{{ icinga2_dynetics_config_dir }}"
+    state: directory
+    mode: 0750
+    owner: icinga
+    group: icinga
+    recurse: true
+  run_once: True
+  ignore_errors: true
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master and confd_dynetics.stat.exists != true
+
+- name: Copy service object configuration
+  copy:
+    src: files/services.conf
+    dest: "{{ icinga2_dynetics_config_dir }}/services.conf"
+    owner: icinga
+    group: icinga
+    mode: 0644
+    backup: true
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master and icinga2_master_update_objects
+  notify: Test config before restart icinga 2
+
+- name: Create dynamic host object configuration for Dynetics hosts
+  copy:
+    src: files/hosts.conf
+    dest: "{{ icinga2_dynetics_config_dir }}/hosts.conf"
+    owner: icinga
+    group: icinga
+    mode: 0644
+    backup: true
+  when: inventory_hostname in groups['master-nodes'] and icinga2_master and icinga2_master_update_objects
+  notify: Test config before restart icinga 2

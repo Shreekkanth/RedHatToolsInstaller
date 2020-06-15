@@ -1,0 +1,7 @@
+---
+dependencies:
+  - role: subscription_manager_repos
+    subscription_manager_enabled_repos:
+      - rhel-7-server-rpms
+      - rhel-server-rhscl-7-rpms
+      - rhel-7-server-satellite-capsule-6.2-rpms

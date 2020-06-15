@@ -1,0 +1,9 @@
+---
+# Modify Tower settings
+
+- hosts: all
+  tasks:
+  - name: Modify Tower settings
+    include_role:
+      name: tower_mod_settings
+    loop: "{{ tower_mod_settings }}"

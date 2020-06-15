@@ -1,0 +1,25 @@
+---
+# Content Views
+create_content_views:
+  - { name: "default", description: "Default Red Hat Server", repositories: "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server", product: "Red Hat Enterprise Linux Server" }
+
+add_to_content_views:
+  - { name: "default", repositories: "Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64", product: "Red Hat Enterprise Linux Server" }
+  - { name: "default", repositories: "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server", product: "Red Hat Enterprise Linux Server" }
+  - { name: "default", repositories: "Red Hat Enterprise Linux 7 Server - Supplementary RPMs x86_64 7Server", product: "Red Hat Enterprise Linux Server" }
+  - { name: "default", repositories: "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64", product: "Red Hat Enterprise Linux Server" }
+  - { name: "default", repositories: "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.5", product: "Red Hat Enterprise Linux Server" }
+  - { name: "default", repositories: "Red Hat CloudForms Management Engine 5.7 RPMs x86_64", product: "Red Hat CloudForms" }
+  - { name: "default", repositories: "Red Hat Gluster Storage 3 NFS RPMs x86_64 7Server", product: "Red Hat Gluster Storage Server for On-premise" }
+  - { name: "default", repositories: "Red Hat Gluster Storage 3 Server RPMs x86_64 7Server", product: "Red Hat Gluster Storage Server for On-premise" }
+  - { name: "default", repositories: "Red Hat OpenShift Container Platform 3.6 RPMs x86_64", product: "Red Hat OpenShift Container Platform" }
+  - { name: "default", repositories: "Red Hat OpenShift Container Platform 3.9 RPMs x86_64", product: "Red Hat OpenShift Container Platform" }
+  - { name: "default", repositories: "Red Hat Enterprise Linux Fast Datapath RHEL 7 Server RPMs x86_64 7Server", product: "Red Hat Enterprise Linux Fast Dath" }
+
+# Activation Keys
+activation_keys:
+  - { name: "default-key", description: "Default Red Hat Activation Key", content_view: "default", lifecycle: "Library" }
+  - { name: "ocp-node-key", description: "Openshift Container Platform Activation Key", content_view: "ocp-node", lifecycle: "Library" }
+  - { name: "gluster-node-key", description: "Gluster Storage Node Activation Key", content_view: "gluster-node", lifecycle: "Library" }
+  - { name: "cfme-node-key", description: "CloudForms Management Engine Activation Key", content_view: "cfme-node", lifecycle: "Library" }
+

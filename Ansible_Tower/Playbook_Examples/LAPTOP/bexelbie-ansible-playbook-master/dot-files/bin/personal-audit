@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+
+. "$(git --html-path)/contrib/completion/git-prompt.sh"
+GIT_PS1_SHOWCOLORHINTS=t
+GIT_PS1_SHOWDIRTYSTATE=t
+GIT_PS1_SHOWSTASHSTATE=t
+GIT_PS1_SHOWUNTRACKEDFILES=t
+GIT_PS1_SHOWUPSTREAM=git
+
+cd $HOME/Repositories/Personal/bexelbie-ansible-playbook
+
+repo_stat=$(__git_ps1)
+
+rm ~/.personal_audit
+touch ~/.personal_audit
+if [ "$repo_stat" != " (master=)" ]; then
+    echo "---> Dot Repository Dirty" > $HOME/.personal_audit
+fi

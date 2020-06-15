@@ -1,0 +1,234 @@
+---
+# deploy tasks file for ansible-satellite6-deployment/
+- name: DEPLOY|Adding {{ ansible_fqdn }} record in /etc/hosts file
+  lineinfile:
+    line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+    dest: /etc/hosts
+  tags:
+    - connected
+    - not connected
+    #- not new_install
+    - deploy
+
+- name: DEPLOY|Subscribing to satellite 6 providing pool
+  redhat_subscription:
+    state: present
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+    #pool: '*Red Hat Satellite$'
+    pool_ids: 8a85f9815dc5571e015dc576e1104071
+  when:
+    - connected
+    #- new_install
+  tags:
+    - connected
+    - registration
+    - deploy
+
+- name: DEPLOY|Copying repo file template to {{ ansible_fqdn }}
+  template:
+    src: ../ansible-satellite6-deployment/templates/sat6.repo.j2
+    dest: /etc/yum.repos.d/sat6.repo
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - not connected
+    #- new_install
+  tags:
+    - discconnected
+    - deploy
+
+- name: DEPLOY|Disabling all repos on {{ ansible_fqdn }}
+  rhsm_repository:
+    name: '*'
+    state: disabled
+  when:
+    - connected
+    #- new_install
+  tags:
+    - connected
+    - deploy
+
+- name: DEPLOY|Enabling repos that are needed to deploy satellite 6 on {{ ansible_fqdn }}
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - 'rhel-7-server-rpms'
+    - 'rhel-server-rhscl-7-rpms'
+    - 'rhel-7-server-satellite-6.3-rpms'
+  when:
+    - connected
+    #- new_install
+  tags:
+    - connected
+    - deploy
+
+- name: DEPLOY|Updating to the latest pacakges on {{ ansible_fqdn }}
+  yum:
+    name: '*'
+    state: latest
+  tags:
+    - connected
+    - disconnected
+    - deploy
+
+#- name: DEPLOY|Removing Satellite 6 from {{ ansible_fqdn }}
+#  expect:
+#    command: katello-remove
+#    responses:
+#      Question:
+#        - y
+#        - remove
+
+#  when:
+#    - not new_install
+#  tags:
+#    - install
+#    - connected
+#    - discconnected
+#    - deploy
+
+- name: DEPLOY|Installing Satellite 6 rmps on {{ ansible_fqdn }}
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - satellite
+    #- pexpect
+  tags:
+    - install
+    - connected
+    - discconnected
+    - deploy
+
+- name: DEPLOY|Copying repo file template to {{ ansible_fqdn }}
+  template:
+    src: ../ansible-satellite6-deployment/templates/satellite-answers-yaml.j2
+    dest: /etc/foreman-installer/scenarios.d/ansible-answer-file.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - disconnected
+    - connected
+    - deploy
+
+- name: DEPLOY|Changing the default Satellite 6 installer answer file on {{ ansible_fqdn }}
+  replace:
+    path: /etc/foreman-installer/scenarios.d/satellite.yaml
+    regexp: ":answer_file: /etc/foreman-installer/scenarios.d/satellite-answers.yaml"
+    replace: ":answer_file: /etc/foreman-installer/scenarios.d/ansible-answer-file.yaml"
+  tags:
+    - disconnected
+    - connected
+    - deploy
+
+- name: DEPLOY|Running satellite-installer on {{ ansible_fqdn }}
+  command: satellite-installer --scenario satellite
+  register: sat_installer_result
+  ignore_errors: True
+  notify: restart katello service
+  tags:
+    - disconnected
+    - connected
+    - deploy
+
+# if custom_ca is true
+- name: DEPLOY|Creating custom ca directory on {{ ansible_fqdn }}
+  file:
+    path: /root/sat_cert
+    state: directory
+    mode: 0755
+  when: custom_ca
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca
+
+- name: DEPLOY|Generating OpenSSL private key for {{ ansible_fqdn }} Satellite 6 server
+  openssl_privatekey:
+    path: /root/sat_cert/satellite_cert_key.pem
+    size: 4096
+  when: custom_ca
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca
+
+- name: DEPLOY|Generating OpenSSL CSR for {{ ansible_fqdn }} Satellite 6 server
+  openssl_csr:
+    path: /root/sat_cert/satellite_cert_csr.pem
+    privatekey_path: /root/sat_cert/satellite_cert_key.pem
+    common_name: "{{ ansible_fqdn }}"
+    digest: sha512
+  when: custom_ca
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca
+
+# Use the generated csr to generate the certificate file on the custom CA
+# This tasks will wait until the satellite_cert.pem and the ca_cert_bundle.pem
+# are present
+- name: DEPLOY|Waiting until satellite_cert.pem is present to continue ...
+  wait_for:
+    path: /root/sat_cert/satellite_cert.pem
+  when: custom_ca
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca
+
+- name: DEPLOY|Waiting until ca_cert_bundle.pem is present to continue ...
+  wait_for:
+    path: /root/sat_cert/ca_cert_bundle.pem
+  when: custom_ca
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca
+
+- name: DEPLOY|Running satellite-installer with custom cert parameters
+  command: >
+            satellite-installer --scenario satellite
+            --certs-server-cert "/root/sat_cert/satellite_cert.pem"
+            --certs-server-cert-req "/root/sat_cert/satellite_cert_csr.pem"
+            --certs-server-key "/root/sat_cert/satellite_cert_key.pem"
+            --certs-server-ca-cert "/root/sat_cert/ca_cert_bundle.pem"
+            --certs-update-server-ca
+  when: custom_ca
+  register: custom_ca_result
+  notify: restart katello service
+  ignore_errors: True
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca
+
+- name: DEPLOY|Printing Satellite-installer result
+  debug:
+    var: sat_installer_result
+    verbosity: 4
+  tags:
+    - disconnected
+    - connected
+    - deploy
+
+- name: DEPLOY|Printing Satellite-instasller custom CA result
+  debug:
+    var: custom_ca_result
+    verbosity: 4
+  when: custom_ca
+  tags:
+    - disconnected
+    - connected
+    - deploy
+    - custom-ca

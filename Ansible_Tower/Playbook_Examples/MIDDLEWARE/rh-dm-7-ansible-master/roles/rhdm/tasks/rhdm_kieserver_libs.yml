@@ -1,0 +1,17 @@
+---
+###############################
+# Copy the extra Company JARs #
+###############################
+- name: "Copy the Extra JARs to {{ rhdm_kieserver_webinf_lib }}"
+  copy:
+    src:   "{{ rhdm_extra_libs_dir + item }}"
+    dest:  "{{ rhdm_kieserver_webinf_lib }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+  tags:
+    - rhdm_extra_libs
+  with_items: "{{ rhdm_extra_lib_list }}"
+  when: deploy_extra_lib
+
+#
+# EOF

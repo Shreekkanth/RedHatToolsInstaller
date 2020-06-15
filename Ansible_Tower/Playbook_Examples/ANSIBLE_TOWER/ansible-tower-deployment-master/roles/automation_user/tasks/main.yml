@@ -1,0 +1,30 @@
+- name: Add the automation user to the system
+  user:
+    name: automation
+
+- name: Get the output of the chage command
+  shell: chage -l automation
+  register: chage
+  changed_when: false
+
+- set_fact:
+    password_expires: "{{ 'Password expires\t\t\t\t\t: never' in chage['stdout'] }}"
+    accout_expires: "{{ 'Account expires\t\t\t\t\t\t: never' in chage['stdout'] }}"
+
+- shell: chage -M -1 -E -1 automation
+  when: not password_expires or not accout_expires
+
+- name: Ensure cron.allow exists
+  copy:
+    content: ""
+    dest: /etc/cron.allow
+    force: no
+    group: root
+    owner: root
+    mode: 0500
+
+- name: Give the automation permission to use cron
+  lineinfile:
+    name: /etc/cron.allow
+    regexp: '^automation$'
+    line: 'automation'

@@ -1,0 +1,4 @@
+BOOTPROTO=none
+NAME=eth0
+DEVICE=eth0
+ONBOOT=no

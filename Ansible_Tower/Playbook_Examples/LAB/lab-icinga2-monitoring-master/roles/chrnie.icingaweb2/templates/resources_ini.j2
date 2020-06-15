@@ -1,0 +1,34 @@
+[{{icinga2_backend}}]
+type = "db"
+db = "{{icinga2_ido_type}}"
+host = "{{icinga2_ido_host}}"
+port = "{{icinga2_ido_port}}"
+dbname = "{{icinga2_ido_dbname}}"
+username = "{{icinga2_ido_user}}"
+password = "{{icinga2_ido_password}}"
+charset = ""
+persistent = "0"
+
+[{{icingaweb2_backend}}]
+type = "db"
+db = "{{icingaweb2_db_type}}"
+host = "{{icingaweb2_db_host}}"
+port = "{{icingaweb2_db_port}}"
+dbname = "{{icingaweb2_db_name}}"
+username = "{{icingaweb2_db_user}}"
+password = "{{icingaweb2_db_password}}"
+charset = ""
+persistent = "0" 
+{% if 'director' in icingaweb2_modules %}
+
+[{{director_backend}}]
+type = "db"
+db = "{{director_db_type}}"
+host = "{{director_db_host}}"
+port = "{{director_db_port}}"
+dbname = "{{director_db_name}}"
+username = "{{director_db_user}}"
+password = "{{director_db_password}}"
+charset = "utf8"
+persistent = "0" 
+{% endif %}

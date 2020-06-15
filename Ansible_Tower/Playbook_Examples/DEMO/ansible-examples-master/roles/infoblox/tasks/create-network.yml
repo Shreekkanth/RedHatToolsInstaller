@@ -1,0 +1,12 @@
+- name: "[INFOBLOX][CREATE-NETWORK] Create Network"
+  nios_network:
+    state: present
+    network: "{{ netcidr }}"
+    comment: Ansible automation creates network 
+    provider:
+      host: "{{ ifserver }}"
+      username: "{{ ifuser }}"
+      password: "{{ ifpass }}"
+      wapi_version: "{{ wapi }}"
+      ssl_verify: no
+

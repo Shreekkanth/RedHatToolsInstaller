@@ -1,0 +1,7 @@
+[spideroak]
+name=SpiderOak packages
+baseurl=https://hdn.corp.redhat.com/software/spideroak/repo/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-helpdesk-new
+skip_if_unavailable=1

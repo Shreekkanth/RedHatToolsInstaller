@@ -1,0 +1,14 @@
+build.hwm
+build.pw?
+**/output*vagrant
+**/box
+**/packer_cache
+**/environment*
+*.retry
+playbooks/galaxy_roles
+vagrant/boxes.d/80-tmp-*.yaml
+vagrant/boxes.d/*-local.yaml
+/forklift
+user_playbooks
+.vagrant
+.rvmrc

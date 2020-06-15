@@ -1,0 +1,4 @@
+---
+- name: Configure and run Packstack
+  include: packstack.yml
+  run_once: true

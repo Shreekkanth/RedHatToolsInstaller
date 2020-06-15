@@ -1,0 +1,13 @@
+---
+
+# ipa-client-ansible
+- src: git+ssh://git@bitbucket.org/redhat-anzservices/ipa-client-ansible.git
+  version: master
+
+# provider-identity-parcel
+- src: git+ssh://git@bitbucket.org/redhat-anzservices/provider-identity-parcel.git
+  version: master
+
+# development-alterations
+- src: git+ssh://git@bitbucket.org/redhat-anzservices/development-alteration.git
+  version: master

@@ -1,0 +1,16 @@
+---
+- pause:
+    prompt: "Enter branch {{ branch_loop }}'s name"
+  register: branch_name
+
+- pause:
+    prompt: "Would you like to protect this branch? (True/False)"
+  register: branch_protect
+
+- name: Create Branch Dictionary
+  set_fact:
+    branch: [{name: "{{ branch_name.user_input }}", protect: "{{ branch_protect.user_input | bool }}"}]
+
+- name: Build Branch List
+  set_fact:
+    scm_prj_branches: "{{ scm_prj_branches | union(branch) }}"

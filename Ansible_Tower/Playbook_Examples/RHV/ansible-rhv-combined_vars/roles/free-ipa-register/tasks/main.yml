@@ -1,0 +1,12 @@
+---
+# tasks file for free-ipa-register
+
+  - name: Install Free IPA Client
+    yum:
+      name: freeipa-client
+      state: latest
+
+  - name: Install ipa-client
+    command: ipa-client-install -U --password {{ freeipa_password }} --realm {{ freeipa_realm }}-p {{ freeipa_user }} --mkhomedir --enable-dns-updates --force-join
+    args:
+      creates: /etc/ipa/ca.crt

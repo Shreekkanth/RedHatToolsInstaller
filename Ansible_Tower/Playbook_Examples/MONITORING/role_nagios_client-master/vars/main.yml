@@ -1,0 +1,17 @@
+---
+# vars file for role_nagios_client
+
+# Derived strings
+notification_string: contacts={{ nagios_notification_contact }}&notification_interval={{ nagios_notification_interval }}&notification_period={{ nagios_notification_period }}&notifications_enabled={{ nagios_notifications_enabled }}
+svc_check_string: max_check_attempts={{ nagios_svc_check_attempts }}&check_period={{ nagios_svc_check_period }}&check_interval={{ nagios_svc_check_interval }}&retry_interval={{ nagios_svc_check_retry_interval }}
+# Checking for updates is more intense so we hard code it to hourly
+update_check_string: max_check_attempts={{ nagios_svc_check_attempts }}&check_period={{ nagios_svc_check_period }}&check_interval=3600&retry_interval=60
+update_notification: contacts={{ nagios_notification_contact }}&notification_interval=3600&notification_period={{ nagios_notification_period }}&notifications_enabled={{ nagios_notifications_enabled }}
+
+# Generic service check definitions
+nagios_service_ping: service_description=Ping&check_command=check_ping!{{ svc_ping_warn }}!{{ svc_ping_crit }}&{{ svc_check_string }}&{{ notification_string }}
+nagios_service_procs: service_description=Total Processes&check_command=check_nrpe!check_procs!-a '-w {{ svc_procs_warn }} -c {{ svc_procs_crit }}'!!!!!!&{{ svc_check_string}}&{{ notification_string }}
+nagios_service_load: service_description=Load&check_command=check_nrpe!check_load!-a '-w {{ svc_load_warn }} -c {{ svc_load_crit }}'&{{ svc_check_string}}&{{ notification_string }}
+nagios_service_mem: service_description=Memory Usage&check_command=check_nrpe!check_mem!-a '-w {{ svc_mem_warn }} -c {{ svc_mem_crit }}'!!!!!!&{{ svc_check_string}}&{{ notification_string }}
+nagios_service_swap: service_description=Swap Usage&check_command=check_nrpe!check_swap!-a '-w {{ svc_swap_warn }} -c {{ svc_swap_crit }}'&{{ svc_check_string}}&{{ notification_string }}
+nagios_service_updates: service_description=Updates Required&check_command=check_nrpe_180!check_updates!!!!!!!&{{ update_check_string }}&{{ update_notification }}

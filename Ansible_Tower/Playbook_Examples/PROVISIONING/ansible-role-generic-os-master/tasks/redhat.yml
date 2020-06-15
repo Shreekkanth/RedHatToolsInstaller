@@ -1,0 +1,61 @@
+---
+- name: Register system
+  include_tasks: redhat_subscription.yml
+  when: ansible_distribution == 'RedHat'
+
+- name: Set additional package list
+  set_fact:
+    additional_packages: "{{ el7_packages }}"
+  when: ansible_distribution != 'Fedora' and ansible_distribution_major_version == '7'
+
+- name: Set additional package list
+  set_fact:
+    additional_packages: "{{ el8_packages }}"
+  when: ansible_distribution != 'Fedora' and ansible_distribution_major_version == '8'
+
+- block:
+  - name: Install VMTools
+    yum:
+      name: open-vm-tools
+      state: latest
+
+  - name: Enable VMTools
+    service:
+      name: vmtoolsd
+      state: started
+      enabled: true
+  when: ansible_virtualization_type == 'VMware'
+
+- block:
+  - name: Enable rh-common repository
+    rhsm_repository:
+      name: "{{ item }}"
+      state: enabled
+    with_items:
+      - rhel-7-server-rh-common-rpms
+    when:
+      - ansible_distribution == 'RedHat'
+      - item not in enabled_repos.stdout
+      - ansible_distribution_major_version == '7'
+
+  - name: Set oVirt guest agent
+    set_fact:
+      guest_agent: ovirt-guest-agent
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+  - name: Set QEMU guest agent
+    set_fact:
+      guest_agent: qemu-guest-agent
+    when: (ansible_distribution == 'CentOS' and ansible_distribution_major_version >= '7') or ansible_distribution_major_version >= '8'
+
+  - name: Install guest agent
+    yum:
+      name: "{{ guest_agent }}"
+      state: latest
+
+  - name: Enable guest agent
+    service:
+      name: "{{ guest_agent }}"
+      state: started
+      enabled: true
+  when: ansible_virtualization_type == 'RHEV' or ansible_product_name == 'oVirt Node'

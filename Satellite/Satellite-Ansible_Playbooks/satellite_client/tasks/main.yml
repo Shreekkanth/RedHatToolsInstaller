@@ -1,0 +1,3 @@
+---
+# tasks file for satellite
+- include: register.yml

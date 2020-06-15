@@ -1,0 +1,130 @@
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+  12M 4387M ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+1699K  195M ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
+ 868K  105M INPUT_direct  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 868K  105M INPUT_ZONES_SOURCE  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 868K  105M INPUT_ZONES  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    1    48 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 9677  621K REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+  280 35280 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+    0     0 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FORWARD_direct  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FORWARD_IN_ZONES_SOURCE  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FORWARD_IN_ZONES  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FORWARD_OUT_ZONES_SOURCE  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FORWARD_OUT_ZONES  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-host-prohibited
+
+Chain OUTPUT (policy ACCEPT 17M packets, 11G bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+  18M   19G OUTPUT_direct  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+Chain FORWARD_IN_ZONES (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 FWDI_public  all  --  em2    *       0.0.0.0/0            0.0.0.0/0           [goto] 
+    7   364 FWDI_public  all  --  em1    *       0.0.0.0/0            0.0.0.0/0           [goto] 
+    0     0 FWDI_public  all  --  +      *       0.0.0.0/0            0.0.0.0/0           [goto] 
+
+Chain FORWARD_IN_ZONES_SOURCE (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FORWARD_OUT_ZONES (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 FWDO_public  all  --  *      em2     0.0.0.0/0            0.0.0.0/0           [goto] 
+    7   364 FWDO_public  all  --  *      em1     0.0.0.0/0            0.0.0.0/0           [goto] 
+    0     0 FWDO_public  all  --  *      +       0.0.0.0/0            0.0.0.0/0           [goto] 
+
+Chain FORWARD_OUT_ZONES_SOURCE (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FORWARD_direct (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FWDI_public (3 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    7   364 FWDI_public_log  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FWDI_public_deny  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FWDI_public_allow  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+Chain FWDI_public_allow (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FWDI_public_deny (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FWDI_public_log (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FWDO_public (3 references)
+ pkts bytes target     prot opt in     out     source               destination         
+    7   364 FWDO_public_log  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FWDO_public_deny  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    7   364 FWDO_public_allow  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+Chain FWDO_public_allow (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FWDO_public_deny (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain FWDO_public_log (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain INPUT_ZONES (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+66962   21M IN_public  all  --  em2    *       0.0.0.0/0            0.0.0.0/0           [goto] 
+ 800K   84M IN_public  all  --  em1    *       0.0.0.0/0            0.0.0.0/0           [goto] 
+    0     0 IN_public  all  --  +      *       0.0.0.0/0            0.0.0.0/0           [goto] 
+
+Chain INPUT_ZONES_SOURCE (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain INPUT_direct (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain IN_public (3 references)
+ pkts bytes target     prot opt in     out     source               destination         
+ 868K  105M IN_public_log  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 868K  105M IN_public_deny  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+ 868K  105M IN_public_allow  all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+
+Chain IN_public_allow (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+   13   772 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:22 ctstate NEW
+16945 1017K ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:2224 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:3121 ctstate NEW
+    0     0 ACCEPT     udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:5404 ctstate NEW
+ 778K   82M ACCEPT     udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:5405 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:21064 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:16509 ctstate NEW
+  198 11880 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:443 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:8140 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:16514 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5647 ctstate NEW
+  186 11160 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5646 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5900 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:2476 ctstate NEW
+63357   21M ACCEPT     udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:67 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:8443 ctstate NEW
+    0     0 ACCEPT     udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:68 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:53 ctstate NEW
+    0     0 ACCEPT     udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:69 ctstate NEW
+    0     0 ACCEPT     udp  --  *      *       0.0.0.0/0            0.0.0.0/0            udp dpt:53 ctstate NEW
+    6   360 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5671 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5674 ctstate NEW
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:9090 ctstate NEW
+
+Chain IN_public_deny (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain IN_public_log (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+
+Chain OUTPUT_direct (1 references)
+ pkts bytes target     prot opt in     out     source               destination         

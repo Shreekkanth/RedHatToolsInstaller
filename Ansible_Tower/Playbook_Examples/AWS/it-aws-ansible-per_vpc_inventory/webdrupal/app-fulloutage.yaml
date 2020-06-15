@@ -1,0 +1,139 @@
+---
+# The following environment variables can be used AWS_ACCESS_KEY or
+# EC2_ACCESS_KEY or AWS_ACCESS_KEY_ID, AWS_SECRET_KEY or
+# EC2_SECRET_KEY or AWS_SECRET_ACCESS_KEY, AWS_REGION or EC2_REGION,
+# AWS_SECURITY_TOKEN
+#
+# Ansible uses the boto configuration file (typically ~/.boto) if no
+# credentials are provided. See
+# http://boto.readthedocs.org/en/latest/boto_config_tut.html
+#
+- hosts: webdrupal-app
+
+  gather_facts: true
+
+  pre_tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=60 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: set nagios downtime for proxy services
+      nagios: action=downtime minutes=60 service=all host="{{ item }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: groups['webdrupal-proxy']
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host_secondary }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: disable puppet
+      shell: service puppet stop
+      tags:
+        - puppet
+
+    # Removed verification step (2015-02-05)
+
+  tasks:
+    - name: gathering ec2 facts
+      ec2_facts:
+      tags:
+        - out_rotation
+        - in_rotation
+
+    - name: instance de-register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        state: 'absent'
+      tags:
+        - out_rotation
+
+    - name: webdrupal disable
+      shell: webdrupal disable
+      tags:
+        - webdrupal_disable
+
+    - name: start puppet
+      shell: service puppet start
+      tags:
+        - puppet
+
+    - name: enabling puppet
+      shell: puppet agent --enable
+      tags:
+        - puppet
+
+    - name: run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes
+      tags:
+        - puppet
+
+    - name: disable puppet
+      shell: webdrupal disable_puppet
+      tags: always_do_this
+
+    - name: update application code from git
+      shell: webdrupal git "{{ git_branch }}"
+      args:
+        chdir: /usr/share/webdrupal
+      tags:
+        - git
+
+    - name: run update on the update_node only
+      shell: webdrupal update
+      when: inventory_hostname == update_node
+
+    # Cache clear step is not necessary as it is already done in webdrupal update
+
+    - name: webdrupal enable
+      shell: webdrupal enable
+      tags:
+        - webdrupal_enable
+
+    # Removed verification step(2015-02-05)
+
+    - name: re-add cmsapp1 to price editing hack elb
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ price_hack_id }}"
+        ec2_elbs: "{{ price_hack_elb }}"
+        state: 'present'
+      when: price_hack_id is defined and price_hack_elb is defined
+      ignore_errors: yes
+      tags:
+        - in_rotation
+        - price_hack
+
+    - name: instance register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        ec2_elbs: "{{ elb_name }}"
+        state: 'present'
+      ignore_errors: yes
+      tags:
+        - in_rotation
+
+    - name: flush memcache
+      shell: webdrupal flush_memcache
+      when: inventory_hostname==update_node
+      tags:
+        - memcache
+        - webdrupal_flush_memcache
+
+    - name: re-enable puppet
+      shell: webdrupal enable_puppet
+      tags: always_do_this

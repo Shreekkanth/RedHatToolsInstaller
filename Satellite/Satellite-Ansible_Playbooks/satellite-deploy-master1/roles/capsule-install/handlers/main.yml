@@ -1,0 +1,16 @@
+---
+#
+# Handlers for capsule-install role
+#
+  - name: restart_puppet
+    service: name=puppet state=restarted enabled=yes
+
+  - name: restart_goferd
+    service: name=goferd state=restarted enabled=yes
+
+  - name: restart_katello
+    command: /usr/bin/katello-service restart
+
+  - name: puppet_noop
+    command: puppet agent --test --noop
+...

@@ -1,0 +1,11 @@
+---
+
+ansible_tower_admin_password: "{{ vault_ansible_tower_admin_password }}"
+ansible_tower_pg_password: "{{ vault_ansible_tower_pg_password }}"
+ansible_tower_rabbitmq_password: "{{ vault_ansible_tower_rabbitmq_password }}"
+
+#  proxy IP addresses
+#+ http://docs.ansible.com/ansible-tower/latest/html/administration/proxy-support.html#configure-known-proxies
+proxy_ip_whitelist:
+  - ansible-f5-ip1
+  - ansible-f5-ip2

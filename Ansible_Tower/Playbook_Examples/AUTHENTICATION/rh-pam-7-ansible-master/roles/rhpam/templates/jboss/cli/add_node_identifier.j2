@@ -1,0 +1,25 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Configure node identifier
+# https://access.redhat.com/solutions/260023
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/add_node_identifier.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+/system-property=jboss.tx.node.id:add(value={{jboss_tx_node_id}})
+/subsystem=transactions:write-attribute(name=node-identifier,value="${jboss.tx.node.id}")
+
+run-batch
+#
+# EOF

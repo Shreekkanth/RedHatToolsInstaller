@@ -1,0 +1,20 @@
+[main]
+     vardir = /opt/puppetlabs/puppet/cache
+     logdir = /var/log/puppetlabs/puppet
+     rundir = /var/run/puppetlabs
+     ssldir = /etc/puppetlabs/puppet/ssl
+
+[agent]
+     pluginsync        = true
+     report            = true
+     ignoreschedules   = true
+     daemon            = false
+     ca_server         = {{ satinfo.puppet_proxy_name }}
+     certname          = {{ hostinfo.fqdn }}
+     environment       = {{ satinfo.environment_name }}
+     server            = {{ satinfo.puppet_proxy_name }}
+     usecacheonfailure = false
+     splay             = true
+{% if satinfo.hostgroup_title is match('^bdi/(coll|svil|cert)') %}
+     runinterval       = 8h
+{% endif %}

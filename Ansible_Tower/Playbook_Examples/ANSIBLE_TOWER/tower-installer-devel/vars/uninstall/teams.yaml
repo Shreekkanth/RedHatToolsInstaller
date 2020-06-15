@@ -1,0 +1,9 @@
+---
+- name: Network Operations
+  state: absent
+
+- name: Network Engineering
+  state: absent
+
+- name: Network Administrators
+  state: absent

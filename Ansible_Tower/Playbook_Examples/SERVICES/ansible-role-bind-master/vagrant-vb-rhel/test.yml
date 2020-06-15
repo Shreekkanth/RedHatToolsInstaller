@@ -1,0 +1,22 @@
+---
+- name: apply bind role
+  hosts: all
+  become: true
+  roles:
+    - bind
+
+- name: verify dns entries
+  hosts: all
+  vars:
+    ext_domain: example.com
+    master_host: bparry-master-1
+    expected_master_ip: 10.3.11.36
+  tasks:
+    - name: get master-1 entry
+      shell: dig @127.0.0.1 {{ master_host }}.{{ ext_domain }} +short
+      register: result_ip
+
+    - name: verify master-1 entry
+      fail:
+        msg: "Expected value {{ expected_master_ip }} did not match actual: {{ result_ip.stdout }}"
+      when: result_ip.stdout != expected_master_ip

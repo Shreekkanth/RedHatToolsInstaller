@@ -1,0 +1,16 @@
+---
+- name: Install packages
+  yum:
+    name:
+      - "@^Virtualization Host"
+      - libguestfs-tools
+      - virt-install
+    state: present
+
+- name : Enable libvirtd and start service
+  systemd:
+    name: libvirtd
+    state: started
+    enabled: yes
+
+

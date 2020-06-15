@@ -1,0 +1,6 @@
+---
+- name: Installing registration package on the client
+  shell: "yum localinstall {{ katello_ca_consumer }} -y"
+
+- name: Registering the client to the satellite
+  shell: 'subscription-manager register --org="{{ organization }}" --activationkey="{{ activationkey }}" --force'

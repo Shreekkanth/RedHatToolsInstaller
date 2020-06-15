@@ -1,0 +1,41 @@
+---
+- name: parser meta data
+  parser_metadata:
+    version: 1.0
+    command: show ip arp
+    network_os: ios
+
+- name: match sections
+  pattern_match:
+    regex: "^Internet\\s+"
+    match_all: true
+    match_greedy: true
+  register: context
+
+- name: match interface values
+  pattern_match:
+    regex: "(\\S+)\\s+(\\S+)\\s+(\\d+|\\-)\\s+([0-9a-f\\.]+)\\s+\\S+\\s+(\\S+)"
+    content: "{{ item }}"
+  loop: "{{ context }}"
+  register: values
+
+- name: template arp entries
+  loop: "{{ values }}"
+  register: arp_entries
+  export: true
+  export_as: list
+  extend: cisco_ios
+  json_template:
+    template:
+      - key: protocol
+        value: "{{ item.matches.0 }}"
+      - key: ip
+        value: "{{ item.matches.1 }}"
+      - key: age
+        value: "{{ item.matches.2 }}"
+      - key: mac
+        value: "{{ item.matches.3 | hwaddr('cisco') | string }}"
+      - key: mac_type
+        value: "{{ item.matches.3 | hwaddr('cisco') | string | type_debug }}"
+      - key: interface
+        value: "{{ item.matches.4 }}"

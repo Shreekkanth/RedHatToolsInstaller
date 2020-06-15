@@ -1,0 +1,4 @@
+---
+# vars file for configure_host
+unneeded_packages:
+- "cloud-init"

@@ -1,0 +1,31 @@
+---
+# Configure my working laptop
+
+- name: Workstation Configuration
+  hosts: workstation
+  vars_files:
+    - varfiles/workstation_vars.yml
+    - varfiles/gnome_shell_extensions.yml
+    - varfiles/workstation_vars_vault.yml
+  tasks:
+    - import_tasks: tasks/host.yml
+    - import_tasks: tasks/pkguninstall.yml
+    - import_tasks: tasks/pkgupdate.yml
+    - import_tasks: tasks/pkginstall.yml
+    - import_tasks: tasks/pkginstall-chrome.yml
+    - import_tasks: tasks/pkginstall-dropbox.yml
+    - import_tasks: tasks/rpmfusion.yml
+    - import_tasks: tasks/rpmfusion-pkginstall.yml
+    - import_tasks: tasks/pkginstall-virtualbox.yml
+    - import_tasks: tasks/gnome.yml
+    - import_tasks: tasks/vim-setup.yml
+    - import_tasks: tasks/firefox-setup.yml
+    - import_tasks: tasks/dotfiles.yml
+    - import_tasks: tasks/gnome-settings.yml
+    - import_tasks: tasks/pass.yml
+    - import_tasks: tasks/user.yml
+    - import_tasks: tasks/work.yml # Note this requires a trusted network connection
+  handlers:
+    - import_tasks: handlers/main.yml
+  roles:
+      - jaredhocutt.gnome_extensions

@@ -1,0 +1,3 @@
+|RHCE Training and exam
+|link:http://www.redhat.com/en/services/training/rh254-red-hat-system-administration-iii[RH254 Red Hat System Administration III]
+link:http://www.redhat.com/en/services/training/rh255-red-hat-system-administration-iii-rhcsa-and-rhce-exams[RH300 RHCE Rapid Track Course (and RHCE Exam)]

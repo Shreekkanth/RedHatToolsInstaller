@@ -1,0 +1,19 @@
+{{ ansible_managed | comment}}
+# /etc/yum.repos.d/redhat.repo
+
+[rhel-7-server-rpms]
+baseurl=http://10.10.21.21/rhel-7-server-rpms
+enabled=1
+gpgcheck=0
+
+
+[rhel-7-server-extras-rpms]
+baseurl=http://10.10.21.21/rhel-7-server-extras-rpms
+enabled=1
+gpgcheck=0
+
+
+[rhel-7-server-rh-common-rpms]
+baseurl=http://10.10.21.21/rhel-7-server-rh-common-rpms
+enabled=1
+gpgcheck=0

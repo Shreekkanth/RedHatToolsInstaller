@@ -1,0 +1,6 @@
+---
+- name: Update All Packages
+  become: yes
+  dnf:
+    name: "*"
+    state: latest

@@ -1,0 +1,22 @@
+---
+tower_inventory_sources:
+  - name: Inventory source 1
+    credential: rh-testing.pem
+    description: My Inventory source
+    group_by:
+    instance_filters:
+    inventory: Tower test inventory
+    overwrite: true
+    overwrite_vars: false
+    source: scm
+    source_path: inventory.yml
+    source_project: Test Project 1
+    source_regions:
+    source_script:
+    source_vars:
+    state: present
+    timeout:
+    update_cache_timeout: 300
+    update_on_launch: false
+    update_on_project_update: true
+

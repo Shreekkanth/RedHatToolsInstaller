@@ -1,0 +1,247 @@
+<%#
+kind: provision
+name: BDI bare-metal-kickstart
+oses:
+- RedHat 7
+%>
+# Kickstart for RHEL 7 unattended installation on Bare Metal systems
+# Created and maintained for BDI
+
+# DISABILITARE IL SAFEMODE RENDERER PER UTILIZZARE QUESTO TEMPLATE
+#  Settings -> cercare "safemode" -> impostare a False
+
+<%
+  rhel_compatible = @host.operatingsystem.family == 'Redhat'
+  os_major = @host.operatingsystem.major.to_i
+  pm_set = @host.puppetmaster.empty? ? false : true
+  puppet_enabled = pm_set || @host.params['force-puppet']
+%>
+
+install
+<%= @mediapath.gsub(foreman_server_fqdn.to_s, @host.content_source.to_s) %>
+
+lang en_US.UTF-8
+
+# TODO: creare parametro selinux_mode
+selinux --permissive
+
+keyboard us
+skipx
+
+
+rootpw --iscrypted <%= root_pass %>
+# rootpw --plaintext linux
+
+
+
+# Add any user needed
+# user --name=myuser --gecos=My_User --homedir=/home/myuser --uid=2005 --gid=2005
+
+
+firewall --disabled
+# aggiungere servizi con porte singole
+#   es.   --port=numero:tcp,numero:udp
+
+authconfig --useshadow --passalgo=sha256 --kickstart
+
+timezone <%= @host.params['time-zone'] || 'Europe/Rome' %>
+
+# Layout partizionamento
+<%= @host.diskLayout %>
+
+# driverdisk --source=http://server/path/package.rpm
+
+eula --agreed
+
+text
+
+reboot --kexec --eject
+
+%packages --ignoremissing
+yum
+ntp
+wget
+subscription-manager
+libsss_sudo 
+ipa-client
+device-mapper-multipath
+@Core
+-chrony
+%end
+
+%pre
+
+%end
+
+
+%post --nochroot
+exec < /dev/tty3 > /dev/tty3
+#changing to VT 3 so that we can see whats going on....
+/usr/bin/chvt 3
+(
+cp -va /etc/resolv.conf /mnt/sysimage/etc/resolv.conf
+/usr/bin/chvt 1
+) 2>&1 | tee /mnt/sysimage/root/install.postnochroot.log
+%end
+
+
+%post
+logger "Starting anaconda <%= @host -%> postinstall"
+exec < /dev/tty3 > /dev/tty3
+#changing to VT 3 so that we can see whats going on....
+/usr/bin/chvt 3
+(
+
+echo "Generating new ifcfg files..."
+
+rm -vf /etc/sysconfig/network-scripts/ifcfg-*
+
+cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-lo
+DEVICE=lo
+IPADDR=127.0.0.1
+NETMASK=255.0.0.0
+NETWORK=127.0.0.0
+# If you're having problems with gated making 127.0.0.0/8 a martian,
+# you can change this to something else (255.255.255.255, for example)
+BROADCAST=127.255.255.255
+ONBOOT=yes
+NAME=loopback
+EOF
+
+<% @host.managed_interfaces.each do |i| -%>
+cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-<%= i.identifier %>
+NAME=<%= i.identifier %>
+DEVICE=<%= i.identifier %>
+HWADDR=<%= i.mac %>
+TYPE=Ethernet
+ONBOOT=yes
+<% @host.bond_interfaces.each do |bondif| -%>
+<%   if defined? bondif.attached_devices and bondif.attached_devices.include? i.identifier -%>
+SLAVE=yes
+MASTER=<%= bondif.identifier %>
+<%     break -%>
+<%   end -%>
+<% end -%>
+EOF
+
+<% end %>
+
+
+<% @host.bond_interfaces.each do |bondif| -%>
+cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-<%= bondif.identifier %>
+NAME=<%= bondif.identifier %>
+DEVICE=<%= bondif.identifier %>
+ONBOOT=yes
+BOOTPROTO=none
+TYPE=Bond
+BONDING_MASTER=yes
+PROXY_METHOD=none
+BROWSER_ONLY=no
+IPV4_FAILURE_FATAL=no
+IPV6INIT=no
+BONDING_OPTS="<%= bondif.bond_options %> mode=<%= bondif.mode %>"
+<%-   if bondif.subnet.vlanid == '' -%>
+IPADDR=<%= bondif.ip %>
+NETMASK=<%= bondif.subnet.mask %>
+<%= "GATEWAY=#{bondif.subnet.gateway}" if bondif.subnet.gateway != '' %>
+<%= "DNS1=#{bondif.subnet.dns_primary}" if defined? bondif.subnet.dns_primary and bondif.subnet.dns_primary != '' %>
+<%= "DNS2=#{bondif.subnet.dns_secondary}" if defined? bondif.subnet.dns_secondary and bondif.subnet.dns_secondary != '' %>
+<%= "DEFROUTE=yes" if @host.primary_interface.identifier == bondif.identifier and bondif.subnet.vlanid == '' %>
+<%-   end -%>
+EOF
+
+<%   if bondif.subnet.vlanid != '' -%>
+<%     vlanifname = bondif.identifier + "." + bondif.subnet.vlanid.to_s %>
+cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-<%= vlanifname %>
+NAME=<%= vlanifname %>
+ONBOOT=yes
+BOOTPROTO=none
+TYPE=Vlan
+VLAN=yes
+REORDER_HDR=yes
+GVRP=no
+MVRP=no
+PROXY_METHOD=none
+DEVICE=<%= vlanifname %>
+PHYSDEV=<%= bondif.identifier %>
+IPADDR=<%= bondif.ip %>
+NETMASK=<%= bondif.subnet.mask %>
+<%= "GATEWAY=#{bondif.subnet.gateway}" if bondif.subnet.gateway != '' %>
+VLANID=<%= bondif.subnet.vlanid.to_s %>
+<%= "DNS1=#{bondif.subnet.dns_primary}" if defined? bondif.subnet.dns_primary and bondif.subnet.dns_primary != '' %>
+<%= "DNS2=#{bondif.subnet.dns_secondary}" if defined? bondif.subnet.dns_secondary and bondif.subnet.dns_secondary != '' %>
+<%= "DEFROUTE=yes" if @host.primary_interface.identifier == bondif.identifier %>
+IPV4_FAILURE_FATAL=no
+IPV6INIT=no
+EOF
+<%   end -%>
+
+<% end -%>
+
+
+
+
+
+#update local time
+echo "updating system time"
+/usr/sbin/ntpdate -sub <%= @host.params['ntp-server'] || 'ntp01.utenze.bankit.it' %>
+/usr/sbin/hwclock --systohc
+
+# configurazione file /etc/sysconfig/ntpd
+cat << EOF > /etc/sysconfig/ntpd
+# Command line options for ntpd
+#OPTIONS="-g"
+OPTIONS="-x -u ntp:ntp -p /var/run/ntpd.pid"
+EOF
+
+<%= snippet "subscription_manager_registration" %>
+
+<% if @host.realm != nil -%>
+echo "Joining IDM Realm"
+/usr/sbin/ipa-client-install -w '<%= @host.otp || "$HOST[OTP]" %>' --realm=<%= @host.realm %> -U --mkhomedir --no-ssh --no-nisdomain --no-ntp --domain <%= @host.realm.to_s.downcase %>
+<% end -%>
+
+# update all the base packages from the updates repository
+yum -t -y -e 0 update
+
+echo "Configuring multipath"
+# Modifica su lvm.conf per esclusione da LVM2 di tutti i device tranne il disco primario
+# global_filter = [ "a|/dev/sda|", "r|.*|" ]
+sed -i -r 's/(.*# global_filter = .*)/\1\n\tglobal_filter = [ "a|\/dev\/sda|", "r|.*|" ]/' /etc/lvm/lvm.conf
+
+# caricamento automatico al boot dei moduli fiber channel e multipath
+echo lpfc > /etc/modules-load.d/lpfc.conf
+echo dm-multipath > /etc/modules-load.d/dm-multipath.conf
+rm -f /etc/modprobe.d/anaconda-blacklist.conf
+
+# creazione file di configurazione multipath (gia' abilitato al boot per default)
+mpathconf --enable
+
+<%= snippet('remote_execution_ssh_keys') %>
+
+<% if puppet_enabled %>
+# and add the puppet package
+yum -t -y -e 0 install puppet
+
+echo "Configuring puppet"
+cat > /etc/puppet/puppet.conf << EOF
+<%= snippet 'puppet.conf' %>
+EOF
+
+# Setup puppet to run on system reboot
+systemctl enable puppet
+
+/usr/bin/puppet agent --config /etc/puppet/puppet.conf -o --tags no_such_tag <%= @host.puppetmaster.blank? ? '' : "--server #{@host.puppetmaster}" %> --no-daemonize
+<% end -%>
+
+sync
+
+<% if @provisioning_type == nil || @provisioning_type == 'host' -%>
+# Inform the build system that we are done.
+echo "Informing Foreman that we are built"
+curl -s -k -o /dev/null <%= foreman_url('built') %>
+<% end -%>
+) 2>&1 | tee /root/install.post.log
+exit 0
+
+%end

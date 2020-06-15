@@ -1,0 +1,47 @@
+---
+
+- hosts: all
+  remote_user: root
+  tasks:
+  - name: update packages
+    yum: name=* state=latest
+
+  - name: install basic packages
+    yum: name={{ item }} state=installed
+    with_items:
+    - bash-completion
+    - bind-utils
+    - curl
+    - dstat
+    - git
+    - ipmitool
+    - lftp
+    - man
+    - man-pages
+    - mtr
+    - ntp
+    - ntpdate
+    - net-tools
+    - openssh-clients
+    - psmisc
+    - rsync
+    - screen
+    - subversion
+    - sudo
+    - sysstat
+    - strace
+    - telnet
+    - traceroute
+    - tcpdump
+    - traceroute
+    - vim-enhanced
+#   - w3m
+    - wget
+    - wireshark
+    - xterm
+    - zsh
+
+- hosts: all
+  remote_user: root
+  roles:
+    - user_root

@@ -1,0 +1,29 @@
+$ORIGIN  {{ ext_domain }}.
+$TTL 60  ;  in seconds
+@ IN SOA dns.{{ ext_domain }}.  root.{{ ext_domain }}.  (
+  2019112904  ;  serial
+  60  ;  refresh (1 minute)
+  15  ;  retry (15 seconds)
+  1800  ;  expire (30 minutes)
+  10  ; minimum (10 seconds)
+)
+  NS dns.{{ ext_domain }}.
+
+master	IN	A	{{ ext_lb_ip }}
+dns	IN	A	{{ ext_dns_ip }}
+
+bparry-dns-1		IN	A	{{ ext_dns_ip }}
+bparry-lb-1 		IN	A	{{ ext_lb_ip }}
+bparry-nfs-1		IN	A	10.3.11.23
+bparry-master-1		IN	A	10.3.11.36
+bparry-master-2		IN	A	10.3.11.41
+bparry-master-3		IN	A	10.3.11.51
+bparry-infra-1		IN	A	{{ ext_infra_1_ip }}
+bparry-infra-2		IN	A	{{ ext_infra_2_ip }}
+bparry-node-1		IN	A	10.3.11.232
+bparry-node-2		IN	A	10.3.11.251
+
+
+$ORIGIN {{ app_domain }}.
+* A {{ ext_infra_1_ip }}
+* A {{ ext_infra_2_ip }}

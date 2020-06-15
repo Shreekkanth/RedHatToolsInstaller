@@ -1,0 +1,65 @@
+subscription-manager register
+subscription-manager attach --pool 
+subscription-manager repos --disable="*"
+subscription-manager repos --enable="rhel-7-server-rpms"
+yum install -y bash-completion bind-utils ipa-server ipa-server-dns lsof vim
+yum update -y
+
+firewall-cmd --add-service=freeipa-ldaps --add-service=freeipa-ldap --add-service=dns --permanent 
+firewall-cmd --reload 
+
+
+
+ipa-server-install -U --realm="HOME.MCD" --domain="home.mcd"  --admin-password="password" --ds-password="password" \
+	--hostname="idm.home.mcd" --ip-address="192.168.124.234" --forwarder="192.168.124.1" --forward-policy="only" \
+	--setup-dns --reverse-zone="124.168.192.in-addr.arpa."
+
+ 
+ipa -v dnszone-add "172.96.10.in-addr.arpa." --name-from-ip="10.96.172.0" --allow-sync-ptr="1"
+ipa -v dnszone-add lmlab.local --forward-policy="first" --admin-email="root@home.mcd" --dynamic-update="True" --allow-sync-ptr="True"
+
+
+Works:
+ipa dnsrecord-add home.mcd foo2 --a-ip-address 192.168.124.200 --a-create-reverse
+
+
+ipa dnsrecord-add "lmlab.local" --a-rec="ansible" --a-ip-address="10.96.172.121" --a-create-reverse
+ipa dnsrecord-add "172.96.10.in-addr.arpa." --ptr-rec="121" --ptr-hostname="ansible.lmlab.local"
+
+
+
+
+  A Record:
+    --a-rec=STR         Raw A records
+    --a-ip-address=STR  A IP Address
+    --a-create-reverse  Create reverse record for this IP Address
+
+
+
+some ansible stuff:
+- name: Run the installer
+  command: > 
+    {{ ipaserver_base_command }}
+    -U
+    --realm {{ ipaserver_realm }}
+    --domain {{ ipaserver_domain }}
+    -a {{ ipaserver_admin_password }}
+    -p {{ ipaserver_dir_admin_password }}
+    --hostname={{ hostname }}
+    --ip-address={{ ansible_eth0.ipv4.address }}
+    {{ '--idstart=%s' % ipaserver_idstart if ipaserver_idstart | default(False) else '' }}
+    {{ '--idmax=%s' % ipaserver_idmax if ipaserver_idmax | default(False) else ' ' }}
+    {{ '--forwarder=%s' % ipaserver_dns_forwarder
+       if ipaserver_dns_forwarder | default(False) else '--no-forwarders' }}
+    {{ '--mkhomedir' if ipaserver_mkhomedir | default(True) else '' }}
+    {{ '--setup-dns' if ipaserver_setup_dns | default(True) else '' }}
+    {{ '--ssh-trust-dns' if ipaserver_ssh_trust_dns | default(True) else '' }}
+    {{ '' if ipaserver_hbac_allow | default(True) else '--no_hbac_allow' }}
+    {{ '' if ipaserver_setup_ntp | default(True) else '--no-ntp' }}
+    {{ '' if ipaserver_configure_ssh | default(True) else '--no-ssh' }}
+    {{ '' if ipaserver_configure_sshd | default(True) else '--no-sshd' }}
+    {{ '' if ipaserver_ui_redirect | default(True) else '--no-ui-redirect' }}
+    {{ '' if ipaserver_host_dns | default(True) else '--no-host-dns' }}
+    {{ '--allow-zone-overlap' if ipaserver_zone_overlap | default(False) else '' }}
+  args:
+    creates: /etc/ipa/default.conf

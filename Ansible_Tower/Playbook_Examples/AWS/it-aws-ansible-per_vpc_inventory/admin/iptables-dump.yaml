@@ -1,0 +1,13 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: IPTables Dump
+      command: iptables --list
+      register: iptables
+      remote_user: root
+      ignore_errors: yes
+    - debug: msg="{{ iptables.stdout }}"
+    - debug: msg="{{ iptables.stderr }}"
+
+

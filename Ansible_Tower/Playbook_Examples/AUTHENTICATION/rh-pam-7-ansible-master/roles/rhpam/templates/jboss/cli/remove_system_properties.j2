@@ -1,0 +1,25 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Remove System Properties
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/remove_system_properties.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+{% for item in rhpamSystemProperties %}
+/system-property={{ item.name }}:remove()
+{% endfor %}
+
+run-batch
+#
+# EOF

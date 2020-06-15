@@ -1,0 +1,17 @@
+---
+- hosts: docker-hosts
+  remote_user: root
+  gather_facts: no
+  tasks:
+    - name: "Service docker is running"
+      service:
+        name=docker
+        state=restarted
+    ###- shell:
+    ###    yum -y remove docker docker-common docker-client docker-rhel-push-plugin
+    ###    yum -y install docker-1.10.3-59.el7.x86_64 docker-common-1.10.3-59.el7.x86_64 docker-rhel-push-plugin-1.10.3-59.el7.x86_64
+    - name: "Containers are started"
+      shell: |
+        for c in $( docker ps -qa ); do
+          docker start $c
+        done

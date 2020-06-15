@@ -1,0 +1,14 @@
+---
+#
+# Playbook to install Ansible Tower on Quicklab
+#
+# $ ansible-playbook -l {limit} install_tower.yml
+#
+- hosts: all
+
+  tasks:
+    - import_role:
+        name: quicklab
+
+    - import_role:
+        name: tower

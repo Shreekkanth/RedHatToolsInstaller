@@ -1,0 +1,5 @@
+---
+# vars available across all groups
+
+env_name: integration
+realm_name: DEF.IC.COM.AU

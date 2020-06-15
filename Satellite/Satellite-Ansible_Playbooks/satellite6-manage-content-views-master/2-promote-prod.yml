@@ -1,0 +1,20 @@
+---
+- name: "Promote to prod"
+  hosts: "localhost"
+  vars_prompt:
+    - name: "sat6_user"
+      prompt: "Enter the Satellite6 username"
+      default: "admin"
+      private: False
+    - name: "sat6_pass"
+      prompt: "Enter the Satellite6 user's password"
+      private: True
+  vars:
+    sat6_fqdn: "rhnsat6prd01.isus.emc.com"
+    sat6_organization: "Dell_IT"
+  vars_files:
+    - "vars/prod.yml"
+  tasks:
+    - name: "Promote content views to prod"
+      include_role:
+        name: "satellite6_manage_content_views"

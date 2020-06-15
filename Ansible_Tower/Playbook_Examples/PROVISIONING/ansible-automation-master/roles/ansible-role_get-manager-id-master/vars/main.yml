@@ -1,0 +1,5 @@
+---
+techmap_query: >
+  SELECT sup_logon, emp_email, sup_email
+  FROM Vw_ContactList
+  WHERE emp_Logon = '{{ get_manager_id_user_id }}'

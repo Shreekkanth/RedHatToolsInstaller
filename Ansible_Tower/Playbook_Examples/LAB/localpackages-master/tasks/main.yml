@@ -1,0 +1,22 @@
+---
+# tasks file for roles/localpackages
+
+- name: Load a variable file based on the OS type, or a default if not found. Using free-form to specify the file.
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+      - "v_{{ ansible_distribution | lower }}.yml"
+      - "v_{{ ansible_os_family | lower }}.yml"
+      - v_default.yml
+      errors: ignore
+
+- name: Include Tasks file based on the OS type, or a default if not found. Using free-form to specify the file.
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - files:
+      - "t_{{ ansible_distribution | lower }}.yml"
+      - "t_{{ ansible_os_family | lower }}.yml"
+      - t_default.yml
+      errors: ignore
+
+...

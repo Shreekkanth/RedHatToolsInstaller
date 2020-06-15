@@ -1,0 +1,20 @@
+---
+- name: Printers | Config CUPS
+  template:
+    src: cups-browsed.conf.j2
+    dest: /etc/cups/cups-browsed.conf
+    owner: root
+    group: root
+    mode: 0644
+    seuser: system_u
+    serole: object_r
+    setype: cupsd_etc_t
+  notify: restart cups
+  register: reg_cups
+
+- name: Printers | Enable CUPS
+  service:
+    name: cups-browsed
+    enabled: true
+    state: started
+  when: reg_cups['changed']

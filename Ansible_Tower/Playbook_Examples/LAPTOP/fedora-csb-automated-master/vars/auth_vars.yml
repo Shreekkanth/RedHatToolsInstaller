@@ -1,0 +1,63 @@
+---
+
+# Taken from https://mojo.redhat.com/docs/DOC-931465
+
+Lcorp: ldap.corp.redhat.com
+Kcorp: kerberos.corp.redhat.com
+
+L1rdu: ldap01.intranet.prod.int.rdu2.redhat.com
+L2rdu: ldap02.intranet.prod.int.rdu2.redhat.com
+K1rdu: kerberos01.core.prod.int.rdu2.redhat.com
+K2rdu: kerberos02.core.prod.int.rdu2.redhat.com
+K1phx: kerberos01.core.prod.int.phx2.redhat.com
+
+L1ams: ldap01.intranet.prod.int.ams2.redhat.com
+L2ams: ldap02.intranet.prod.int.ams2.redhat.com
+K1ams: kerberos01.core.prod.int.ams2.redhat.com
+K2ams: kerberos02.core.prod.int.ams2.redhat.com
+
+L1sin: ldap01.intranet.prod.int.sin2.redhat.com
+L2sin: ldap02.intranet.prod.int.sin2.redhat.com
+K1sin: kerberos01.core.prod.int.sin2.redhat.com
+K2sin: kerberos02.core.prod.int.sin2.redhat.com
+
+L1pnq: ldap01.intranet.prod.int.pnq2.redhat.com
+L2pnq: ldap02.intranet.prod.int.pnq2.redhat.com
+K1pnq: kerberos01.core.prod.int.pnq2.redhat.com
+K2pnq: kerberos02.core.prod.int.pnq2.redhat.com
+
+ldap_servers:
+  east_north_ams:
+    - "{{ L1rdu }}"
+    - "{{ L2rdu }}"
+    - "{{ Lcorp }}"
+  west_north_ams_latam:
+    - "{{ Lcorp }}"
+    - "{{ L1rdu }}"
+    - "{{ L2rdu }}"
+  emea:
+    - "{{ L1ams }}"
+    - "{{ L2ams }}"
+    - "{{ Lcorp }}"
+  apac:
+    - "{{ L1sin }}"
+    - "{{ L2sin }}"
+    - "{{ Lcorp }}"
+
+kerberos_servers:
+  east_north_ams:
+    - "{{ K1rdu }}"
+    - "{{ K2rdu }}"
+    - "{{ K1phx }}"
+  west_north_ams_latam:
+    - "{{ K1phx }}"
+    - "{{ K1rdu }}"
+    - "{{ K2rdu }}"
+  emea:
+    - "{{ K1ams }}"
+    - "{{ K2ams }}"
+    - "{{ K1phx }}"
+  apac:
+    - "{{ K1sin }}"
+    - "{{ K2sin }}"
+    - "{{ K1phx }}"

@@ -1,0 +1,6 @@
+- set_fact:
+     az: "{{ subnet.az }}"
+     cidr: "{{ subnet.cidr }}"
+     tag: "{{ subnet.name }}"
+
+- import_tasks: add-net.yml

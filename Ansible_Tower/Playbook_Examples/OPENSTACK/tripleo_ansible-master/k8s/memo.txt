@@ -1,0 +1,185 @@
+kubeadm init --apiserver-advertise-address=10.0.1.121 --pod-network-cidr=10.244.0.0/16 2>&1 | tee log.init
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
+kubectl taint nodes --all node-role.kubernetes.io/master-
+kubectl get pods --all-namespaces
+
+kubectl create namespace sock-shop
+kubectl apply -n sock-shop -f "https://github.com/microservices-demo/microservices-demo/blob/master/deploy/kubernetes/complete-demo.yaml?raw=true"
+kubectl get pods -n sock-shop -w
+
+[root@k8s-master1 ~]# kubeadm init --apiserver-advertise-address=10.0.1.121 --pod-network-cidr=10.244.0.0/16
+[kubeadm] WARNING: kubeadm is in beta, please do not use it for production clusters.
+[init] Using Kubernetes version: v1.7.4
+[init] Using Authorization modes: [Node RBAC]
+[preflight] Running pre-flight checks
+[preflight] WARNING: hostname "k8s-master1.k8stest.local" could not be reached
+[preflight] WARNING: hostname "k8s-master1.k8stest.local" lookup k8s-master1.k8stest.local on 172.16.99.254:53: no such host
+[kubeadm] WARNING: starting in 1.8, tokens expire after 24 hours by default (if you require a non-expiring token use --token-ttl 0)
+[certificates] Generated CA certificate and key.
+[certificates] Generated API server certificate and key.
+[certificates] API Server serving cert is signed for DNS names [k8s-master1.k8stest.local kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 10.0.1.121]
+[certificates] Generated API server kubelet client certificate and key.
+[certificates] Generated service account token signing key and public key.
+[certificates] Generated front-proxy CA certificate and key.
+[certificates] Generated front-proxy client certificate and key.
+[certificates] Valid certificates and keys now exist in "/etc/kubernetes/pki"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/admin.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/kubelet.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/controller-manager.conf"
+[kubeconfig] Wrote KubeConfig file to disk: "/etc/kubernetes/scheduler.conf"
+[apiclient] Created API client, waiting for the control plane to become ready
+[apiclient] All control plane components are healthy after 46.000637 seconds
+[token] Using token: 942cb3.08f925f7896e9621
+[apiconfig] Created RBAC rules
+[addons] Applied essential addon: kube-proxy
+[addons] Applied essential addon: kube-dns
+
+Your Kubernetes master has initialized successfully!
+
+To start using your cluster, you need to run (as a regular user):
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  http://kubernetes.io/docs/admin/addons/
+
+You can now join any number of machines by running the following on each node
+as root:
+
+  kubeadm join --token 942cb3.08f925f7896e9621 10.0.1.121:6443
+
+
+
+
+daemonset
+
+https://github.com/openshift/openshift-ansible/blob/master/inventory/byo/hosts.ose.example
+
+cp /etc/origin/master/admin.kubeconfig ~/.kube/config
+
+ansible nodes -a "yum -y install NetworkManager"
+ansible nodes -m yum -a "name=NetworkManager"
+ansible -i hosts/lab ose_nodes -u root -m service -a 'name=ntpd enabled=yes'
+
+hostnamectl set-hostname master1.osetest.local
+
+oadm diagnostics
+
+oc get node --show-labels
+oc get pod -o wide
+
+oc annotate namespace default openshift.io/node-selector='region=infra' --overwrite
+oc get namespace default -o yaml
+
+oadm manage-node master.osetest.local --schedulable=true
+
+oc label node master.osetest.local region="infra"
+oc label node node01.osetest.local region="primary" --overwrite
+oc label node node02.osetest.local region="primary" --overwrite
+
+oadm registry --config=/etc/origin/master/admin.kubeconfig --service-account=registry
+curl -v 172.30.41.32:5000/healthz
+
+oc delete dc/router svc/router
+oadm router oserouter --replicas=1 --service-account=router --stats-password='redhat'
+
+ovs-ofctl --protocols=OpenFlow13 dump-flows br0
+
+oc login -u system:admin
+
+useradd devel
+htpasswd -cb /etc/origin/master/htpasswd devel devel
+htpasswd -b /etc/origin/master/htpasswd devel devel
+htpasswd -b /etc/origin/master/htpasswd test test
+
+oc create -f Template_Example.json -n openshift
+
+tshark -i eth1 -f 'not port ssh' -w tmp.pcap
+tshark -r tmp.pcap -d 'udp.port==4789,vxlan' -V | less
+tcpdump -r tmp.pcap -T vxlan
+
+mysql -umysqluser -predhat -h $(oc get svc database --template='{{.spec.clusterIP}}') -e 'show databases;'
+curl http://$(oc get svc ruby-hello-world --template='{{.spec.clusterIP}}'):8080/
+
+curl -s -v --cert /etc/origin/master/master.etcd-client.crt --key /etc/origin/master/master.etcd-client.key --cacert /etc/origin/master/ca-bundle.crt https://master1.example.com:4001/v2/keys | python -m json.tool
+etcdctl --endpoint https://master1.example.com:4001 --cert-file /etc/origin/master/master.etcd-client.crt --key-file /etc/origin/master/master.etcd-client.key --ca-file /etc/origin/master/ca-bundle.crt ls -r -p
+
+oc new-app --docker-image=registry.access.redhat.com/rhscl/nginx-110-rhel7 --name=nginx
+
+oc new-app https://github.com/openshift/ruby-hello-world.git
+oc log -f ruby-hello-world-1-build
+curl http://172.30.20.220:8080/
+oc delete is/ruby-22-centos7 is/ruby-hello-world bc/ruby-hello-world dc/ruby-hello-world svc/ruby-hello-world
+
+oc new-app centos/httpd-24-centos7~https://github.com/openshift/httpd-ex --name httpd
+oc delete dc/httpd bc/httpd svc/httpd is/httpd is/httpd-24-centos7
+
+
+
+
+
+
+oc start-build --build-loglevel=5 hello-php
+
+[devel@master1 tmp]$ oc secrets new-sshauth sshsecret --ssh-privatekey=${HOME}/.ssh/id_rsa
+secret/sshsecret
+[devel@master1 tmp]$
+
+
+oc set env bc --all --list
+oc set env bc/ex-camel-rest-ms --env=GIT_SSL_NO_VERIFY=true
+
+
+
+# oadm router ha-router-us-west --replicas=3 \
+    --selector="ha-router=geo-us-west" \
+    --labels="ha-router=geo-us-west" \
+    --credentials=/etc/origin/master/openshift-router.kubeconfig \
+    --service-account=ipfailover
+# oadm ipfailover ipf-ha-router-us-west \
+    --replicas=5 --watch-port=80 \
+    --selector="ha-router=geo-us-west" \
+    --virtual-ips="10.245.2.101-105" \
+    --credentials=/etc/origin/master/openshift-router.kubeconfig \
+    --service-account=ipfailover --create
+
+
+# Enable cluster logging
+openshift_hosted_logging_deploy=true
+openshift_hosted_logging_storage_kind=nfs
+openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+openshift_hosted_logging_storage_nfs_directory=/srv/nfs
+openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_logging_storage_volume_name=logging
+openshift_hosted_logging_storage_volume_size=10Gi
+openshift_hosted_logging_hostname=kibana.cloudapps-r2d2.oslab.opentlc.com
+openshift_hosted_logging_elasticsearch_cluster_size=1
+openshift_master_logging_public_url=https://kibana.cloudapps-r2d2.oslab.opentlc.com
+
+
+openshift_hosted_metrics_deploy=true
+openshift_hosted_metrics_storage_kind=nfs
+openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+openshift_hosted_metrics_storage_host=nfs1.$GUID.internal
+openshift_hosted_metrics_storage_nfs_directory=/srv/nfs
+openshift_hosted_metrics_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_metrics_storage_volume_name=metrics
+openshift_hosted_metrics_storage_volume_size=10Gi
+openshift_master_metrics_public_url=https://metrics.cloudapps-r2d2.oslab.opentlc.com
+
+
+oc adm diagnostics
+oc adm diagnostics NodeConfigCheck UnitStatus
+
+
+https://access.redhat.com/solutions/3110981
+
+https://etherpad.openstack.org/p/openshift-hnd
+
+in HA master, the service name is different from non-HA.
+systemctl restart  atomic-openshift-master-controllers
+systemctl restart  atomic-openshift-master-api

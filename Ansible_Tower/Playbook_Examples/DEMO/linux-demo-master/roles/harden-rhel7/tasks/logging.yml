@@ -1,0 +1,1380 @@
+#
+# --------------------------------- AD.1.2.1.1 ---------------------------------
+#
+- name: AD.1.2.1.1 | PATCH_RHEL | LOGGING | Implement logging for syslog systems
+  copy:
+    src: AD_1_2_1_1_rhel.j2
+    dest: /etc/syslog.conf
+  register: __ad_1_2_1_1
+  when: ad_1_2_1_1
+  tags:
+    - AD.1.2.1.1
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.1.1 | AUDIT_RHEL | LOGGING | Auditing logging for syslog systems
+  debug:
+      msg: "{{ __ad_1_2_1_1 }}"
+  when:
+    - ad_1_2_1_1
+    - ansible_check_mode
+  tags:
+    - AD.1.2.1.1
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.1.2.1.3 ---------------------------------
+#
+- name: AD.1.2.1.3 | PATCH_RHEL | LOGGING | Implement rsyslog.conf 
+  blockinfile:
+    state: present
+    insertafter: ".*GLOBAL DIRECTIVES.*"
+    path: /etc/rsyslog.conf
+    block: |
+      filter f_authpriv { facility(authpriv); };
+      destination authpriv { file("/var/log/secure;RSYSLOG_TraditionalFileFormat"); };
+      source src { internal(); };
+      log { source(src); filter(f_authpriv); destination(authpriv); };
+  register: __ad_1_2_1_3
+  when: ad_1_2_1_3
+  tags:
+    - AD.1.2.1.3
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.1.3 | AUDIT_RHEL | LOGGING | Auditing logging for rsyslog systems
+  debug:
+      msg: "{{ __ad_1_2_1_3 }}"
+  when:
+    - ad_1_2_1_3
+    - ansible_check_mode
+  tags:
+    - AD.1.2.1.3
+    - audit
+    - logging    
+    - S
+
+#
+# --------------------------------- AD.1.2.1.4 ---------------------------------
+#
+- name: AD.1.2.1.4 | PATCH_RHEL | LOGGING | rsyslog.conf addition
+  blockinfile:
+    state: present
+    insertafter: ".*GLOBAL DIRECTIVES.*"
+    path: /etc/rsyslog.conf
+    block: |
+      $ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
+      *.info;mail.none;authpriv.none;cron.none /var/log/messages
+      authpriv.* /var/log/secure
+  register: __ad_1_2_1_4
+  when: ad_1_2_1_4
+  tags:
+    - AD.1.2.1.4
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.1.4 | AUDIT_RHEL | LOGGING | Auditing rsyslog addition
+  debug:
+      msg: "{{ __ad_1_2_1_4 }}"
+  when:
+    - ad_1_2_1_4
+    - ansible_check_mode
+  tags:
+    - AD.1.2.1.4
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.1.2.2 ---------------------------------
+#
+- name: AD.1.2.2 | GATHER_INFO_RHEL | LOGGING | Creating /var/log/wtmp file
+  stat:
+    path: /var/log/wtmp
+  when: ad_1_2_2
+  register: __ad_1_2_2stat
+  tags:
+    - AD.1.2.2
+    - audit
+    - logging
+    - S
+
+- name: AD.1.2.2 | PATCH_RHEL | LOGGING | Creating /var/log/wtmp file
+  file:
+    path: /var/log/wtmp
+    state: touch
+  when: 
+    - ad_1_2_2
+    - __ad_1_2_2stat.stat.exists == False
+  register: __ad_1_2_2
+  tags:
+    - AD.1.2.2
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.2 | AUDIT_RHEL | LOGGING | Creating /var/log/wtmp file
+  debug:
+      msg: "{{ __ad_1_2_2 }}"
+  when:
+    - ad_1_2_2
+    - ansible_check_mode
+  tags:
+    - AD.1.2.2
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.1.2.3.1 ---------------------------------
+#
+- name: AD.1.2.3.1 | GATHER_INFO_RHEL | LOGGING | Creating /var/log/messages file
+  stat:
+    path: /var/log/messages
+  when: ad_1_2_3_1
+  register: __ad_1_2_3_1stat
+  tags:
+    - AD.1.2.3.1
+    - audit
+    - logging
+    - S
+
+- name: AD.1.2.3.1 | PATCH_RHEL | LOGGING | Creating /var/log/messages file
+  file:
+    path: /var/log/messages
+    state: touch
+  register: __ad_1_2_3_1
+  when: 
+    - ad_1_2_3_1
+    - __ad_1_2_3_1stat.stat.exists == False
+  tags:
+    - AD.1.2.3.1
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.3.1 | AUDIT_RHEL | LOGGING | Creating /var/log/messages file
+  debug:
+      msg: "{{ __ad_1_2_3_1 }}"
+  when:
+    - ad_1_2_3_1
+    - ansible_check_mode
+  tags:
+    - AD.1.2.3.1
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.1.2.4.1 ---------------------------------
+#
+- name: AD.1.2.4.1 | GATHER_INFO_RHEL | LOGGING | Creating /var/log/faillog file
+  stat:
+    path: /var/log/faillog
+  when: ad_1_2_4_1
+  register: __ad_1_2_4_1stat
+  tags:
+    - AD.1.2.4.1
+    - audit
+    - logging
+    - S
+
+- name: AD.1.2.4.1 | PATCH_RHEL | LOGGING | Creating /var/log/faillog file
+  file:
+    path: /var/log/faillog
+    state: touch
+  register: __ad_1_2_4_1
+  when: 
+    - ad_1_2_4_1
+    - __ad_1_2_4_1stat.stat.exists == False
+  tags:
+    - AD.1.2.4.1
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.4.1 | AUDIT_RHEL | LOGGING | Creating /var/log/faillog file
+  debug:
+      msg: "{{ __ad_1_2_4_1 }}"
+  when:
+    - ad_1_2_4_1
+    - ansible_check_mode
+  tags:
+    - AD.1.2.4.1
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.1.2.4.2 ---------------------------------
+#
+- name: AD.1.2.4.2 | GATHER_INFO_RHEL | LOGGING | Creating /var/log/tallylog file
+  stat:
+    path: /var/log/tallylog
+  when: ad_1_2_4_2
+  register: __ad_1_2_4_2stat
+  tags:
+    - AD.1.2.4.2
+    - audit
+    - logging
+    - S
+
+- name: AD.1.2.4.2 | PATCH_RHEL | LOGGING | Creating /var/log/tallylog file
+  file:
+    path: /var/log/tallylog
+    state: touch
+  register: __ad_1_2_4_2
+  when: 
+    - ad_1_2_4_2
+    - __ad_1_2_4_2stat.stat.exists == False
+  tags:
+    - AD.1.2.4.2
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.4.2 | AUDIT_RHEL | LOGGING | Creating /var/log/tallylog file
+  debug:
+      msg: "{{ __ad_1_2_4_2 }}"
+  when:
+    - ad_1_2_4_2
+    - ansible_check_mode
+  tags:
+    - AD.1.2.4.2
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.1.2.5 ---------------------------------
+#
+- name: AD.1.2.5 | GATHER_INFO_RHEL | LOGGING | Creating /var/log/secure file
+  stat:
+    path: /var/log/secure
+  when: ad_1_2_5
+  register: __ad_1_2_5stat
+  tags:
+    - AD.1.2.5
+    - audit
+    - logging
+    - S
+
+- name: AD.1.2.5 | PATCH_RHEL | LOGGING | Creating /var/log/secure file
+  file:
+    path: /var/log/secure
+    state: file
+  register: __ad_1_2_5
+  when: 
+    - ad_1_2_5
+    - __ad_1_2_5stat.stat.exists
+  tags:
+    - AD.1.2.5
+    - patch
+    - logging
+    - S
+
+- name: AD.1.2.5 | AUDIT_RHEL | LOGGING | Creating /var/log/secure file
+  debug:
+      msg: "{{ __ad_1_2_5 }}"
+  when:
+    - ad_1_2_5
+    - ansible_check_mode
+  tags:
+    - AD.1.2.5
+    - audit
+    - logging
+    - S
+
+#
+# --------------------------------- AD.20.1.2.2 ---------------------------------
+#
+- name: AD.20.1.2.2 | GATHER_INFO_RHEL | LOGGING | audit.log must exist
+  stat:
+    path: /var/log/secure
+  when: ad_20_1_2_2
+  register: __ad_20_1_2_2stat
+  tags:
+    - AD.20.1.2.2
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.2 | PATCH_RHEL | LOGGING | audit.log must exist
+  file:
+    state: touch
+    path: /var/log/audit/audit.log
+    owner: root
+    group: root
+    mode: 0600
+  when:
+    - ad_20_1_2_2
+  register: __ad_20_1_2_2
+  tags:
+    - AD.20.1.2.2
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.2 | AUDIT_RHEL | LOGGING | audit.log must exist
+  debug:
+    msg: "{{ __ad_20_1_2_2 }}"
+  when: 
+    - ad_20_1_2_2
+    - ansible_check_mode
+    - __ad_20_1_2_2 | changed
+  tags:
+    - AD.20.1.2.2
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.1 ---------------------------------
+#
+- name: AD.20.1.2.3.1 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /usr perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_1
+  register: __ad_20_1_2_3_1_stat
+  tags:
+    - AD.20.1.2.3.1
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.1 | PATCH_RHEL | LOGGING | audit.rules must contain /usr perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/usr '
+    line: '-a exit,always -F path=/usr -F perm=a'
+  when:
+    - ad_20_1_2_3_1
+    - __ad_20_1_2_3_1_stat.stat.exists
+  register: __ad_20_1_2_3_1
+  tags:
+    - AD.20.1.2.3.1
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.1 | AUDIT_RHEL | LOGGING | audit.rules must contain /usr perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_1 }}"
+  when: 
+    - ad_20_1_2_3_1
+    - ansible_check_mode
+    - __ad_20_1_2_3_1 | changed
+    - __ad_20_1_2_3_1_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.1
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.2 ---------------------------------
+#
+- name: AD.20.1.2.3.2 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_2
+  register: __ad_20_1_2_3_2_stat
+  tags:
+    - AD.20.1.2.3.2
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.2 | PATCH_RHEL | LOGGING | audit.rules must contain /etc perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc '
+    line: '-a exit,always -F path=/etc -F perm=a'
+  when:
+    - ad_20_1_2_3_2
+    - __ad_20_1_2_3_2_stat.stat.exists
+  register: __ad_20_1_2_3_2
+  tags:
+    - AD.20.1.2.3.2
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.2 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_2 }}"
+  when: 
+    - ad_20_1_2_3_2
+    - ansible_check_mode
+    - __ad_20_1_2_3_2 | changed
+    - __ad_20_1_2_3_2_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.2
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.3 ---------------------------------
+#
+- name: AD.20.1.2.3.3 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_3
+  register: __ad_20_1_2_3_3_stat
+  tags:
+    - AD.20.1.2.3.3
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.3 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log '
+    line: '-a exit,always -F path=/var/log -F perm=a'
+  when:
+    - ad_20_1_2_3_3
+    - __ad_20_1_2_3_3_stat.stat.exists
+  register: __ad_20_1_2_3_3
+  tags:
+    - AD.20.1.2.3.3
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.3 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_3 }}"
+  when: 
+    - ad_20_1_2_3_3
+    - ansible_check_mode
+    - __ad_20_1_2_3_3 | changed
+    - __ad_20_1_2_3_3_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.3
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.4 ---------------------------------
+#
+- name: AD.20.1.2.3.4 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /tmp perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_4
+  register: __ad_20_1_2_3_4_stat
+  tags:
+    - AD.20.1.2.3.4
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.4 | PATCH_RHEL | LOGGING | audit.rules must contain /tmp perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/tmp '
+    line: '-a exit,always -F path=/tmp -F perm=a'
+  when:
+    - ad_20_1_2_3_4
+    - __ad_20_1_2_3_4_stat.stat.exists
+  register: __ad_20_1_2_3_4
+  tags:
+    - AD.20.1.2.3.4
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.4 | AUDIT_RHEL | LOGGING | audit.rules must contain /tmp perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_4 }}"
+  when: 
+    - ad_20_1_2_3_4
+    - ansible_check_mode
+    - __ad_20_1_2_3_4 | changed
+    - __ad_20_1_2_3_4_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.4
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.5 ---------------------------------
+#
+- name: AD.20.1.2.3.5 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log/faillog perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_5
+  register: __ad_20_1_2_3_5_stat
+  tags:
+    - AD.20.1.2.3.5
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.5 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log/faillog perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log/faillog '
+    line: '-a exit,always -F path=/var/log/faillog -F perm=a'
+  when:
+    - ad_20_1_2_3_5
+    - __ad_20_1_2_3_5_stat.stat.exists
+  register: __ad_20_1_2_3_5
+  tags:
+    - AD.20.1.2.3.5
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.5 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log/faillog perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_5 }}"
+  when: 
+    - ad_20_1_2_3_5
+    - ansible_check_mode
+    - __ad_20_1_2_3_5 | changed
+    - __ad_20_1_2_3_5_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.5
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.6 ---------------------------------
+#
+- name: AD.20.1.2.3.6 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log/messages perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_6
+  register: __ad_20_1_2_3_6_stat
+  tags:
+    - AD.20.1.2.3.6
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.6 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log/messages perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log/messages '
+    line: '-a exit,always -F path=/var/log/messages -F perm=a'
+  when:
+    - ad_20_1_2_3_6
+    - __ad_20_1_2_3_6_stat.stat.exists
+  register: __ad_20_1_2_3_6
+  tags:
+    - AD.20.1.2.3.6
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.6 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log/messages perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_6 }}"
+  when: 
+    - ad_20_1_2_3_6
+    - ansible_check_mode
+    - __ad_20_1_2_3_6 | changed
+    - __ad_20_1_2_3_6_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.6
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.7 ---------------------------------
+#
+- name: AD.20.1.2.3.7 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log/wtmp perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_7
+  register: __ad_20_1_2_3_7_stat
+  tags:
+    - AD.20.1.2.3.7
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.7 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log/wtmp perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log/wtmp '
+    line: '-a exit,always -F path=/var/log/wtmp -F perm=a'
+  when:
+    - ad_20_1_2_3_7
+    - __ad_20_1_2_3_7_stat.stat.exists
+  register: __ad_20_1_2_3_7
+  tags:
+    - AD.20.1.2.3.7
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.7 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log/wtmp perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_7 }}"
+  when: 
+    - ad_20_1_2_3_7
+    - ansible_check_mode
+    - __ad_20_1_2_3_7 | changed
+    - __ad_20_1_2_3_7_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.7
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.7 ---------------------------------
+#
+- name: AD.20.1.2.3.7 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log/wtmp perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_7
+  register: __ad_20_1_2_3_7_stat
+  tags:
+    - AD.20.1.2.3.7
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.7 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log/wtmp perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log/wtmp '
+    line: '-a exit,always -F path=/var/log/wtmp -F perm=a'
+  when:
+    - ad_20_1_2_3_7
+    - __ad_20_1_2_3_7_stat.stat.exists
+  register: __ad_20_1_2_3_7
+  tags:
+    - AD.20.1.2.3.7
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.7 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log/wtmp perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_7 }}"
+  when: 
+    - ad_20_1_2_3_7
+    - ansible_check_mode
+    - __ad_20_1_2_3_7 | changed
+    - __ad_20_1_2_3_7_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.7
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.8 ---------------------------------
+#
+- name: AD.20.1.2.3.8 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log/secure perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_8
+  register: __ad_20_1_2_3_8_stat
+  tags:
+    - AD.20.1.2.3.8
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.8 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log/secure perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log/secure '
+    line: '-a exit,always -F path=/var/log/secure -F perm=a'
+  when:
+    - ad_20_1_2_3_8
+    - __ad_20_1_2_3_8_stat.stat.exists
+  register: __ad_20_1_2_3_8
+  tags:
+    - AD.20.1.2.3.8
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.8 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log/secure perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_8 }}"
+  when: 
+    - ad_20_1_2_3_8
+    - ansible_check_mode
+    - __ad_20_1_2_3_8 | changed
+    - __ad_20_1_2_3_8_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.8
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.9 ---------------------------------
+#
+- name: AD.20.1.2.3.9 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/ssh/sshd_config perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_9
+  register: __ad_20_1_2_3_9_stat
+  tags:
+    - AD.20.1.2.3.9
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.9 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/ssh/sshd_config perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/ssh/sshd_config '
+    line: '-a exit,always -F path=/etc/ssh/sshd_config -F perm=wa'
+  when:
+    - ad_20_1_2_3_9
+    - __ad_20_1_2_3_9_stat.stat.exists
+  register: __ad_20_1_2_3_9
+  tags:
+    - AD.20.1.2.3.9
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.9 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/ssh/sshd_config perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_9 }}"
+  when: 
+    - ad_20_1_2_3_9
+    - ansible_check_mode
+    - __ad_20_1_2_3_9 | changed
+    - __ad_20_1_2_3_9_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.9
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.10 ---------------------------------
+#
+- name: AD.20.1.2.3.10 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/default perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_10
+  register: __ad_20_1_2_3_10_stat
+  tags:
+    - AD.20.1.2.3.10
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.10 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/default perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/default '
+    line: '-a exit,always -F path=/etc/default -F perm=wa'
+  when:
+    - ad_20_1_2_3_10
+    - __ad_20_1_2_3_10_stat.stat.exists
+  register: __ad_20_1_2_3_10
+  tags:
+    - AD.20.1.2.3.10
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.10 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/default perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_10 }}"
+  when: 
+    - ad_20_1_2_3_10
+    - ansible_check_mode
+    - __ad_20_1_2_3_10 | changed
+    - __ad_20_1_2_3_10_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.10
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.11 ---------------------------------
+#
+- name: AD.20.1.2.3.11 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /var/log/audit/audit.log perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_11
+  register: __ad_20_1_2_3_11_stat
+  tags:
+    - AD.20.1.2.3.11
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.11 | PATCH_RHEL | LOGGING | audit.rules must contain /var/log/audit/audit.log perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/var/log/audit/audit.log '
+    line: '-a exit,always -F path=/var/log/audit/audit.log -F perm=a'
+  when:
+    - ad_20_1_2_3_11
+    - __ad_20_1_2_3_11_stat.stat.exists
+  register: __ad_20_1_2_3_11
+  tags:
+    - AD.20.1.2.3.11
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.11 | AUDIT_RHEL | LOGGING | audit.rules must contain /var/log/audit/audit.log perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_11 }}"
+  when: 
+    - ad_20_1_2_3_11
+    - ansible_check_mode
+    - __ad_20_1_2_3_11 | changed
+    - __ad_20_1_2_3_11_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.11
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.12 ---------------------------------
+#
+- name: AD.20.1.2.3.12 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/audit/auditd.conf perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_12
+  register: __ad_20_1_2_3_12_stat
+  tags:
+    - AD.20.1.2.3.12
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.12 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/audit/auditd.conf perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/audit/auditd.conf '
+    line: '-a exit,always -F path=/etc/audit/auditd.conf -F perm=wa'
+  when:
+    - ad_20_1_2_3_12
+    - __ad_20_1_2_3_12_stat.stat.exists
+  register: __ad_20_1_2_3_12
+  tags:
+    - AD.20.1.2.3.12
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.12 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/audit/auditd.conf perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_12 }}"
+  when: 
+    - ad_20_1_2_3_12
+    - ansible_check_mode
+    - __ad_20_1_2_3_12 | changed
+    - __ad_20_1_2_3_12_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.12
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.13 ---------------------------------
+#
+- name: AD.20.1.2.3.13 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/audit/audit.rules perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_13
+  register: __ad_20_1_2_3_13_stat
+  tags:
+    - AD.20.1.2.3.13
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.13 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/audit/audit.rules perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/audit/audit.rules '
+    line: '-a exit,always -F path=/etc/audit/audit.rules -F perm=wa'
+  when:
+    - ad_20_1_2_3_13
+    - __ad_20_1_2_3_13_stat.stat.exists
+  register: __ad_20_1_2_3_13
+  tags:
+    - AD.20.1.2.3.13
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.13 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/audit/audit.rules perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_13 }}"
+  when: 
+    - ad_20_1_2_3_13
+    - ansible_check_mode
+    - __ad_20_1_2_3_13 | changed
+    - __ad_20_1_2_3_13_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.13
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.14 ---------------------------------
+#
+- name: AD.20.1.2.3.14 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /sbin/auditctl perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_14
+  register: __ad_20_1_2_3_14_stat
+  tags:
+    - AD.20.1.2.3.14
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.14 | PATCH_RHEL | LOGGING | audit.rules must contain /sbin/auditctl perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/sbin/auditctl '
+    line: '-a exit,always -F path=/sbin/auditctl -F perm=a'
+  when:
+    - ad_20_1_2_3_14
+    - __ad_20_1_2_3_14_stat.stat.exists
+  register: __ad_20_1_2_3_14
+  tags:
+    - AD.20.1.2.3.14
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.14 | AUDIT_RHEL | LOGGING | audit.rules must contain /sbin/auditctl perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_14 }}"
+  when: 
+    - ad_20_1_2_3_14
+    - ansible_check_mode
+    - __ad_20_1_2_3_14 | changed
+    - __ad_20_1_2_3_14_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.14
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.15 ---------------------------------
+#
+- name: AD.20.1.2.3.15 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /sbin/auditd perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_15
+  register: __ad_20_1_2_3_15_stat
+  tags:
+    - AD.20.1.2.3.15
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.15 | PATCH_RHEL | LOGGING | audit.rules must contain /sbin/auditd perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/sbin/auditd '
+    line: '-a exit,always -F path=/sbin/auditd -F perm=a'
+  when:
+    - ad_20_1_2_3_15
+    - __ad_20_1_2_3_15_stat.stat.exists
+  register: __ad_20_1_2_3_15
+  tags:
+    - AD.20.1.2.3.15
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.15 | AUDIT_RHEL | LOGGING | audit.rules must contain /sbin/auditd perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_15 }}"
+  when: 
+    - ad_20_1_2_3_15
+    - ansible_check_mode
+    - __ad_20_1_2_3_15 | changed
+    - __ad_20_1_2_3_15_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.15
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.16 ---------------------------------
+#
+- name: AD.20.1.2.3.16 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /sbin/ausearch perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_16
+  register: __ad_20_1_2_3_16_stat
+  tags:
+    - AD.20.1.2.3.16
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.16 | PATCH_RHEL | LOGGING | audit.rules must contain /sbin/ausearch perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/sbin/ausearch '
+    line: '-a exit,always -F path=/sbin/ausearch -F perm=a'
+  when:
+    - ad_20_1_2_3_16
+    - __ad_20_1_2_3_16_stat.stat.exists
+  register: __ad_20_1_2_3_16
+  tags:
+    - AD.20.1.2.3.16
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.16 | AUDIT_RHEL | LOGGING | audit.rules must contain /sbin/ausearch perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_16 }}"
+  when: 
+    - ad_20_1_2_3_16
+    - ansible_check_mode
+    - __ad_20_1_2_3_16 | changed
+    - __ad_20_1_2_3_16_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.16
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.17 ---------------------------------
+#                             DUPLICATE OF AD.20.1.2.3.18
+
+#
+# --------------------------------- AD.20.1.2.3.18 ---------------------------------
+#
+- name: AD.20.1.2.3.18 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/syslog.conf perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_18
+  register: __ad_20_1_2_3_18_stat
+  tags:
+    - AD.20.1.2.3.18
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.18 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/syslog.conf perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/syslog.conf '
+    line: '-a exit,always -F path=/etc/syslog.conf -F perm=wa'
+  when:
+    - ad_20_1_2_3_18
+    - __ad_20_1_2_3_18_stat.stat.exists
+  register: __ad_20_1_2_3_18
+  tags:
+    - AD.20.1.2.3.18
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.18 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/syslog.conf perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_18 }}"
+  when: 
+    - ad_20_1_2_3_18
+    - ansible_check_mode
+    - __ad_20_1_2_3_18 | changed
+    - __ad_20_1_2_3_18_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.18
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.19 ---------------------------------
+#
+- name: AD.20.1.2.3.19 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/snmpd.conf perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_19
+  register: __ad_20_1_2_3_19_stat
+  tags:
+    - AD.20.1.2.3.19
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.19 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/snmpd.conf perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/snmpd.conf '
+    line: '-a exit,always -F path=/etc/snmpd.conf -F perm=wa'
+  when:
+    - ad_20_1_2_3_19
+    - __ad_20_1_2_3_19_stat.stat.exists
+  register: __ad_20_1_2_3_19
+  tags:
+    - AD.20.1.2.3.19
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.19 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/snmpd.conf perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_19 }}"
+  when: 
+    - ad_20_1_2_3_19
+    - ansible_check_mode
+    - __ad_20_1_2_3_19 | changed
+    - __ad_20_1_2_3_19_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.19
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.20 ---------------------------------
+#
+- name: AD.20.1.2.3.20 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/snmp/snmpd.conf perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_20
+  register: __ad_20_1_2_3_20_stat
+  tags:
+    - AD.20.1.2.3.20
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.20 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/snmp/snmpd.conf perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/snmp/snmpd.conf '
+    line: '-a exit,always -F path=/etc/snmp/snmpd.conf -F perm=wa'
+  when:
+    - ad_20_1_2_3_20
+    - __ad_20_1_2_3_20_stat.stat.exists
+  register: __ad_20_1_2_3_20
+  tags:
+    - AD.20.1.2.3.20
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.20 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/snmp/snmpd.conf perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_20 }}"
+  when: 
+    - ad_20_1_2_3_20
+    - ansible_check_mode
+    - __ad_20_1_2_3_20 | changed
+    - __ad_20_1_2_3_20_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.20
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.21 ---------------------------------
+#
+- name: AD.20.1.2.3.21 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /etc/snmpd/snmpd.conf perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_21
+  register: __ad_20_1_2_3_21_stat
+  tags:
+    - AD.20.1.2.3.21
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.21 | PATCH_RHEL | LOGGING | audit.rules must contain /etc/snmpd/snmpd.conf perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/etc/snmpd/snmpd.conf '
+    line: '-a exit,always -F path=/etc/snmpd/snmpd.conf -F perm=wa'
+  when:
+    - ad_20_1_2_3_21
+    - __ad_20_1_2_3_21_stat.stat.exists
+  register: __ad_20_1_2_3_21
+  tags:
+    - AD.20.1.2.3.21
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.21 | AUDIT_RHEL | LOGGING | audit.rules must contain /etc/snmpd/snmpd.conf perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_21 }}"
+  when: 
+    - ad_20_1_2_3_21
+    - ansible_check_mode
+    - __ad_20_1_2_3_21 | changed
+    - __ad_20_1_2_3_21_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.21
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.22 ---------------------------------
+#
+- name: AD.20.1.2.3.22 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /root/.rhosts perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_22
+  register: __ad_20_1_2_3_22_stat
+  tags:
+    - AD.20.1.2.3.22
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.22 | PATCH_RHEL | LOGGING | audit.rules must contain /root/.rhosts perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/root/.rhosts '
+    line: '-a exit,always -F path=/root/.rhosts -F perm=wa'
+  when:
+    - ad_20_1_2_3_22
+    - __ad_20_1_2_3_22_stat.stat.exists
+  register: __ad_20_1_2_3_22
+  tags:
+    - AD.20.1.2.3.22
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.22 | AUDIT_RHEL | LOGGING | audit.rules must contain /root/.rhosts perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_22 }}"
+  when: 
+    - ad_20_1_2_3_22
+    - ansible_check_mode
+    - __ad_20_1_2_3_22 | changed
+    - __ad_20_1_2_3_22_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.22
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.3.23 ---------------------------------
+#
+- name: AD.20.1.2.3.23 | GATHER_INFO_RHEL | LOGGING | audit.rules must contain /root/.netrc perms
+  stat:
+    path: /etc/audit/audit.rules
+  when:
+    - ad_20_1_2_3_23
+  register: __ad_20_1_2_3_23_stat
+  tags:
+    - AD.20.1.2.3.23
+    - audit
+    - logging
+    - B
+
+- name: AD.20.1.2.3.23 | PATCH_RHEL | LOGGING | audit.rules must contain /root/.netrc perms
+  lineinfile:
+    path: /etc/audit/audit.rules
+    regexp: 'path=/root/.netrc '
+    line: '-a exit,always -F path=/root/.netrc -F perm=wa'
+  when:
+    - ad_20_1_2_3_23
+    - __ad_20_1_2_3_23_stat.stat.exists
+  register: __ad_20_1_2_3_23
+  tags:
+    - AD.20.1.2.3.23
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.3.23 | AUDIT_RHEL | LOGGING | audit.rules must contain /root/.netrc perms
+  debug:
+    msg: "{{ __ad_20_1_2_3_23 }}"
+  when: 
+    - ad_20_1_2_3_23
+    - ansible_check_mode
+    - __ad_20_1_2_3_23 | changed
+    - __ad_20_1_2_3_23_stat.stat.exists
+  tags:
+    - AD.20.1.2.3.23
+    - audit
+    - logging
+    - B
+
+#
+# --------------------------------- AD.20.1.2.4 ---------------------------------
+#
+- name: AD.20.1.2.4 | PATCH_RHEL | LOGGING | Sudoers must contain TCIM Account
+  blockinfile:
+    path: /etc/sudoers 
+    marker: "# {mark} TCIM - ANSIBLE MANAGED BLOCK"
+    content: "{{ TCIM_user_AD_20_1_2_4 }} ALL=(ALL) NOPASSWD: /sbin/ausearch"
+  when:
+    - ad_20_1_2_4
+  register: __ad_20_1_2_4
+  tags:
+    - AD.20.1.2.4
+    - patch
+    - logging
+    - B
+
+- name: AD.20.1.2.4 | AUDIT_RHEL | LOGGING | Sudoers must contain TCIM Account
+  debug:
+    msg: "{{ __ad_20_1_2_4 }}"
+  when: 
+    - ad_20_1_2_4
+    - ansible_check_mode
+    - __ad_20_1_2_4 | changed
+  tags:
+    - AD.20.1.2.4
+    - audit
+    - logging
+    - B

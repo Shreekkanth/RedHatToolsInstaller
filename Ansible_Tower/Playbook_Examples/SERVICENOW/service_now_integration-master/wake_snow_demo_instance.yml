@@ -1,0 +1,24 @@
+- name: Wake up and reset the demo service now instance
+  hosts: localhost 
+  gather_facts: False
+  connection: local
+ 
+  vars:
+####                                 
+##   Below are the required variables needed to run this playbook 
+####                                 
+#    Username: [snow username]
+#    Password: [snow password]
+####
+
+  vars_prompt:
+    - name: snow_username
+      prompt: SNOW username
+      default: cyburdine@redhat.com
+
+    - name: snow_password
+      prompt: SNOW password
+      default:
+
+  roles:
+  - wake_snow_demo_instance

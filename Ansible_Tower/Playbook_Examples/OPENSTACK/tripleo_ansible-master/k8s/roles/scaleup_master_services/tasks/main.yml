@@ -1,0 +1,16 @@
+---
+
+- name: scale up other services
+  shell: "kubectl -n kube-system describe {{ item }} | grep '^Replicas: *3 desired' || kubectl -n kube-system scale --replicas=3 {{ item }}"
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+  when: inventory_hostname == groups['masters'][0]
+  with_items:
+    - deployment/kube-dns
+    - deployment/kubernetes-dashboard
+    - deployment/heapster
+    - deployment/monitoring-grafana
+    - deployment/monitoring-influxdb
+

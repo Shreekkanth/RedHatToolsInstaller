@@ -1,0 +1,63 @@
+---
+- block:
+  - name: add Red Hat internal repos
+    copy:
+      src: "{{ item }}"
+      dest: /etc/yum.repos.d/
+    with_items:
+    - repos/rhel7-csb-stage.repo
+    - repos/spideroak.repo
+
+  - name: import SpiderOak GPG key
+    rpm_key:
+      key: http://hdn.corp.redhat.com/rhel7-csb-stage/RPM-GPG-KEY-helpdesk
+      state: present
+
+  - name: install Red Hat internal packages
+    dnf:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ red_hat_installed_packages }}"
+  become: yes
+  become_user: root
+  tags:
+  - redhat_internal
+
+- block:
+  - name: install subscription-manager
+    dnf:
+      name: subscription-manager
+      state: present
+
+  - include: rhsm-subscription.yml
+
+  - name: make directory
+    file:
+      path: /usr/share/rhel/secrets
+      state: directory
+
+  - name: create symlinks
+    file:
+      src: "{{ item.src }}"
+      dest: /usr/share/rhel/secrets/{{ item.dest }}
+      state: link
+    with_items:
+    - src: /etc/pki/entitlement
+      dest: etc-pki-entitlement
+    - src: /etc/yum.repos.d/redhat.repo
+      dest: rhel7.repo
+    - src: /etc/rhsm
+      dest: rhsm
+
+  - name: add Red Hat docker registry
+    lineinfile:
+      dest: /etc/sysconfig/docker
+      line: "ADD_REGISTRY='--add-registry registry.access.redhat.com'"
+      insertafter: '^# ADD_REGISTRY='
+      backup: yes
+    notify: restart docker
+  become: yes
+  become_user: root
+  when: rhsm_user != "" or rhsm_activation_key != ""
+  tags:
+  - redhat_docker

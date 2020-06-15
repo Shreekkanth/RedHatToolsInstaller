@@ -1,0 +1,5 @@
+# defaults file for satellite 5
+---
+satellite_key: 1-rhsoc-default
+satellite_proxy: "satproxy.{{ area }}.vary.redhat.com"
+satellite_gpg_key: "http://{{ satellite_server }}/RPM-GPG-KEY-redhat-git"

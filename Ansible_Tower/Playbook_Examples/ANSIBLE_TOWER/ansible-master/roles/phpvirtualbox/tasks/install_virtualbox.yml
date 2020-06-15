@@ -1,0 +1,28 @@
+---
+- name: Install VirtualBox
+  yum:
+    name: "{{ virtualbox_url }}"
+    state: present
+
+- name: Check if vboxdrv modules are loaded
+  shell: lsmod | grep vboxdrv
+  register: module_vboxdrv
+  ignore_errors: true
+  changed_when: false
+
+- name: Configure VirtualBox
+  shell: /sbin/vboxconfig
+  register: vboxconfig
+  when: module_vboxdrv is failed
+
+- name: Check VirtualBox Configuration
+  debug:
+    var: vboxconfig.stdout_lines
+  when: module_vboxdrv is failed
+
+- name: Create local user vbox
+  user:
+    name: "{{ virtualbox_user }}"
+    password: "{{ virtualbox_password | password_hash('sha512') }}"
+    groups: vboxusers
+    state: present

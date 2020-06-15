@@ -1,0 +1,88 @@
+---
+# The following environment variables can be used AWS_ACCESS_KEY or
+# EC2_ACCESS_KEY or AWS_ACCESS_KEY_ID, AWS_SECRET_KEY or
+# EC2_SECRET_KEY or AWS_SECRET_ACCESS_KEY, AWS_REGION or EC2_REGION,
+# AWS_SECURITY_TOKEN
+#
+# Ansible uses the boto configuration file (typically ~/.boto) if no
+# credentials are provided. See
+# http://boto.readthedocs.org/en/latest/boto_config_tut.html
+#
+- hosts: lb-hystrix
+
+  gather_facts: true
+
+  tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=30 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: disable puppet
+      shell: service puppet stop
+      tags:
+        - puppet
+
+    - name: pausing to push puppet or application code
+      pause: prompt="Push puppet and/or code changes now... press enter when ready to continue"
+      tags:
+        - verification
+
+
+- hosts: lb-hystrix
+
+  gather_facts: true
+
+  serial: 3
+
+  tasks:
+    - name: gathering ec2 facts
+      ec2_facts:
+      tags:
+        - out_rotation
+        - in_rotation
+
+    - name: instance de-register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        state: 'absent'
+      tags:
+        - out_rotation
+
+    - name: clean yum metadata
+      shell: yum clean all
+      tags:
+        - puppet
+
+    - name: start puppet
+      shell: service puppet start
+      tags:
+        - puppet
+
+    - name: enabling puppet
+      shell: puppet agent --enable
+      tags:
+        - puppet
+
+    - name: run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes
+      tags:
+        - puppet
+
+    - name: verify that updated nodes are good
+      pause: prompt="Ensure that the three nodes you just updated have started correctly..."
+      tags:
+        - verification
+
+    - name: instance register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        ec2_elbs: "{{ item }}"
+        state: 'present'
+      with_items: ec2_elbs
+      ignore_errors: yes
+      tags:
+        - in_rotation

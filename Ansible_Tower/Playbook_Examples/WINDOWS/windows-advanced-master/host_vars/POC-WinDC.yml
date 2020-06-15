@@ -1,0 +1,5 @@
+services:
+  - name: DNS Server
+    service: dns
+  - name: Active Directory Web Services
+    service: adws

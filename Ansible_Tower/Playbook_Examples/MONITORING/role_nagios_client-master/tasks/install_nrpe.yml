@@ -1,0 +1,98 @@
+---
+# Ensure EPEL is enabled
+#
+#
+#
+
+- name: Install packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libselinux-python
+    - libsemanage-python
+    - nrpe
+    - sudo
+    - sysstat
+    - lsof
+    - bc
+    - nagios-plugins
+    - nagios-plugins-check-updates
+    - nagios-plugins-disk
+    - nagios-plugins-load
+    - nagios-plugins-procs
+    - nagios-plugins-swap
+    - nagios-plugins-users
+
+- name: Build server string
+  set_fact:
+    all_nagios_servers: "{{ nagios_servers | join(',') }}"
+
+- name: Deploy NRPE config
+  template:
+    src: nrpe.cfg.j2
+    dest: /etc/nagios/nrpe.cfg
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart nrpe
+
+- name: Configure NRPE sudo access
+  template:
+    src: nrpe-sudo.j2
+    dest: /etc/sudoers.d/nrpe-sudo
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Copy custom plugins
+  copy:
+    src: "{{ item }}"
+    dest: "{{ nagios_plugin_directory }}"
+    owner: root
+    group: root
+    mode: 0755
+    setype: nagios_unconfined_plugin_exec_t
+  with_fileglob:
+    - files/plugins/*
+  notify:
+    - restart nrpe
+
+- name: Ensure nrpe.d directory exists
+  file:
+    path: /etc/nrpe.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Deploy service checks
+  template:
+    src: std-checks.cfg.j2
+    dest: /etc/nrpe.d/std-checks.cfg
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart nrpe
+
+- name: Configure Firewall
+  firewalld:
+    service: nrpe
+    immediate: true
+    permanent: true
+    state: enabled
+
+- name: Set SELinux boolean for NRPE
+  seboolean:
+    name: nagios_run_sudo
+    state: true
+    persistent: yes
+
+- name: Enable NRPE service
+  service:
+    name: nrpe
+    state: started
+    enabled: true
+    

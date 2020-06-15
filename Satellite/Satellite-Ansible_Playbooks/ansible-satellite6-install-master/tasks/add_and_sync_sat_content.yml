@@ -1,0 +1,16 @@
+#Enabling repos on satellite
+- name: configure | enable repos
+  become: yes
+  shell: hammer repository-set "{{ item.state }}" --organization {{ organization }} --product  "{{ item.product_name }}" --name "{{ item.name_repo }}" --releasever "{{ item.rel }}" --basearch "{{ item.architecture}}"
+  with_items: "{{ repositories }}"
+  ignore_errors: yes
+  tags: repositories
+
+#Get the repos ids and sync the repos
+- name: configure | grab repositories uuid
+  shell: hammer repository list --organization {{ organization }} | grep yum | awk '{print $1}'
+  register: repos
+
+- name: configure | sync repos on satellite
+  command: hammer repository synchronize --id {{ item }} --organization {{ organization }}
+  with_items: repos.stdout_lines

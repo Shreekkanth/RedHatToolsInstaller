@@ -1,0 +1,12 @@
+# notification email entrypoint
+---
+- hosts: all
+  gather_facts: no
+  become: no
+  ignore_unreachable: yes
+    
+  tasks:
+    - name: include role notification email
+      include_role:
+        name: role-notification-email
+      ignore_unreachable: yes

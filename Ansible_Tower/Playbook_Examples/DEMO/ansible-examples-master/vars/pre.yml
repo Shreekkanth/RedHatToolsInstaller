@@ -1,0 +1,8 @@
+##
+## INFOBLOX
+###
+
+# PRE
+infobloxuser: admin
+infobloxpass: admin
+infobloxhost: 10.218.8.2

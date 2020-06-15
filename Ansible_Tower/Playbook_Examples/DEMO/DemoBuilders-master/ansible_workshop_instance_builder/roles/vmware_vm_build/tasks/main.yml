@@ -1,0 +1,36 @@
+# Clone a VM from a Template or existing running machine and customize
+- name: Clone template or virtual machine and customize
+  vmware_guest:
+    #hostname: "{{ lookup('env', 'VMWARE_HOST') }}"
+    hostname: 10.0.2.10
+    datacenter: "{{ vCenterDatacenter }}"
+    cluster: "{{ vCenterCluster }}"
+    resource_pool: "{{ vCenterResourcePool|default(omit, True) }}"
+    folder: "/{{ vCenterFolder }}"
+    name: "{{ inventory_hostname }}"
+    template: "{{ vCenterCloneSource }}"
+    snapshot_src: "{{ VCenterCloneSnapshot }}"
+    linked_clone: True
+    state: poweredon
+    wait_for_ip_address: true
+    networks:
+    - name: "{{ vCenterPortGroup }}"
+      ip: "{{ ansible_host }}"
+      netmask: "{{ VMSubnetMask }}"
+      gateway: "{{ VMGateway }}"
+      dns_servers:
+      - 10.0.100.10
+      - 10.0.100.11
+      device_type: vmxnet3
+    customization:
+      hostname: linux_lvm01
+  register: newvm
+
+
+- name: Wait for SysPrep to complete
+  wait_for:
+    host: "{{ ansible_host | default(inventory_hostname) }}"
+    port: 22
+    delay: 30
+    timeout: 600
+  when: newvm.changed

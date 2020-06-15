@@ -1,0 +1,12 @@
+---
+
+ipa_replica_install_command: /sbin/ipa-replica-install
+ipa_replica_trust_ad_install_command: /sbin/ipa-adtrust-install
+ipa_replica_expect_command: /bin/expect
+
+ipareplica_os_repo_url:
+ipareplica_os_repo_key:
+
+packages:
+  ipa-server:
+    state: installed

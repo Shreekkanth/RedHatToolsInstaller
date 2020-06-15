@@ -1,0 +1,26 @@
+---
+ks_iso_pkgs:
+  - "createrepo"
+  - "genisoimage"
+
+ks_iso_paths:
+  - "isolinux/images"
+  - "isolinux/ks"
+  - "isolinux/LiveOS"
+  - "isolinux/Packages"
+  - "isolinux/postinstall"
+  - "mnt"
+
+ks_iso_source_paths:
+  - src: "{{ ks_iso_build_dir.path }}/mnt/.discinfo"
+    dest: "/isolinux/.discinfo"
+  - src: "{{ ks_iso_build_dir.path }}/mnt/isolinux"
+    dest: ""
+  - src: "{{ ks_iso_build_dir.path }}/mnt/images"
+    dest: "/isolinux/"
+  - src: "{{ ks_iso_build_dir.path }}/mnt/LiveOS"
+    dest: "/isolinux/"
+  - src: "{{ ks_iso_build_dir.path }}/mnt/Packages"
+    dest: "/isolinux/"
+
+ks_iso_isolinux_boot_line: "ontimeout vmlinuz initrd=initrd.img ks=cdrom:/ks/ks.cfg"

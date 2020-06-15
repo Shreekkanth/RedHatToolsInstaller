@@ -1,0 +1,16 @@
+#
+#
+#
+---
+- hosts: lab
+  remote_user: quicklab
+
+  vars:
+    mysql_user_remove: true
+    mysql_user_create: true
+
+  roles:
+    - rhpam
+
+#
+# EOF

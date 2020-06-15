@@ -1,0 +1,17 @@
+parameter_defaults:
+  CloudName: 'vcp-nr-edge.rich.sea.com'
+  CloudDomain: 'rich.sea.com'
+
+  ControllerHostnameFormat: 'ctl-vcp-nr-edge-dc1-d%index%'
+  ComputeSriovHostnameFormat: 'cmp-vcp-nr-edge-dc1-d%index%'
+
+  MysqlMaxConnections: 8192
+  ControllerExtraConfig:
+    gnocchi::wsgi::apache::workers: 12
+    gnocchi::wsgi::apache::threads: 1
+    gnocchi::storage::metric_processing_delay: 30
+    gnocchi::metricd::workers: 12
+    ceilometer::collector::collector_workers: 3
+    ceilometer::dispatcher::gnocchi::archive_policy: low_overhead
+
+  NovaComputeLibvirtType: 'kvm'

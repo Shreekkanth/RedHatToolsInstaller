@@ -1,0 +1,37 @@
+---
+- name: 'Configure compose repository'
+  yum_repository:
+    name: "{{ compose_repository_compose}}-{{ compose_repository_type }}-{{ compose_repository_version }}-compose"
+    baseurl: "{{ compose_repository_server }}/{{ compose_repository_path }}"
+    description: "{{ compose_repository_compose}}-{{ compose_repository_type }} {{ compose_repository_version }} Compose"
+    gpgcheck: no
+    metadata_expire: 1
+
+- name: 'Configure compose addons repositories'
+  yum_repository:
+    name: "{{ compose_repository_compose}}-{{ compose_repository_type }}-{{ compose_repository_version }}-compose-{{ item }}"
+    baseurl: "{{ compose_repository_server }}/{{ compose_repository_path }}/addons/{{ item }}"
+    description: "{{ compose_repository_compose}}-{{ compose_repository_type }} {{ compose_repository_version }} Compose - {{ item }}"
+    gpgcheck: no
+    metadata_expire: 1
+  with_items:
+    "{{ compose_repository_addons }}"
+
+- name: 'Configure compose tools repository'
+  yum_repository:
+    name: "sattools-{{ compose_repository_version }}-compose"
+    baseurl: "{{ compose_repository_server }}/{{ compose_repository_tools_path }}"
+    description: "SatTools {{ compose_repository_version }} Compose"
+    gpgcheck: no
+    metadata_expire: 1
+  when: satellite_version.find('maintenance') == -1
+
+- name: 'Configure compose tools addons repositories'
+  yum_repository:
+    name: "sattools-{{ compose_repository_version }}-compose-{{ item }}"
+    baseurl: "{{ compose_repository_server }}/{{ compose_repository_tools_path }}/addons/{{ item }}"
+    description: "SatTools {{ compose_repository_version }} Compose - {{ item }}"
+    gpgcheck: no
+    metadata_expire: 1
+  with_items:
+    "{{ compose_repository_tools_addons }}"

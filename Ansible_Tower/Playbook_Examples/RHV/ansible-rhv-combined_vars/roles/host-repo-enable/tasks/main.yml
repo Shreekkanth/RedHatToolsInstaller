@@ -1,0 +1,21 @@
+---
+# tasks file for host-repo-enable
+
+  - name: Disable all repos
+    rhsm_repository:
+      name: "*"
+      state: disabled
+    tags:
+      - manual_repo
+
+  - name: Enable a RHSM repository
+    rhsm_repository:
+      name: "{{ item }}"
+      state: enabled
+    with_items:
+    - rhel-7-server-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-ose-3.11-rpms
+    - rhel-7-server-ansible-2.6-rpms
+    tags:
+      - manual_repo

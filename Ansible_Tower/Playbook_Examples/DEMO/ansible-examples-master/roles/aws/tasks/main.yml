@@ -1,0 +1,54 @@
+---
+# tasks file for roles/aws
+- debug:
+    msg: "{{ action }}"
+
+- block:
+    - import_tasks: add-vpc.yml
+  when: action == "add-vpc"
+
+- block:
+    - import_tasks: add-net.yml
+  when: action == "add-net"
+
+
+- block:
+    - import_tasks: get-vpc-id.yml
+    - include_tasks: add-multi-nets.yml
+      with_items: "{{ vpc_subnets }}"
+      loop_control:
+        loop_var: subnet
+  when: action == "add-custom-nets"
+
+- block:
+    - import_tasks: get-vpc-id.yml
+    - include_tasks: add-secgroup.yml
+      with_items: "{{ secgroups }}"
+      loop_control:
+        loop_var: secgroup
+  when: action == "add-default-secgroups"
+
+- block:
+    - import_tasks: get-vpc-id.yml
+    - import_tasks: filter-subnets.yml
+    - include_tasks: add-multi-acls.yml
+      with_items: "{{ acls }}"
+      loop_control:
+        loop_var: acl
+  when: action == "add-default-acls"
+
+
+- block:
+    - import_tasks: get-vpc-id.yml
+    - import_tasks: filter-subnets.yml
+    - include_tasks: add-rtable.yml
+      with_items: "{{ vpc_rtables }}"
+      loop_control:
+        loop_var: rtable
+  when: action == "add-default-rtables"
+
+- block:
+    - import_tasks: get-vpc-id.yml
+    - import_tasks: add-dhcp-option.yml
+  when: action == "add-dhcp-option"
+

@@ -1,0 +1,29 @@
+---
+
+- block:
+    # custom factor to obtain nmcli connection names - see library/nmcli
+    - name: Gathering Facts nmcli
+      action: nmcli
+      changed_when: false
+
+    - name: Set Hostname
+      hostname: name="{{ ansible_hostname }}.{{ realm_name | lower }}"
+
+    - name: Set DNS Server
+      command: >
+        nmcli con mod "{{ansible_networkmanager["devices"][ansible_default_ipv4["interface"]]["CONNECTION"]}}"
+          ipv4.ignore-auto-dns yes
+          ipv4.dns "{{ external_dns }}"
+      notify: activate network
+      when: ansible_dns["nameservers"][0] != external_dns
+
+    - name: Set DNS Search
+      command: >
+        nmcli con mod "{{ansible_networkmanager["devices"][ansible_default_ipv4["interface"]]["CONNECTION"]}}"
+          ipv4.dns-search "{{ realm_name }}"
+      notify: activate network
+      when: ansible_dns["search"][0] != realm_name
+
+  when: >
+    external_dns is defined and
+    ansible_distribution_major_version == "7"

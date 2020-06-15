@@ -1,0 +1,25 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    ca_sdm_url: "{{ api_base_url }}"
+    ca_sdm_key: "{{ api_key }}"
+
+  tasks:
+    - name: Include sdm_create_ticket role
+      include_role:
+        name: ansible-role_sdm-create-ticket
+      vars:
+        sdm_create_ticket_api_base_url: "{{ ca_sdm_url }}"
+        sdm_create_ticket_api_key: "{{ ca_sdm_key }}"
+        sdm_create_ticket_requestor_id: ws00154
+        sdm_create_ticket_description: "We want a DNS created.  Thx"
+        sdm_create_ticket_summary: DNS Request
+        sdm_create_ticket_ci: RN000000
+        sdm_create_ticket_fds_category: Catalog.Servers.Linux.DNSRecord.Create
+
+    - name: Output raw result
+      debug:
+        var: sdm_create_ticket.raw_result

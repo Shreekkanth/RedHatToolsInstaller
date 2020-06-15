@@ -1,0 +1,234 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Get inventory ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories'
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: inv_id
+
+  - name: Print 
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+
+  - name: Create pms_dr_db_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_dr_db_server", "name": "pms_dr_db_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS DB Server"
+    ignore_errors: yes
+
+  - name: Create pms_prod_db_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_prod_db_server", "name": "pms_prod_db_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS DB Server"
+    ignore_errors: yes
+
+  - name: Create pms_esb_prod group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_esb_prod", "name": "pms_esb_prod" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS ESB Server"
+    ignore_errors: yes
+
+  - name: Create pms_esb_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_esb_dr", "name": "pms_esb_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS ESB Server"
+    ignore_errors: yes
+
+  - name: Create pms_app_prod group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_app_prod", "name": "pms_app_prod" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS App Server"
+    ignore_errors: yes
+
+  - name: Create pms_app_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_app_dr", "name": "pms_app_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS App Server"
+    ignore_errors: yes
+
+  - name: Create pms_rep_prod group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_rep_prod", "name": "pms_rep_prod" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS Tomcat Report Server"
+    ignore_errors: yes
+
+  - name: Create pms_rep_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_rep_dr", "name": "pms_rep_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS Tomcat Report Server"
+    ignore_errors: yes
+
+  - name: Create pms_bat_prod group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_bat_prod", "name": "pms_bat_prod" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS Batch Server"
+    ignore_errors: yes
+
+  - name: Create pms_bat_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_bat_dr", "name": "pms_bat_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS Batch Server"
+    ignore_errors: yes
+
+  - name: Create pms_tom_prod group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_tom_prod", "name": "pms_tom_prod" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS Tomcat Web Server"
+    ignore_errors: yes
+
+  - name: Create pms_tom_dr group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "pms_tom_dr", "name": "pms_tom_dr" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "PMS Tomcat Web Server"
+    ignore_errors: yes
+

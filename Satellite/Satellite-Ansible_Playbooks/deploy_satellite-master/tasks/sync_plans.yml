@@ -1,0 +1,28 @@
+---
+- name: SATELLITE | sync plans | Load Hammer varriables
+  include_vars: file=vars/hammer-vars.yml
+
+- name: SATELLITE | sync plans | Foreman is running
+  shell: 'systemctl is-active foreman-tasks.service'
+  register: foreman_status
+
+- name: SATELLITE | sync plans | Create Satellite sync plans
+  command: hammer --password {{ satellite_admin_passwd }} sync-plan create --name "{{ item.name }}" --description "{{ item.description }}" --interval {{ item.interval }} --sync-date "{{ item.sync_date }}" --enabled "{{ item.enable }}" --organization "{{ satellite_organization }}"
+  with_items: "{{ syncronization_plans }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | sync_plans | Create epel Sync Plan
+  command: hammer --password "{{ satellite_admin_passwd }}" sync-plan create --name "{{ item.plan_name }}" --description "{{ item.description }}" --interval {{ item.interval }} --sync-date "{{ item.sync_date }}" --enabled "{{ item.enable }}" --organization "{{ satellite_organization }}"
+  with_items: "{{ epel7_repository }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | sync plans | Assign sync plans to products
+  command: hammer --password {{ satellite_admin_passwd }} product set-sync-plan --name "{{ item.product_name }}" --sync-plan "{{ item.name }}" --organization "{{ satellite_organization }}"
+  with_items: "{{ syncronization_plans }}"
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | epel | Add epel 7 to Sync Plan
+  command: hammer --password "{{ satellite_admin_passwd }}" product set-sync-plan --name "{{ item.product_name }}" --organization "{{ satellite_organization }}" --sync-plan "{{ item.plan_name }}"
+  with_items: "{{ epel7_repository }}"
+  when: foreman_status.stdout == "active"
+

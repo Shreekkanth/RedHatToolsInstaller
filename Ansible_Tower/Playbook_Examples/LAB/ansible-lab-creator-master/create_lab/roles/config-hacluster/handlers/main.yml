@@ -1,0 +1,12 @@
+---
+  - name: Ensure Pacemaker is running
+    service:
+      name: pcsd
+      state: started
+      enabled: yes
+
+  - name: Ensure Pacemaker is running at boot
+    service:
+      name: pcsd
+      enabled: yes
+

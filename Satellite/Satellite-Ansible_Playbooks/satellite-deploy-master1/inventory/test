@@ -1,0 +1,134 @@
+[satellite-cluster:children]
+satellite-servers
+satellite-capsules
+satellite-clients
+
+[satellite-cluster:vars]
+
+# Connectivity configurations
+ansible_ssh_user = devops
+ansible_become = yes
+ansible_become_user = root
+
+# General Settings
+satellite_deployment_version = 6.2
+current_rhel_major_version = 7
+current_rhel_minor_version = 3
+sat_org = "ITnow"
+sat_location = "Caixa"
+
+# Sync settings
+# Time to wait for repositories to be synched (in seconds)
+repo_sync_wait = 3600
+# Time to wait for capsules to be synched (in seconds)
+capsule_sync_wait = 3600
+
+# Content Settings
+capsule_cv_name = "cv_capsule"
+capsule_ak_name = "ak_capsule"
+rhel7_cv_name = "cv_rhel7"
+rhel7_ak_name = "ak_rhel7"
+
+# Puppet Settings
+puppetca_autosign = "*.info.net"
+
+# Other settings
+timeout_post_reboot = 150
+
+# Infra settings
+data_disk = "vdb"
+data_vgname = "data"
+data_fs = "xfs"
+
+satellite_deployment_fw_ports = [ "22/tcp", "80/tcp", "443/tcp", "5646/tcp", "5647/tcp", "5671/tcp", "5674/tcp", "8000/tcp", "8140/tcp", "8443/tcp", "9090/tcp", "53/udp", "53/tcp", "67/udp", "68/udp", "69/udp" ]
+satellite_deployment_plugin_ports = []
+
+
+## Path where custom libs will be deployed
+python_path = "{{ inventory_dir }}/../library"
+satapi_config = "{{ python_path }}/libs/satapi/config/config.py"
+satapi_uri = "https://satellite.info.net"
+
+[satellite-servers:vars]
+data_lv = [{"name":"pulp", "lv_name":"lv_pulp", "lv_size":"70%FREE", "mount_dir":"/var/lib/pulp"},{"name":"mongodb", "lv_name":"lv_mongodb", "lv_size":"50%FREE", "mount_dir":"/var/lib/mongodb"},{"name":"pulpcache", "lv_name":"lv_pulpcache", "lv_size":"50%FREE", "mount_dir":"/var/cache/pulp"},{"name":"pgsql", "lv_name":"lv_pgsql", "lv_size":"10%FREE", "mount_dir":"/var/lib/pgsql"},{"name":"qpid", "lv_name":"lv_qpid", "lv_size":"10%FREE", "mount_dir":"/var/lib/qpidd"}]
+
+ldap_auth=[{"use_ldap":"no", "name":"AD", "server":"192.168.122.196", "port":"389", "server_type":"active_directory", "bind_account":"test@mario.lab", "bind_password":"P4ssw0rd", "base_dn":"dc=mario,dc=lab", "group_dn":"dc=mario,dc=lab", "attr_login":"principalName", "attr_name":"givenName", "attr_lastname":"sn", "attr_mail":"mail", "attr_photo":"", "auto_register":"True", "group_sync":"True", "use_tls":"False", "ldap_filter":"", "locations":"{{ sat_location }}", "organizations":"{{ sat_org }}"}]
+
+rhsm_pool = "*Satellite*"
+rhsm_proxy=[{"use_proxy":"no", "server":"sequid.redhat.com", "port":"3128", "user":"", "passwd":""}]
+sat_install_source = "cdn"
+sat_cdn_reponame = "rhel-{{ ansible_distribution_major_version }}-server-satellite-6.2-rpms"
+sat_installer_pkg = "satellite"
+sat_installer_cmd = "satellite-installer --scenario satellite"
+sat_ca_expiration = 4400
+sat_manifest = "{{ inventory_dir }}/../files/satellite_manifest.zip"
+sat_sync_method = "on_demand"
+
+sat_repos_sync = [{"product_name":"Red Hat Enterprise Linux Server", "name_repo":"Red Hat Enterprise Linux 7 Server (Kickstart)", "rel":"7Server", "architecture":"x86_64", "state":"enable"},{"product_name":"Red Hat Enterprise Linux Server", "name_repo":"Red Hat Enterprise Linux 7 Server (RPMs)", "rel":"7Server", "architecture":"x86_64", "state":"enable"},{"product_name":"Red Hat Enterprise Linux Server", "name_repo":"Red Hat Satellite Tools {{ satellite_deployment_version }} (for RHEL 7 Server) (RPMs)", "rel":"", "architecture":"x86_64", "state":"enable"},{"product_name":"Red Hat Satellite Capsule", "name_repo":"Red Hat Satellite Capsule {{ satellite_deployment_version }} (for RHEL 7 Server) (RPMs)", "rel":"", "architecture":"x86_64", "state":"enable"},{"product_name":"Red Hat Software Collections for RHEL Server", "name_repo":"Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server", "rel":"7Server", "architecture":"x86_64", "state":"enable"}]
+
+sat_repos_to_sync = [ "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7Server", "Red Hat Satellite Capsule {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64", "Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server x86_64 7Server", "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server", "Red Hat Satellite Tools {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64" ]
+
+capsule_repos = "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,Red Hat Satellite Capsule {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64,Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server x86_64 7Server"
+
+rhel7_repos = "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,Red Hat Satellite Tools {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64"
+
+base_lfcenv_name = "Library"
+
+sat_puppet_product = "Custom Puppet"
+sat_puppet_repo = "Dummy Puppet Modules"
+sat_puppet_dummy = "custom-dummy-0.0.2.tar.gz"
+sat_pdummy_name = "dummy"
+sat_pdummy_file = "{{ inventory_dir }}/../files/{{ sat_puppet_dummy }}"
+sat_base_hostgroup = "hg_{{ sat_location }}-rhel{{ ansible_distribution_major_version }}"
+
+[satellite-capsules:vars]
+
+capsule_location = "Caixa"
+capsule_ha_vip = "capsuleha.info.net"
+
+data_lv = [{"name":"pulp", "lv_name":"lv_pulp", "lv_size":"70%FREE", "mount_dir":"/var/lib/pulp"},{"name":"mongodb", "lv_name":"lv_mongodb", "lv_size":"50%FREE", "mount_dir":"/var/lib/mongodb"},{"name":"pulpcache", "lv_name":"lv_pulpcache", "lv_size":"10%FREE", "mount_dir":"/var/cache/pulp"}]
+capsule_installer_pkg = "satellite-capsule"
+
+# CAUTION: This var is a boolean, so the first letter MUST be capital, otherwise ansible will treat it as a string
+cap_puppetca_sat = True
+
+cap_puppetca_dirs =[{"dst_dir":"/var/lib/puppet/ssl/certs", "src_file":"/var/lib/puppet/ssl/certs/ca.pem", "dst_file":"/var/lib/puppet/ssl/certs/ca.pem"},{"dst_dir":"/var/lib/puppet/ssl/certs", "src_file":"/var/lib/puppet/ssl/certs/ca.pem", "dst_file":"/var/lib/puppet/ssl/ca/ca_crt.pem"},{"dst_dir":"/var/lib/puppet/ssl/certs", "src_file":"/var/lib/puppet/ssl/certs/ca.pem", "dst_file":"/var/lib/puppet/ssl/ca/ca_crl.pem"},{"dst_dir":"/var/lib/puppet/ssl/public_keys", "src_file":"/var/lib/puppet/ssl/public_keys/{{ inventory_hostname }}.pem", "dst_file":"/var/lib/puppet/ssl/public_keys/{{ inventory_hostname }}.pem"},{"dst_dir":"/var/lib/puppet/ssl/private_keys", "src_file":"/var/lib/puppet/ssl/private_keys/{{ inventory_hostname }}.pem", "dst_file":"/var/lib/puppet/ssl/private_keys/{{ inventory_hostname }}.pem"},{"dst_dir":"/var/lib/puppet/ssl/ca", "src_file":"/var/lib/puppet/ssl/ca/signed/{{ inventory_hostname }}.pem", "dst_file":"/var/lib/puppet/ssl/certs/{{ inventory_hostname }}.pem"}]
+
+cap_install_options = [ "--enable-foreman-proxy-plugin-remote-execution-ssh", "--foreman-proxy-puppetca false" ]
+
+capsule_ha_vip_list = [{"vip_name":"capsuleha.info.net", "vip_members":"capsule01.info.net,capsule02.info.net"},{"vip_name":"capsuledmzha.info.net", "vip_members":"capsuledmz01.info.net,capsuledmz02.info.net"}]
+
+katello_lb_country = "US"
+katello_lb_state = "North Carolina"
+katello_lb_city = "Raleigh"
+katello_lb_org = "SomeOrg"
+katello_lb_org_unit = "SomeOrgUnit" 
+katello_lb_email = "root@localhost"
+katello_lb_ca_expiration = "4400" 
+katello_lb_root = "/root/ssl-build"
+katello_lb_certs_dir = "/etc/pki/katello"
+
+puppet_lb_certs = [{"src_file":"/var/lib/puppet/ssl/private_keys/{{ capsule_ha_vip }}.pem", "dst_file":"/var/lib/puppet/ssl/private_keys/{{ capsule_ha_vip }}.pem"},{"src_file":"/var/lib/puppet/ssl/public_keys/{{ capsule_ha_vip }}.pem", "dst_file":"/var/lib/puppet/ssl/public_keys/{{ capsule_ha_vip }}.pem"},{"src_file":"/var/lib/puppet/ssl/ca/signed/{{ capsule_ha_vip }}.pem","dst_file":"/var/lib/puppet/ssl/certs/{{ capsule_ha_vip }}.pem"}]
+
+
+[satellite-clients:vars]
+satellite_reg = "capsuleha.info.net"
+client_location = "Caixa"
+client_rhel_version = 7
+client_repos = "rhel-{{ client_rhel_version }}-server-rpms,rhel-{{ client_rhel_version }}-server-satellite-tools-{{ satellite_deployment_version }}-rpms"
+
+
+
+
+#### HOST DEFINITIONS ####
+
+
+[satellite-servers]
+satellite.info.net 
+
+[satellite-capsules]
+capsule01.info.net
+capsule02.info.net
+
+[satellite-clients]
+client7.info.net

@@ -1,0 +1,35 @@
+- name: Install git
+  yum:
+    name: git
+    state: present
+
+- name: Install tcpdump
+  yum:
+    name: tcpdump
+    state: present
+
+- name: Remove sss from nsswitch.conf
+  lineinfile:
+    name: /etc/nsswitch.conf
+    regexp: '^sudoers'
+    line: 'sudoers:        files'
+
+- name: Set timezone to UTC
+  when: ansible_date_time.tz != 'UTC'
+  command: timedatectl set-timezone UTC
+  register: timezone
+
+- name: Reboot when timezone changed
+  shell: sleep 2 && shutdown -r now "Ansible reboot"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: timezone.changed
+
+- name: Wait for the box
+  wait_for:
+    port: 22
+    host: "{{ network['ip_address'] }}"
+    delay: 10
+  connection: local
+  when: timezone.changed

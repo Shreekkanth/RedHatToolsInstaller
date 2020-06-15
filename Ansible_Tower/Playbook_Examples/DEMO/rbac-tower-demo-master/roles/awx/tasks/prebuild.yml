@@ -1,0 +1,43 @@
+---
+# awx/tasks/prebuild.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Gather LDAP container ipv4 address
+  docker_container:
+    name: "{{ env }}_ldap"
+  register: container_stats
+
+- set_fact: 
+    ldap_container_address: "{{ container_stats.ansible_facts.docker_container.NetworkSettings.Networks.wf_net.IPAddress }}"
+
+- name: Copy templates
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ playbook_dir }}/build/{{ env }}/{{ item }}"
+    mode: 0600
+  loop:
+    - environment.sh
+    - credentials.py
+    - tower_cli.cfg
+
+- name: Render SECRET_KEY file
+  copy:
+    content: "{{ secret_key }}"
+    dest: "{{ playbook_dir }}/build/{{ env }}/SECRET_KEY"
+    mode: 0600
+  register: awx_secret_key
+
+- name: Pull docker images
+  docker_image:
+    name: "{{ item }}"
+    docker_host: unix://var/run/docker.sock 
+    tag: latest 
+    pull: true
+    debug: false
+    state: present
+  loop:
+    - postgres:9.6
+    - rabbitmq:3
+    - ansible/awx_web:latest
+    - ansible/awx_task:latest
+    - memcached:alpine

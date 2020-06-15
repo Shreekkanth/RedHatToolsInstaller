@@ -1,0 +1,97 @@
+
+vcenter_ip: "192.168.20.50"
+vcenter_username: 'cdpsede\vcentersat'
+vcenter_password: 'ZAQ!8uhb'
+vcenter_vmfolder: "/vm"
+vcenter_datacenter: "A_UCP_Compute"
+vcenter_cluster: "CDP-FARM"
+vcenter_validate_certs: False
+# Host with the PyVmomi package installed (RPM: python2-pyvmomi) needed for the vmware_guest ansible module
+vcenter_jumphost: "localhost"
+
+common_ntp_package: ntp
+common_ntp_daemon: ntpd
+common_ntp_servers:
+- "10.254.1.179"
+- "10.254.1.172"
+- "192.168.4.170"
+- "192.168.4.62"
+common_domain: "cdpsede.cassaddpp.it"
+common_dns_servers:
+- "10.254.1.179"
+- "10.254.1.172"
+- "192.168.4.170"
+- "192.168.4.62"
+
+satellite_hostname: "cdprh33.cdpsede.cassaddpp.it"
+satellite_username: "sat_user"
+satellite_password: "sat_pass"
+satellite_organization_id: "CDP"
+satellite_katello_ca_rpm_url: "http://{{ satellite_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+satellite_puppet_server: "{{ satellite_hostname }}"
+satellite_added_actkeys: "CDP_CUSTOM"
+satellite_restart_virtwho: true
+
+# Esempio di instances
+# instances:
+# - name: "rhel-74-ansible-1"
+#   hardware:
+#     memory_mb: "2048"
+#     num_cpus: "1"
+#     scsi: "paravirtual"
+#   disk:
+#   - size_gb: 40
+#     type: thick
+#     autoselect_datastore: true
+#   networks:
+#   - name: "PG_10"
+#     ip: "192.168.18.24"
+#     netmask: "255.255.252.0"
+#     gateway: "192.168.16.1"
+#     device_type: vmxnet3
+#     start_connected: true
+#   template: "RHEL-7.4-Server-Template"
+#   register_to_satellite: true
+#   activation_keys:
+#   - "RHEL_7_TEST"
+#   skip_update: false
+#   register_to_puppet: false
+#   local_facts:
+#   - file: test.fact
+#     content: |
+#       {
+#         "test": "1",
+#         "prova": "2"
+#       }
+
+# - name: "rhel-74-ansible-2"
+#   hardware:
+#     memory_mb: "3072"
+#     num_cpus: "2"
+#     scsi: "paravirtual"
+#   disk:
+#   - size_gb: 40
+#     type: thick
+#     autoselect_datastore: true
+#   networks:
+#   - name: "PG_10"
+#     ip: "192.168.18.26"
+#     netmask: "255.255.252.0"
+#     gateway: "192.168.16.1"
+#     device_type: vmxnet3
+#     start_connected: true
+#   template: "RHEL-7.4-Server-Template"
+#   register_to_satellite: true
+#   activation_keys:
+#   - "RHEL_7_TEST"
+#   skip_update: false
+#   register_to_puppet: false
+#   local_facts:
+#   - file: test.fact
+#     content: |
+#       {
+#         "test": "3",
+#         "prova": "4"
+#       }
+
+

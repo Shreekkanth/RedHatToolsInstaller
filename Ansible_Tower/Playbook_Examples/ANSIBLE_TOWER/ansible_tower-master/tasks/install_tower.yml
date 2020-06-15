@@ -1,0 +1,7 @@
+---
+# tasks file for ansible_tower
+
+- name: Install Ansible Tower
+  debug: 
+    msg: "Run setup.sh at {{ ansible_tower_dest }}/{{ ansible_tower_archive }}"
+

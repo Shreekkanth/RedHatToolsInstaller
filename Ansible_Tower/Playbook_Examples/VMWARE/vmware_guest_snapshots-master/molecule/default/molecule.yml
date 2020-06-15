@@ -1,0 +1,39 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint:
+  name: yamllint
+platforms:
+  - name: centos7
+    image: centos:7
+    # Required for internal access to download platform container
+    buildargs:
+      http_proxy: ${HTTP_PROXY}
+      HTTP_PROXY: ${HTTP_PROXY}
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        vm_name: ${VM_NAME}
+        vm_datacenter: ${VM_DATACENTER}
+        vm_datacenter2: ${VM_DATACENTER2}
+        vm_hostname2: ${VMWARE_HOST2}
+        vm_hostname: ${VMWARE_HOST}
+        vm_hostname_username: ${VMWARE_USER}
+        vm_hostname_password: ${VMWARE_PASSWORD}
+  log: True
+  playbooks:
+    converge: playbook.yml
+    prepare: prepare.yml
+    cleanup: cleanup.yml
+  lint:
+    name: ansible-lint
+verifier:
+  name: testinfra
+  enabled: False
+  directory: tests/
+  lint:
+    name: flake8

@@ -1,0 +1,8 @@
+---
+# file: roles/provisioning/tasks/pinning.yml
+- name: Pinning YUM repositories
+  shell: /usr/bin/yum-config-manager --enable "{{ item }}" --setopt="{{ item }}.priority=1"
+  with_items: "{{ rhn_repos }}"
+  tags:
+    - provisioning
+    - provisioning-pinning

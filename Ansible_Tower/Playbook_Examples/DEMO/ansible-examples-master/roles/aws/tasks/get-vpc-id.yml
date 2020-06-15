@@ -1,0 +1,15 @@
+- name: Get VPC ID
+  ec2_vpc_net_facts:
+    aws_access_key: "{{ key }}"
+    aws_secret_key: "{{ secret }}"
+    region: "{{ region }}"
+    filters:
+      "tag:Name": "{{ vpc_name }}"
+  register: vpc_tags
+
+- debug: 
+    var: vpc_tags.vpcs[0].vpc_id
+
+- set_fact: 
+    vpc_id: "{{ vpc_tags.vpcs[0].vpc_id }}"
+

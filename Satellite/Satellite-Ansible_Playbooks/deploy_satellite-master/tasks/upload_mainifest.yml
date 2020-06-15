@@ -1,0 +1,21 @@
+---
+- name: SATELLITE | Upload manifest | Load varriables
+  include_vars: vars/hammer-vars.yml
+
+- name: SATELLITE | upload manifest | Foreman is running
+  shell: 'systemctl is-active foreman-tasks.service'
+  register: foreman_status
+
+- name: SATELLITE | upload manifest | Copy mainfiest file to Satellite server
+  copy:
+    src: files/{{ manifest_filename }}
+    dest: /root/{{ manifest_filename }}
+    mode: 0644
+    owner: root
+    group: root
+  when: foreman_status.stdout == "active"
+
+- name: SATELLITE | upload manifest | Upload manifest to Satellite server
+  command: hammer --password "{{ satellite_admin_passwd }}" subscription upload --organization {{ satellite_organization }} --file /root/{{ manifest_filename }}
+  when: foreman_status.stdout == "active"
+

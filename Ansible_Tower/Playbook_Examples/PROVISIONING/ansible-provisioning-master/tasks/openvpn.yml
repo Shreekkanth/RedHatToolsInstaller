@@ -1,0 +1,37 @@
+---
+# file: roles/provisioning/tasks/openvpn.yml
+- name: Installing and configuring OpenVPN
+  yum:
+    name=openvpn
+    state=latest
+  tags:
+    - provisioning
+    - provisioning-openvpn
+    - provisioning-openvpn-package
+
+- copy:
+    src={{ item }}
+    dest=/etc/openvpn/
+    owner=root
+    group=root
+    force=yes
+  with_fileglob:
+    - "{{ playbook_dir }}/files/etc/openvpn/*"
+  tags:
+    - provisioning
+    - provisioning-openvpn
+    - provisioning-openvpn-config
+
+- file:
+    path={{ item }}
+    owner=root
+    group=root
+    mode=0755
+    force=yes
+  with_items:
+    - /etc/openvpn/client.up
+    - /etc/openvpn/client.down
+  tags:
+    - provisioning
+    - provisioning-openvpn
+    - provisioning-openvpn-config

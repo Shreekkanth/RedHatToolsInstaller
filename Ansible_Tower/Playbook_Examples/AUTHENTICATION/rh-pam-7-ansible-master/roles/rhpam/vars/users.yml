@@ -1,0 +1,24 @@
+---
+#
+#
+user_pwd_to_dev: "{{default_user_pwd_to_dev}}"
+
+admin_user_01: {
+     name: "admin", password: "{{user_pwd_to_dev}}" }
+
+admin_users:
+  - "{{ admin_user_01 }}"
+
+rhpam_users_01: { name: rhpam,          password: "{{user_pwd_to_dev}}", roles: "admin,kie-server,rest-all"}
+rhpam_users_02: { name: rhpamAdmin,     password: "{{user_pwd_to_dev}}", roles: "admin"}
+rhpam_users_03: { name: kieserver,      password: "{{user_pwd_to_dev}}", roles: "kie-server"}
+rhpam_users_04: { name: controllerUser, password: "{{user_pwd_to_dev}}", roles: "rest-all"}
+
+rhpam_users:
+  - "{{ rhpam_users_01 }}"
+  - "{{ rhpam_users_02 }}"
+  - "{{ rhpam_users_03 }}"
+  - "{{ rhpam_users_04 }}"
+
+#
+# EOF

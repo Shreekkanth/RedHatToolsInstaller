@@ -1,0 +1,80 @@
+#-[domain/default]
+#+next line not in FedCSB
+[domain/redhat.com]
+#+next line not in FedCSB
+#dns_discovery_domain = redhat.com
+#+next line not in FedCSB
+access_provider = simple
+auth_provider = krb5
+#-autofs_provider = ldap
+cache_credentials = True
+chpass_provider = krb5
+#+next line not in FedCSB
+create_homedir = True
+#+next line not in FedCSB
+enumerate = False
+#+next line not in FedCSB
+hbase_directory= /home
+id_provider = ldap
+krb5_kpasswd = kerberos.corp.redhat.com
+krb5_realm = REDHAT.COM
+#-krb5_server = kerberos01.core.prod.int.ams2.redhat.com,kerberos02.core.prod.int.ams2.redhat.com,kerberos01.core.prod.int.phx2.redhat.com
+#+next line not in FedCSB
+krb5_server = kerberos.rdu.redhat.com,kerberos.corp.redhat.com
+krb5_store_password_if_offline = True
+#-ldap_id_use_start_tls = True
+ldap_search_base = dc=redhat,dc=com
+#-ldap_tls_cacertdir = /etc/openldap/certs
+#-ldap_uri = ldap://ldap01.intranet.prod.int.ams2.redhat.com/,ldap://ldap02.intranet.prod.int.ams2.redhat.com/,ldap://ldap.corp.redhat.com/
+#+next line not in FedCSB
+ldap_uri = ldap://ldap.corp.redhat.com/
+#+next line not in FedCSB
+lookup_family_order = ipv4_only
+#+next line not in FedCSB
+offline_credentials_expiration = 0
+#+next line not in FedCSB
+override_homedir = /home/%u
+#+next line not in FedCSB
+simple_allow_users = {{ kerberos_user }}
+
+[sssd]
+#-services = autofs, nss, pam
+#+next line not in FedCSB
+services = nss, pam
+#+next line not in FedCSB
+config_file_version = 2
+#+next line not in FedCSB
+reconnection_retries = 3
+#+next line not in FedCSB
+sbus_timeout = 30
+#-domains = default
+#+next line not in FedCSB
+domains = redhat.com
+#+next line not in FedCSB
+debug_level = 9
+
+[nss]
+#+next line not in FedCSB
+filter_groups = root
+#+next line not in FedCSB
+filter_users = root
+#-homedir_substring = /home
+#+next line not in FedCSB
+reconnection_retries = 3
+
+[pam]
+#+next line not in FedCSB
+reconnection_retries = 3
+#-
+#-[sudo]
+#-
+#-[autofs]
+#-
+#-[ssh]
+#-
+#-[pac]
+#-
+#-[ifp]
+#-
+#-[secrets]
+#-

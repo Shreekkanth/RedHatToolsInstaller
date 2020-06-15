@@ -1,0 +1,7 @@
+---
+# tasks file for bind
+
+- name: Enable requisite repositories for bind
+  shell: |
+    subscription-manager repos --enable="{{ item }}" 
+  with_items: "{{ bind_requisite_repositories }}" 

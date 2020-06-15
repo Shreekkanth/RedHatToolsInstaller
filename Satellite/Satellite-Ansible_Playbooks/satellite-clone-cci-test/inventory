@@ -1,0 +1,4 @@
+satellite ansible_host=satellite.test.redhat.com
+[all:vars]
+ansible_ssh_private_key_file='.vagrant/ci-ops-central'
+

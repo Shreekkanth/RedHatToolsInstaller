@@ -1,0 +1,11 @@
+---
+- name: Deploy Linux VMs
+  hosts: lvm
+  gather_facts: False
+  connection: local
+
+  vars:
+
+  roles:
+  - vmware_vm_build
+

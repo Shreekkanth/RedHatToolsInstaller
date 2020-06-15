@@ -1,0 +1,89 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Add DataSources non-XA & XA
+# ============================================================
+#
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/add_datasources.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+# Add Module
+module add --name={{driver_module_name}} --resources={{module_resources}} --dependencies={{module_dependencies}}
+
+####
+# Add Driver
+/subsystem=datasources/jdbc-driver={{module_name}}:add(driver-name={{module_name}},driver-module-name={{driver_module_name}},driver-xa-datasource-class-name={{ driver_xa_datasource_class_name }})
+
+
+## loop.index
+# Add DataSources:
+{% for item in kie_ds_conf_list %}
+
+data-source add --name={{item.name}} --driver-name={{ item.driver_name}} --jndi-name={{item.jndi_name}} \
+--connection-url="{{item.connection_url}}" \
+--allocation-retry={{item.allocation_retry}} --allocation-retry-wait-millis={{item.allocation_retry_wait_millis}} \
+--allow-multiple-users={{item.allow_multiple_users}} \
+--background-validation={{item.background_validation}} --background-validation-millis={{item.background_validation_millis}} \
+--blocking-timeout-wait-millis={{item.blocking_timeout_wait_millis}} \
+--exception-sorter-class-name={{item.exception_sorter_class_name}} \
+--spy={{item.spy}} --jta={{item.jta}} --enabled={{item.enabled}} --enlistment-trace={{item.enlistment_trace}} \
+--initial-pool-size={{item.initial_pool_size}} --max-pool-size={{item.max_pool_size}} --min-pool-size={{item.min_pool_size}} \
+--user-name={{item.user_name}} --password={{item.password}} \
+--pool-use-strict-min={{item.pool_use_strict_min}} --prepared-statements-cache-size={{item.prepared_statements_cache_size}} \
+--query-timeout={{item.query_timeout}} --set-tx-query-timeout={{item.set_tx_query_timeout}} \
+--share-prepared-statements={{item.share_prepared_statements}} \
+--statistics-enabled={{item.statistics_enabled}} --tracking={{item.tracking}} --use-ccm={{item.use_ccm}} \
+--use-fast-fail={{item.use_fast_fail}}  \
+--valid-connection-checker-class-name={{item.valid_connection_checker_class_name}} \
+--idle-timeout-minutes={{item.idle_timeout_minutes}} \
+{% if is_oracle_ds %}--stale-connection-checker-class-name={{item.stale_connection_checker_class_name}} \ {% endif %}
+--validate-on-match={{item.validate_on_match}} \
+--track-statements={{item.track_statements }} \
+--pool-prefill={{item.pool_prefill }} \
+--flush-strategy={{item.flush_strategy }}
+
+{% endfor %}
+
+# Add DataSource XA:
+
+{% for item in kie_ds_xa_conf_list %}
+xa-data-source add --name={{item.name}} --driver-name={{item.driver_name}} --jndi-name={{item.jndi_name}} \
+--allocation-retry={{item.allocation_retry}} --allocation-retry-wait-millis={{item.allocation_retry_wait_millis}} \
+--allow-multiple-users={{item.allow_multiple_users}} \
+--background-validation={{item.background_validation}} --background-validation-millis={{item.background_validation_millis}} \
+--blocking-timeout-wait-millis={{item.blocking_timeout_wait_millis}} \
+--spy={{item.spy}} --enabled=true --enlistment-trace={{item.enlistment_trace}} \
+--initial-pool-size={{item.initial_pool_size}} --max-pool-size={{item.max_pool_size}} --min-pool-size={{item.min_pool_size}} \
+--user-name={{item.user_name}} --password={{item.password}} \
+--pool-use-strict-min={{item.pool_use_strict_min}} --prepared-statements-cache-size={{item.prepared_statements_cache_size}} \
+--query-timeout={{item.query_timeout}} --set-tx-query-timeout={{item.set_tx_query_timeout}} \
+--share-prepared-statements={{item.share_prepared_statements}} \
+--statistics-enabled={{item.statistics_enabled}} --tracking={{item.tracking}} --use-ccm={{item.use_ccm}}  \
+--use-fast-fail={{item.use_fast_fail}}  \
+--valid-connection-checker-class-name={{item.valid_connection_checker_class_name}} \
+--idle-timeout-minutes={{item.idle_timeout_minutes}} \
+{% if is_oracle_ds %}--stale-connection-checker-class-name={{item.stale_connection_checker_class_name}} \ {% endif %}
+--validate-on-match={{item.validate_on_match}} \
+--track-statements={{item.track_statements }}  \
+--same-rm-override={{item.same_rm_override }}  \
+--wrap-xa-resource={{item.wrap_xa_resource}}   \
+--pool-prefill={{item.pool_prefill }}     \
+--flush-strategy={{item.flush_strategy }} \
+--exception-sorter-class-name={{item.exception_sorter_class_name}} \
+--pad-xid=false --pool-fair=true \
+--xa-resource-timeout={{item.xa_resource_timeout}} \
+--xa-datasource-properties={ "URL" =>"{{item.connection_url}}"}
+
+{% endfor %}
+
+run-batch
+#
+# EOF

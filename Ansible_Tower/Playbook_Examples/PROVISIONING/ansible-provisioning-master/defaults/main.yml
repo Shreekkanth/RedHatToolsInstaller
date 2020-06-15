@@ -1,0 +1,20 @@
+---
+# defaults file for provisioning
+provisioning_rhn_unregister: true
+provisioning_configure_network: true
+provisioning_update_system: true
+provisioning_disable_repos: true
+provisioning_enable_epel: true
+provisioning_packages:
+  - vim
+  - yum-plugin-priorities
+  - strace
+  - ethtool
+  - net-tools
+  - screen
+  - sysstat
+  - git
+provisioning_openvpn: true
+provisioning_redhat_network: false
+provisioning_undercloud: false
+provisioning_director_version: '7-director'

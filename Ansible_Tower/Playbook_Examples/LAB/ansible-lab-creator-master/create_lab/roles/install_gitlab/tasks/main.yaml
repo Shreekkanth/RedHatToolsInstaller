@@ -1,0 +1,6 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- include: prereqs.yaml
+- include: gitlabinstall.yaml

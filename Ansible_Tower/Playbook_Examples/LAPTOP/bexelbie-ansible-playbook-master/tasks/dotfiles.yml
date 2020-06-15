@@ -1,0 +1,132 @@
+---
+- name: Remove default .bashrc
+  file:
+    path: ~/.bashrc
+    state: absent
+
+- name: Install bash dotfiles
+  shell: "stow -d {{ playbook_dir }}/dot-files/secure -t ~ bash"
+
+- name: Install git configuration files
+  shell: "stow -d {{ playbook_dir }}/dot-files -t ~/ git"
+
+- name: Remove ~/Videos
+  file:
+    path: ~/Videos
+    state: absent
+
+- name: Remove ~/Pictures
+  file:
+    path: ~/Pictures
+    state: absent
+
+- name: Remove ~/Public
+  file:
+    path: ~/Public
+    state: absent
+
+- name: Remove ~/Music
+  file:
+    path: ~/Music
+    state: absent
+
+- name: Remove ~/Templates
+  file:
+    path: ~/Templates
+    state: absent
+
+- name: Remove ~/Desktop
+  file:
+    path: ~/Desktop
+    state: absent
+
+- name: Remove ~/.config/user-dirs.dirs
+  file:
+    path: ~/.config/user-dirs.dirs
+    state: absent
+
+- name: Install xdg-dirs configuration files - this permanently gets rid of the default dirs I don't use
+  shell: "stow -d {{ playbook_dir }}/dot-files -t ~/.config xdg-users-dirs && /usr/bin/xdg-user-dirs-update"
+
+- name: Remove temporary ~/.ssh
+  file:
+    path: ~/.ssh
+    state: absent
+
+- name: Install ssh dotfiles
+  file:
+    src: "{{ playbook_dir }}/dot-files/secure/ssh"
+    dest: "~/.ssh"
+    state: link
+
+- name: Create Hexchat config directory
+  file:
+    path: "~/.config/hexchat/"
+    state: directory
+    mode: 0700
+
+- name: Install Hexchat config files
+  copy:
+    src: "{{ playbook_dir }}/dot-files/secure/hexchat/{{ item }}"
+    dest: "~/.config/hexchat/{{ item}}"
+  with_items:
+    - hexchat.conf
+    - notify.conf
+    - pevents.conf
+    - servlist.conf
+
+- name: Create cups config directory
+  file:
+    path: "~/.cups/"
+    state: directory
+    mode: 0700
+
+- name: Install cups configs
+  shell: "stow -d {{ playbook_dir }}/dot-files/secure -t ~/.cups/ cups"
+
+- name: Restart cups
+  become: yes
+  service:
+    name: cups
+    state: restarted
+
+- name: Create Chrome Kerberos Config Directory
+  become: yes
+  file:
+    path: "/etc/opt/chrome/policies/managed/"
+    state: directory
+    mode: 0755
+
+- name: Install Kerberos Config - Chrome
+  become: yes
+  copy:
+    src: "{{ playbook_dir }}/dot-files/chrome-kerberos/kerberos.json"
+    dest: "/etc/opt/chrome/policies/managed/kerberos.json"
+    mode: 0644
+
+- name: Create Chromium Kerberos Config Directory
+  become: yes
+  file:
+    path: "/etc/chromium/policies/managed/"
+    state: directory
+    mode: 0755
+
+- name: Install Kerberos Config - Chromium
+  become: yes
+  copy:
+    src: "{{ playbook_dir }}/dot-files/chrome-kerberos/kerberos.json"
+    dest: "/etc/chromium/policies/managed/kerberos.json"
+    mode: 0644
+
+- name: Remove temporary ~/.gnupg/gpg-agent.conf
+  file:
+    path: ~/.gnupg/gpg-agent.conf
+    state: absent
+
+- name: Remove temporary ~/.gnupg/sshcontrol
+  file:
+    path: ~/.gnupg/sshcontrol
+    state: absent
+
+- name: Install ~/.gnupg dotfiles
+  shell: "stow -d {{ playbook_dir }}/dot-files -t ~/.gnupg gnupg"

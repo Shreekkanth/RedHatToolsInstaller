@@ -1,0 +1,33 @@
+---
+
+- name: get roles for organizations
+  command: >
+    tower-cli
+    role list 
+    --organization={{ org.name }} 
+    --format json
+    --type "{{ item }}"
+  loop: 
+  - project_admin
+  - inventory_admin
+  - credential_admin
+  - workflow_admin
+  - notification_admin
+  - job_template_admin
+  register: org_role
+
+- set_fact:
+    org_role_ids:
+      project_admin: "{{ _project_admin_id.results[0]['id'] }}"
+      inventory_admin: "{{ _inventory_admin_id.results[0]['id'] }}"
+      credential_admin: "{{ _credential_admin_id.results[0]['id'] }}"
+      workflow_admin: "{{ _workflow_admin_id.results[0]['id'] }}"
+      notification_admin: "{{ _notification_admin_id.results[0]['id'] }}"
+      job_template_admin: "{{ _job_template_admin_id.results[0]['id'] }}"
+  vars:
+    _project_admin_id: "{{ org_role.results[0].stdout | from_json }}"
+    _inventory_admin_id: "{{ org_role.results[1].stdout | from_json }}"
+    _credential_admin_id: "{{ org_role.results[2].stdout | from_json }}"
+    _workflow_admin_id: "{{ org_role.results[3].stdout | from_json }}"
+    _notification_admin_id: "{{ org_role.results[4].stdout | from_json }}"
+    _job_template_admin_id: "{{ org_role.results[5].stdout | from_json }}"

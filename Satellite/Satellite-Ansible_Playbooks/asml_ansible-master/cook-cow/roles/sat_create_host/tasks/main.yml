@@ -1,0 +1,90 @@
+---
+# API seems to be better suited for this project than forman modules.
+# modules don't ship with ansible and need installation. We don't need much of idempotency that 
+# the modules offer while API seems to give more functionality.
+#- name: "Create a host"
+#  foreman_host:
+#    username: "{{ sat_user }}"
+#    password: "{{ sat_password }}"
+#    organization: "{{ sat_org }}"
+#    location: "{{ sat_location }}"
+#    validate_certs: False
+#    server_url: "{{ sat_url }}"
+#    name: "{{ vm_name }}"
+#    hostgroup: "{{ sat_hostgroup }}"
+#    state: present
+
+- name: Create VM
+  uri:
+    url: "{{ sat_url }}/api/v2/hosts/"
+    user: "{{ sat_user }}"
+    password: "{{ sat_password }}"
+    force_basic_auth: yes
+    method: POST
+    body_format: json
+    body:
+      name: "{{ vm_name }}"
+      organization_name: "{{ sat_org }}"
+      location_name: "{{ sat_location }}"
+      hostgroup_name: "{{ sat_hostgroup }}"
+      build: 1
+    validate_certs: no
+    status_code:
+      - 200
+      - 201
+  register: created_host
+
+- name: Power the VM up
+  uri:
+    url: "{{ sat_url }}/api/v2/hosts/{{ created_host.json.id }}/power"
+    user: "{{ sat_user }}"
+    password: "{{ sat_password }}"
+    force_basic_auth: yes
+    method: PUT
+    body_format: json
+    body:
+      power_action: "on"
+    validate_certs: no
+
+- name: Wait for installation to finish
+  uri:
+    url: "{{ sat_url }}/api/v2/hosts/{{ created_host.json.name }}/status/build"
+    user: "{{ sat_user }}"
+    password: "{{ sat_password }}"
+    force_basic_auth: yes
+    method: GET
+    validate_certs: no
+  register: build_status
+  until: build_status.json.status_label == "Installed"
+  retries: 20
+  delay: 30
+
+# This does not work - state is already "running" when machine is powered on but has not booted yet
+# - name: Wait for the host to boot up after installation
+#   uri:
+#     url: "https://sat65.nest.laptop/api/v2/hosts/{{ created_host.json.id }}/power"
+#     user: admin
+#     password: redhat
+#     force_basic_auth: yes
+#     method: PUT
+#     body_format: json
+#     body:
+#       power_action: "status"
+#     validate_certs: no
+#   register: host_powerup
+#   until: host_powerup.json.power == "running"
+#   retries: 10
+#   delay: 10
+
+- name: Wait for the VM to boot up after installation
+  wait_for:
+    port: 22
+    host: "{{ created_host.json.ip }}"
+    search_regex: OpenSSH
+    delay: 10
+
+- name: Add {{ created_host.json.name }} with ip {{ created_host.json.ip }} to the playbook inventory
+  add_host:
+    name: "{{ created_host.json.ip }}"
+    groups: "{{ vm_name | replace('-', '_') }}_group"
+...

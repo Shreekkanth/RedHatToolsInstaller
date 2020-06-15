@@ -1,0 +1,42 @@
+---
+# tasks file for container-storage-setup
+
+  - name: Make sure docker is stopped
+    command: "systemctl stop {{ docker_service_name }}"
+    ignore_errors: true
+
+  - name: Make sure docker storage is stopped
+    command: "systemctl stop docker-storage-setup"
+    ignore_errors: true
+
+  - name: Stop docker mount
+    systemd:
+      name: "{{ docker_containers_mount }}"
+      state: stopped
+    ignore_errors: true
+
+  - name: "Remove {{ docker_storage_file_path }}"
+    file:
+      path: "{{ docker_storage_file_path }}"
+      state: absent
+
+  - name: "Remove {{ docker_var_storage_path }}"
+    file:
+      path: "{{ docker_var_storage_path }}"
+      state: absent
+
+  - name: Remove the logical volume.
+    lvol:
+      vg: "{{ docker_default_vg }}"
+      lv: "{{ docker_default_lv }}"
+      state: absent
+      force: yes
+
+  - name: Run container-storage-setup
+    command: "{{ container_storage_setup_name }}"
+
+  - name: Start and enable docker
+    systemd:
+      name: "{{ docker_service_name }}"
+      state: started
+      enabled: yes

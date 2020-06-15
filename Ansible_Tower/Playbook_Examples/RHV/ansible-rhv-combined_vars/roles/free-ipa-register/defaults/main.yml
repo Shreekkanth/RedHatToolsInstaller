@@ -1,0 +1,6 @@
+---
+# defaults file for free-ipa-register
+
+ipa_password: changeme
+ipa_user: johndoe
+ipa_realm: HOMELAB.WORK

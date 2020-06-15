@@ -1,0 +1,101 @@
+---
+- hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    # Replace with name generated from Techmap / MSSQL
+    server_name: rlt00999
+    server_state: lab
+    tower_host: 10.32.21.54
+
+  tasks:
+    - name:
+      include_vars:
+        file: vars/static_ip_assignment.yml
+      when: labtest is defined
+
+    - name: Validate server name
+      assert:
+        that:
+          - server_name is defined
+        fail_msg: "server_name must be provided"
+
+    # IPControl: Get next free IP
+    # returns ipcontrol_ip_info{'ip','netmask','gateway'}
+    - name: Reserve IP address
+      include_role:
+        name: ipcontrol_assign_ip
+      vars:
+        ipcontrol_assign_ip_username: "{{ ipcontrol_username }}"
+        ipcontrol_assign_ip_password: "{{ ipcontrol_password }}"
+        ipcontrol_assign_ip_description: "Test device reservation"
+        ipcontrol_assign_ip_hostname: "{{ server_name }}"
+        ipcontrol_assign_ip_address_pool: "{{ vcenter_map[server_state]['linux_server_network_subnet'] }}"
+        ipcontrol_assign_ip_domain_name: "{{ vcenter_map[server_state]['domain'] }}"
+      when: server_networks is not defined
+
+    - name: Create networks dict
+      set_fact:
+        server_networks:
+          - name: "{{ vcenter_map[server_state]['linux_server_network_name'] }}"
+            ip: "{{ ipcontrol_ip_info['ip'] }}"
+            netmask: "{{ ipcontrol_ip_info['netmask'] }}"
+            gateway: "{{ ipcontrol_ip_info['gateway'] }}"
+            type: static
+      when: server_networks is not defined
+
+    # VMWare: (when provision)
+    #   - Clone image
+    #   - Apply configuration
+    - name:  Clone a virtual machine from Linux template and customize
+      vmware_guest:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        datacenter: "{{ vcenter_map[server_state]['datacenter'] }}"
+        state: present
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        template: "{{ vcenter_map[server_state]['linux_server_template'] | upper }}"
+        name: "{{ server_name | upper }}"
+        cluster: "{{ vcenter_map[server_state]['cluster'] }}"
+        networks: "{{ server_networks }}"
+        wait_for_ip_address: True
+        customization:
+          domain: "{{ vcenter_map[server_state]['domain'] }}"
+          dns_servers: "{{ vcenter_map[server_state]['dns_servers'] }}"
+          dns_suffix: "{{ vcenter_map[server_state]['dns_suffix'] }}"
+
+    - name: Search Tower inventory for host
+      uri:
+        url: "https://{{ tower_host }}/api/v2/inventories/2/hosts/?name={{ server_name | upper }}"
+        method: GET
+        user: admin
+        password: "{{ admin_password }}"
+        validate_certs: false
+        force_basic_auth: true
+      register: host_list
+
+    - name: Debug host_list
+      debug:
+        var: host_list
+        verbosity: 1
+
+    - name: Add host to Tower inventory
+      uri:
+        url: "https://{{ tower_host }}/api/v2/inventories/2/hosts/"
+        method: POST
+        user: admin
+        password: "{{ admin_password }}"
+        body:
+          name: "{{ server_name | upper }}"
+          description: Newly provisioned VM
+          variables: "ansible_host: {{ server_networks[0]['ip'] }}"
+        body_format: json
+        validate_certs: false
+        force_basic_auth: true
+        status_code:
+          - 200
+          - 201
+      when: host_list.json.count == 0

@@ -1,0 +1,7 @@
+---
+#
+# Handlers for capsule-ha role
+#
+  - name: restart_katello
+    command: /usr/bin/katello-service restart
+...

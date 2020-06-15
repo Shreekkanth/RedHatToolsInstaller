@@ -1,0 +1,166 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Get Inventory ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories'
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: inv_id
+
+  - name: Inventory identified 
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+
+  - name: Create aceplus_db_prod_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_db_prod_server", "name": "aceplus_db_prod_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "ACEPlus DB Server"
+    ignore_errors: yes
+
+  - name: Create aceplus_db_dr_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_db_prod_server", "name": "aceplus_db_dr_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "ACEPlus DB Server"
+    ignore_errors: yes
+
+  - name: Create aceplus_weblogic_prod_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_weblogic_prod_server", "name": "aceplus_weblogic_prod_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "ACEPlus WebAp/Batch Server"
+    ignore_errors: yes
+
+  - name: Create aceplus_weblogic_dr_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_weblogic_dr_server", "name": "aceplus_weblogic_dr_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "ACEPlus WebAp/Batch Server"
+    ignore_errors: yes
+
+  - name: Create aceplus_scorerule1_prod_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_scorerule1_prod_server", "name": "aceplus_scorerule1_prod_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: 'item.name == "ACEPlus Score Rule #1 Server"'
+    ignore_errors: yes
+
+
+  - name: Create aceplus_scorerule1_dr_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_scorerule1_dr_server", "name": "aceplus_scorerule1_dr_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: 'item.name == "ACEPlus Score Rule #1 Server"'
+    ignore_errors: yes
+
+  - name: Create aceplus_scorerule2_prod_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_scorerule2_prod_server", "name": "aceplus_scorerule2_prod_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: 'item.name == "ACEPlus Score Rule #2 Server"'
+    ignore_errors: yes
+
+  - name: Create aceplus_scorerule2_dr_server group
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/{{ item.id }}/groups/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { "description": "aceplus_scorerule2_dr_server", "name": "aceplus_scorerule2_dr_server" }
+      body_format: json
+      status_code: 201
+    with_items: "{{ inv_id.json.results }}"
+    when: 'item.name == "ACEPlus Score Rule #2 Server"'
+    ignore_errors: yes

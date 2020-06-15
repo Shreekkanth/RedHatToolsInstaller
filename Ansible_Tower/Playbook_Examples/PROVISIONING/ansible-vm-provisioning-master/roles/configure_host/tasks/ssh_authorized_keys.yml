@@ -1,0 +1,15 @@
+- name: Load ssh authorized keys
+  uri:
+    url: "{{ satinfo.puppet_proxy.url }}/ssh/pubkey"
+    return_content: true
+    status_code: 
+    - 200
+    method: "GET"
+  register: rexkey
+  failed_when: "'foreman-proxy' not in rexkey.content"
+
+- name: Set authorized keys
+  authorized_key:
+    key: "{{ rexkey.content }}"
+    state: present
+    user: "{{ ansible_user }}"

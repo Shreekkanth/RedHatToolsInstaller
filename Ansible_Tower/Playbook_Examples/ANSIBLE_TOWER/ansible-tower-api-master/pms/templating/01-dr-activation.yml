@@ -1,0 +1,513 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    project_id: 276
+    pmsdb_os_cred: 35
+    pmsesb_os_cred: 35
+    pmsbat_os_cred: 35
+    pmsrep_os_cred: 35
+    pmstomweb_os_cred: 35
+    pmsapp_os_cred: 35
+    db_inv: 57
+    esb_inv: 58
+    bat_inv: 61
+    rep_inv: 60
+    tomweb_inv: 61
+    app_inv: 59
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name:  PMS DR Activation- Stopping Prod PMSTCP 
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_production_apps/stop_prod_pmstcp.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS DR Activation: Stopping Prod PMSTCP"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Stopping Prod Glassfish ESB Server  
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_production_apps/stop_prod_glassfish_esbserver.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS DR Activation: Stopping Prod Glassfish ESB Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Stopping Prod Glassfish Batch Server   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsbat_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_production_apps/stop_prod_batch_server.yml",
+          "inventory": "{{ bat_inv }}",
+          "name": "PMS DR Activation: Stopping Prod Glassfish Batch Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Stopping Prod Glassfish App Server   
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsapp_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_production_apps/stop_prod_glassfish_appserver.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "PMS DR Activation: Stopping Prod Glassfish App Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Stopping Prod Tomcat Web Server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmstomweb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_production_apps/stop_prod_tomcat_webserver.yml",
+          "inventory": "{{ tomweb_inv }}",
+          "name": "PMS DR Activation: Stopping Prod Tomcat Web Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Stopping Prod Tomcat Report Server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsrep_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_production_apps/stop_prod_tomcat_reportserver.yml",
+          "inventory": "{{ rep_inv }}",
+          "name": "PMS DR Activation: Stopping Prod Tomcat Report Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Disable DB Cronjob    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/disable_cronjob_primary_seconday_db.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS DR Activation: Disable DB Cronjob"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Retrieve Archivelog Seq for comparison    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/retrieve_archivelog_seq.yml",
+          "extra_vars": "---\noracle_home: /u03/apps/oracle/product/11.2.0.4/pmsdb_home\noracle_bin: /u03/apps/oracle/product/11.2.0.4/pmsdb_home/bin/\noracle_dbname: pmsdb",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS DR Activation: Retrieve Archivelog Seq for comparison"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Validate Archivelog Seq between Prod & DR    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/validate_archivelog_seq.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS DR Activation: Validate Archivelog Seq between Prod & DR"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Execute Archivelog Script (When Archivelog failed validation)    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/archivelog_script_runner.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS DR Activation: Execute Archivelog Script (When Archivelog failed validation)"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Ensure all recovery script stopped    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/kill_remaining_recovery_script.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\n process_to_kill: 'recovery'",
+          "name": "PMS DR Activation: Ensure all recovery script stopped"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Stopping all DB instance    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/stop_primary_secondary_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\noracle_home: /u03/apps/oracle/product/11.2.0.4/pmsdb_home\noracle_bin: /u03/apps/oracle/product/11.2.0.4/pmsdb_home/bin/\noracle_dbname: pmsdb",
+          "name": "PMS DR Activation: Stopping all DB instance"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: PMS DR Activation- Transferring control file and redo log from Prod to DR     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/backup_transfer_redo_controlfiles.yml",
+          "inventory": "{{ db_inv }}",
+          "name": "PMS DR Activation: Transferring control file and redo log from Prod to DR"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Starting DB DR as Primary and Prod as Secondary     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/start_dr_primary_prod_secondary_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\noracle_home: /u03/apps/oracle/product/11.2.0.4/pmsdb_home\noracle_bin: /u03/apps/oracle/product/11.2.0.4/pmsdb_home/bin/\noracle_dbname: pmsdb",
+          "name": " PMS DR Activation: Starting DB DR as Primary and Prod as Secondary"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Enabling cron job on DB server     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsdb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/db_dr_activation/enable_cronjob_primary_secondary.yml",
+          "inventory": "{{ db_inv }}",
+          "name": " PMS DR Activation: Enabling cron job on DB server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Start PMSTCP on DR server     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_apps/start_dr_pmstcp.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS DR Activation: Start PMSTCP on DR server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  PMS DR Activation- Start Glassfish ESB on DR server     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsesb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_apps/start_dr_glassfish_esbserver.yml",
+          "inventory": "{{ esb_inv }}",
+          "name": "PMS DR Activation: Start Glassfish ESB on DR server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:   PMS DR Activation- Start Glassfish Batch on DR server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsbat_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_apps/start_dr_glassfish_batchserver.yml",
+          "inventory": "{{ bat_inv }}",
+          "name": " PMS DR Activation: Start Glassfish Batch on DR server"
+        }
+      status_code: 201
+    ignore_errors: yes
+    
+  - name:  PMS DR Activation- Start Glassfish App on DR server     
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsapp_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_apps/start_dr_glassfish_appserver.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "PMS DR Activation: Start Glassfish App on DR server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:   PMS DR Activation- Start Tomcat Web on DR server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmstomweb_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_apps/start_dr_tomcat_webserver.yml",
+          "inventory": "{{ tomweb_inv }}",
+          "name": "PMS DR Activation: Start Tomcat Web on DR server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:    PMS DR Activation- Start Tomcat Report on DR server    
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ pmsrep_os_cred }}",
+          "credential": 16,
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_apps/start_dr_tomcat_reportserver.yml",
+          "inventory": "{{ rep_inv }}",
+          "name": "PMS DR Activation: Start Tomcat Report on DR server"
+        }
+      status_code: 201
+    ignore_errors: yes

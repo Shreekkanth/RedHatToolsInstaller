@@ -1,0 +1,86 @@
+---
+- name: "Finalize VM Configuration"
+  hosts: "localhost"
+  gather_facts: False
+  tasks:
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "../vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+
+    - name: "Ensure VM is Powered off for configuration changes"
+      vmware_guest_powerstate:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        folder: "/{{ vctr_datacenter }}/{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        state: "powered-off"
+      register: "vm_power_off_result"
+      no_log: True
+
+    - debug:
+        var: "vm_power_off_result"
+        verbosity: "1"
+
+    - name: "Ensure OS installation ISO is Detached from VM"
+      vmware_guest:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        datacenter: "{{ vctr_datacenter }}"
+        cluster: "{{ vctr_cluster }}"
+        folder: "{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        guest_id: "{{ vctr_vm_template_os_type }}"
+        cdrom:
+          type: "none"
+        disk: "{{ vctr_vm_template_disks }}"
+        networks: "{{ vctr_vm_template_networks }}"
+        hardware: "{{ vctr_vm_template_hardware }}"
+        state: "present"
+      no_log: True
+
+#Could probably collect result from previous task instead of get facts
+    - name: "Ensure VM UUID is set"
+      set_fact:
+        vm_uuid: "{{ vm_power_off_result.instance.hw_product_uuid }}"
+      when: 'vm_uuid is undefined'
+
+    - debug:
+        var: "vm_uuid"
+        verbosity: "1"
+
+    - name: "Ensure VM boot settings are set"
+      vmware_guest_boot_manager:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        boot_delay: "0"
+        boot_firmware: "{{ vm_build_type }}"
+        boot_order:
+          - "disk"
+          - "cdrom"
+        boot_retry_delay: "0"
+        boot_retry_enabled: True
+        enter_bios_setup: False
+        uuid: "{{ vm_uuid }}"
+      register: "vm_boot_config_results"
+      no_log: True
+
+    - debug:
+        var: "vm_boot_config_results"
+        verbosity: "1"
+
+    - name: "Ensure VM is Powered on after VM configuration changes"
+      vmware_guest_powerstate:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        folder: "/{{ vctr_datacenter }}/{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        state: "powered-on"
+      register: "vm_power_on_result"
+      no_log: True

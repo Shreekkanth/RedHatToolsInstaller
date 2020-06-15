@@ -1,0 +1,40 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Configure Handler Logging
+# https://access.redhat.com/solutions/384393
+# https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.0/html/configuration_guide/logging_with_jboss_eap#configure_periodic_size_log_handler
+# https://access.redhat.com/solutions/170083
+# https://wildscribe.github.io/JBoss%20EAP/7.0/subsystem/logging/pattern-formatter/index.html
+#
+# "color-map" pattern: level-name:color-name
+#
+# Valid Levels: severe, fatal, error, warn, warning, info, debug, trace, config, fine, finer, finest
+# Valid Colors: black, green, red, yellow, blue, magenta, cyan, white, brightblack, brightred,
+#               brightgreen, brightblue, brightyellow, brightmagenta, brightcyan, brightwhite
+# ============================================================
+#
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/configure_handler.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+/subsystem=logging/pattern-formatter={{periodic_named_formatter}}/:add(pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%-5p] [%t] [%c] (%F:%L) - %s%e%n",color-map="error:brightred,info:brightwhite")
+
+/subsystem=logging/periodic-size-rotating-file-handler={{periodic_size_rotating_handler_name}}:add(append={{periodic_append}},file={relative-to="{{periodic_relative_to}}", \
+path="{{periodic_path}}"},rotate-size={{periodic_rotate_size}}, suffix="{{periodic_suffix}}", autoflush={{periodic_autoflush}}, max-backup-index={{periodic_handler_max_backup_index}}, \
+named-formatter={{periodic_named_formatter}}
+
+/subsystem=logging/root-logger=ROOT:add-handler(name={{periodic_size_rotating_handler_name}})
+/subsystem=logging/root-logger=ROOT:remove-handler(name=FILE)
+/subsystem=logging/periodic-rotating-file-handler=FILE:remove()
+
+run-batch
+#
+# EOF

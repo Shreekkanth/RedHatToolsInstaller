@@ -1,0 +1,9 @@
+- name: Update all system
+  yum:
+    name: "*"
+    state: latest
+  register: yumupdate
+
+- name: Reboot if system is updated
+  when: "yumupdate.changed"
+  reboot:

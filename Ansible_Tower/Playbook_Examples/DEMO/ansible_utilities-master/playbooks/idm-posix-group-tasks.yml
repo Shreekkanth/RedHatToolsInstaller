@@ -1,0 +1,34 @@
+---
+- name: Debug
+  debug:
+    msg: "POSIX group {{ item.key }} external group {{ item.value.group_name_external }} ad group {{ item.value.ad_group }}"
+
+- name: Add non-posix external group to IdM
+  ipa_group: 
+    name: "{{ item.value.group_name_external }}"
+    external:
+    state: present
+    ipa_host: "{{ inventory_hostname }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_pass }}"
+
+- name: kinit {{ ipa_user }}
+  shell: echo {{ ipa_pass }} | kinit {{ ipa_user }}
+
+- name: Query IDM to determine if the external AD group has already been added to the external group
+  shell: "ipa group-show cloudforms_admins_external | grep \"External member\" | awk '{split($0,a,\":i \"); split(a[2],b,\"@\"); print b[1]}'"
+  register: ipa_group
+
+- name: Add AD group mapping to external IdM group
+  shell: ipa group-add-member {{ item.value.group_name_external }} --external {{ item.value.ad_group }}
+  when: ipa_group != item.value.ad_group
+ 
+#- name: Create non-POSIX group
+#  ipa_group:
+#    name: "{{ group_name_internal }}"
+#    nonposix:
+#    state: present
+#    group: "{{ group_name_external }}"
+#    ipa_host: "{{ ipa_host }}"
+#    ipa_user: "{{ ipa_user }}"
+#    ipa_pass: "{{ ipa_pass }}"

@@ -1,0 +1,5 @@
+---
+# vars file for provisioning
+epel_pkg: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+rhos_pkg: http://rhos-release.virt.bos.redhat.com/repos/rhos-release/rhos-release-latest.noarch.rpm
+ssh_keys_pkg: https://gitlab.cee.redhat.com/RCIP/rpm-rcipsshkeys/raw/master/RPMS/noarch/rcipsshkeys-latest.noarch.rpm

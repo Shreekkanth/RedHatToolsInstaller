@@ -1,0 +1,52 @@
+---
+tower_cred_types:
+  - name: OpenShift Token
+    description: OpenShift Token Cred Type
+    fields:
+      - multiline: false
+        secret: true
+        type: string
+        id: security_token
+        label: OpenShift Token
+    kind: cloud
+    inj_env:
+      openshift_token: "{% raw %}{{ '{{' }} security_token {{ '}}' }}{% endraw %}"
+    inj_extra_vars:
+      openshift_token: "{% raw %}{{ '{{' }} security_token {{ '}}' }}{% endraw %}"
+    required:
+      - security_token
+    state: present
+
+  - name: LDAP Bind DN
+    description: LDAP Bind DN
+    fields:
+      - multiline: false
+        secret: true
+        type: string
+        id: dn
+        label: LDAP Bind DN
+    kind: cloud
+    inj_env:
+      VAULT_LDAP_BIND_DN: "{% raw %}{{ '{{' }} dn {{ '}}' }}{% endraw %}"
+    inj_extra_vars:
+      VAULT_LDAP_BIND_DN: "{% raw %}{{ '{{' }} dn {{ '}}' }}{% endraw %}"
+    required:
+      - dn
+    state: present
+
+  - name: LDAP Bind PW
+    description: LDAP Bind PW
+    fields:
+      - multiline: false
+        secret: true
+        type: string
+        id: pw
+        label: LDAP Bind PW
+    kind: cloud
+    inj_env:
+      VAULT_LDAP_BIND_PW: "{% raw %}{{ '{{' }} pw {{ '}}' }}{% endraw %}"
+    inj_extra_vars:
+      VAULT_LDAP_BIND_PW: "{% raw %}{{ '{{' }} pw {{ '}}' }}{% endraw %}"
+    required:
+      - pw
+    state: present

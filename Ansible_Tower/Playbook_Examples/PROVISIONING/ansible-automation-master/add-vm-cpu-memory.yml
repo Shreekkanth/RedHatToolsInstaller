@@ -1,0 +1,92 @@
+---
+- hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    # Replace with name generated from Techmap
+    server_name: rlt00999
+    server_state: lab
+    memory_gb: 4
+    cpu_cores_per_socket: 1
+    cpu_count: 4
+
+  tasks:
+
+    - name: Validate server name
+      assert:
+        that:
+          - server_name is defined
+        fail_msg: "server_name must be provided"
+
+    - name: Gather guest facts
+      vmware_guest_facts:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        datacenter: "{{ vcenter_map[server_state]['datacenter'] }}"
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name }}"
+        schema: vsphere
+      delegate_to: localhost
+      register: guest_facts
+
+    # - name: Get VM hotadd capabilities
+
+    - name: Set vm_cpu_hotadd
+      set_fact:
+        vm_cpu_hotadd: "{{ guest_facts.instance.config.cpuHotAddEnabled }}"
+
+    - name: Set vm_mem_hotadd
+      set_fact:
+        vm_mem_hotadd: "{{ guest_facts.instance.config.memoryHotAddEnabled }}"
+
+    - name: Set vm_cpu_cores_per_socket
+      set_fact:
+        vm_cpu_cores_per_socket: "{{ cpu_cores_per_socket | default(guest_facts.instance.hw_cores_per_socket) }}"
+
+    - name: Set vm_cpu_count
+      set_fact:
+        vm_cpu_count: "{{ cpu_count | default(guest_facts.instance.hw_processor_count) }}"
+
+    - name: Set vm_memory_mb
+      set_fact:
+        vm_memory_mb: "{{ memory_gb * 1024 | default(guest_facts.instance.hw_memtotal_mb) }}"
+
+    - name: Shut down VM
+      vmware_guest:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        state: shutdownguest
+        state_change_timeout: 300
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name | upper }}"
+      when: (not vm_cpu_hotadd) or (not vm_mem_hotadd)
+
+    - name:  Modify VM hardware
+      vmware_guest:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        state: present
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name | upper }}"
+        hardware:
+          num_cpus: "{{ vm_cpu_count }}"
+          num_cpu_cores_per_socket: "{{ vm_cpu_cores_per_socket }}"
+          memory_mb: "{{ vm_memory_mb }}"
+
+    - name: Power off VM
+      vmware_guest:
+        hostname: "{{ vcenter_map[server_state]['hostname'] }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: no
+        state: poweredon
+        folder: "{{ vcenter_map[server_state]['folder'] }}"
+        name: "{{ server_name | upper }}"
+      when: (not vm_cpu_hotadd) or (not vm_mem_hotadd)

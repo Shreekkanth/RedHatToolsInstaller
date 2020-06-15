@@ -1,0 +1,34 @@
+---
+all:
+  hosts:
+    sat6cap01.dev.a1.vary.redhat.com:
+  vars:
+    efs:
+      - efs:
+          name: satellite_capsule_pulp
+          kms_key_id: 0bd6cd23-f534-495b-bf4e-8079728aca7c
+          mount_point: /var/lib/pulp
+          auto_mount: true
+          targets:
+            - subnet_id: subnet-7eccdc56
+              security_groups: [ "sg-0361314b" ]
+            - subnet_id: subnet-a304d2d4
+              security_groups: [ "sg-0361314b" ]
+            - subnet_id: subnet-17e8184e
+              security_groups: [ "sg-0361314b" ]
+      - efs:
+          name: satellite_capsule_mongodb
+          kms_key_id: 0bd6cd23-f534-495b-bf4e-8079728aca7c
+          mount_point: /var/lib/mongodb
+          auto_mount: true
+          targets:
+            - subnet_id: subnet-7eccdc56
+              security_groups: [ "sg-0361314b" ]
+            - subnet_id: subnet-a304d2d4
+              security_groups: [ "sg-0361314b" ]
+            - subnet_id: subnet-17e8184e
+              security_groups: [ "sg-0361314b" ]
+      - efs_facts:
+          name: satellite_capsule_pulp
+      - efs_facts:
+          name: satellite_capsule_mongodb

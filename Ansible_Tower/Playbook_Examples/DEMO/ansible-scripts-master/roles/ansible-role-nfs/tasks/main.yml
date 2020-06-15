@@ -1,0 +1,82 @@
+---
+# tasks file for roles/ansible-role-nfs
+# Include variables and define needed variables.
+
+- name: Include Red Hat Variables
+  include_vars:
+    file: RedHat.yml
+
+- name: Ensure NFS utilities are installed.
+  package: name=nfs-utils state=present
+
+- name: Ensure rpcbind is running.
+  service: name=rpcbind state=started enabled=yes
+
+- name: Ensure directories to export exist
+  file: 'path="{{ item.strip().split()[0] }}" state=directory'
+  with_items: "{{ nfs_exports }}"
+  notify: restart nfs
+
+- name: Copy exports file.
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  register: nfs_exports_copy
+  notify: restart nfs
+
+- name: Configure firewalld nfs
+  firewalld:
+    service: nfs
+    permanent: true
+    state: enabled
+
+- name: Configure firewalld mountd
+  firewalld:
+    service: mountd
+    permanent: true
+    state: enabled
+
+- name: Configure firewalld rpc-bind
+  firewalld:
+    service: rpc-bind
+    permanent: true
+    state: enabled
+
+- name: Configure firewalld NFS TCP ports
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: true
+    immediate: yes
+    state: enabled
+  with_items:
+    - 111
+    - 892
+    - 875 
+    - 662
+    - 32769
+
+- name: Configure firewalld NFS UDP ports 
+  firewalld:
+    port: "{{ item }}/udp"
+    permanent: true
+    immediate: yes
+    state: enabled
+  with_items:
+    - 111
+    - 892
+    - 875 
+    - 662
+    - 32769
+  notify:
+    - restart firewalld
+
+- name: Restart NFS immediately if exports are updated.
+  service: "name={{ nfs_server_daemon }} state=restarted"
+  when: nfs_exports_copy.changed
+
+- name: Ensure nfs is running.
+  service: "name={{ nfs_server_daemon }} state=started enabled=yes"
+  when: nfs_exports|length

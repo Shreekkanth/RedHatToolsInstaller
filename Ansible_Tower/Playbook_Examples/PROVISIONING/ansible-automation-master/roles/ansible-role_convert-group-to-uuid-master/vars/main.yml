@@ -1,0 +1,2 @@
+---
+techmap_query: "SELECT * FROM tbl_HPSM_Assignment_Groups WHERE AssignmentGroup_Name = '{{ convert_group_to_uuid_group_name }}'"

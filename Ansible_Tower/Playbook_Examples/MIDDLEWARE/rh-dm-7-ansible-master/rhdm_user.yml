@@ -1,0 +1,17 @@
+#
+#
+#
+---
+- hosts: lab
+  remote_user: quicklab
+
+  vars:
+    jboss_eap_user_remove: true
+    jboss_eap_user_create: true
+    jboss_eap_sudoers:     true
+
+  roles:
+    - rhdm
+
+#
+# EOF

@@ -1,0 +1,7 @@
+vctr_user: ""
+vctr_pass: ""
+vctr_hostname: ""
+vctr_validate_certs: True
+vctr_datacenter: ""
+vctr_vm_name: ""
+vctr_vm_folder: ""

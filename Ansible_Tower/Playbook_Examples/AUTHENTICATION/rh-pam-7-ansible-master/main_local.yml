@@ -1,0 +1,33 @@
+#
+#
+# > ansible-playbook main_local.yml   -i inventory --ask-vault-pass --ask-become-pass
+---
+- hosts: controller
+  remote_user: user1
+
+  vars:
+    jboss_eap_user:       user1
+    jboss_eap_group:      user1
+    base_dir_install:     "/u02/rh/rhpam/"
+    mysql_user_remove:    true
+    mysql_user_create:    true
+    mysql_service_active: true
+    mysql_install:        true
+    is_mysql_ds:          true
+    #
+    is_oracle_ds:         false
+    #
+    rhpam_apply_patches: true
+    rhpam_remove_patch:  false
+    #
+    rhpam_bc_install:          true
+    rhpam_kie_install:         true
+    rhpam_controller_install:  false
+    #
+    base_dir_download:        "/u02/rh/software/"
+
+  roles:
+    - rhpam
+
+#
+# EOF

@@ -1,0 +1,62 @@
+---
+
+- name: Deploy IPA replica
+  args:
+    creates: /etc/dirsrv/ds.keytab
+  command: >
+    {{ ipa_replica_install_command }}
+    --unattended
+    {% if not ipa_replica_enable_ca %}
+    --http-cert-file {{ ipa_replica_http_cert_file }}
+    --http-cert-file {{ ipa_replica_http_key_file }}
+    --http-pin {{ ipa_replica_http_pin }}
+    --dirsrv-cert-file {{ ipa_replica_dirsrv_cert_file }}
+    --dirsrv-cert-file {{ ipa_replica_cert_key_file }}
+    --dirsrv-pin {{ ipa_replica_dirsrv_pin }}
+    --ca-cert-file {{ ipa_replica_ca_cert_file }}
+    {% endif %}
+    {{ '--setup-ca'  if ipa_replica_enable_ca else '' }}
+    {{ '--setup-krb' if ipa_replica_enable_kra else '' }}
+    {{ '--setup-dns' if ipa_replica_enable_dns else '' }}
+    {{ '' if ipa_replica_enable_ntp else '--no-ntp' }}
+
+- block:
+  # Hardcoded requirement here that the ipa-server is a trust controller.
+  # The server/replica modules need to be refactored into a single role to improve
+  # fluidity between server functions.
+  - name: Enable AD Trust Agent
+    args:
+      executable: "{{ ipa_replica_expect_command }}"
+    shell: >
+      set timeout 60
+
+      spawn {{ ipa_replica_trust_ad_install_command }}
+      --add-sids
+      --admin-name=admin
+      --admin-password={{ ipa_server_admin_secret }}
+      --netbios-name={{ realm_name.split('.')[0] | upper }}
+      {{ '--enable-compat' if ipa_replica_ad_trust_legacy_support else '' }}
+      --add-agents {{ ansible_fqdn }}
+
+      expect {
+        "Overwrite smb.conf"  {send "yes\r"}
+      }
+
+      expect {
+        "IPA master"          {send "yes\r"}
+        eof                   {
+                                puts "send data back to ansible"
+                                close $spawn_id
+                              }
+      }
+
+    register: _agents_update
+    delegate_to: "{{ groups['ipa-server'][0] }}"
+
+  - name: reload DS instances
+    service:
+      name: "dirsrv@{{ realm_name | regex_replace('[.]', '-') | upper }}"
+      state: restarted
+    when: _agents_update.changed
+  # Block closing
+  when: ipa_replica_ad_trust_agent

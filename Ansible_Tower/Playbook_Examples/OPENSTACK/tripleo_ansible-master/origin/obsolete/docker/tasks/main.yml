@@ -1,0 +1,17 @@
+---
+
+- name: install docker
+  yum: name=docker state=latest
+
+#- name: docker version
+#  shell: docker version
+#  register: result
+#- debug: msg={{ result.stdout }}
+
+#- name: update /etc/sysconfig/docker
+#  lineinfile: >-
+#    dest=/etc/sysconfig/docker
+#    state=present
+#    regexp='^OPTIONS.*--insecure-registry'
+#    line='--selinux-enabled --log-driver=journald --signature-verification=false --insecure-registry 172.30.0.0/16'
+#    backup=yes

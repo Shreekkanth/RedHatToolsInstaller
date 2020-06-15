@@ -1,0 +1,6 @@
+---
+- name: Test Satellite deployment
+  hosts: satellite
+  become: yes
+  roles:
+    - deploy_satellite.yml

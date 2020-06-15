@@ -1,0 +1,38 @@
+---
+
+- hosts: all
+  become: True
+  vars:
+    icinga2_ca_host: localhost
+    icinga2_nodename: localhost
+    icinga2_role: master
+    icinga2_features: [ "ido-mysql", "checker", "api", "notification", "mainlog" ]
+    icinga2_ido_dbname: icinga
+    icinga2_ido_user: icinga
+    icinga2_ido_password: icinga
+    icinga2_endpoints:
+      localhost:
+        host: localhost
+    icinga2_zones:
+      master:
+        endpoints:
+          - localhost
+      director-global:
+        global: true
+      global-templates:
+        global: true
+    mysql_databases:
+      - name: icinga
+    mysql_users:
+      - name: icinga
+        host: "%"
+        password: icinga
+        priv: 'icinga.*:ALL'
+      - name: icinga
+        host: 127.0.0.1
+        password: icinga
+        priv: 'icinga.*:ALL'
+    mysql_root_password: super-secure-password
+  roles:
+    - geerlingguy.mysql
+    - role_under_test

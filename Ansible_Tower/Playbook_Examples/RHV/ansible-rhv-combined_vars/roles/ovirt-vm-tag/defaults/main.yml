@@ -1,0 +1,4 @@
+---
+# defaults file for ovirt-vm-tag
+ovirt_tag_vm: "system.example.com"
+ovirt_tag_name: "sample-tag"

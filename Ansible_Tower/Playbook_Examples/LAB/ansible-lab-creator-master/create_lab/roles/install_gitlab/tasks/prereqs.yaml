@@ -1,0 +1,53 @@
+---
+- name: Configure SELinux to targeted and enforcing
+  selinux:
+    policy: targeted
+    state: enforcing
+
+- name: firewall configuration
+  firewalld:
+    port: "{{item}}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  with_items:
+    - 80/tcp
+    - 443/tcp
+  when: ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == "7"
+
+- name: Install packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - policycoreutils-python 
+    - openssh-server
+    - postfix
+
+- name: Enable webserver services
+  systemd:
+    name: postfix
+    enabled: yes
+    state: started
+  when: ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] == "7"
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+  register: task_result
+
+- name: Reboot immediately if there was a change.
+  shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+  when: task_result is changed
+
+- name: Wait for the reboot to complete if there was a change.
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 300
+  when: task_result is changed
+

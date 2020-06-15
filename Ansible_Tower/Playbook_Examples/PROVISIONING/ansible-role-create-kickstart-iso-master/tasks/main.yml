@@ -1,0 +1,27 @@
+---
+- name: "Build kickstart ISO"
+  block:
+    - name: "Ensure build directory is set"
+      include_tasks: "set_build_dir.yml"
+      when: "ks_iso_build_dir is undefined"
+
+    - debug:
+        msg:
+          - "Build Dir is:"
+          - "{{ ks_iso_build_dir }}"
+        verbosity: "1"
+
+    - name: "Ensure required packages are installed"
+      package:
+        name: "{{ ks_iso_pkgs }}"
+        state: "latest"
+      become: True
+      tags: "ks_iso_install_req_pkgs"
+
+    - name: "Build kickstart ISO"
+      include_tasks: "build_iso.yml"
+
+  always:
+    # prevents mess buildup in /tmp
+    - name: "Cleanup"
+      include_tasks: "cleanup.yml"

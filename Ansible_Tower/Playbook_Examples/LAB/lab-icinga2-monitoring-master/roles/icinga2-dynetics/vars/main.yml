@@ -1,0 +1,15 @@
+---
+# vars file for icinga2-dynetics
+firewalld_ports: 
+  - 80/tcp
+  - 443/tcp
+  - 5665/tcp
+icinga2_yum_repo:
+  name: icinga-stable-release
+  baseurl: http://packages.icinga.com/epel/$releasever/release/
+  gpgkey: http://packages.icinga.com/icinga.key
+icinga2_binary: /usr/sbin/icinga2
+icinga2_plugin_dir: /usr/lib64/nagios/plugins
+icinga2_contrib_plugin_dir: /usr/share/icinga2/include/plugins-contrib.d
+icinga2_dynetics_config_dir: /etc/icinga2/conf.d/dynetics
+icinga2_http_bool: httpd_can_connect_ldap

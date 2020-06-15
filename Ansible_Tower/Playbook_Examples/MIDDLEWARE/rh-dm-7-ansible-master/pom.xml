@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.redhat.emea.es.mw.rhdm.ansible</groupId>
+    <artifactId>rh-dm-7-ansible</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>rh-dm-7-ansible</name>
+    <packaging>pom</packaging>
+    <url>http://www.redhat.com/</url>
+    <inceptionYear>2018</inceptionYear>
+    <organization>
+        <name>Red Hat</name>
+        <url>http://www.redhat.com/</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Antonio Arjona</name>
+            <email>aarjona@redhat.com</email>
+            <organization>Red Hat</organization>
+            <organizationUrl>http://www.redhat.com/</organizationUrl>
+            <roles>
+                <role>Architect</role>
+                <role>Developer</role>
+            </roles>
+            <timezone />
+        </developer>
+    </developers>
+    <build>
+        <plugins>
+            <plugin>
+                <!-- create the source assemblies -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven-assembly-plugin.version}</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/src.xml</descriptor>
+                    </descriptors>
+                    <tarLongFileMode>gnu</tarLongFileMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <properties>
+        <!-- ========================== -->
+        <!-- maven exclusive properties -->
+        <!-- ========================== -->
+        <maven.test.skip>true</maven.test.skip>
+        <maven.test.failure.ignore>true</maven.test.failure.ignore>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy-MM-dd_HH:mm:ss</maven.build.timestamp.format>
+        <createChecksum>true</createChecksum>
+        <!-- ===================== -->
+        <!-- Dependencies versions -->
+        <!-- ===================== -->
+        <maven-assembly-plugin.version>2.4.1</maven-assembly-plugin.version>
+        <!-- ================= -->
+        <!-- Others Properties -->
+        <!-- ================= -->
+    </properties>
+</project>

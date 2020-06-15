@@ -1,0 +1,76 @@
+{
+    "variables": {
+        "user": "vagrant",
+        "password": "vagrant",
+        "disk_size": "100000",
+        "version": "",
+        "checksum": "",
+        "base_dir": "",
+        "hostname": ""
+    },
+
+    "builders":
+    [
+        {
+            "name": "satellite-rhel7-vagrant",
+
+            "type": "qemu",
+            "format": "qcow2",
+            "accelerator": "kvm",
+            "headless": true,
+            "disk_size": "{{ user `disk_size`}}",
+
+            "iso_url": "{{user `base_dir`}}/box.img",
+            "iso_checksum_type": "md5",
+            "iso_checksum": "{{user `checksum`}}",
+            "disk_image": "true",
+
+            "http_directory": "http",
+
+            "ssh_username": "{{user `user`}}",
+            "ssh_password": "{{user `password`}}",
+            "ssh_wait_timeout": "15m",
+            "shutdown_command": "echo '{{user `password`}}'|sudo -S shutdown -P now",
+
+            "boot_wait": "2s",
+            "qemuargs": [
+                [ "-m", "4096M" ]
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/vagrant.sh",
+                "scripts/fix_hostname.sh"
+            ],
+            "environment_vars": [ "HOSTNAME={{user `hostname`}}" ]
+        },
+        {
+            "type": "ansible",
+            "extra_arguments": [ "--extra-vars", "activation_key='{{user `activation_key`}}' satellite_version={{user `major_version`}}" ],
+            "playbook_file": "../../playbooks/satellite.yml",
+            "groups": [ "server" ],
+            "ansible_env_vars": [ "ANSIBLE_CONFIG=../ansible.cfg" ]
+        },
+        {
+            "type": "shell",
+            "execute_command": "echo '{{user `password`}}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+            "scripts": [
+                "scripts/cleanup.sh"
+            ]
+        }
+
+    ],
+
+    "post-processors": [
+        {
+            "type": "vagrant",
+            "keep_input_artifact": false,
+            "output": "{{user `build_dir`}}satellite-{{user `minor_version`}}-rhel7.box"
+        }
+    ]
+}

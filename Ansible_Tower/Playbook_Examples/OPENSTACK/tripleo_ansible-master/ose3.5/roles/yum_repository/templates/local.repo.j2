@@ -1,0 +1,41 @@
+[rhel-7-server-rpms]
+name = Red Hat Enterprise Linux 7 Server (RPMs)
+baseurl = http://debugs.nrt.redhat.com/reposync/RHEL7/repos/rhel-7-server-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-7-server-extras-rpms]
+name = Red Hat Enterprise Linux 7 Server - Extras (RPMs)
+baseurl = http://debugs.nrt.redhat.com/reposync/RHEL7/repos/rhel-7-server-extras-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-7-server-optional-rpms]
+name = Red Hat Enterprise Linux 7 Server - Optional (RPMs)
+baseurl = http://debugs.nrt.redhat.com/reposync/RHEL7/repos/rhel-7-server-optional-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-7-server-rh-common-rpms]
+name = Red Hat Enterprise Linux 7 Server - RH Common (RPMs)
+baseurl = http://debugs.nrt.redhat.com/reposync/RHEL7/repos/rhel-7-server-rh-common-rpms
+enabled = 0
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-7-server-ose-{{ ose_version }}-rpms]
+name = Red Hat OpenShift Container Platform {{ ose_version }} (RPMs)
+baseurl = http://debugs.nrt.redhat.com/reposync/RHEL7/repos/rhel-7-server-ose-{{ ose_version }}-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-7-fast-datapath-rpms]
+name = Red Hat Enterprise Linux Fast Datapath (RHEL 7 Server) (RPMs)
+baseurl = http://debugs.nrt.redhat.com/reposync/RHEL7/repos/rhel-7-fast-datapath-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release

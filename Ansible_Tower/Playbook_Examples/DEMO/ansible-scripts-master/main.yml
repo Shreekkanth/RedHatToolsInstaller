@@ -1,0 +1,6 @@
+---
+- hosts: all
+  
+  roles:
+    - ansible-role-rsyslog
+    - ansible-role-gitlab

@@ -1,0 +1,53 @@
+global_defs {
+   notification_email {
+     mth@redhat.com
+   }
+}
+
+vrrp_script chk_haproxy {
+   script "killall -0 haproxy"   # verify the pid existance
+   interval 2                    # check every 2 seconds
+   weight 2                      # add 2 points of prio if OK
+}
+
+vrrp_instance application1 {
+   state {{ keepalived_state }}
+   interface {{ keepalived_bind_interface }}                # interface to monitor
+   priority {{ keepalived_priority }} 
+
+   virtual_router_id 51          # Assign one ID for this route
+   virtual_ipaddress {
+       {{ keepalived_vip }} dev {{ keepalived_bind_interface }} # the virtual IP
+   }
+   track_script {
+       chk_haproxy
+   }
+}
+
+vrrp_instance directroute1 {
+   state {{ dr_keepalived_state }}
+   interface {{ keepalived_bind_interface }}                # interface to monitor
+   priority {{ dr_keepalived_priority }} 
+
+   virtual_router_id 52         # Assign one ID for this route
+   virtual_ipaddress {
+       {{ dr_keepalived_vip }} dev {{ keepalived_bind_interface }} # the virtual IP
+   }
+}
+
+virtual_server {{ dr_keepalived_vip }} 80 {
+   delay_loop 6
+   lb_algo rr
+   lb_kind DR
+   persistence_timeout 9600
+   protocol TCP
+
+{% for host in groups.app2 %}
+   real_server {{ hostvars[host]['ansible_' + iface].ipv4.address }} 80 {
+      TCP_CHECK {
+         connect_timeout 10
+      }
+   }
+{% endfor %}
+}
+

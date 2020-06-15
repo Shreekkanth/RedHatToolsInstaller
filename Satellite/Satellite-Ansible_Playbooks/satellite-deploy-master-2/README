@@ -1,0 +1,95 @@
+#
+# bchardim@redhat.com  20170319
+# Disclaimer  | These ansible playbooks are NOT SUPPORTED by Red Hat Global Support Service.
+#
+
+These ansible playbooks pretend to deploy automatically an Satellite6 + Capsules + Clients infra with the basic configuration to start to use Satellite.
+By default (cap_puppetca_sat == true) the only puppetca service will be running on satellite server and capsules will proxy the clients requests to satellite puppet ca.  
+
+
+
+###################################################
+# Prerequisites
+###################################################
+
++ Satellite
+
+For testing deploy at least 2 vCPUs 8GB RAM server with latest RHEL7 installed with an additional 100G unpartitioned disk.
+For production deploy review Red Hat Satellite 6 official documentation. 
+
+
++ Capsules
+
+For testing deploy at least 1 vCPUs 2GB RAM server with latest RHEL7  installed with an additional 100G unpartitioned disk.
+For production deploy review Red Hat Satellite 6 official documentation.
+
+
++ Client
+
+Latest RHEL7 standard server to act as client.
+
+
+
+#####################################################
+# Playbook configuration
+#####################################################
+
++ Follow the standard ansible configuration on inventory and vars/*.yml file.
+
++ Please make special attention on ansible-vault encrypted files that store passwords.
+  These files are provided empty and MUST be created using ansible-vault using your own vault password in order to fill with your confidencial data
+
+
+# ansible-vault edit ./roles/rhsm/vars/main.yml
+---
+rhsm_user: 'username@redhat.com'
+rhsm_pass: 'yourpassword'
+...
+
+
+It stores the username/password used to register satellite server to Red Hat CDN.
+
+
+# ansible-vault edit ./roles/satellite-install/vars/main.yml 
+---
+sat_email: 'root@localhost'
+sat_user: 'admin'
+sat_pass: 'somepassword'
+...
+
+
+It stores the username/password for satellite admin user
+
+
+
+###################################################
+# Playbook execution
+###################################################
+
+
++ To install all infra the following order must be followed:
+
+
+1) Satellite install
+
+ansible-playbook -i inventory  satellite-install.yml  --ask-vault-pass
+
+
+2) Capsules install
+
+ansible-playbook -i inventory  capsule-install.yml  --ask-vault-pass  
+
+
+3) Client register
+
+ansible-playbook -i inventory  client-register.yml  --ask-vault-pass
+
+
+
+###################################################
+# TODO
+###################################################
+
++ Configure http/https proxy for yum and subscription-manager  (if needed) on satellite-preinstall role.
++ Make  playbooks idempotent adding more checkpoints on ansible code. 
++ Please review all TODO comments across all ansible playbooks to see what is needed to be improved.

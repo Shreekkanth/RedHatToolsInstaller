@@ -1,0 +1,7 @@
+- name: Register RHEL system
+  redhat_subscription:
+    state: present
+    username: "{{ rhn_user }}"
+    password: "{{ rhn_pass }}"
+    autosubscribe: true
+

@@ -1,0 +1,9 @@
+---
+- name: Update /etc/hosts from inventory
+  become: yes
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ item.value.networks[0].ip }}   {{ item.key }}"
+    state: present
+  loop: "{{ lookup('dict', vmware_smartlis_deployment) }}"
+  delegate_to: isolated-node1

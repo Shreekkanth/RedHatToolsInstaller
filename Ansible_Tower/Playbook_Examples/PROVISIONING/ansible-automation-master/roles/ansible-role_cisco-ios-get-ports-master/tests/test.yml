@@ -1,0 +1,17 @@
+---
+- hosts: cisco
+  gather_facts: false
+  connection: network_cli
+  vars:
+    test_port: GigabitEthernet1/38
+
+  tasks:
+    - name: Get details of a specific port
+      include_role:
+        name: cisco_ios_get_ports
+      vars:
+        cisco_ios_get_ports_name: "{{ test_port }}"
+
+    - name: Show return value for single-port query
+      debug:
+        var: cisco_ios_get_ports

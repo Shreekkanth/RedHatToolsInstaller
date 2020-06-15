@@ -1,0 +1,937 @@
+<cib crm_feature_set="3.0.10" validate-with="pacemaker-2.3" epoch="1083" num_updates="394" admin_epoch="0" cib-last-written="Fri Dec 11 11:38:45 2015" update-origin="satnode3" update-client="crm_attribute" update-user="root" have-quorum="1" dc-uuid="2">
+  <configuration>
+    <crm_config>
+      <cluster_property_set id="cib-bootstrap-options">
+        <nvpair id="cib-bootstrap-options-have-watchdog" name="have-watchdog" value="false"/>
+        <nvpair id="cib-bootstrap-options-dc-version" name="dc-version" value="1.1.13-10.el7-44eb2dd"/>
+        <nvpair id="cib-bootstrap-options-cluster-infrastructure" name="cluster-infrastructure" value="corosync"/>
+        <nvpair id="cib-bootstrap-options-cluster-name" name="cluster-name" value="SAT6-HA"/>
+        <nvpair id="cib-bootstrap-options-last-lrm-refresh" name="last-lrm-refresh" value="1448469373"/>
+        <nvpair id="cib-bootstrap-options-default-resource-stickiness" name="default-resource-stickiness" value="INFINITY"/>
+      </cluster_property_set>
+    </crm_config>
+    <nodes>
+      <node id="1" uname="satnode1">
+        <instance_attributes id="nodes-1">
+          <nvpair id="nodes-1-standby" name="standby" value="on"/>
+        </instance_attributes>
+      </node>
+      <node id="2" uname="satnode2">
+        <instance_attributes id="nodes-2"/>
+      </node>
+      <node id="3" uname="satnode3">
+        <instance_attributes id="nodes-3">
+          <nvpair id="nodes-3-standby" name="standby" value="on"/>
+        </instance_attributes>
+      </node>
+    </nodes>
+    <resources>
+      <primitive class="stonith" id="satnode1-fence" type="fence_ipmilan">
+        <instance_attributes id="satnode1-fence-instance_attributes">
+          <nvpair id="satnode1-fence-instance_attributes-login" name="login" value="root"/>
+          <nvpair id="satnode1-fence-instance_attributes-passwd" name="passwd" value="100Mgmt-"/>
+          <nvpair id="satnode1-fence-instance_attributes-action" name="action" value="reboot"/>
+          <nvpair id="satnode1-fence-instance_attributes-ipaddr" name="ipaddr" value="10.19.143.24"/>
+          <nvpair id="satnode1-fence-instance_attributes-lanplus" name="lanplus" value="1"/>
+          <nvpair id="satnode1-fence-instance_attributes-verbose" name="verbose" value=""/>
+          <nvpair id="satnode1-fence-instance_attributes-pcmk_host_list" name="pcmk_host_list" value="satnode1"/>
+        </instance_attributes>
+        <operations>
+          <op id="satnode1-fence-monitor-interval-60s" interval="60s" name="monitor"/>
+        </operations>
+      </primitive>
+      <primitive class="stonith" id="satnode2-fence" type="fence_ipmilan">
+        <instance_attributes id="satnode2-fence-instance_attributes">
+          <nvpair id="satnode2-fence-instance_attributes-login" name="login" value="root"/>
+          <nvpair id="satnode2-fence-instance_attributes-passwd" name="passwd" value="100Mgmt-"/>
+          <nvpair id="satnode2-fence-instance_attributes-action" name="action" value="reboot"/>
+          <nvpair id="satnode2-fence-instance_attributes-ipaddr" name="ipaddr" value="10.19.143.23"/>
+          <nvpair id="satnode2-fence-instance_attributes-lanplus" name="lanplus" value="1"/>
+          <nvpair id="satnode2-fence-instance_attributes-verbose" name="verbose" value=""/>
+          <nvpair id="satnode2-fence-instance_attributes-pcmk_host_list" name="pcmk_host_list" value="satnode2"/>
+        </instance_attributes>
+        <operations>
+          <op id="satnode2-fence-monitor-interval-60s" interval="60s" name="monitor"/>
+        </operations>
+      </primitive>
+      <primitive class="stonith" id="satnode3-fence" type="fence_ipmilan">
+        <instance_attributes id="satnode3-fence-instance_attributes">
+          <nvpair id="satnode3-fence-instance_attributes-login" name="login" value="root"/>
+          <nvpair id="satnode3-fence-instance_attributes-passwd" name="passwd" value="100Mgmt-"/>
+          <nvpair id="satnode3-fence-instance_attributes-action" name="action" value="reboot"/>
+          <nvpair id="satnode3-fence-instance_attributes-ipaddr" name="ipaddr" value="10.19.143.22"/>
+          <nvpair id="satnode3-fence-instance_attributes-lanplus" name="lanplus" value="1"/>
+          <nvpair id="satnode3-fence-instance_attributes-verbose" name="verbose" value=""/>
+          <nvpair id="satnode3-fence-instance_attributes-pcmk_host_list" name="pcmk_host_list" value="satnode3"/>
+        </instance_attributes>
+        <operations>
+          <op id="satnode3-fence-monitor-interval-60s" interval="60s" name="monitor"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="VirtualIP" provider="heartbeat" type="IPaddr2">
+        <instance_attributes id="VirtualIP-instance_attributes">
+          <nvpair id="VirtualIP-instance_attributes-ip" name="ip" value="10.19.2.30"/>
+          <nvpair id="VirtualIP-instance_attributes-cidr_netmask" name="cidr_netmask" value="24"/>
+        </instance_attributes>
+        <operations>
+          <op id="VirtualIP-start-timeout-20s" interval="0s" name="start" timeout="20s"/>
+          <op id="VirtualIP-stop-timeout-20s" interval="0s" name="stop" timeout="20s"/>
+          <op id="VirtualIP-monitor-interval-10s" interval="10s" name="monitor" timeout="20s"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="sat_vg" provider="heartbeat" type="LVM">
+        <instance_attributes id="sat_vg-instance_attributes">
+          <nvpair id="sat_vg-instance_attributes-volgrpname" name="volgrpname" value="sat_vg"/>
+          <nvpair id="sat_vg-instance_attributes-exclusive" name="exclusive" value="true"/>
+        </instance_attributes>
+        <operations>
+          <op id="sat_vg-start-timeout-30" interval="0s" name="start" timeout="30"/>
+          <op id="sat_vg-stop-timeout-30" interval="0s" name="stop" timeout="30"/>
+          <op id="sat_vg-monitor-interval-10" interval="10" name="monitor" timeout="30"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_pulp" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_pulp-instance_attributes">
+          <nvpair id="fs_pulp-instance_attributes-device" name="device" value="/dev/sat_vg/lv_pulp"/>
+          <nvpair id="fs_pulp-instance_attributes-directory" name="directory" value="/var/lib/pulp"/>
+          <nvpair id="fs_pulp-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_pulp-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_pulp-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_pulp-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_candlepin" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_candlepin-instance_attributes">
+          <nvpair id="fs_candlepin-instance_attributes-device" name="device" value="/dev/sat_vg/lv_candlepin"/>
+          <nvpair id="fs_candlepin-instance_attributes-directory" name="directory" value="/var/lib/candlepin"/>
+          <nvpair id="fs_candlepin-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_candlepin-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_candlepin-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_candlepin-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_foreman" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_foreman-instance_attributes">
+          <nvpair id="fs_foreman-instance_attributes-device" name="device" value="/dev/sat_vg/lv_foreman"/>
+          <nvpair id="fs_foreman-instance_attributes-directory" name="directory" value="/var/lib/foreman"/>
+          <nvpair id="fs_foreman-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_foreman-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_foreman-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_foreman-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_puppet" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_puppet-instance_attributes">
+          <nvpair id="fs_puppet-instance_attributes-device" name="device" value="/dev/sat_vg/lv_puppet"/>
+          <nvpair id="fs_puppet-instance_attributes-directory" name="directory" value="/var/lib/puppet"/>
+          <nvpair id="fs_puppet-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_puppet-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_puppet-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_puppet-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_wwwpulp" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_wwwpulp-instance_attributes">
+          <nvpair id="fs_wwwpulp-instance_attributes-device" name="device" value="/dev/sat_vg/lv_wwwpulp"/>
+          <nvpair id="fs_wwwpulp-instance_attributes-directory" name="directory" value="/var/www/pulp"/>
+          <nvpair id="fs_wwwpulp-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_wwwpulp-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_wwwpulp-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_wwwpulp-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_elastic" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_elastic-instance_attributes">
+          <nvpair id="fs_elastic-instance_attributes-device" name="device" value="/dev/sat_vg/lv_elastic"/>
+          <nvpair id="fs_elastic-instance_attributes-directory" name="directory" value="/var/lib/elasticsearch"/>
+          <nvpair id="fs_elastic-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_elastic-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_elastic-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_elastic-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_mongodb" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_mongodb-instance_attributes">
+          <nvpair id="fs_mongodb-instance_attributes-device" name="device" value="/dev/sat_vg/lv_mongodb"/>
+          <nvpair id="fs_mongodb-instance_attributes-directory" name="directory" value="/var/lib/mongodb"/>
+          <nvpair id="fs_mongodb-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_mongodb-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_mongodb-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_mongodb-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_pgsql" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_pgsql-instance_attributes">
+          <nvpair id="fs_pgsql-instance_attributes-device" name="device" value="/dev/sat_vg/lv_psqldata"/>
+          <nvpair id="fs_pgsql-instance_attributes-directory" name="directory" value="/var/lib/pgsql"/>
+          <nvpair id="fs_pgsql-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_pgsql-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_pgsql-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_pgsql-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_puppetenv" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_puppetenv-instance_attributes">
+          <nvpair id="fs_puppetenv-instance_attributes-device" name="device" value="/dev/sat_vg/lv_puppetenv"/>
+          <nvpair id="fs_puppetenv-instance_attributes-directory" name="directory" value="/etc/puppet/environments"/>
+          <nvpair id="fs_puppetenv-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_puppetenv-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_puppetenv-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_puppetenv-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_tftpboot" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_tftpboot-instance_attributes">
+          <nvpair id="fs_tftpboot-instance_attributes-device" name="device" value="/dev/sat_vg/lv_tftpboot"/>
+          <nvpair id="fs_tftpboot-instance_attributes-directory" name="directory" value="/var/lib/tftpboot"/>
+          <nvpair id="fs_tftpboot-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_tftpboot-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_tftpboot-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_tftpboot-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_dhcp" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_dhcp-instance_attributes">
+          <nvpair id="fs_dhcp-instance_attributes-device" name="device" value="/dev/sat_vg/lv_dhcp"/>
+          <nvpair id="fs_dhcp-instance_attributes-directory" name="directory" value="/var/lib/dhcpd"/>
+          <nvpair id="fs_dhcp-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_dhcp-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_dhcp-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_dhcp-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="ocf" id="fs_named" provider="heartbeat" type="Filesystem">
+        <instance_attributes id="fs_named-instance_attributes">
+          <nvpair id="fs_named-instance_attributes-device" name="device" value="/dev/sat_vg/lv_named"/>
+          <nvpair id="fs_named-instance_attributes-directory" name="directory" value="/var/named"/>
+          <nvpair id="fs_named-instance_attributes-fstype" name="fstype" value="ext4"/>
+        </instance_attributes>
+        <operations>
+          <op id="fs_named-start-timeout-60" interval="0s" name="start" timeout="60"/>
+          <op id="fs_named-stop-timeout-60" interval="0s" name="stop" timeout="60"/>
+          <op id="fs_named-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_dhcp" type="dhcpd">
+        <instance_attributes id="rs_dhcp-instance_attributes"/>
+        <operations>
+          <op id="rs_dhcp-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_dhcp-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_dhcp-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_named" type="named">
+        <instance_attributes id="rs_named-instance_attributes"/>
+        <operations>
+          <op id="rs_named-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_named-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_named-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_puppet" type="puppet">
+        <instance_attributes id="rs_puppet-instance_attributes"/>
+        <operations>
+          <op id="rs_puppet-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_puppet-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_puppet-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_pgsql" type="postgresql">
+        <instance_attributes id="rs_pgsql-instance_attributes"/>
+        <operations>
+          <op id="rs_pgsql-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_pgsql-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_pgsql-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+        <meta_attributes id="rs_pgsql-meta_attributes"/>
+      </primitive>
+      <primitive class="systemd" id="rs_mongodb" type="mongod">
+        <instance_attributes id="rs_mongodb-instance_attributes"/>
+        <operations>
+          <op id="rs_mongodb-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_mongodb-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_mongodb-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+        <meta_attributes id="rs_mongodb-meta_attributes"/>
+      </primitive>
+      <primitive class="systemd" id="rs_qpidd" type="qpidd">
+        <instance_attributes id="rs_qpidd-instance_attributes"/>
+        <operations>
+          <op id="rs_qpidd-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_qpidd-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_qpidd-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_qdrouterd" type="qdrouterd">
+        <instance_attributes id="rs_qdrouterd-instance_attributes"/>
+        <operations>
+          <op id="rs_qdrouterd-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_qdrouterd-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_qdrouterd-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_tomcat" type="tomcat">
+        <instance_attributes id="rs_tomcat-instance_attributes"/>
+        <operations>
+          <op id="rs_tomcat-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_tomcat-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_tomcat-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="lsb" id="rs_elasticsearch" type="elasticsearch">
+        <instance_attributes id="rs_elasticsearch-instance_attributes"/>
+        <operations>
+          <op id="rs_elasticsearch-monitor-interval-10s" interval="10s" name="monitor"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_pulp_workers" type="pulp_workers">
+        <instance_attributes id="rs_pulp_workers-instance_attributes"/>
+        <operations>
+          <op id="rs_pulp_workers-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_pulp_workers-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_pulp_workers-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_foreman-proxy" type="foreman-proxy">
+        <instance_attributes id="rs_foreman-proxy-instance_attributes"/>
+        <operations>
+          <op id="rs_foreman-proxy-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_foreman-proxy-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_foreman-proxy-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_pulp_resource_manager" type="pulp_resource_manager">
+        <instance_attributes id="rs_pulp_resource_manager-instance_attributes"/>
+        <operations>
+          <op id="rs_pulp_resource_manager-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_pulp_resource_manager-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_pulp_resource_manager-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_pulp_celerybeat" type="pulp_celerybeat">
+        <instance_attributes id="rs_pulp_celerybeat-instance_attributes"/>
+        <operations>
+          <op id="rs_pulp_celerybeat-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_pulp_celerybeat-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_pulp_celerybeat-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_httpd" type="httpd">
+        <instance_attributes id="rs_httpd-instance_attributes"/>
+        <operations>
+          <op id="rs_httpd-monitor-interval-10s" interval="10s" name="monitor"/>
+          <op id="rs_httpd-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_httpd-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+      <primitive class="systemd" id="rs_foreman-tasks" type="foreman-tasks">
+        <instance_attributes id="rs_foreman-tasks-instance_attributes"/>
+        <operations>
+          <op id="rs_foreman-tasks-monitor-interval-10s" interval="10s" name="monitor" timeout="30s"/>
+          <op id="rs_foreman-tasks-start-interval-0s" interval="0s" name="start" timeout="100s"/>
+          <op id="rs_foreman-tasks-stop-interval-0s" interval="0s" name="stop" timeout="100s"/>
+        </operations>
+      </primitive>
+    </resources>
+    <constraints>
+      <rsc_colocation id="colocation-sat_vg-VirtualIP-INFINITY" rsc="sat_vg" score="INFINITY" with-rsc="VirtualIP"/>
+      <rsc_colocation id="pcs_rsc_colocation_fs_dhcp_fs_named_fs_puppet_fs_puppetenv_fs_pgsql_fs_mongodb_fs_pulp_fs_wwwpulp_fs_foreman_fs_elastic_fs_candlepin_fs_tftpboot_set_sat_vg" score="INFINITY">
+        <resource_set id="pcs_rsc_set_fs_dhcp_fs_named_fs_puppet_fs_puppetenv_fs_pgsql_fs_mongodb_fs_pulp_fs_wwwpulp_fs_foreman_fs_elastic_fs_candlepin_fs_tftpboot" sequential="false">
+          <resource_ref id="fs_dhcp"/>
+          <resource_ref id="fs_named"/>
+          <resource_ref id="fs_puppet"/>
+          <resource_ref id="fs_puppetenv"/>
+          <resource_ref id="fs_pgsql"/>
+          <resource_ref id="fs_mongodb"/>
+          <resource_ref id="fs_pulp"/>
+          <resource_ref id="fs_wwwpulp"/>
+          <resource_ref id="fs_foreman"/>
+          <resource_ref id="fs_elastic"/>
+          <resource_ref id="fs_candlepin"/>
+          <resource_ref id="fs_tftpboot"/>
+        </resource_set>
+        <resource_set id="pcs_rsc_set_sat_vg">
+          <resource_ref id="sat_vg"/>
+        </resource_set>
+      </rsc_colocation>
+      <rsc_colocation id="colocation-rs_dhcp-fs_dhcp-INFINITY" rsc="rs_dhcp" score="INFINITY" with-rsc="fs_dhcp"/>
+      <rsc_colocation id="colocation-rs_named-fs_named-INFINITY" rsc="rs_named" score="INFINITY" with-rsc="fs_named"/>
+      <rsc_colocation id="colocation-rs_pgsql-fs_pgsql-INFINITY" rsc="rs_pgsql" score="INFINITY" with-rsc="fs_pgsql"/>
+      <rsc_colocation id="colocation-rs_mongodb-fs_mongodb-INFINITY" rsc="rs_mongodb" score="INFINITY" with-rsc="fs_mongodb"/>
+      <rsc_colocation id="colocation-rs_foreman-proxy-fs_foreman-INFINITY" rsc="rs_foreman-proxy" score="INFINITY" with-rsc="fs_foreman"/>
+      <rsc_colocation id="colocation-rs_elasticsearch-fs_elastic-INFINITY" rsc="rs_elasticsearch" score="INFINITY" with-rsc="fs_elastic"/>
+      <rsc_colocation id="pcs_rsc_colocation_fs_puppet_fs_puppetenv_rs_puppet" score="INFINITY">
+        <resource_set id="pcs_rsc_set_fs_puppet_fs_puppetenv_rs_puppet">
+          <resource_ref id="fs_puppet"/>
+          <resource_ref id="fs_puppetenv"/>
+          <resource_ref id="rs_puppet"/>
+        </resource_set>
+      </rsc_colocation>
+      <rsc_colocation id="pcs_rsc_colocation_fs_pulp_fs_wwwpulp_rs_pulp_workers" score="INFINITY">
+        <resource_set id="pcs_rsc_set_fs_pulp_fs_wwwpulp_rs_pulp_workers">
+          <resource_ref id="fs_pulp"/>
+          <resource_ref id="fs_wwwpulp"/>
+          <resource_ref id="rs_pulp_workers"/>
+        </resource_set>
+      </rsc_colocation>
+      <rsc_colocation id="pcs_rsc_colocation_VirtualIP_rs_qpidd_rs_qdrouterd" score="INFINITY">
+        <resource_set id="pcs_rsc_set_VirtualIP_rs_qpidd_rs_qdrouterd">
+          <resource_ref id="VirtualIP"/>
+          <resource_ref id="rs_qpidd"/>
+          <resource_ref id="rs_qdrouterd"/>
+        </resource_set>
+      </rsc_colocation>
+      <rsc_colocation id="colocation-rs_tomcat-VirtualIP-INFINITY" rsc="rs_tomcat" score="INFINITY" with-rsc="VirtualIP"/>
+      <rsc_colocation id="colocation-rs_httpd-VirtualIP-INFINITY" rsc="rs_httpd" score="INFINITY" with-rsc="VirtualIP"/>
+      <rsc_colocation id="pcs_rsc_colocation_fs_pulp_fs_wwwpulp_rs_pulp_resource_manager" score="INFINITY">
+        <resource_set id="pcs_rsc_set_fs_pulp_fs_wwwpulp_rs_pulp_resource_manager">
+          <resource_ref id="fs_pulp"/>
+          <resource_ref id="fs_wwwpulp"/>
+          <resource_ref id="rs_pulp_resource_manager"/>
+        </resource_set>
+      </rsc_colocation>
+      <rsc_colocation id="pcs_rsc_colocation_fs_pulp_fs_wwwpulp_rs_pulp_celerybeat" score="INFINITY">
+        <resource_set id="pcs_rsc_set_fs_pulp_fs_wwwpulp_rs_pulp_celerybeat">
+          <resource_ref id="fs_pulp"/>
+          <resource_ref id="fs_wwwpulp"/>
+          <resource_ref id="rs_pulp_celerybeat"/>
+        </resource_set>
+      </rsc_colocation>
+      <rsc_colocation id="colocation-rs_foreman-tasks-fs_foreman-INFINITY" rsc="rs_foreman-tasks" score="INFINITY" with-rsc="fs_foreman"/>
+      <rsc_order id="pcs_rsc_order_sat_vg_set_fs_dhcp_fs_named_fs_puppet_fs_puppetenv_fs_pgsql_fs_mongodb_fs_pulp_fs_wwwpulp_fs_foreman_fs_elastic_fs_candlepin_fs_tftpboot">
+        <resource_set id="pcs_rsc_set_sat_vg-1">
+          <resource_ref id="sat_vg"/>
+        </resource_set>
+        <resource_set id="pcs_rsc_set_fs_dhcp_fs_named_fs_puppet_fs_puppetenv_fs_pgsql_fs_mongodb_fs_pulp_fs_wwwpulp_fs_foreman_fs_elastic_fs_candlepin_fs_tftpboot-1" sequential="false">
+          <resource_ref id="fs_dhcp"/>
+          <resource_ref id="fs_named"/>
+          <resource_ref id="fs_puppet"/>
+          <resource_ref id="fs_puppetenv"/>
+          <resource_ref id="fs_pgsql"/>
+          <resource_ref id="fs_mongodb"/>
+          <resource_ref id="fs_pulp"/>
+          <resource_ref id="fs_wwwpulp"/>
+          <resource_ref id="fs_foreman"/>
+          <resource_ref id="fs_elastic"/>
+          <resource_ref id="fs_candlepin"/>
+          <resource_ref id="fs_tftpboot"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order first="VirtualIP" first-action="start" id="order-VirtualIP-sat_vg-mandatory" then="sat_vg" then-action="start"/>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_dhcp_rs_dhcp">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_dhcp_rs_dhcp">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_dhcp"/>
+          <resource_ref id="rs_dhcp"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_named_rs_named">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_named_rs_named">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_named"/>
+          <resource_ref id="rs_named"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_puppet_fs_puppetenv_rs_puppet">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_puppet_fs_puppetenv_rs_puppet">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_puppet"/>
+          <resource_ref id="fs_puppetenv"/>
+          <resource_ref id="rs_puppet"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_pgsql_rs_pgsql">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_pgsql_rs_pgsql">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_pgsql"/>
+          <resource_ref id="rs_pgsql"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_mongodb_rs_mongodb">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_mongodb_rs_mongodb">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_mongodb"/>
+          <resource_ref id="rs_mongodb"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_pulp_fs_wwwpulp_rs_pulp_workers_rs_pulp_celerybeat">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_pulp_fs_wwwpulp_rs_pulp_workers_rs_pulp_celerybeat">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_pulp"/>
+          <resource_ref id="fs_wwwpulp"/>
+          <resource_ref id="rs_pulp_workers"/>
+          <resource_ref id="rs_pulp_celerybeat"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_foreman_rs_foreman-proxy">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_foreman_rs_foreman-proxy">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_foreman"/>
+          <resource_ref id="rs_foreman-proxy"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order id="pcs_rsc_order_sat_vg_fs_elastic_rs_elasticsearch">
+        <resource_set id="pcs_rsc_set_sat_vg_fs_elastic_rs_elasticsearch">
+          <resource_ref id="sat_vg"/>
+          <resource_ref id="fs_elastic"/>
+          <resource_ref id="rs_elasticsearch"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order first="fs_wwwpulp" first-action="start" id="order-fs_wwwpulp-rs_httpd-mandatory" then="rs_httpd" then-action="start"/>
+      <rsc_order id="pcs_rsc_order_VirtualIP_rs_qpidd_rs_qdrouterd">
+        <resource_set id="pcs_rsc_set_VirtualIP_rs_qpidd_rs_qdrouterd-1">
+          <resource_ref id="VirtualIP"/>
+          <resource_ref id="rs_qpidd"/>
+          <resource_ref id="rs_qdrouterd"/>
+        </resource_set>
+      </rsc_order>
+      <rsc_order first="VirtualIP" first-action="start" id="order-VirtualIP-rs_dhcp-mandatory" then="rs_dhcp" then-action="start"/>
+      <rsc_order first="VirtualIP" first-action="start" id="order-VirtualIP-rs_named-mandatory" then="rs_named" then-action="start"/>
+      <rsc_order id="pcs_rsc_order_rs_puppet_rs_dhcp_rs_named_rs_pgsql_set_rs_mongodb_set_rs_qpidd_rs_qdrouterd_set_rs_tomcat_rs_elasticsearch_rs_pulp_workers_rs_pulp_celerybeat_rs_pulp_resource_manager_rs_foreman-proxy_set_rs_httpd_rs_foreman-tasks">
+        <resource_set id="pcs_rsc_set_rs_puppet_rs_dhcp_rs_named_rs_pgsql" sequential="false">
+          <resource_ref id="rs_puppet"/>
+          <resource_ref id="rs_dhcp"/>
+          <resource_ref id="rs_named"/>
+          <resource_ref id="rs_pgsql"/>
+        </resource_set>
+        <resource_set id="pcs_rsc_set_rs_mongodb">
+          <resource_ref id="rs_mongodb"/>
+        </resource_set>
+        <resource_set id="pcs_rsc_set_rs_qpidd_rs_qdrouterd" sequential="false">
+          <resource_ref id="rs_qpidd"/>
+          <resource_ref id="rs_qdrouterd"/>
+        </resource_set>
+        <resource_set id="pcs_rsc_set_rs_tomcat_rs_elasticsearch_rs_pulp_workers_rs_pulp_celerybeat_rs_pulp_resource_manager_rs_foreman-proxy" sequential="false">
+          <resource_ref id="rs_tomcat"/>
+          <resource_ref id="rs_elasticsearch"/>
+          <resource_ref id="rs_pulp_workers"/>
+          <resource_ref id="rs_pulp_celerybeat"/>
+          <resource_ref id="rs_pulp_resource_manager"/>
+          <resource_ref id="rs_foreman-proxy"/>
+        </resource_set>
+        <resource_set id="pcs_rsc_set_rs_httpd_rs_foreman-tasks" sequential="false">
+          <resource_ref id="rs_httpd"/>
+          <resource_ref id="rs_foreman-tasks"/>
+        </resource_set>
+      </rsc_order>
+    </constraints>
+  </configuration>
+  <status>
+    <node_state id="1" uname="satnode1" in_ccm="true" crmd="online" crm-debug-origin="do_update_resource" join="member" expected="member">
+      <transient_attributes id="1">
+        <instance_attributes id="status-1">
+          <nvpair id="status-1-shutdown" name="shutdown" value="0"/>
+          <nvpair id="status-1-probe_complete" name="probe_complete" value="true"/>
+        </instance_attributes>
+      </transient_attributes>
+      <lrm id="1">
+        <lrm_resources>
+          <lrm_resource id="satnode1-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode1-fence_last_0" operation_key="satnode1-fence_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="4:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;4:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="165" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="0" queue-time="0" op-digest="fe4eed9a3e2dea5ab52db21a2dabd757" op-secure-params=" passwd " op-secure-digest="3745c1861929a4049bc10b275a3eb19b"/>
+          </lrm_resource>
+          <lrm_resource id="satnode2-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode2-fence_last_0" operation_key="satnode2-fence_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="5:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;5:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="169" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="0" queue-time="0" op-digest="e8b3aff51cdce53ccc7e181105053897" op-secure-params=" passwd " op-secure-digest="1e044d4804ab305041574fd165ada8de"/>
+          </lrm_resource>
+          <lrm_resource id="satnode3-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode3-fence_last_0" operation_key="satnode3-fence_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="6:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;6:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="173" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="0" queue-time="0" op-digest="72a49f029d3cd05d64935f050ed95243" op-secure-params=" passwd " op-secure-digest="a85c5deed80df3af8cc01e5bdaac3d36"/>
+          </lrm_resource>
+          <lrm_resource id="rs_dhcp" type="dhcpd" class="systemd">
+            <lrm_rsc_op id="rs_dhcp_last_0" operation_key="rs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="21:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;21:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="233" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_named" type="named" class="systemd">
+            <lrm_rsc_op id="rs_named_last_0" operation_key="rs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="22:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;22:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="237" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_puppet" type="puppet" class="systemd">
+            <lrm_rsc_op id="rs_puppet_last_0" operation_key="rs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="23:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;23:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="241" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pgsql" type="postgresql" class="systemd">
+            <lrm_rsc_op id="rs_pgsql_last_0" operation_key="rs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="24:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;24:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="245" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_mongodb" type="mongod" class="systemd">
+            <lrm_rsc_op id="rs_mongodb_last_0" operation_key="rs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="25:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;25:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="249" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_qpidd" type="qpidd" class="systemd">
+            <lrm_rsc_op id="rs_qpidd_last_0" operation_key="rs_qpidd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="26:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;26:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="253" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="1" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_qdrouterd" type="qdrouterd" class="systemd">
+            <lrm_rsc_op id="rs_qdrouterd_last_0" operation_key="rs_qdrouterd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="27:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;27:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="257" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="1" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="sat_vg" type="LVM" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="sat_vg_last_0" operation_key="sat_vg_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="8:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;8:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="181" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="26" queue-time="0" op-digest="be816fec121a536251cdcb476b99d8c1"/>
+          </lrm_resource>
+          <lrm_resource id="rs_tomcat" type="tomcat" class="systemd">
+            <lrm_rsc_op id="rs_tomcat_last_0" operation_key="rs_tomcat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="28:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;28:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="261" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_workers" type="pulp_workers" class="systemd">
+            <lrm_rsc_op id="rs_pulp_workers_last_0" operation_key="rs_pulp_workers_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="30:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;30:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="269" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_foreman-proxy" type="foreman-proxy" class="systemd">
+            <lrm_rsc_op id="rs_foreman-proxy_last_0" operation_key="rs_foreman-proxy_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="31:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;31:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="273" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_resource_manager" type="pulp_resource_manager" class="systemd">
+            <lrm_rsc_op id="rs_pulp_resource_manager_last_0" operation_key="rs_pulp_resource_manager_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="32:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;32:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="277" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="1" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_celerybeat" type="pulp_celerybeat" class="systemd">
+            <lrm_rsc_op id="rs_pulp_celerybeat_last_0" operation_key="rs_pulp_celerybeat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="33:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;33:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="281" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="1" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_httpd" type="httpd" class="systemd">
+            <lrm_rsc_op id="rs_httpd_last_0" operation_key="rs_httpd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="34:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;34:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="285" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="VirtualIP" type="IPaddr2" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="VirtualIP_last_0" operation_key="VirtualIP_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="7:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;7:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="177" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="37" queue-time="0" op-digest="34d859c4fb93ecd4b6195d441358c74b"/>
+          </lrm_resource>
+          <lrm_resource id="rs_foreman-tasks" type="foreman-tasks" class="systemd">
+            <lrm_rsc_op id="rs_foreman-tasks_last_0" operation_key="rs_foreman-tasks_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="35:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;35:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="289" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="1" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="fs_candlepin" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_candlepin_last_0" operation_key="fs_candlepin_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="10:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;10:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="189" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="39" queue-time="0" op-digest="f9496d528a4dd902984cd3f1d5fab651"/>
+          </lrm_resource>
+          <lrm_resource id="fs_foreman" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_foreman_last_0" operation_key="fs_foreman_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="11:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;11:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="193" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="71154a9362103caf733ac15aaed10887"/>
+          </lrm_resource>
+          <lrm_resource id="fs_pulp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_pulp_last_0" operation_key="fs_pulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="9:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;9:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="185" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="41" queue-time="0" op-digest="32a42e5536d479ecabfd76255e57b3e9"/>
+          </lrm_resource>
+          <lrm_resource id="fs_wwwpulp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_wwwpulp_last_0" operation_key="fs_wwwpulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="13:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;13:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="201" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="37" queue-time="0" op-digest="1ab9d69cd260fe87597b8443833dbc38"/>
+          </lrm_resource>
+          <lrm_resource id="fs_puppet" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_puppet_last_0" operation_key="fs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="12:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;12:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="197" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="39" queue-time="0" op-digest="b26c7b4ea80961a84fc5c7df5c8ac58c"/>
+          </lrm_resource>
+          <lrm_resource id="fs_elastic" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_elastic_last_0" operation_key="fs_elastic_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="14:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;14:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="205" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="36" queue-time="0" op-digest="b1eec8943b278f5f691a323f5a67b6e4"/>
+          </lrm_resource>
+          <lrm_resource id="fs_mongodb" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_mongodb_last_0" operation_key="fs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="15:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;15:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="209" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="36" queue-time="0" op-digest="2723bc4434dc91eb2c84c625f7b47b41"/>
+          </lrm_resource>
+          <lrm_resource id="fs_puppetenv" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_puppetenv_last_0" operation_key="fs_puppetenv_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="17:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;17:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="217" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="37" queue-time="0" op-digest="af7b8a4b0f547ab3db7881d3ec27bdaf"/>
+          </lrm_resource>
+          <lrm_resource id="fs_pgsql" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_pgsql_last_0" operation_key="fs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="16:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;16:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="213" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="39" queue-time="0" op-digest="34a8afe75ea39f5aa453cb74370f9235"/>
+          </lrm_resource>
+          <lrm_resource id="fs_tftpboot" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_tftpboot_last_0" operation_key="fs_tftpboot_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="18:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;18:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="221" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="6a37c04a8577e588542b37a52f842218"/>
+          </lrm_resource>
+          <lrm_resource id="fs_dhcp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_dhcp_last_0" operation_key="fs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="19:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;19:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="225" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="2cc3fe4ee6cf8fc3fd8bb8ac8e7074f5"/>
+          </lrm_resource>
+          <lrm_resource id="fs_named" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_named_last_0" operation_key="fs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="20:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;20:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="229" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="a470d4e3461e47fb6c5415c19c271c6d"/>
+          </lrm_resource>
+          <lrm_resource id="rs_elasticsearch" type="elasticsearch" class="lsb">
+            <lrm_rsc_op id="rs_elasticsearch_last_0" operation_key="rs_elasticsearch_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="29:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;29:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode1" call-id="265" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="32" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+        </lrm_resources>
+      </lrm>
+    </node_state>
+    <node_state id="3" uname="satnode3" in_ccm="true" crmd="online" crm-debug-origin="do_update_resource" join="member" expected="member">
+      <transient_attributes id="3">
+        <instance_attributes id="status-3">
+          <nvpair id="status-3-shutdown" name="shutdown" value="0"/>
+          <nvpair id="status-3-probe_complete" name="probe_complete" value="true"/>
+        </instance_attributes>
+      </transient_attributes>
+      <lrm id="3">
+        <lrm_resources>
+          <lrm_resource id="satnode1-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode1-fence_last_0" operation_key="satnode1-fence_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="70:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;70:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="333" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="0" queue-time="0" op-digest="fe4eed9a3e2dea5ab52db21a2dabd757" op-secure-params=" passwd " op-secure-digest="3745c1861929a4049bc10b275a3eb19b"/>
+          </lrm_resource>
+          <lrm_resource id="satnode2-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode2-fence_last_0" operation_key="satnode2-fence_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="71:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;71:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="337" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="0" queue-time="0" op-digest="e8b3aff51cdce53ccc7e181105053897" op-secure-params=" passwd " op-secure-digest="1e044d4804ab305041574fd165ada8de"/>
+          </lrm_resource>
+          <lrm_resource id="satnode3-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode3-fence_last_0" operation_key="satnode3-fence_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="72:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;72:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="341" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="0" queue-time="0" op-digest="72a49f029d3cd05d64935f050ed95243" op-secure-params=" passwd " op-secure-digest="a85c5deed80df3af8cc01e5bdaac3d36"/>
+          </lrm_resource>
+          <lrm_resource id="rs_dhcp" type="dhcpd" class="systemd">
+            <lrm_rsc_op id="rs_dhcp_last_0" operation_key="rs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="87:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;87:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="401" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_named" type="named" class="systemd">
+            <lrm_rsc_op id="rs_named_last_0" operation_key="rs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="88:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;88:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="405" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_puppet" type="puppet" class="systemd">
+            <lrm_rsc_op id="rs_puppet_last_0" operation_key="rs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="89:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;89:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="409" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pgsql" type="postgresql" class="systemd">
+            <lrm_rsc_op id="rs_pgsql_last_0" operation_key="rs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="90:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;90:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="413" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_mongodb" type="mongod" class="systemd">
+            <lrm_rsc_op id="rs_mongodb_last_0" operation_key="rs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="91:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;91:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="417" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_qpidd" type="qpidd" class="systemd">
+            <lrm_rsc_op id="rs_qpidd_last_0" operation_key="rs_qpidd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="92:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;92:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="421" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="sat_vg" type="LVM" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="sat_vg_last_0" operation_key="sat_vg_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="74:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;74:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="349" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="26" queue-time="0" op-digest="be816fec121a536251cdcb476b99d8c1"/>
+          </lrm_resource>
+          <lrm_resource id="rs_qdrouterd" type="qdrouterd" class="systemd">
+            <lrm_rsc_op id="rs_qdrouterd_last_0" operation_key="rs_qdrouterd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="93:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;93:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="425" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_tomcat" type="tomcat" class="systemd">
+            <lrm_rsc_op id="rs_tomcat_last_0" operation_key="rs_tomcat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="94:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;94:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="429" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_workers" type="pulp_workers" class="systemd">
+            <lrm_rsc_op id="rs_pulp_workers_last_0" operation_key="rs_pulp_workers_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="96:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;96:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="437" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_foreman-proxy" type="foreman-proxy" class="systemd">
+            <lrm_rsc_op id="rs_foreman-proxy_last_0" operation_key="rs_foreman-proxy_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="97:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;97:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="441" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_resource_manager" type="pulp_resource_manager" class="systemd">
+            <lrm_rsc_op id="rs_pulp_resource_manager_last_0" operation_key="rs_pulp_resource_manager_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="98:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;98:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="445" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_celerybeat" type="pulp_celerybeat" class="systemd">
+            <lrm_rsc_op id="rs_pulp_celerybeat_last_0" operation_key="rs_pulp_celerybeat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="99:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;99:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="449" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_httpd" type="httpd" class="systemd">
+            <lrm_rsc_op id="rs_httpd_last_0" operation_key="rs_httpd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="100:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;100:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="453" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="rs_foreman-tasks" type="foreman-tasks" class="systemd">
+            <lrm_rsc_op id="rs_foreman-tasks_last_0" operation_key="rs_foreman-tasks_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="101:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;101:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="457" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="2" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+          <lrm_resource id="VirtualIP" type="IPaddr2" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="VirtualIP_last_0" operation_key="VirtualIP_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="73:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;73:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="345" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="40" queue-time="0" op-digest="34d859c4fb93ecd4b6195d441358c74b"/>
+          </lrm_resource>
+          <lrm_resource id="fs_pulp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_pulp_last_0" operation_key="fs_pulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="75:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;75:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="353" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="40" queue-time="0" op-digest="32a42e5536d479ecabfd76255e57b3e9"/>
+          </lrm_resource>
+          <lrm_resource id="fs_foreman" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_foreman_last_0" operation_key="fs_foreman_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="77:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;77:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="361" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="39" queue-time="0" op-digest="71154a9362103caf733ac15aaed10887"/>
+          </lrm_resource>
+          <lrm_resource id="fs_candlepin" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_candlepin_last_0" operation_key="fs_candlepin_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="76:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;76:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="357" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="40" queue-time="0" op-digest="f9496d528a4dd902984cd3f1d5fab651"/>
+          </lrm_resource>
+          <lrm_resource id="fs_elastic" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_elastic_last_0" operation_key="fs_elastic_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="80:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;80:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="373" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="36" queue-time="0" op-digest="b1eec8943b278f5f691a323f5a67b6e4"/>
+          </lrm_resource>
+          <lrm_resource id="fs_wwwpulp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_wwwpulp_last_0" operation_key="fs_wwwpulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="79:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;79:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="369" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="37" queue-time="1" op-digest="1ab9d69cd260fe87597b8443833dbc38"/>
+          </lrm_resource>
+          <lrm_resource id="fs_puppet" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_puppet_last_0" operation_key="fs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="78:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;78:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="365" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="39" queue-time="0" op-digest="b26c7b4ea80961a84fc5c7df5c8ac58c"/>
+          </lrm_resource>
+          <lrm_resource id="fs_mongodb" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_mongodb_last_0" operation_key="fs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="81:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;81:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="377" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="2723bc4434dc91eb2c84c625f7b47b41"/>
+          </lrm_resource>
+          <lrm_resource id="fs_pgsql" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_pgsql_last_0" operation_key="fs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="82:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;82:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="381" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="34a8afe75ea39f5aa453cb74370f9235"/>
+          </lrm_resource>
+          <lrm_resource id="fs_tftpboot" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_tftpboot_last_0" operation_key="fs_tftpboot_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="84:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;84:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="389" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="35" queue-time="0" op-digest="6a37c04a8577e588542b37a52f842218"/>
+          </lrm_resource>
+          <lrm_resource id="fs_puppetenv" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_puppetenv_last_0" operation_key="fs_puppetenv_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="83:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;83:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="385" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="38" queue-time="0" op-digest="af7b8a4b0f547ab3db7881d3ec27bdaf"/>
+          </lrm_resource>
+          <lrm_resource id="fs_dhcp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_dhcp_last_0" operation_key="fs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="85:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;85:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="393" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="37" queue-time="0" op-digest="2cc3fe4ee6cf8fc3fd8bb8ac8e7074f5"/>
+          </lrm_resource>
+          <lrm_resource id="fs_named" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_named_last_0" operation_key="fs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="86:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;86:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="397" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="37" queue-time="0" op-digest="a470d4e3461e47fb6c5415c19c271c6d"/>
+          </lrm_resource>
+          <lrm_resource id="rs_elasticsearch" type="elasticsearch" class="lsb">
+            <lrm_rsc_op id="rs_elasticsearch_last_0" operation_key="rs_elasticsearch_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="95:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:7;95:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode3" call-id="433" rc-code="7" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="28" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+          </lrm_resource>
+        </lrm_resources>
+      </lrm>
+    </node_state>
+    <node_state id="2" uname="satnode2" in_ccm="true" crmd="online" crm-debug-origin="do_update_resource" join="member" expected="member">
+      <transient_attributes id="2">
+        <instance_attributes id="status-2">
+          <nvpair id="status-2-shutdown" name="shutdown" value="0"/>
+          <nvpair id="status-2-last-failure-rs_mongodb" name="last-failure-rs_mongodb" value="1449865957"/>
+          <nvpair id="status-2-last-failure-rs_qpidd" name="last-failure-rs_qpidd" value="1449865959"/>
+          <nvpair id="status-2-last-failure-rs_elasticsearch" name="last-failure-rs_elasticsearch" value="1449865959"/>
+          <nvpair id="status-2-last-failure-rs_qdrouterd" name="last-failure-rs_qdrouterd" value="1449865961"/>
+          <nvpair id="status-2-last-failure-rs_tomcat" name="last-failure-rs_tomcat" value="1449865963"/>
+          <nvpair id="status-2-last-failure-rs_pulp_workers" name="last-failure-rs_pulp_workers" value="1449865963"/>
+          <nvpair id="status-2-last-failure-rs_foreman-proxy" name="last-failure-rs_foreman-proxy" value="1449865963"/>
+          <nvpair id="status-2-last-failure-rs_pulp_resource_manager" name="last-failure-rs_pulp_resource_manager" value="1449865963"/>
+          <nvpair id="status-2-last-failure-rs_pulp_celerybeat" name="last-failure-rs_pulp_celerybeat" value="1449865965"/>
+          <nvpair id="status-2-probe_complete" name="probe_complete" value="true"/>
+        </instance_attributes>
+      </transient_attributes>
+      <lrm id="2">
+        <lrm_resources>
+          <lrm_resource id="satnode1-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode1-fence_last_0" operation_key="satnode1-fence_start_0" operation="start" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="6:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;6:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="430" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="78" queue-time="0" op-digest="fe4eed9a3e2dea5ab52db21a2dabd757" op-secure-params=" passwd " op-secure-digest="3745c1861929a4049bc10b275a3eb19b"/>
+            <lrm_rsc_op id="satnode1-fence_monitor_60000" operation_key="satnode1-fence_monitor_60000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="7:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;7:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="464" rc-code="0" op-status="0" interval="60000" last-rc-change="1450125577" exec-time="75" queue-time="0" op-digest="1fee8f597c610a13cd60e69dee2398f7" op-secure-params=" passwd " op-secure-digest="3745c1861929a4049bc10b275a3eb19b"/>
+          </lrm_resource>
+          <lrm_resource id="satnode2-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode2-fence_last_0" operation_key="satnode2-fence_start_0" operation="start" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="8:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;8:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="431" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="73" queue-time="0" op-digest="e8b3aff51cdce53ccc7e181105053897" op-secure-params=" passwd " op-secure-digest="1e044d4804ab305041574fd165ada8de"/>
+            <lrm_rsc_op id="satnode2-fence_monitor_60000" operation_key="satnode2-fence_monitor_60000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="9:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;9:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="462" rc-code="0" op-status="0" interval="60000" last-rc-change="1450125577" exec-time="71" queue-time="0" op-digest="ca98a267717118516d89dd937a66b434" op-secure-params=" passwd " op-secure-digest="1e044d4804ab305041574fd165ada8de"/>
+          </lrm_resource>
+          <lrm_resource id="satnode3-fence" type="fence_ipmilan" class="stonith">
+            <lrm_rsc_op id="satnode3-fence_last_0" operation_key="satnode3-fence_start_0" operation="start" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="10:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;10:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="432" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="68" queue-time="0" op-digest="72a49f029d3cd05d64935f050ed95243" op-secure-params=" passwd " op-secure-digest="a85c5deed80df3af8cc01e5bdaac3d36"/>
+            <lrm_rsc_op id="satnode3-fence_monitor_60000" operation_key="satnode3-fence_monitor_60000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="11:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;11:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="463" rc-code="0" op-status="0" interval="60000" last-rc-change="1450125577" exec-time="78" queue-time="0" op-digest="3f0f76f6eb2e51bb114fa274ad2b13d9" op-secure-params=" passwd " op-secure-digest="a85c5deed80df3af8cc01e5bdaac3d36"/>
+          </lrm_resource>
+          <lrm_resource id="rs_dhcp" type="dhcpd" class="systemd">
+            <lrm_rsc_op id="rs_dhcp_last_failure_0" operation_key="rs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="54:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;54:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="373" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_dhcp_last_0" operation_key="rs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="54:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;54:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="373" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="3" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_dhcp_monitor_10000" operation_key="rs_dhcp_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="56:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;56:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="447" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="8" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_named" type="named" class="systemd">
+            <lrm_rsc_op id="rs_named_last_failure_0" operation_key="rs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="55:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;55:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="377" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_named_last_0" operation_key="rs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="55:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;55:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="377" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_named_monitor_10000" operation_key="rs_named_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="59:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;59:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="448" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="10" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_puppet" type="puppet" class="systemd">
+            <lrm_rsc_op id="rs_puppet_last_failure_0" operation_key="rs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="56:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;56:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="381" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_puppet_last_0" operation_key="rs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="56:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;56:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="381" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_puppet_monitor_10000" operation_key="rs_puppet_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="62:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;62:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="449" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="12" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pgsql" type="postgresql" class="systemd">
+            <lrm_rsc_op id="rs_pgsql_last_failure_0" operation_key="rs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="57:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;57:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="385" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pgsql_last_0" operation_key="rs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="57:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;57:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="385" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pgsql_monitor_10000" operation_key="rs_pgsql_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="65:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;65:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="450" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="16" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_mongodb" type="mongod" class="systemd">
+            <lrm_rsc_op id="rs_mongodb_last_failure_0" operation_key="rs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="58:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;58:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="389" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_mongodb_last_0" operation_key="rs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="58:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;58:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="389" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_mongodb_monitor_10000" operation_key="rs_mongodb_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="68:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;68:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="451" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="19" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_qpidd" type="qpidd" class="systemd">
+            <lrm_rsc_op id="rs_qpidd_last_failure_0" operation_key="rs_qpidd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="59:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;59:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="393" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="1" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_qpidd_last_0" operation_key="rs_qpidd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="59:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;59:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="393" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="1" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_qpidd_monitor_10000" operation_key="rs_qpidd_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="71:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;71:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="452" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="20" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_qdrouterd" type="qdrouterd" class="systemd">
+            <lrm_rsc_op id="rs_qdrouterd_last_failure_0" operation_key="rs_qdrouterd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="60:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;60:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="397" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_qdrouterd_last_0" operation_key="rs_qdrouterd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="60:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;60:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="397" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_qdrouterd_monitor_10000" operation_key="rs_qdrouterd_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="74:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;74:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="453" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="22" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_tomcat" type="tomcat" class="systemd">
+            <lrm_rsc_op id="rs_tomcat_last_failure_0" operation_key="rs_tomcat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="61:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;61:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="401" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_tomcat_last_0" operation_key="rs_tomcat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="61:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;61:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="401" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="6" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_tomcat_monitor_10000" operation_key="rs_tomcat_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="77:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;77:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="454" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="24" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_workers" type="pulp_workers" class="systemd">
+            <lrm_rsc_op id="rs_pulp_workers_last_failure_0" operation_key="rs_pulp_workers_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="63:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;63:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="409" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pulp_workers_last_0" operation_key="rs_pulp_workers_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="63:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;63:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="409" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pulp_workers_monitor_10000" operation_key="rs_pulp_workers_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="83:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;83:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="456" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="24" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_foreman-proxy" type="foreman-proxy" class="systemd">
+            <lrm_rsc_op id="rs_foreman-proxy_last_failure_0" operation_key="rs_foreman-proxy_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="64:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;64:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="413" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_foreman-proxy_last_0" operation_key="rs_foreman-proxy_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="64:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;64:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="413" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_foreman-proxy_monitor_10000" operation_key="rs_foreman-proxy_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="86:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;86:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="457" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="25" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_resource_manager" type="pulp_resource_manager" class="systemd">
+            <lrm_rsc_op id="rs_pulp_resource_manager_last_failure_0" operation_key="rs_pulp_resource_manager_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="65:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;65:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="417" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pulp_resource_manager_last_0" operation_key="rs_pulp_resource_manager_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="65:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;65:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="417" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pulp_resource_manager_monitor_10000" operation_key="rs_pulp_resource_manager_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="89:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;89:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="458" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="25" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_pulp_celerybeat" type="pulp_celerybeat" class="systemd">
+            <lrm_rsc_op id="rs_pulp_celerybeat_last_failure_0" operation_key="rs_pulp_celerybeat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="66:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;66:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="421" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pulp_celerybeat_last_0" operation_key="rs_pulp_celerybeat_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="66:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;66:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="421" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_pulp_celerybeat_monitor_10000" operation_key="rs_pulp_celerybeat_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="92:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;92:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="459" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="26" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_httpd" type="httpd" class="systemd">
+            <lrm_rsc_op id="rs_httpd_last_failure_0" operation_key="rs_httpd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="67:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;67:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="425" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_httpd_last_0" operation_key="rs_httpd_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="67:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;67:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="425" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="5" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_httpd_monitor_10000" operation_key="rs_httpd_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="95:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;95:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="460" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="28" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="rs_foreman-tasks" type="foreman-tasks" class="systemd">
+            <lrm_rsc_op id="rs_foreman-tasks_last_failure_0" operation_key="rs_foreman-tasks_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="68:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;68:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="429" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_foreman-tasks_last_0" operation_key="rs_foreman-tasks_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="68:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;68:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="429" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="4" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_foreman-tasks_monitor_10000" operation_key="rs_foreman-tasks_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="98:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;98:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="461" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="30" queue-time="0" op-digest="02a5bcf940fc8d3239701acb11438d6a"/>
+          </lrm_resource>
+          <lrm_resource id="fs_candlepin" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_candlepin_last_failure_0" operation_key="fs_candlepin_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="43:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;43:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="329" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="f9496d528a4dd902984cd3f1d5fab651"/>
+            <lrm_rsc_op id="fs_candlepin_last_0" operation_key="fs_candlepin_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="43:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;43:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="329" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="f9496d528a4dd902984cd3f1d5fab651"/>
+            <lrm_rsc_op id="fs_candlepin_monitor_20000" operation_key="fs_candlepin_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="23:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;23:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="436" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="49" queue-time="0" op-digest="f9440f5ac3714385a92eb59a740fbb4e"/>
+          </lrm_resource>
+          <lrm_resource id="fs_pulp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_pulp_last_failure_0" operation_key="fs_pulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="42:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;42:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="325" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="32a42e5536d479ecabfd76255e57b3e9"/>
+            <lrm_rsc_op id="fs_pulp_last_0" operation_key="fs_pulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="42:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;42:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="325" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="32a42e5536d479ecabfd76255e57b3e9"/>
+            <lrm_rsc_op id="fs_pulp_monitor_20000" operation_key="fs_pulp_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="20:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;20:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="435" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="51" queue-time="0" op-digest="22b8825fb366fe93b134a7652378de06"/>
+          </lrm_resource>
+          <lrm_resource id="fs_foreman" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_foreman_last_failure_0" operation_key="fs_foreman_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="44:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;44:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="333" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="71154a9362103caf733ac15aaed10887"/>
+            <lrm_rsc_op id="fs_foreman_last_0" operation_key="fs_foreman_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="44:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;44:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="333" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="71154a9362103caf733ac15aaed10887"/>
+            <lrm_rsc_op id="fs_foreman_monitor_20000" operation_key="fs_foreman_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="26:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;26:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="437" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="7c20e76f64cb2e70bcb9edab75e8f4ef"/>
+          </lrm_resource>
+          <lrm_resource id="fs_puppet" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_puppet_last_failure_0" operation_key="fs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="45:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;45:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="337" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="b26c7b4ea80961a84fc5c7df5c8ac58c"/>
+            <lrm_rsc_op id="fs_puppet_last_0" operation_key="fs_puppet_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="45:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;45:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="337" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="b26c7b4ea80961a84fc5c7df5c8ac58c"/>
+            <lrm_rsc_op id="fs_puppet_monitor_20000" operation_key="fs_puppet_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="29:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;29:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="438" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="48" queue-time="0" op-digest="b69f9253d7f8d6c30871f499cac44b4c"/>
+          </lrm_resource>
+          <lrm_resource id="fs_elastic" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_elastic_last_failure_0" operation_key="fs_elastic_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="47:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;47:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="345" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="b1eec8943b278f5f691a323f5a67b6e4"/>
+            <lrm_rsc_op id="fs_elastic_last_0" operation_key="fs_elastic_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="47:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;47:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="345" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="b1eec8943b278f5f691a323f5a67b6e4"/>
+            <lrm_rsc_op id="fs_elastic_monitor_20000" operation_key="fs_elastic_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="35:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;35:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="440" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="50" queue-time="0" op-digest="82467f878bb2d0c8798f1d3af65237a5"/>
+          </lrm_resource>
+          <lrm_resource id="fs_wwwpulp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_wwwpulp_last_failure_0" operation_key="fs_wwwpulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="46:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;46:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="341" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="1ab9d69cd260fe87597b8443833dbc38"/>
+            <lrm_rsc_op id="fs_wwwpulp_last_0" operation_key="fs_wwwpulp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="46:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;46:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="341" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="53" queue-time="0" op-digest="1ab9d69cd260fe87597b8443833dbc38"/>
+            <lrm_rsc_op id="fs_wwwpulp_monitor_20000" operation_key="fs_wwwpulp_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="32:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;32:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="439" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="46" queue-time="0" op-digest="8bd30d6a783c23ede3dff4b91946252a"/>
+          </lrm_resource>
+          <lrm_resource id="VirtualIP" type="IPaddr2" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="VirtualIP_last_failure_0" operation_key="VirtualIP_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="40:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;40:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="317" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="62" queue-time="0" op-digest="34d859c4fb93ecd4b6195d441358c74b"/>
+            <lrm_rsc_op id="VirtualIP_last_0" operation_key="VirtualIP_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="40:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;40:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="317" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="62" queue-time="0" op-digest="34d859c4fb93ecd4b6195d441358c74b"/>
+            <lrm_rsc_op id="VirtualIP_monitor_10000" operation_key="VirtualIP_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="14:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;14:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="433" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="55" queue-time="0" op-digest="01e8cb125dbd7bce71abf3945a0235b4"/>
+          </lrm_resource>
+          <lrm_resource id="fs_mongodb" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_mongodb_last_failure_0" operation_key="fs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="48:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;48:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="349" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="2723bc4434dc91eb2c84c625f7b47b41"/>
+            <lrm_rsc_op id="fs_mongodb_last_0" operation_key="fs_mongodb_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="48:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;48:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="349" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="2723bc4434dc91eb2c84c625f7b47b41"/>
+            <lrm_rsc_op id="fs_mongodb_monitor_20000" operation_key="fs_mongodb_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="38:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;38:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="441" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="46" queue-time="0" op-digest="6edb2012f3d70b234600b3c0bc60ea42"/>
+          </lrm_resource>
+          <lrm_resource id="fs_pgsql" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_pgsql_last_failure_0" operation_key="fs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="49:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;49:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="353" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="34a8afe75ea39f5aa453cb74370f9235"/>
+            <lrm_rsc_op id="fs_pgsql_last_0" operation_key="fs_pgsql_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="49:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;49:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="353" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="34a8afe75ea39f5aa453cb74370f9235"/>
+            <lrm_rsc_op id="fs_pgsql_monitor_20000" operation_key="fs_pgsql_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="41:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;41:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="442" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="48" queue-time="0" op-digest="767aa66eaee5bda0ab7555f3ae869860"/>
+          </lrm_resource>
+          <lrm_resource id="fs_tftpboot" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_tftpboot_last_failure_0" operation_key="fs_tftpboot_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="51:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;51:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="361" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="50" queue-time="0" op-digest="6a37c04a8577e588542b37a52f842218"/>
+            <lrm_rsc_op id="fs_tftpboot_last_0" operation_key="fs_tftpboot_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="51:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;51:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="361" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="50" queue-time="0" op-digest="6a37c04a8577e588542b37a52f842218"/>
+            <lrm_rsc_op id="fs_tftpboot_monitor_20000" operation_key="fs_tftpboot_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="47:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;47:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="444" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="49" queue-time="0" op-digest="072e4c4b2d54d9cc3f4e3f0c0f345b7d"/>
+          </lrm_resource>
+          <lrm_resource id="rs_elasticsearch" type="elasticsearch" class="lsb">
+            <lrm_rsc_op id="rs_elasticsearch_last_failure_0" operation_key="rs_elasticsearch_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="62:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;62:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="405" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="36" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_elasticsearch_last_0" operation_key="rs_elasticsearch_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="62:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;62:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="405" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="36" queue-time="0" op-digest="f2317cad3d54cec5d7d7aa7d0bf35cf8"/>
+            <lrm_rsc_op id="rs_elasticsearch_monitor_10000" operation_key="rs_elasticsearch_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="80:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;80:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="455" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="34" queue-time="0" op-digest="4811cef7f7f94e3a35a70be7916cb2fd"/>
+          </lrm_resource>
+          <lrm_resource id="fs_puppetenv" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_puppetenv_last_failure_0" operation_key="fs_puppetenv_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="50:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;50:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="357" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="af7b8a4b0f547ab3db7881d3ec27bdaf"/>
+            <lrm_rsc_op id="fs_puppetenv_last_0" operation_key="fs_puppetenv_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="50:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;50:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="357" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="52" queue-time="0" op-digest="af7b8a4b0f547ab3db7881d3ec27bdaf"/>
+            <lrm_rsc_op id="fs_puppetenv_monitor_20000" operation_key="fs_puppetenv_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="44:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;44:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="443" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="47" queue-time="0" op-digest="dcc4c75f4b2c6a11a7cb05d0c47063b7"/>
+          </lrm_resource>
+          <lrm_resource id="fs_dhcp" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_dhcp_last_failure_0" operation_key="fs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="52:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;52:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="365" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="51" queue-time="0" op-digest="2cc3fe4ee6cf8fc3fd8bb8ac8e7074f5"/>
+            <lrm_rsc_op id="fs_dhcp_last_0" operation_key="fs_dhcp_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="52:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;52:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="365" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="51" queue-time="0" op-digest="2cc3fe4ee6cf8fc3fd8bb8ac8e7074f5"/>
+            <lrm_rsc_op id="fs_dhcp_monitor_20000" operation_key="fs_dhcp_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="50:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;50:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="445" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="50" queue-time="0" op-digest="4ad25f72b9eede22aa9ad9ec61aeb2b5"/>
+          </lrm_resource>
+          <lrm_resource id="fs_named" type="Filesystem" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="fs_named_last_failure_0" operation_key="fs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="53:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;53:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="369" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="55" queue-time="0" op-digest="a470d4e3461e47fb6c5415c19c271c6d"/>
+            <lrm_rsc_op id="fs_named_last_0" operation_key="fs_named_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="53:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;53:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="369" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="55" queue-time="0" op-digest="a470d4e3461e47fb6c5415c19c271c6d"/>
+            <lrm_rsc_op id="fs_named_monitor_20000" operation_key="fs_named_monitor_20000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="53:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;53:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="446" rc-code="0" op-status="0" interval="20000" last-rc-change="1450125574" exec-time="49" queue-time="1" op-digest="d6f3d8550aad4420c06b5ccac73b88ec"/>
+          </lrm_resource>
+          <lrm_resource id="sat_vg" type="LVM" class="ocf" provider="heartbeat">
+            <lrm_rsc_op id="sat_vg_last_failure_0" operation_key="sat_vg_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="41:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;41:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="321" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="106" queue-time="0" op-digest="be816fec121a536251cdcb476b99d8c1"/>
+            <lrm_rsc_op id="sat_vg_last_0" operation_key="sat_vg_monitor_0" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="41:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;41:314:7:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="321" rc-code="0" op-status="0" interval="0" last-run="1450125574" last-rc-change="1450125574" exec-time="106" queue-time="0" op-digest="be816fec121a536251cdcb476b99d8c1"/>
+            <lrm_rsc_op id="sat_vg_monitor_10000" operation_key="sat_vg_monitor_10000" operation="monitor" crm-debug-origin="do_update_resource" crm_feature_set="3.0.10" transition-key="17:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" transition-magic="0:0;17:316:0:7dc603df-df0b-49ce-8526-082af672a6b6" on_node="satnode2" call-id="434" rc-code="0" op-status="0" interval="10000" last-rc-change="1450125574" exec-time="80" queue-time="1" op-digest="ac8fe88c42145c07de0043b68b9509ae"/>
+          </lrm_resource>
+        </lrm_resources>
+      </lrm>
+    </node_state>
+  </status>
+</cib>

@@ -1,0 +1,103 @@
+---
+# awx/tasks/build.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Setup postgres 9.6 container
+  docker_container:
+    name: "{{ env }}_postgres"
+    image: "postgres:9.6"
+    state: started
+    networks:
+      - name: wf_net
+    env:
+      POSTGRES_USER: "{{ pg_username }}"
+      POSTGRES_PASSWORD: "{{ pg_password }}"
+      POSTGRES_DB: "{{ pg_database }}"
+
+- name: Setup rabbitmq 3 container
+  docker_container:
+    name: "{{ env }}_rabbitmq"
+    image: "rabbitmq:3"
+    state: started
+    networks:
+      - name: wf_net
+    env:
+      RABBITMQ_DEFAULT_VHOST: awx
+      RABBITMQ_DEFAULT_USER: "{{ rabbitmq_username }}"
+      RABBITMQ_DEFAULT_PASS: "{{ rabbitmq_password }}"
+
+- name: Setup memcached container
+  docker_container:
+    name: "{{ env }}_memcached"
+    image: "memcached:alpine"
+    networks:
+      - name: wf_net
+    state: started
+    
+- name: Setup awx_web container
+  docker_container:
+    name: "{{ env }}_awx_web"
+    image: "ansible/awx_web:latest"
+    links:
+      - "{{ env }}_rabbitmq"
+      - "{{ env }}_memcached"
+      - "{{ env }}_postgres"
+    ports:
+      - "{{ ports.http }}:8052"
+    user: root
+    hostname: awxweb
+    networks:
+      - name: wf_net
+        aliases: "{{ env.replace('_', '') }}awxweb"
+    volumes:
+      - "{{ playbook_dir }}/build/{{ env }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+      - "{{ playbook_dir }}/build/{{ env }}/credentials.py:/etc/tower/conf.d/credentials.py"
+      - "{{ playbook_dir }}/build/{{ env }}/environment.sh:/etc/tower/conf.d/environment.sh"
+    env:
+      SECRET_KEY: "{{ secret_key }}"
+      DATABASE_USER: "{{ pg_username }}"
+      DATABASE_PASSWORD: "{{ pg_password }}"
+      DATABASE_NAME: "{{ pg_database }}"
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: "{{ env }}_postgres"
+      RABBITMQ_USER: "{{ rabbitmq_username }}"
+      RABBITMQ_PASSWORD: "{{ rabbitmq_password }}"
+      RABBITMQ_HOST: "{{ env }}_rabbitmq"
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_VHOST: awx
+      MEMCACHED_HOST: "{{ env }}_memcached"
+      MEMCACHED_PORT: "11211"
+
+- name: Setup awx_task container
+  docker_container:
+    name: "{{ env }}_awx_task"
+    image: "ansible/awx_task:latest"
+    links:
+      - "{{ env }}_rabbitmq"
+      - "{{ env }}_memcached"
+      - "{{ env }}_awx_web"
+      - "{{ env }}_postgres"
+    user: root
+    # Hostname here is important
+    # https://github.com/ansible/awx/issues/86
+    hostname: awx
+    networks:
+      - name: wf_net
+    volumes:
+      - "{{ playbook_dir }}/build/{{ env }}/SECRET_KEY:/etc/tower/SECRET_KEY"
+      - "{{ playbook_dir }}/build/{{ env }}/credentials.py:/etc/tower/conf.d/credentials.py"
+      - "{{ playbook_dir }}/build/{{ env }}/environment.sh:/etc/tower/conf.d/environment.sh"
+    env:
+      SECRET_KEY: "{{ secret_key }}"
+      DATABASE_USER: "{{ pg_username }}"
+      DATABASE_PASSWORD: "{{ pg_password }}"
+      DATABASE_NAME: "{{ pg_database }}"
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: "{{ env }}_postgres"
+      RABBITMQ_USER: "{{ rabbitmq_username }}"
+      RABBITMQ_PASSWORD: "{{ rabbitmq_password }}"
+      RABBITMQ_HOST: "{{ env }}_rabbitmq"
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_VHOST: awx
+      MEMCACHED_HOST: "{{ env }}_memcached"
+      MEMCACHED_PORT: "11211"

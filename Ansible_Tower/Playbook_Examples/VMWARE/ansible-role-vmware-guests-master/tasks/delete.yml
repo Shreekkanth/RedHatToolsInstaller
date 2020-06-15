@@ -1,0 +1,26 @@
+---
+# Remove a vm from vSphere
+# The VM must be powered_off or you need to use force to force a shutdown
+
+- name: Release IP on IPAM if vm_ip is not defined
+  include_role:
+    name: bluecat-ipam-rest
+  vars:
+    target_hostname: "{{ vm_name }}"
+  when:
+      - state == 'absent'
+      - use_ipam|bool
+
+#  tasks:
+- name: Remove a VM
+  vmware_guest:
+    hostname: "{{ vc_hostname }}"
+    username: "{{ vc_username }}"
+    password: "{{ vc_pwd }}"
+    name: "{{ vm_name }}"
+    validate_certs: no
+#     uuid: "{{ vm_uuid }}"
+    state: absent
+    force: yes
+  delegate_to: localhost
+  register: vm_delete

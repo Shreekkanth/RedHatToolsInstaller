@@ -1,0 +1,11 @@
+---
+
+- name: rebuild-vbox-kernel
+  become: yes
+  command: /usr/lib/virtualbox/vboxdrv.sh setup
+
+- name: created_firefox_profile
+  copy:
+    src: "{{ playbook_dir }}/dotfiles/firefox/user.js"
+    dest: "~/.mozilla/firefox/{{ firefox_output.stdout }}/user.js"
+    force: yes

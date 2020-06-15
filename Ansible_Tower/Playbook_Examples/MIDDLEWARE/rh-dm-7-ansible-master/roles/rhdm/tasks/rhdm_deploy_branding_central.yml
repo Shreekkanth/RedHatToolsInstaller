@@ -1,0 +1,21 @@
+---
+#### Set Fact
+- name: "Set Branding ZIP File"
+  set_fact:
+    rhdm_branding_zip: "{{ 'files/branding_' + environment_code + '.zip'}}"
+  tags:
+      - rhdm_branding_bc
+
+#### Extract Branding Decision Central ZIP
+- name: "Extract Branding Decision Central"
+  unarchive:
+    src:   "{{ rhdm_branding_zip   }}"
+    dest:  "{{ rhdm_decision_central_base }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    remote_src: no
+  tags:
+    - rhdm_branding_bc
+  when: rhdm_deploy_brandinc_bc
+#
+# EOF

@@ -1,0 +1,13 @@
+---
+# Need to inner loop like this due to the need to populate the body field with the file contents of the survey spec
+- name: Create {{ playbook.1.name }} Survey
+  uri:
+    url: "{{ tower_url }}/api/v2/job_templates/{{ jt_ids.results[playbook.0].stdout }}/survey_spec/"
+    method: "POST"
+    body: "{{ item }}"
+    body_format: json
+    headers:
+      Authorization: "Token {{ tower_api_token.json.token }}"
+    validate_certs: "{{ tower_verify_ssl }}"
+  with_file: "surveys/{{ playbook.1.survey }}"
+  #no_log: True

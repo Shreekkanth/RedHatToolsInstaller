@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+Defaults:{{ nrpe_user }} !requiretty
+{{ nrpe_user }} ALL=NOPASSWD:{{ nagios_plugin_directory }}/check_open_files
+{{ nrpe_user }} ALL=NOPASSWD:{{ nagios_plugin_directory }}/check_systemd_service
+{{ nrpe_user }} ALL=NOPASSWD:{{ nagios_plugin_directory }}/check_updates

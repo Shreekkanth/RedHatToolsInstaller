@@ -1,0 +1,10 @@
+---
+- name: Change password for user
+  hosts: '{{ env }}'  
+  become: yes
+
+  tasks:     
+  - name: Now changing password .. 
+    user: 
+      name: '{{ user }}'
+      password: '{{ password }}' 

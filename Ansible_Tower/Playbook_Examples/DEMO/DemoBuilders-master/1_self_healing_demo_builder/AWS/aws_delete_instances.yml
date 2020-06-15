@@ -1,0 +1,24 @@
+---
+- name: Delete new EC2 instances
+  hosts: all
+  connection: local
+
+  vars:
+    region:   us-east-1
+    ami:      ami-585feb4e
+    keypair:  "{{ ec2_keypair_name | default('redhat demo') }}"
+    wait_for_ssh: False
+ 
+  tasks:
+    - name: Gather EC2 facts
+      local_action: ec2_facts
+ 
+    - debug: var=hostvars[inventory_hostname]
+    - debug: msg="{{ hostvars[inventory_hostname]['ec2_id'] }}"
+ 
+    - name: Terminate instances 
+      local_action: ec2
+        state='absent'
+        instance_ids='{{ ec2_id }}'
+        region='{{ region }}'
+        wait=True

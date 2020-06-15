@@ -1,0 +1,16 @@
+---
+# This playbook will set up a Satellite 6.2 server
+
+- hosts: satellite
+  become: no
+  vars:
+    make_satellite: true
+    upload_manifest: true
+    add_repos: true
+    add_epel: false
+    make_sync_plans: false
+    make_lifecycle: false
+    make_content_views: false
+  roles:
+    - deploy_satellite
+

@@ -1,0 +1,5 @@
+---
+# tasks file for idm
+
+- import_tasks: 'configure_idm_dnszone.yml'
+- import_tasks: 'configure_idm_dnsrecord.yml'

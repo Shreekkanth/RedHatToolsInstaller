@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+if [ -z $1 ]; then
+  echo "gocryptfs-setup [mount|unmount]"
+else
+    if [ $1 = "mount" ]; then
+        /usr/bin/notify-send -u critical "Mounting GoCryptFS volumes"
+        gocryptfs -extpass "pass show GPG/dot-files-secure.gocryptfs" /home/bexelbie/Repositories/Personal/bexelbie-ansible-playbook/dot-files/secure.encrypted /home/bexelbie/Repositories/Personal/bexelbie-ansible-playbook/dot-files/secure
+    elif [ $1 = "unmount" ]; then
+        /usr/bin/fusermount -u /home/bexelbie/Repositories/Personal/bexelbie-ansible-playbook/dot-files/secure
+    else
+        echo "gocryptfs-setup [mount|unmount]"
+    fi
+fi

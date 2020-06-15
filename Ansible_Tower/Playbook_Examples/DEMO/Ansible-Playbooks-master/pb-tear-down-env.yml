@@ -1,0 +1,62 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: prompt_env
+      prompt: Confirm the environment to target
+      private: no
+  tasks:
+    - assert:
+        that:
+          - prompt_env == named_env
+        fail_msg: "Incorrect environment entered. {{ prompt_env }} is not {{ named_env }}"
+        success_msg: "Targeting {{ prompt_env }} environment"
+
+  tags:
+    - always
+
+
+
+- hosts: director
+  name: Unregister director
+  become: yes
+  become_user: root
+  tasks:
+    - name: Unregister director
+      redhat_subscription:
+        state: absent
+  tags:
+    - director
+
+
+
+- hosts: kvm
+  name: Remove director and controller domains
+  become: yes
+  become_user: root
+  vars:
+    domains:
+      - director-{{ named_env }}
+      - controller-{{ named_env}}
+  tasks:
+    - name: Delete VBMC domain
+      shell: vbmc delete controller-{{ named_env }}
+
+    - name: Destroy domains
+      virt:
+        name: "{{ item }}"
+        state: destroyed
+      loop: "{{ domains }}"
+
+    - name: Undefine domains
+      virt:
+        name: "{{ item }}"
+        command: undefine
+      loop: "{{ domains }}"
+
+    - name: Delete volumes
+      shell: virsh vol-delete --pool images {{ item }}.qcow2
+      loop: "{{ domains }}"
+
+  tags:
+    - libvirt

@@ -1,0 +1,11 @@
+sat_ip:
+sat_hostname:
+sat_url: "https://{{ sat_hostname }}"
+sat_user:
+sat_password:
+sat_org:
+sat_location:
+sat_hostgroup:
+sat_ak:
+# Run the playbook with --extra-vars "vm_name=somename" to override this default
+vm_name:

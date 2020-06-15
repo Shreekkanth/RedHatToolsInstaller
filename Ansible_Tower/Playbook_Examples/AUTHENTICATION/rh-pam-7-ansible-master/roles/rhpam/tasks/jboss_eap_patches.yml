@@ -1,0 +1,36 @@
+---
+#### Check Existence JBoss EAP Patch ZIP
+- name: "Check Existence of Libraries JBoss EAP: {{eapPatch}}"
+  stat:
+    path: "{{ jboss_eap_patch_dest + eapPatch }}"
+  register: jboss_eap_patch_exists
+  tags:
+    - jboss_eap_patch
+
+#### Copy JBoss EAP Patches
+- name: "Copy JBoss EAP Patches: {{eapPatch}}"
+  copy:
+    src: "{{ base_dir_download + eapPatch }}"
+    dest: "{{ jboss_eap_patch_dest }}"
+  tags:
+    - jboss_eap_patch
+  when: jboss_eap_apply_patches == true and jboss_eap_patch_exists.stat.exists == false
+
+#### Patches can be applied while EAP is running or stopping
+- name: "Apply JBoss EAP the Patch: {{eapPatch}}"
+  command: "{{ jboss_eap_home }}bin/jboss-cli.sh 'patch apply {{ jboss_eap_patch_dest + eapPatch }} --verbose'"
+  tags:
+    - jboss_eap_patch
+  when: jboss_eap_apply_patches == true
+
+#### Remove the ZIP
+- name: "Remove the JBoss EAP Patch ZIP: {{eapPatch}}"
+  file:
+    path: "{{ jboss_eap_patch_dest + eapPatch }}"
+    state: "absent"
+  tags:
+    - jboss_eap_patch
+  when: jboss_eap_patch_remove
+
+#
+# EOF

@@ -1,0 +1,68 @@
+---
+# Built by Ansible Tower Genie Installer
+
+# Install Prerequisite Python Libraries?
+{% if prerequisites.user_input | bool %}
+prq_install: True
+{% else %}
+prq_install: False
+{% endif %}
+
+# SCM variables
+{% if onboard_in_scm | bool %}
+onboard_in_scm: True
+onboard_scm_type: "{{ scm_type.user_input }}"
+scm_url: "{{ scm_url.user_input }}"
+scm_user: "{{ scm_user.user_input }}"
+scm_prj_org: "{{ scm_org.user_input }}"
+gl_secrets: False #disabling import of role specific secret vault
+scm_prj_branches:
+{% for branch in scm_prj_branches %}
+  - name: "{{ branch.name }}"
+    protect: {{ branch.protect | bool }}
+{% endfor %}
+# SCM Project Defaults
+scm_prj_files:
+  - "README.md"
+  - "markdown/README.md"
+{% if scm_type.user_input | lower == "gitlab" %}
+gl_prj_grp_access: "30"
+# Next 2 vars are setup for Tower survey
+gl_grp_owner: ""
+gl_grp_users:
+  - name: "{% raw %}{{ gl_grp_owner }}{% endraw %}"
+    access: "50"
+{% endif %}
+{% else %}
+onboard_in_scm: False
+{% endif %}
+
+# Ansible Tower Common Variables
+{% for env in tower_environments %}
+grant_{{ env.name | truncate(4, True, '', 0) | lower }}_inventories: []
+{% endfor %}
+tower_proj_update_on_launch: True
+tower_secrets: False #disabling import of role specific secret vault
+tower_environments:
+{% for env in tower_environments %}
+  - name: "{{ env.name }}"
+    url: "{{ env.url }}"
+    verify_ssl: {{ env.verify_ssl }}
+    org: "{{ env.org }}"
+    user: "{{ env.user }}"
+    pass: "{% raw %}{{{% endraw %} tower_{{ env.name | truncate(4, True, '', 0) | lower }}_pass {% raw %}}}{% endraw %}"
+    {% if onboard_in_scm | bool %}
+    proj_branch: "{{ env.proj_branch }}"
+    {% endif %}
+    inventory_rbac_role: "{{ env.inventory_rbac_role }}"
+    grant_rbac_inventories: "{% raw %}{{{% endraw %} grant_{{ env.name | truncate(4, True, '', 0) | lower }}_inventories {% raw %}}}{% endraw %}"
+{% endfor %}
+
+# Genie Job Template Defaults
+## See roles/genie-job-templates/README.md for all available configurable options
+tower_jt_deploy_clusters: []
+tower_jt_ask_inventory: True
+tower_jt_ask_limit: True
+tower_jt_ask_cred: True
+# Genie Job Template Onboarding Defaults
+tower_jt_rbac_role: "execute"

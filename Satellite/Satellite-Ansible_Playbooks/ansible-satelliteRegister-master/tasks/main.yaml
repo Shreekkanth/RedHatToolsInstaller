@@ -1,0 +1,140 @@
+---
+- name: Check if register file exists
+  stat:
+    path: "{{ register_file }}"
+  register: register_file_stat
+
+- name: Fail if register file is not found
+  fail:
+    msg: REGISTERFILE file not found on {{register_file}}
+  when:  not register_file_stat.stat.exists
+
+- name: Get register file
+  slurp:
+    src: "{{ register_file }}"
+  register: register_file_content
+
+- name: Check if config file exists
+  stat:
+    path: "{{ config_file }}"
+  register: config_file_stat
+
+- name: Fail if config file is not found
+  fail:
+    msg: CONFIGFILE file not found on {{config_file}}
+  when:  not config_file_stat.stat.exists
+
+- name: Get config file
+  slurp:
+    src: "{{ config_file }}"
+  register: config_file_content
+
+- name: Build host vars
+  set_fact:
+    _capsulesha: "{{ config_file_content.content | b64decode | ini_read('satellite','server') }}"
+    _user: "{{ config_file_content.content | b64decode | ini_read('satellite','user') }}"
+    _password: "{{ config_file_content.content | b64decode | ini_read('satellite','password') }}"
+    _org: "{{ config_file_content.content | b64decode | ini_read('satellite','org') }}"
+    _ak: "{{ register_file_content.content | b64decode | replace('\n', '') }}"
+    _entorno: "{{ (register_file_content.content | b64decode | replace('\n', '')).split('-')[-1] }}"
+    _maqueta: "{{ (register_file_content.content | b64decode | replace('\n', '')).split('-')[:-1] | join('-') }}"
+    _sleep: "{{ (ansible_fqdn.split('.')[1] | regex_search('[0-9]+'))[-3:] }}"
+
+- name: Build Hostgroup var
+  set_fact:
+    _hg: "{{ _maqueta }}/{{ _entorno }}"
+
+- name: Delete previous update hooks (if exists, for rollback)
+  file:
+    state: absent
+    path: "/opt/admin/scripts/actualiza_software/actualiza/hooks"
+
+- name: Waiting {{ _sleep }} seconds to continue
+  pause:
+    seconds: "{{ _sleep }}"
+
+- name: Waiting for network
+  command: 'ping -c 5 {{ _capsulesha }}'
+  register: result_ping
+  changed_when: false
+  retries: 60
+  delay: 5
+  until: result_ping.rc == 0
+  # 60 retries with 5 secs delay = 5 minutes
+
+- name: Finding hostgroup
+  uri:
+    url: https://{{_capsulesha}}/api/hostgroups/?search=title={{_hg}}&per_page=999"
+    method: GET
+    headers:
+      Accept: 'application/json;version=2'
+      Content-Type: 'application/json'
+    return_content: yes
+    validate_certs: no
+    force_basic_auth: yes
+    user: "{{ _user }}"
+    password: "{{ _password }}"
+  register: hostgroup_search
+
+- name: Fail if hostgroup {{_hg}} is not found
+  fail:
+    msg: Hostgroup {{_hg}} not found on
+  when: hostgroup_search.json.subtotal == 0
+
+- name: Build Hostgroup ID var
+  set_fact:
+    _hostgroup_id: "{{ hostgroup_search.json.results[0]['id'] }}"
+
+- name: Obtaining Hostgroup details
+  uri:
+    url: https://{{_capsulesha }}/api/hostgroups/{{ _hostgroup_id }}
+    method: GET
+    headers:
+      Accept: 'application/json;version=2'
+      Content-Type: 'application/json'
+    return_content: yes
+    validate_certs: no
+    force_basic_auth: yes
+    user: "{{ _user }}"
+    password: "{{ _password }}"
+  register: hostgroup_info
+
+- name: Check if all required parameters have valid values
+  fail:
+    msg: Hostgroup {{_hg}} has empty values
+  when: not hostgroup_info.json['id'] or
+        not hostgroup_info.json['content_view_id'] or
+        not hostgroup_info.json['lifecycle_environment_id'] or
+        not hostgroup_info.json['operatingsystem_id'] or
+        not hostgroup_info.json['environment_id'] or
+        not hostgroup_info.json['ptable_id'] or
+        not hostgroup_info.json['architecture_id'] or
+        not hostgroup_info.json['medium_id']
+
+- name: Build Hostgroup information vars
+  set_fact:
+    _hostgroup_id: "{{ hostgroup_info.json['id'] }}"
+    _content_view_id: "{{ hostgroup_info.json['content_view_id'] }}"
+    _lifecycle_environment_id: "{{ hostgroup_info.json['lifecycle_environment_id'] }}"
+    _operatingsystem_id: "{{ hostgroup_info.json['operatingsystem_id'] }}"
+    _environment_id: "{{ hostgroup_info.json['environment_id'] }}"
+    _ptable_id: "{{ hostgroup_info.json['ptable_id'] }}"
+    _architecture_id: "{{ hostgroup_info.json['architecture_id'] }}"
+    _medium_id: "{{ hostgroup_info.json['medium_id'] }}"
+
+- name: Create host on Satellite
+  uri:
+    url: https://{{ _capsulesha }}/api/hosts/{{ ansible_fqdn }}
+    method: PUT
+    headers:
+      Accept: 'application/json;version=2'
+      Content-Type: 'application/json'
+    body: "{{ lookup('template', 'data.json.j2') }}"
+    body_format: json
+    validate_certs: no
+    force_basic_auth: yes
+    user: "{{ _user }}"
+    password: "{{ _password }}"
+
+- name: Execute puppet inventory
+  shell: '/opt/admin/scripts/merca-os-inventario-all/bin/puppet-inventario.sh'

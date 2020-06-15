@@ -1,0 +1,18 @@
+---
+- name: Configure server.xml for Confluence application
+  template:
+    src: usr/local/confluence/server.xml.j2
+    dest: "{{ confluence_installation_instance_directory }}/conf/server.xml"
+    owner: root
+    group: root
+    mode: 0755
+  notify:
+  - restart confluence
+
+- name: Configure autostart for Confluence application
+  service:
+    name: "{{ confluence_service_name }}"
+    enabled: "{{ confluence_start_on_boot }}"
+
+- name: Adding Confluence port to Firewalld
+  

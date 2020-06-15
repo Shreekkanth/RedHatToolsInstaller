@@ -1,0 +1,275 @@
+---
+- include_tasks: pre_install_check.yml
+  when: run_pre_install_check
+
+- include_tasks: backup_check.yml
+
+- include_tasks: backup_satellite_version_check.yml
+
+- name: Set Satellite version dependent variables
+  include_vars: "satellite_{{ satellite_version }}.yml"
+
+# Identify hostname from backup config file
+- name: Identify the hostname from the backup config tar file
+  shell: tar zxf {{ backup_dir }}/config_files.tar.gz etc/foreman-proxy/settings.yml --to-stdout | grep foreman_url |sed 's#.*/##'
+  register: backup_hostname
+
+- name: setting fact - hostname
+  set_fact:
+    hostname: "{{ backup_hostname.stdout }}"
+    cacheable: true
+
+- name: Check that the hostname is not none
+  fail: msg="Unable to derive Satellite hostname from the backup config file - value ({{ hostname }}) doesn't look right"
+  when: backup_hostname.stderr
+
+- name: Check that the registration variables (activationkey, org) are updated
+  fail: msg="Please update the variables in /etc/satellite-clone/satellite-clone-vars.yml"
+  when: ((activationkey == "changeme") or (org == "changeme")) and register_to_portal
+
+- name: Register/Subscribe the system to Red Hat Portal
+  command: "subscription-manager register --force --activationkey='{{ activationkey }}' --org '{{ org }}'"
+  when: register_to_portal
+
+- name: Disable all repos
+  command: subscription-manager repos --disable "*"
+  ignore_errors: True
+  register: disable_repos_result
+  when: enable_repos
+
+- name: set fact - disable_repos_result
+  set_fact:
+    disable_repos_result_fail: "{{ (disable_repos_result.rc | int) != 0 }}"
+    caceable: True
+  when: enable_repos
+
+- name: Check that the repos are disabled without errors
+  fail:
+    msg: "Disabling repos failed. Make sure that your system is registered to Red Hat and has the appropriate Satellite
+         subscriptions attached.  Alternatively, you can skip this task by specifying `enable_repos` to `False` if
+         you would like to enable the required repositories manually."
+  when: enable_repos and disable_repos_result_fail
+
+- name: Enable required repos for Satellite installation
+  command: subscription-manager repos --enable rhel-{{ ansible_distribution_major_version }}-server-rpms --enable rhel-server-rhscl-{{ ansible_distribution_major_version }}-rpms --enable rhel-{{ ansible_distribution_major_version }}-server-satellite-{{ satellite_version }}-rpms
+  ignore_errors: True
+  register: enable_repos_result
+  when: enable_repos
+
+- name: set fact - enable_repos_result
+  set_fact:
+    enable_repos_result_fail: "{{ (enable_repos_result.rc | int) != 0}}"
+    caceable: True
+  when: enable_repos
+
+- name: Check that the repos are enabled without errors
+  fail:
+    msg: "Enabling required repos failed.  Make sure that your system has access to the following repos:
+         rhel-{{ ansible_distribution_major_version }}-server-rpms,
+         rhel-server-rhscl-{{ ansible_distribution_major_version }}-rpms,
+         rhel-{{ ansible_distribution_major_version }}-server-satellite-{{ satellite_version }}-rpms.
+         Alternatively, you can skip this task by specifying `enable_repos` to `False` and provide alternate
+         means (e.g., custom repositories) to get the required rpms."
+  when: enable_repos and enable_repos_result_fail
+
+# Remove EPEL as it causes problems for the Satellite installer
+- name: Remove epel
+  yum_repository:
+    name: epel
+    state: absent
+
+- name: Clean yum info
+  command: yum clean all
+
+# turn off firewall
+- name: turn off firewalld - rhel7
+  service: name=firewalld enabled=no state=stopped
+  when: ansible_distribution_major_version == "7" and disable_firewall
+- name: turn off firewall - rhel6
+  command: "{{ item }}"
+  when: ansible_distribution_major_version == "6" and disable_firewall
+  with_items:
+    - service iptables stop
+    - chkconfig iptables off
+
+# Update hostname
+- name: set host_name
+  hostname: name={{ hostname }}
+- name: check /etc/hostname
+  lineinfile: dest=/etc/hostname line={{ hostname }}
+  when: ansible_distribution_major_version == "7"
+
+- name: create /etc/hosts
+  template: src=hosts.j2 dest=/etc/hosts
+  when: overwrite_etc_hosts
+
+# Install Satellite packages
+- name: Install Satellite packages
+  yum:
+    name: "{{ satellite_package }}"
+    state: latest
+
+# The postgres user is created after installing postgresql packages, so
+# we perform this owner/group change at this point rather than earlier
+- name: change owner of backup directory to postgres
+  file:
+    path: "{{ backup_dir }}"
+    owner: postgres
+    group: postgres
+    recurse: yes
+
+- name: test foreman.dump file is readable by postgres user
+  command: "test -r {{ backup_dir }}/foreman.dump"
+  become: yes
+  become_user: postgres
+  register: access_foreman_dump
+  ignore_errors: yes
+  when: clone_foreman_dump_exists
+
+- name: setting fact - access_foreman_dump
+  set_fact:
+    clone_no_foreman_dump_access: "{{ access_foreman_dump | failed }}"
+    cacheable: true
+
+- name: test candlepin.dump file is readable by postgres user
+  command: "test -r {{ backup_dir }}/candlepin.dump"
+  become: yes
+  become_user: postgres
+  register: access_candlepin_dump
+  ignore_errors: yes
+  when: clone_candlepin_dump_exists
+
+- name: setting fact - access_candlepin_dump
+  set_fact:
+    clone_no_candlepin_dump_access: "{{ access_candlepin_dump | failed }}"
+    cacheable: true
+
+- name: fail if postgres user doesn't have access to files
+  fail:
+    msg: >
+      The postgres user does not have access to the files in {{ backup_dir }}.
+      Please move the backup directory to a different directory with the correct
+      permissions. Avoid using /root.
+  when: clone_foreman_dump_exists and clone_candlepin_dump_exists and (clone_no_foreman_dump_access or clone_no_candlepin_dump_access)
+
+# Workaround for Issue #72 -  satellite-clone playbook fails if /etc/katello-installer isn't present.
+- name: Create /etc/katello-installer folder
+  file: path=/etc/katello-installer state=directory mode=0755
+  when: satellite_version in ["6.2", "6.3"]
+
+# Restore Config
+- name: untar config files (for cloning only)
+  command: tar --selinux --overwrite -xf {{ backup_dir }}/config_files.tar.gz -C /
+  when: not rhel_migration
+- name: untar config files (for migration only)
+  # rhel7's /etc/httpd/conf.d/passenger.conf is not backward compatible with rhel6
+  command: tar --selinux --overwrite -xf {{ backup_dir }}/config_files.tar.gz --exclude=etc/httpd/conf.d/passenger.conf -C /
+  when: rhel_migration
+
+- name: Restore selinux context on the filesystem
+  command: restorecon -R /
+  when: restorecon
+
+# This file tells the candlepin puppet module in the Satellite installer that
+# candlepin is already set up. We remove it so candlepin is set up correctly.
+- name: Remove cpdb_done file
+  file:
+    path: /var/lib/candlepin/cpdb_done
+    state: absent
+
+- name: Run Satellite installer
+  environment:
+    HOSTNAME: "{{ hostname }}"
+  command: >
+    {{ satellite_installer_cmd }}
+    {{ (satellite_scenario is defined) | ternary("--scenario", "") }} {{ satellite_scenario }}
+    --{{ capsule_puppet_module }}-dns false
+    --{{ capsule_puppet_module }}-dhcp false
+    --{{ capsule_puppet_module }}-tftp false
+    {{ satellite_installer_options | default("") }}
+
+- block:
+  # restore backup data
+  - include_tasks: restore.yml
+
+  - name: Restart katello-service
+    command: katello-service start
+
+    # We don't use pause module here because it displays a prompt
+    # to use ctrl+c which would break out of a production script.
+  - name: Wait for foreman-tasks service to start
+    command: sleep 300
+
+  # jmx.conf can cause issues when re-running the installer later in the playbook
+  - name: Remove jmx.conf file
+    file:
+      state: absent
+      path: /etc/tomcat/conf.d/jmx.conf
+
+  - name: Get candlepin credentials
+    command: sed -n -e 's/^.*myDS.password=//p' /etc/candlepin/candlepin.conf
+    register: candlepin_password
+
+  - set_fact:
+      clone_candlepin_password: "{{ candlepin_password.stdout }}"
+      cacheable: true
+
+  - name: Migrate candlepin db
+    command: "/usr/share/candlepin/cpdb --update -p {{ clone_candlepin_password }}"
+
+  - name: Cleanup paused tasks
+    command: foreman-rake foreman_tasks:cleanup TASK_SEARCH='label ~ *' STATES='paused'  VERBOSE=true AFTER='0h'  VERBOSE=true
+    when: satellite_version in ["6.2", "6.3"]
+
+  - name: Run installer upgrade (satellite 6.2+ only)
+    command: satellite-installer --upgrade
+    environment:
+      HOSTNAME: "{{ hostname }}"
+    when: satellite_version in ["6.2", "6.3"]
+
+  - name: Test Satellite
+    command: hammer ping
+
+  - name: Reset admin password
+    command: foreman-rake permissions:reset password=changeme
+
+  - name: update katello assets
+    file: src=/opt/rh/ruby193/root/usr/share/gems/gems/katello-2.2.0.93/public/assets/katello dest=/usr/share/foreman/public/assets/katello
+    when: satellite_version == "6.1"
+  - name: update katello bastion assets
+    file: src=/opt/rh/ruby193/root/usr/share/gems/gems/katello-2.2.0.93/public/assets/bastion_katello dest=/usr/share/foreman/public/assets/bastion_katello
+    when: satellite_version == "6.1"
+
+  - include_tasks: reset_pulp_data.yml
+    when: not clone_pulp_data_exists and not online_backup
+
+  - name: "Run katello {{ verify_rake_task }} for Satellite - Note that this might take hours"
+    command: "foreman-rake katello:{{ verify_rake_task }} --trace"
+    when: run_katello_reindex or not clone_pulp_data_exists 
+
+  - name: Disassociate capsules with lifecycle environments (to avoid the cloned Satellite server talking with live capsules)
+    script: disassociate_capsules.rb
+    register: disassociate_capsules
+
+  - name: set fact - disassociate_capsules
+    set_fact:
+      clone_disassociate_capsules: "{{ disassociate_capsules.stdout }}"
+      cacheable: true
+
+  - name: copy disassociate_capsules.rb output
+    local_action: copy content={{ clone_disassociate_capsules }} dest={{ playbook_dir }}/logs/reassociate_capsules.txt
+
+  - debug:
+      msg: "****NOTE**** Your Satellite's hostname is updated to match the original Satellite
+            ****NOTE**** Your Satellite's password is updated to changeme"
+  rescue:
+  # After the installer runs, if there is an error, we want to disassociate capsules from lifecycle environments.
+  # This is to prevent the clone trying to sync with existing original capsules. We do this with SQL in case
+  # hammer is not able to execute a command.
+  - name: Disassociate capsules from lifecycle environments to avoid communication with production capsules
+    command: psql foreman -c "delete from katello_capsule_lifecycle_environments where capsule_id in (select smart_proxy_id from features_smart_proxies where feature_id = (select id from features where features.name = 'Pulp Node'));"
+    become_user: postgres
+    become: true
+
+  - fail:
+      msg: "Something went wrong! Please check the output above for more information."

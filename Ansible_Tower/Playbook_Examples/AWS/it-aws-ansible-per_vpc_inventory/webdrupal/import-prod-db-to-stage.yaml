@@ -1,0 +1,50 @@
+# Playbook: import-prod-db-to-stage.yaml
+---
+- hosts: webdrupal-app
+
+  gather_facts: true
+
+  pre_tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=60 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: set nagios downtime for proxy services
+      nagios: action=downtime minutes=60 service=all host="{{ item }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: groups['webdrupal-proxy']
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host_secondary }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+  tasks:
+    - name: webdrupal disable
+      shell: webdrupal disable
+
+    - name: import production database
+      shell: webdrupal import
+      when: inventory_hostname == update_node
+
+    #- name: run update on the update_node only
+    #  shell: webdrupal update
+    #  when: inventory_hostname == update_node
+
+    - name: webdrupal enable
+      shell: webdrupal enable
+
+    - name: Flush memcache
+      shell: webdrupal flush_memcache
+      ignore_errors: yes

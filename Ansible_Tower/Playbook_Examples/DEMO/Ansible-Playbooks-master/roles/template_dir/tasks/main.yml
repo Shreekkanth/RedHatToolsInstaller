@@ -1,0 +1,5 @@
+- name: Template out directory
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ output_folder }}/{{ item.path }}"
+  with_filetree: "{{ input_folder }}"

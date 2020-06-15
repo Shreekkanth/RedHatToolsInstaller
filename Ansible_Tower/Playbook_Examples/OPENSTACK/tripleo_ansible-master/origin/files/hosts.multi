@@ -1,0 +1,108 @@
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+etcd
+nodes
+lb
+nfs
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+openshift_disable_check=memory_availability
+
+# SSH user, this user should allow ssh based auth without requiring a password
+ansible_ssh_user=root
+
+# If ansible_ssh_user is not root, ansible_become must be set to true
+#ansible_become=true
+#openshift_clock_enabled=true
+
+deployment_type=openshift-enterprise
+openshift_release=v3.6
+
+openshift_master_cluster_method=native
+#openshift_master_cluster_hostname=ocp36-master1.example.com
+#openshift_master_cluster_public_hostname=ocp36-master1.example.com
+openshift_master_cluster_hostname=ocp36-lb.example.com
+openshift_master_cluster_public_hostname=ocp36-lb.example.com
+openshift_master_default_subdomain=app.example.com
+#openshift_master_overwrite_named_certificates=true
+
+# uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+openshift_master_htpasswd_users={ 'andrew': '\$apr1\$cHkRDw5u\$eU/ENgeCdo/ADmHF7SZhP/', 'devel': '$apr1$p5c7DGx9$zzm1U.GkmAv/3s814luYV1' }
+
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+## service network, should avoid 172.17.0.0/16, which the docker0 ntwork bridge uses by default.
+#openshift_master_portal_net=172.30.0.0/16
+## pod network
+#osm_cluster_network_cidr=10.128.0.0/14
+## per host pod network subnet size, /23
+#osm_host_subnet_length=9
+
+#### metrics
+openshift_hosted_metrics_deploy=false
+#openshift_hosted_metrics_storage_kind=nfs
+#openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_metrics_storage_nfs_directory=/srv/nfs
+#openshift_hosted_metrics_storage_nfs_options='*(rw,root_squash)'
+#openshift_hosted_metrics_storage_volume_name=metrics
+#openshift_hosted_metrics_storage_volume_size=10Gi
+#openshift_hosted_metrics_public_url=https://hawkular-metrics.apps.example.com/hawkular/metrics
+#
+#### logging
+openshift_hosted_logging_deploy=false
+#openshift_hosted_logging_deploy=true
+#openshift_hosted_logging_storage_kind=nfs
+#openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_logging_storage_nfs_directory=/srv/nfs
+#openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
+#openshift_hosted_logging_storage_volume_name=logging
+#openshift_hosted_logging_storage_volume_size=10Gi
+#openshift_hosted_logging_hostname=kibana.apps.example.com
+#openshift_hosted_logging_elasticsearch_cluster_size=1
+#openshift_master_logging_public_url=https://kibana.apps.example.com
+
+### router
+openshift_hosted_router_selector='region=infra'
+openshift_hosted_router_replicas=2
+#openshift_hosted_router_certificate={"certfile": "/path/to/router.crt", "keyfile": "/path/to/router.key", "cafile": "/path/to/router-ca.crt"}
+
+### registry
+openshift_hosted_registry_selector='region=infra'
+openshift_hosted_registry_replicas=2
+openshift_hosted_registry_storage_kind=nfs
+openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+openshift_hosted_registry_storage_nfs_directory=/srv/nfs
+openshift_hosted_registry_storage_volume_name=registry
+openshift_hosted_registry_storage_volume_size=10Gi
+
+osm_default_node_selector='region=primary'
+
+[masters]
+ocp36-master1.osetest.local openshift_ip=10.0.1.21
+ocp36-master2.osetest.local openshift_ip=10.0.1.22
+ocp36-master3.osetest.local openshift_ip=10.0.1.23
+
+[etcd]
+ocp36-master1.osetest.local openshift_ip=10.0.1.21
+ocp36-master2.osetest.local openshift_ip=10.0.1.22
+ocp36-master3.osetest.local openshift_ip=10.0.1.23
+
+[nodes]
+ocp36-master1.osetest.local openshift_node_labels="{'region': 'infra'}" openshift_ip=10.0.1.21
+ocp36-master2.osetest.local openshift_node_labels="{'region': 'infra'}" openshift_ip=10.0.1.22
+ocp36-master3.osetest.local openshift_node_labels="{'region': 'infra'}" openshift_ip=10.0.1.23
+
+ocp36-infra1.osetest.local openshift_node_labels="{'region': 'infra'}" openshift_ip=10.0.1.31
+ocp36-infra2.osetest.local openshift_node_labels="{'region': 'infra'}"
+
+ocp36-node1.osetest.local openshift_node_labels="{'region': 'primary', 'zone': 'east'}" openshift_ip=10.0.1.41
+ocp36-node2.osetest.local openshift_node_labels="{'region': 'primary', 'zone': 'west'}" openshift_ip=10.0.1.41
+
+[lb]
+ocp36-lb.osetest.local
+
+[nfs]
+ocp36-lb.osetest.local

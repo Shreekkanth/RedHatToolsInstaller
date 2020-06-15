@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Red Hat Consulting EMEA (Spain)
+  description: Role for Install Red Hat Process Automation Manager
+  company: Red Hat
+  license: license (Apache)
+  min_ansible_version: 2.4.1.0
+  platforms:
+   - name: EL
+     versions:
+     - 7
+  categories:
+   - rhpam
+   - mysql
+
+# EOF

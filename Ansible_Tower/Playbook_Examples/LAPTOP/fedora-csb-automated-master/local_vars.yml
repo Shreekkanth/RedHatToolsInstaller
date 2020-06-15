@@ -1,0 +1,362 @@
+---
+
+# The following variable contains a list of packages not necessary for
+# initial setup but you'd like to have on your laptop (duplicates are OK),
+# you may as well have groups starting with '@', but then in quotes:
+additional_user_packages:
+  - firefox
+  - vim-X11
+  - bash-completion
+  - redhat-lsb
+
+# Stuff which seems to come with CSB
+
+  - abrt-console-notification # ABRT console notification script
+  - alsa-firmware # Firmware for several ALSA-supported sound cards
+#  - authconfig-gtk # Graphical tool for setting up authentication from network services
+  - biosdevname # Udev helper for naming devices per BIOS names
+  - certmonger # Certificate status monitor and PKI enrollment client
+  - cryptsetup-reencrypt # A utility for offline reencryption of LUKS encrypted disks.
+  - dconf-editor # Configuration editor for dconf
+  - efibootmgr # EFI Boot Manager
+  - enscript # A plain ASCII to PostScript converter
+  - evolution-mapi # Evolution extension for MS Exchange 2007 servers
+  - freerdp # Free implementation of the Remote Desktop Protocol (RDP)
+  - fuse-sshfs # FUSE-Filesystem to access remote filesystems via SSH
+  - gconf-editor # Editor/admin tool for GConf
+  - gimp-data-extras # Extra files for GIMP
+  - gimp # GNU Image Manipulation Program
+  - gimp-help # Help files for GIMP
+  - gnome-dictionary # A dictionary application for GNOME
+  - gnome-icon-theme-extras # Additional GNOME icons
+  - gnome-icon-theme # GNOME icon theme
+  - gnome-icon-theme-symbolic # Symbolic GNOME icons
+  - gnome-packagekit-installer # PackageKit package installer
+  - gnome-packagekit # Session applications to manage packages
+  - gnome-system-log # A log file viewer for GNOME
+  - gnome-terminal-nautilus # GNOME Terminal extension for Nautilus
+  - gnome-tweak-tool # A tool to customize advanced GNOME 3 options
+  - grub2-efi # GRUB for EFI systems.
+  - grub2-starfield-theme # An example theme for GRUB.
+  - gstreamer-plugins-bad-free # GStreamer streaming media framework "bad" plug-ins
+  - gstreamer-plugins-good # GStreamer plug-ins with good code and licensing
+  - gtk3-immodules # Input methods for GTK+
+  - gucharmap # Unicode character picker and font browser
+  - gutenprint-plugin # GIMP plug-in for gutenprint
+  - hexchat # A popular and easy to use graphical IRC (chat) client
+  - inkscape # Vector-based drawing program using SVG
+  - irqbalance # IRQ balancing daemon
+  - kernel-tools # Assortment of tools for the Linux kernel
+  - libreoffice-base # Database front-end for LibreOffice
+  - libreoffice-langpack-de # German language pack for LibreOffice
+  - libreoffice-langpack-fr # French language pack for LibreOffice
+  - libreoffice-langpack-pl # Polish language pack for LibreOffice
+  - libvirt # Library providing a simple virtualization API
+  - NetworkManager-team # Team device plugin for NetworkManager
+  - NetworkManager-tui # NetworkManager curses-based UI
+  - openldap-clients # LDAP client utilities
+  - open-sans-fonts # Open Sans is a humanist sans-serif typeface designed by Steve
+  - overpass-fonts # Typeface based on the U.S. interstate highway road signage type
+  - PackageKit-cron # Cron job and related utilities for PackageKit
+  - pidgin # A Gtk+ based multiprotocol instant messaging client
+  - plymouth-plugin-space-flares # Plymouth "space-flares" plugin
+  - pnm2ppa # Drivers for printing to HP PPA printers
+  - polkit-gnome # PolicyKit integration for the GNOME desktop
+  - rsyslog # Enhanced system logging and kernel message trapping daemon
+  - sane-frontends # Graphical frontend to SANE
+  - screen # A screen manager that supports multiple logins on one terminal
+  - spice-xpi # SPICE extension for Mozilla
+  - system-config-keyboard # A graphical interface for modifying the keyboard
+  - system-config-printer # A printer administration tool
+  - thunderbird-enigmail # Authentication and encryption extension for Mozilla Thunderbird
+  - thunderbird # Mozilla Thunderbird mail/newsgroup client
+  - tuned # A dynamic adaptive system tuning daemon
+  - vim-enhanced # A version of the VIM editor which includes recent enhancements
+  - vinagre # VNC client for GNOME
+  - virt-install # Utilities for installing virtual machines
+  - virt-manager # Desktop tool for managing virtual machines via libvirt
+  - virt-top # Utility like top(1) for displaying virtualization stats
+  - virt-viewer # Virtual Machine Viewer
+  - xorg-x11-fonts-Type1 # Type1 fonts provided by the X Window System
+  - xsane-gimp # GIMP plug-in providing the SANE scanner interface
+  - xvattr # Utility for getting and setting Xv attributes
+
+# Stuff I find useful but you might not need
+
+  - ansible-inventory-grapher # Creates graphs representing ansible inventory
+  - ansible-lint # Best practices checker for Ansible
+  - ansible-review # Reviews Ansible playbooks, roles and inventory and suggests
+  - autokey-gtk # AutoKey GTK+ front end
+  - darkhttpd # A secure, lightweight, fast, single-threaded HTTP/1.1 server
+  - filezilla # FTP, FTPS and SFTP client
+  - hamster-time-tracker # The Linux time tracker
+  - icedtea-web # Additional Java components for OpenJDK - Java browser plug-in and
+  - keepassx # Cross-platform password manager
+  - maven # Java project management and project comprehension tool
+  - mkdocs # Python tool to create HTML documentation from markdown sources
+  - mozilla-noscript # JavaScript white list extension for Mozilla Firefox
+  - qpdf # Command-line tools and library for transforming PDF files
+  - unison240-gtk # Multi-master File synchronization tool - gtk interface
+  - vagrant # Build and distribute virtualized development environments
+  - vagrant-doc # Documentation for vagrant
+  - vagrant-libvirt # libvirt provider for Vagrant
+  - wbox # HTTP testing tool and configuration-less HTTP server
+  - xsel # Command line clipboard and X selection tool
+#  - python3-cement # for https://gitlab.consulting.redhat.com/egolov/smartexpense/
+
+# Dependencies for the asciidoctor stuff of Adrian with Red Hat Consulting flavor
+# See https://gitlab.cee.redhat.com/abradsha/asciidoctor-ej
+  - ruby # An interpreter of object-oriented scripting language
+  - ruby-devel # A Ruby development environment
+  - gcc # Various compilers (C, C++, Objective-C, Java, ...)
+  - rubygem-asciidoctor # A fast, open source AsciiDoc implementation in Ruby
+  - rubygem-asciidoctor-doc # Documentation for rubygem-asciidoctor (optional)
+  - rubygem-asciidoctor-pdf # Converts AsciiDoc documents to PDF using Prawn
+  - rubygem-coderay # Fast syntax highlighter engine for many programming languages
+  - rubygem-rouge # Simple, easy-to-extend drop-in replacement for pygments
+  - rubygem-rouge-doc # Documentation files for rubygem-rouge (optional)
+
+# The following is a list of packages taken from the RHEL 7 CSB kickstart
+# TODO analyze and see what should be kept
+#### BEGIN %package ###
+# @compat-libraries
+# @dial-up
+# @directory-client
+# @fonts
+# @graphics
+# @internet-applications
+# @legacy-x
+# @multimedia
+# @office-suite
+# @print-client
+# @virtualization-client
+# PackageKit-browser-plugin
+# PackageKit-yum-plugin.x86_64
+# fluendo-dvd
+# gnome-shell-browser-plugin.x86_64
+# google-talkplugin
+# iwl7265-firmware
+# mc
+# oneplay-gstreamer-codecs-pack
+# redhat-logos
+# rhythmbox
+# rubygem-abrt
+#### END %package ###
+
+# Packages from the RHEL 7 CSB repo - use with care under Fedora!
+# TODO remove obviously useless or potentially damaging packages
+additional_csb_packages:
+#  - a52dec # A free ATSC A/52 stream decoder
+#  - abrt-debuginfo # Debug information for package abrt
+#  - AdobeReader_enu # Adobe Reader, an application to easily view, print and collaborate
+#  - adobe-release-x86_64 # linux.adobe.com Repository Configuration
+#  - apexdataloader # Apex Data Loader
+#  - atom # A hackable text editor for the 21st Century.
+#  - atom-debuginfo # Debug information for package atom
+#  - atom-libs # Library to chromium
+#  - bjnplugin # Blue Jeans Browser Video Plugin
+#  - bluejeans # Blue Jeans App
+#  - cisco-vpnclient-profiles # Cisco VPN client Red Hat profiles
+#  - compat-openssl # Utilities from the general purpose cryptography library with TLS
+#  - ctxusb # USB Support for the Citrix Receiver for Linux.
+#  - dia-debuginfo # Debug information for package dia
+#  - diskwarn # Warn users who are low on disk space
+#  - exfat-utils # Utilities for exFAT file system
+#  - faac # Encoder and encoding library for MPEG2/4 AAC
+#  - faad2-libs # Shared libraries of the FAAD 2 AAC decoder
+#  - ffmpeg # Digital VCR and streaming server
+#  - ffmpeg-libs # Libraries for ffmpeg
+#  - fluendo-codecs-complete-bundle # Complete playback bundle
+#  - fluendo-dvd # Fluendo DVD PLayer
+#  - fuse-exfat # Free exFAT file system implementation
+#  - geany-debuginfo # Debug information for package geany
+#  - gnome-battery-bench-debuginfo # Debug information for package gnome-battery-bench
+#  - gnome-settings-daemon-updates # updates plugin for gnome-settings-daemon
+#  - gnome-shell-browser-plugin # Browser plugin to install extensions from extensions.gnome.org
+#  - google-talkplugin # Google Talk Plugin
+#  - gstreamer-ffmpeg # GStreamer FFmpeg-based plug-ins
+#  - HandBrake-cli # An open-source multiplatform video transcoder (CLI)
+#  - HandBrake-gui # An open-source multiplatform video transcoder (GUI)
+#  - ICAClient # Citrix Receiver for Linux
+#  - iwl7265-firmware # Firmware for Intel(R) Dual Band Wireless-AC 7265 Series Adapters
+#  - kdenlive # Non-linear video editor
+#  - lame-libs # LAME MP3 encoding library
+#  - libavdevice # Special devices muxing/demuxing library
+#  - libdca # DTS Coherent Acoustics decoder library
+#  - libquicktime # Library for reading and writing Quicktime files
+#  - libreport-debuginfo # Debug information for package libreport
+#  - libreport-rhel-anaconda-bugzilla # Default configuration for reporting anaconda bugs to Red Hat
+#  - libreport-rhel-bugzilla # Default configuration for reporting bugs to Red Hat Bugzilla
+#  - libreport-rhel # Default configuration for reporting bugs via Red Hat
+#  - libtxc_dxtn # Free implementation of the s3tc texture compression algorithm
+#  - libva-intel-driver # Hardware video decode support for Intel integrated graphics
+#  - linfo # Information about associates
+#  - network-check # Tests the internet and intranet network
+#  - nixnote # Open Source Evernote client
+#  - nspluginwrapper # A compatibility layer for Netscape 4 plugins
+#  - oneplay-gstreamer-codecs-pack # Complete playback bundle
+#  - opera-beta # Fast and secure web browser
+#  - opera-developer # Fast and secure web browser
+#  - opera-stable # Fast and secure web browser
+#  - pdfsam # PDF Split And Merge
+#  - projectlibre # ProjectLibre
+#  - rbjnplugin # Blue Jeans Browser Video Plugin
+#  - redhat-click-to-play-whitelist # Click-to-Play Whitelist for Red Hat internal Mozilla Firefox and
+#  - redhat-internal-acrobat_reader-installer # Red Hat internal Acrobat Reader Installer
+#  - redhat-internal-backup-config # Red Hat CSB global Backup config
+#  - redhat-internal-changelog-comms # Red Hat internal changelog communication tool
+#  - redhat-internal-chat-config # Red Hat internal Chat config
+#  - redhat-internal-click-to-play-whitelist # Click-to-Play Whitelist for Red Hat internal Mozilla Firefox and
+#  - redhat-internal-configuser-firststart-beta # RHEL CSB config to transfer a RHEL to a RHEL CSB (beta)
+#  - redhat-internal-configuser-firststart # RHEL CSB config to transfer a RHEL to a RHEL CSB
+#  - redhat-internal-configuser-firststart-stage # RHEL CSB config to transfer a RHEL to a RHEL CSB (stage)
+#  - redhat-internal-contact-it-support # Red Hat Internal - Contact IT Support
+#  - redhat-internal-csb-release # RHEL Internal packages repository configuration
+#  - redhat-internal-ddns-client # Client to update the Red Hat DDNS system
+#  - redhat-internal-dogfooding # RHEL Internal packages for RHEL dogfooding (pre-release testing)
+#  - redhat-internal-dynamic-motd # Red Hat internal Dynamic MOTD
+#  - redhat-internal-escrow # Remote escrow for CSB users
+#  - redhat-internal-file-templates # Red Hat internal Gnome File templates
+#  - redhat-internal-firefox-config # Red Hat Internal global Firefox config
+#  - redhat-internal-firewall-config # Red Hat internal Default firewall rules
+#  - redhat-internal-flash-plugin # Adobe Flash Player 11.2 x86_64
+#  - redhat-internal-genesys-config # Red Hat Internal Genesys Config
+#  - redhat-internal-gnome-config-event # Red Hat internal Gnome config for Event Notebooks
+#  - redhat-internal-gnome-config # Red Hat internal Gnome config
+#  - redhat-internal-gnome-shell-extension-lock-keys # NumLock & caps-lock status on the panel
+#  - redhat-internal-hardware-config # Red Hat Internal Hardware configs
+#  - redhat-internal-infosec-config # Red Hat internal InfoSec config
+#  - redhat-internal-inventory-motd # Installs an /etc/motd file with relevant BIOS data about the
+#  - redhat-internal-inxpo # A wrapper package for inxpo and its dependencies
+#  - redhat-internal-iso-to-usb # Red Hat internal ISO to USB copy tool
+#  - redhat-internal-libreoffice-extension-convert_text_to_number # Red Hat Internal LibreOffice Extensions - CT2N - Convert Text To
+  -  redhat-internal-libreoffice-extension-vrtnetworkequipment # Red Hat Internal LibreOffice Extensions - VRT Network Equipment
+  -  redhat-internal-libreoffice-templates # Red Hat Internal LibreOffice templates
+  -  redhat-internal-linfo # Red Hat internal Information about associates
+#  - redhat-internal-luks-change # A GUI for changing LUKS passwords
+#  - redhat-internal-luks-escrow # Red Hat internal remote escrow
+#  - redhat-internal-luks-password # A python application for changing the Luks passphrase for an
+#  - redhat-internal-nested-kvm # Red Hat internal nested KVM enablement
+#  - redhat-internal-network-check # Red Hat Internal internet and intranet check
+#  - redhat-internal-NetworkManager-openvpn-profiles-non-gnome # Red Hat, Inc. Internal VPN data for NetworkManager, OpenVPN
+#  - redhat-internal-NetworkManager-vpnc-data-otp # Red Hat, Inc. Internal VPN data for NetworkManager, OTP entries
+#  - redhat-internal-NetworkManager-vpnc-otp-profiles # Red Hat, Inc. Internal VPN data for NetworkManager, OTP entries
+#  - redhat-internal-openvpn-profiles # Red Hat, Inc. Internal VPN data for OpenVPN (without Gnome and
+#  - redhat-internal-polkit-config # Red Hat Internal global Polkit config
+#  - redhat-internal-print-server-selector # Tool to select a Print server from a given list
+#  - redhat-internal-pubkey # Adds a pubkey to root's ssh authorized_keys2 file to allow remote
+#  - redhat-internal-pubkey-vip # Adds a pubkey to root's ssh authorized_keys2 file to allow remote
+#  - redhat-internal-release # RHEL Internal packages repository configuration
+#  - redhat-internal-rhdr-pubkey # Adds a pubkey to root's ssh authorized_keys2 file to allow remote
+#  - redhat-internal-rhdr-pubkey-vip # Adds a pubkey to root's ssh authorized_keys2 file to allow remote
+#  - redhat-internal-rhdr-rootpassword # Reset root password on install to Help Desk CSB current standard
+#  - redhat-internal-rhdr-rootpassword-vip # Reset root password on install to Help Desk CSB current standard
+#  - redhat-internal-rhwinapps # A simple shortcut to rhwinapps
+#  - redhat-internal-rootpassword # Reset root password on install to ServiceDesk CSB current standard
+#  - redhat-internal-rootpassword-vip # Reset root password on install to Help Desk CSB current standard
+#  - redhat-internal-rsyslog-config # Configuration for forwarding logs to the CSB rsyslog server
+#  - redhat-internal-satellite-channel-switcher # Tool to switch the RHEL CSB Satellite Channel
+#  - redhat-internal-satellite-config # Tool to configure the RHEL CSB Satellite Channels and Sudo access
+#  - redhat-internal-setup-guide # Red Hat Internal Setup Guide
+#  - redhat-internal-sip-profile # Red Hat internal SIP Client configurator
+#  - redhat-internal-smtp-config # Red Hat internal SMTP config
+#  - redhat-internal-software-management # Red Hat internal Software Management RPM
+#  - redhat-internal-sssd-config # Installs SSSD configuration for internal RHEL Desktop
+#  - redhat-internal-sudo-config # Red Hat internal sudo config
+#  - redhat-internal-temp_bjn_selinux_fix # Red Hat internal temporary SELinux fix for BlueJeans Network
+#  - redhat-internal-thunderbird-config # Red Hat Internal global thunderbird config
+#  - redhat-internal-trackpoint-config # Default config for ThinkPad UltraNav
+#  - redhat-internal-trim-support # Enable TRIM support on LUKS volumes
+#  - redhat-internal-update-notification # RHEL CSB Update Notification RPM
+#  - redhat-internal-videoconf-config # RHEL Internal packages for RHEL CSB video conference (BlueJeans)
+#  - redhat-internal-video-converter # Red Hat internal Video converter
+  - redhat-internal-we-are-red-hat-week-backgrounds # "We are Red Hat week" desktop backgrounds
+#  - redhat-internal-wireless-config # Red Hat Guest Wireless Network configuration
+#  - redhat-internal-yubikey # Red Hat Internal Yubikey Setup Tool
+#  - rhdr-pubkey # Adds a pubkey to root's ssh authorized_keys2 file to allow remote
+#  - rhdr-pubkey-vip # Adds a pubkey to root's ssh authorized_keys2 file to allow remote
+#  - rhdr-root # Reset root password on install to Help Desk CSB current standard
+#  - rhdr-root-vip # Reset root password on install to Help Desk CSB current standard
+#  - rstudio # RStudio
+#  - simplescreenrecorder-libs # SimpleScreenRecorder opengl injection library
+#  - simplescreenrecorder # SimpleScreenRecorder is a screen recorder for Linux
+#  - skypeforlinux # Skype keeps the world taking, for free.
+#  - skype # Free Internet telephony that just works
+#  - slack # Slack Desktop
+# https://redhat.service-now.com/rh_ess/kb_view.do?sysparm_article=KB0000941 for config steps
+  - SpiderOakGroups # Online multi-platform backup, storage, access, sharing tool
+#  - spotify-client-data # Spotify music player native client data files
+#  - spotify-client # Spotify music player native client
+#  - sqldeveloper # Oracle SQL Developer
+#  - steam # Installer for the Steam software distribution service
+#  - unrar # Utility for extracting, testing and viewing RAR archives
+#  - vcdimager-libs # Libraries for vcdimager
+#  - vcdimager # VideoCD (pre-)mastering and ripping tool
+#  - vivaldi-stable # Vivaldi
+#  - vpngui-rh-internal # GUI that allows control of Cisco VPNClient and VPNC configurations
+#  - x264 # H264/AVC video streams encoder
+#  - x264-libs # Library for encoding H264/AVC video streams
+#  - x265 # H.265/HEVC encoder
+#  - x265-libs # H.265/HEVC encoder library
+#  - xine-lib # A multimedia engine
+#  - xine-lib-extras # Additional plugins for xine-lib
+#  - xine-ui # A skinned xlib-based gui for xine-lib
+#  - xmind # Brainstorming and Mind Mapping
+#  - xvidcore # MPEG-4 Simple and Advanced Simple Profile codec
+
+# The authentication region defines which servers are used for LDAP and
+# Kerberos. It is one of east_north_ams, west_north_ams_latam, emea or apac.
+
+auth_region: emea
+
+# List of CUPS servers you'd like to take your printers
+# One entry is generally enough, of the form cups.xxx.redhat.com
+cups_servers:
+  - cups.emea.redhat.com
+
+# Defines the keyboard layout, including potential options (which can't be
+# given in the kickstart). Use `localectl` with the following options
+# to see which values are available:
+#       list-x11-keymap-models list-x11-keymap-layouts
+#       list-x11-keymap-variants list-x11-keymap-options
+# Remove the complete dictionary variable locale_keymap if you don't need this.
+locale_keymap:
+        layout: 'us'
+        model: 'pc105'
+        variant: 'euro'
+        options: 'compose:caps'
+
+# List of languages when spellchecking in Firefox/Thunderbird is huge and most
+# people only need a small subset of those. Here is the list of languages to
+# keep. The following can be used to avoid any deletion:
+# keep_dicts_langs: [ '.*' ]
+keep_dicts_langs:
+        - fr_FR
+        - de_DE
+        - pl_PL
+        - en_US
+        - en_GB
+        - en_IE
+
+# Do you want to allow usage of repos outside Fedora, including COPR, and
+# Red Hat, free, nonfree and/or proprietary:
+allow_inofficial_free_repos: false
+allow_inofficial_nonfree_repos: false
+allow_inofficial_proprietary_repos: false
+
+# Enter the list of Gnome Shell Extensions you're interested in.
+# If you don't want any, add an empty list '[]' after the name or uncomment:
+# gnome_shell_extensions: []
+# and comment the following:
+gnome_shell_extensions:
+        - "background-logo@fedorahosted.org"
+        # I suspect the user-theme one to be unstable
+        #- "user-theme@gnome-shell-extensions.gcampax.github.com"
+        - "launch-new-instance@gnome-shell-extensions.gcampax.github.com"
+        - "apps-menu@gnome-shell-extensions.gcampax.github.com"
+        - "window-list@gnome-shell-extensions.gcampax.github.com"
+        - "places-menu@gnome-shell-extensions.gcampax.github.com"
+        - "alternate-tab@gnome-shell-extensions.gcampax.github.com"
+
+# Do you want to use your workstation as SSH server?
+ssh_server: yes

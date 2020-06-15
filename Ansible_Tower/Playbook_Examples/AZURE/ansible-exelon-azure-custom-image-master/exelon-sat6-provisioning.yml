@@ -1,0 +1,13 @@
+---
+- hosts: "localhost"
+  vars_files:
+    - "vars/exelon-sat6-secrets.yml"
+  tasks:
+    - name: "Create Satellite 6 hosts"
+      include_role:
+        name: "sat6-create-hosts"
+      vars:
+        sat6_fqdn: "sat6admin-omf-01v.exelonds.com"
+        sat6_user: "ansible-tower"
+        sat6_organization: "BSC"
+        sat6_fail_on_existing: True

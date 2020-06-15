@@ -1,0 +1,6 @@
+---
+# file: roles/provisioning/handlers/restart-network.yml
+- name: Restart Network
+  service:
+    name=network
+    state=restarted

@@ -1,0 +1,17 @@
+---
+- name: 'Configure DNS Zone in IdM'
+  ipa_dnszone:
+    ipa_host: '{{ idm_server }}'
+    ipa_pass: '{{ idm_password }}'
+    state: present
+    zone_name: "{{ domain_name }}"
+    validate_certs: False
+
+
+- name: 'Configure DNS Zone in IdM'
+  ipa_dnszone:
+    ipa_host: '{{ idm_server }}'
+    ipa_pass: '{{ idm_password }}'
+    state: present
+    zone_name: '{{ idm_reverse_zone_name }}'
+    validate_certs: False

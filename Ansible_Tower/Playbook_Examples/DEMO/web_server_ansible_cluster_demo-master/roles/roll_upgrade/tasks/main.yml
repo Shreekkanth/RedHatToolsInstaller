@@ -1,0 +1,68 @@
+---
+# tasks file for roles/roll_upgrade
+- name: Generate sensu silence entry for nginx server
+  sensu_silence:
+    subscription: client:sensu-client
+    check: "{{ ansible_hostname }}-check"
+    creator: "Ansible"
+    reason: "Rolling upgrade"
+    #expire: 60
+    url: http://127.0.0.1:4567
+  delegate_to: "{{ groups['sensu'][0] }}"
+
+#- pause: seconds=15
+
+- name: Remove nginx server from haproxy pool
+  haproxy:
+    state: disabled
+    host: "{{ ansible_fqdn }}"
+    #backend: http_back
+    #fail_on_not_found: yes
+    #wait: yes
+  delegate_to: "{{ groups['haproxy'][0] }}"
+
+#- pause: seconds=15
+
+- name: Upgrade nginx
+  yum:
+    name: nginx-1.12.2-1.el7_4.ngx
+    state: present
+
+- name: Copy new nginx config over
+  copy:
+    src: new_default.conf
+    dest: /etc/nginx/conf.d/default.conf
+
+- name: Copy over new index page
+  template:
+    src: index.html.j2
+    dest: /usr/share/nginx/html/index.html
+
+- name: Restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+#- pause: seconds=15
+
+- name: Re-add nginx server to haproxy pool
+  haproxy:
+    state: enabled
+    host: "{{ ansible_fqdn }}"
+    #backend: http_back
+    #fail_on_not_found: yes
+    #wait: yes
+  delegate_to: "{{ groups['haproxy'][0] }}"
+
+#- pause: seconds=15
+
+- name: Remove sensu silence entry for nginx server
+  sensu_silence:
+    subscription: client:sensu-client
+    check: "{{ ansible_hostname }}-check"
+    state: absent
+    url: http://127.0.0.1:4567
+  delegate_to: "{{ groups['sensu'][0] }}"
+
+#- pause: seconds=15

@@ -1,0 +1,28 @@
+- name: Configure virt-who
+  hosts: all
+  tasks:
+    - name: Install packages
+      package:
+        name: virt-who
+        state: latest
+
+    - name: Configure virt-who
+      lineinfile:
+        name: /etc/sysconfig/virt-who
+        line: "{{ item }}"
+      with_items:
+        - 'VIRTWHO_SATELLITE6=1'
+        - 'VIRTWHO_LIBVIRT=1'
+      register: configure_virt_who_result
+
+    - name: Start and Enable virt-who
+      service:
+        name: virt-who
+        state: started
+        enabled: True
+
+    - name: Restart virt-who
+      service:
+        name: virt-who
+        state: restarted
+      when: configure_virt_who_result.changed

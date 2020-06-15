@@ -1,0 +1,49 @@
+---
+
+- name: Build VMs  
+  hosts: kvm
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: libvirt_build_vms
+
+    - include_role:
+        name: libvirt_start_vms
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible_host_configure 
+
+- name: Configure VM for Ansible Tower
+  hosts: gitlab 
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: extend_vm_disks
+
+    - include_role:
+        name: rhsm_register
+
+- name: Install Ansible Tower
+  hosts: gitlab
+  become: true
+  vars_files:
+    - vars/gitlabserver_vms.yml
+
+  tasks:
+    - include_role:
+        name: install_gitlab 
+      environment:
+        EXTERNAL_URL: "http://{{git_lab_server_fqdn}}"

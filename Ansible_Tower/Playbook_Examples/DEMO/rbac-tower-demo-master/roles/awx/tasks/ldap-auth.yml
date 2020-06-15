@@ -1,0 +1,156 @@
+---
+# awx/tasks/ldap-auth.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+# TODO Move this LDAP 
+
+- block:
+    - name: Import setting AUTH_LDAP_SERVER_URI
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_SERVER_URI
+        value: "ldap://{{ env.replace('_', '') }}ldap:389"
+
+    - name: Import setting AUTH_LDAP_BIND_DN
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_BIND_DN
+        value: "cn=admin,{{ base_dn }}"
+
+    - name: Import setting AUTH_LDAP_BIND_PASSWORD
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_BIND_PASSWORD
+        value: "{{ ldap_admin_password }}"
+
+    - name: Import setting AUTH_LDAP_USER_SEARCH
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_USER_SEARCH
+        value: '[
+            "OU=Users,{{ base_dn }}",
+            "SCOPE_SUBTREE",
+            "(cn=%(user)s)"
+        ]'
+
+    - name: Import setting AUTH_LDAP_USER_DN_TEMPLATE
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_USER_DN_TEMPLATE
+        value: "cn=%(user)s,ou=Users,{{ base_dn }}"
+
+    - name: Import setting AUTH_LDAP_GROUP_SEARCH
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_GROUP_SEARCH
+        value: '[
+            "ou=Groups,{{ base_dn }}",
+            "SCOPE_SUBTREE",
+            "(objectClass=posixGroup)"
+        ]'
+
+    - name: Import setting AUTH_LDAP_GROUP_TYPE
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_GROUP_TYPE
+        value: "PosixGroupType"
+
+    - name: Import setting AUTH_LDAP_GROUP_TYPE_PARAMS
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_GROUP_TYPE_PARAMS
+        value: '{}'
+
+    - name: Import settiing AUTH_LDAP_USER_ATTR_MAP
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_USER_ATTR_MAP
+        value: {
+            "first_name": "givenName",
+            "last_name": "sn"
+        }
+
+    - name: Import setting AUTH_LDAP_ORGANIZATION_MAP
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_ORGANIZATION_MAP
+        value: '{
+            "{{ org }}": {
+                "users": {{ awx_org_user_groups }},
+                "remove_users": false,
+                "admins": "{{ awx_org_admin }}",
+                "remove_admins": false
+            }
+        }'
+
+    - name: Import setting AUTH_LDAP_USER_FLAGS_BY_GROUP
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_USER_FLAGS_BY_GROUP
+        value: '{
+            "is_superuser": "{{ awx_superuser }}",
+            "is_system_auditor": "{{ awx_systemauditor }}"
+        }'
+        
+    - name: Import setting AUTH_LDAP_TEAM_MAP
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_TEAM_MAP
+        value: {
+            "Admin": {
+                "users": "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "Auditor": {
+                "users": "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "DEV/QA": {
+                "users": "cn=DTCA_EIT_MW_DEV_ANSBL_DEV,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "Operation Executor": {
+                "users": "cn=DTCA_EIT_MW_DEV_ANSBL_EXE,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "Inventory Manager": {
+                "users": "cn=DTCA_EIT_MW_DEV_ANSBL_INVMGR,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            }
+        }
+      when: env == "wf_dev"
+      
+    - name: Import setting AUTH_LDAP_TEAM_MAP
+      tower_settings:
+        tower_config_file: "{{ tower_config_file }}"
+        name: AUTH_LDAP_TEAM_MAP
+        value: {
+            "DTCA_EIT_ANSBL_PROD_SYS_ADMIN": {
+                "users": "cn=DTCA_EIT_ANSBL_PROD_SYS_ADMIN,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "DTCA_EIT_ANSBL_PROD_SYS_AUDIT": {
+                "users": "cn=DTCA_EIT_ANSBL_PROD_SYS_AUDIT,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "DTCA_EIT_ANSBL_PROD_SYS_EXE": {
+                "users": "cn=DTCA_EIT_ANSBL_PROD_SYS_EXE,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            },
+            "DTCA_EIT_ANSBL_PROD_SYS_INVMGR": {
+                "users": "cn=DTCA_EIT_ANSBL_PROD_SYS_INVMGR,ou=Groups,{{ base_dn }}",
+                "remove": true,
+                "organization": "Wells Fargo"
+            }
+        }
+      when: env == "wf_prod"
+  vars:
+    base_dn: "dc={{ domain.split('.')[-3] }},dc={{ domain.split('.')[-2] }},dc={{ domain.split('.')[-1] }}"

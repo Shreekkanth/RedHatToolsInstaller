@@ -1,0 +1,5 @@
+---
+# defaults file for webserver
+pkg_list: ''
+svcs: ''
+fw_type: ''

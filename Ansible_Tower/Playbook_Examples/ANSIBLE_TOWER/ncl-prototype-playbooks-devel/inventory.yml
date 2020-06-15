@@ -1,0 +1,7 @@
+---
+towers:
+  hosts:
+    test-tower-1:
+      ansible_host: ip-10-20-0-117.us-east-2.compute.internal
+#    test-tower-2:
+#      ansible_host: ip-10-20-0-117.us-east-2.compute.internal

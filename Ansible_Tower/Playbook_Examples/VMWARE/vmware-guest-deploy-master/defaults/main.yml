@@ -1,0 +1,4 @@
+---
+# defaults file for role-vmware-guest
+vmware_ip_delay: 30
+vmware_validate_certs: true

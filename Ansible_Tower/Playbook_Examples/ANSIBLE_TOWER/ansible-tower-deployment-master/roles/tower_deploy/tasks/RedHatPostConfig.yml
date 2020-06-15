@@ -1,0 +1,31 @@
+- name: Open HTTPS Firewall Port
+  iptables:
+    chain: INPUT
+    jump: ACCEPT
+    destination_port: 443
+    protocol: tcp
+
+- name: Install python-setuptools
+  yum:
+    name: python-setuptools
+    state: present
+
+- name: Install python-devel
+  yum:
+    name: python-devel
+    state: present
+
+- name: Install Pip
+  easy_install:
+    name: pip
+
+- name: Install Pip packages
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - requests
+    - pprint
+    - ciscoconfparse
+    - netaddr
+    - pyvmomi
+    - ansible-tower-cli

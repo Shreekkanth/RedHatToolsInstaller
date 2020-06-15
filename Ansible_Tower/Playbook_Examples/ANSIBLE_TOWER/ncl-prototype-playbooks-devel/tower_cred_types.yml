@@ -1,0 +1,9 @@
+---
+# Tower credential types
+
+- hosts: all
+  tasks:
+  - name: Tower credential types
+    include_role:
+      name: tower_cred_types
+    loop: "{{ tower_cred_types }}"

@@ -1,0 +1,14 @@
+---
+# Setup Vim
+
+- name: Install Vundler
+  git:
+    repo: https://github.com/gmarik/Vundle.vim.git
+    dest: /home/{{ myuser }}/.vim/bundle/Vundle.vim
+    version: master
+
+- name: Install vim dotfiles
+  shell: "stow -d {{ playbook_dir }}/dot-files -t ~ vim"
+
+- name: Install vim plugins
+  shell: "vim +PluginInstall +qall"

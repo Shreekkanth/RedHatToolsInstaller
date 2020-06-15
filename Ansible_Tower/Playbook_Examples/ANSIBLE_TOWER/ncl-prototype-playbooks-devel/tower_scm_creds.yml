@@ -1,0 +1,9 @@
+---
+# Tower SCM credentials
+
+- hosts: all
+  tasks:
+  - name: Tower SCM creds
+    include_role:
+      name: tower_creds
+    loop: "{{ tower_scm_creds }}"

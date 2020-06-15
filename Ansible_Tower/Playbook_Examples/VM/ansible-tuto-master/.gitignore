@@ -1,0 +1,8 @@
+.tags
+.vagrant
+test/step-*.log
+
+_book/
+node_modules/
+
+

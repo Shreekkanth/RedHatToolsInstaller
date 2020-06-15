@@ -1,0 +1,6 @@
+---
+initial_packages:
+  - vim
+  - bind-utils
+  - telnet
+  - wget

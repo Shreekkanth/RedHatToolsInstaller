@@ -1,0 +1,164 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    project_id: 249
+    aceplus_os_cred: 28
+    oracle_os_cred: 29
+    db_inv: 47
+    weblogic_inv: 48
+    sc1_inv: 49
+    sc2_inv: 50
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Create ACEPlus DR Stage1-  Get Prod DB table info
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stage1/check_prod_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars":  "---\noracle_home: /u01/app/oracle/product/11.2.0.4/dbhome_1\noracle_bin: /u01/app/oracle/product/11.2.0.4/dbhome_1/bin\noracle_dbname: my_acepdb10\noracle_user: ace",
+          "name": "ACEPlus DR Stage1: Get Prod DB table info"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create ACEPlus DR Stage1- Stop Prod WebLogic
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ aceplus_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stage1/stop_prod_weblogic.yml",
+          "inventory": "{{ weblogic_inv }}",
+          "extra_vars":  "---\naceplus_script_folder: /ACEPlus/execute/script/",
+          "name": "ACEPlus DR Stage1: Stop Prod WebLogic"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create ACEPlus DR Stage1- Stop Prod Score Rule #1
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ aceplus_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stage1/stop_prod_scorerule1.yml",
+          "inventory": "{{ sc1_inv }}",
+          "extra_vars":  "---\naceplus_script_folder: /ACEPlus/execute/script/",
+          "name": "ACEPlus DR Stage1: Stop Prod Score Rule #1"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create ACEPlus DR Stage1- Stop Prod Score Rule #2
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ aceplus_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stage1/stop_prod_scorerule2.yml",
+          "inventory": "{{ sc2_inv }}",
+          "extra_vars":  "---\naceplus_script_folder: /ACEPlus/execute/script/",
+          "name": "ACEPlus DR Stage1: Stop Prod Score Rule #2"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+
+  - name: Create ACEPlus DR Stage1- Stop Prod Control Process 
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ aceplus_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stage1/stop_prod_controlprocess.yml",
+          "inventory": "{{ weblogic_inv }}",
+          "extra_vars":  "---\naceplus_script_folder: /ACEPlus/execute/script/",
+          "name": "ACEPlus DR Stage1: Stop Prod Control Process"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: Create ACEPlus DR Stage1- Stop Prod Database
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stage1/stop_prod_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars":  "---\naceplus_script_folder: /ACEPlus/execute/script/\noracle_home: /u01/app/oracle/product/11.2.0.4/dbhome_1\noracle_bin: /u01/app/oracle/product/11.2.0.4/dbhome_1/bin\noracle_dbname: my_acepdb10\noracle_user: ace",
+          "name": "ACEPlus DR Stage1: Stop Prod Database"
+        }
+      status_code: 201
+    ignore_errors: yes

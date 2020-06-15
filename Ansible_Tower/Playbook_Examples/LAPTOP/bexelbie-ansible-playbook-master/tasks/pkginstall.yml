@@ -1,0 +1,73 @@
+---
+# Install packages for other functionality not in base Fedora Workstation
+
+- name: Package install - system needs
+  become: yes
+  dnf:
+    state: present
+    name:
+      - cockpit
+      - gocryptfs
+      - restic
+      - rclone
+
+- name: enable and start cockpit
+  become: yes
+  systemd:
+    name: cockpit.socket
+    state: started
+    enabled: yes
+
+- name: Package install - Dev Needs
+  become: yes
+  dnf:
+    state: present
+    name:
+      - meld
+      - redhat-rpm-config
+      - vagrant
+      - vagrant-sshfs
+      - podman
+      - golang # for building gocryptfs
+      - openssl-devel # for building gocryptfs
+
+- name: Add {{ myuser }} to the mock group
+  user:
+    name: {{ myuser }}
+    groups: mock
+    append: yes
+
+- name: Package install - user setup needs - Graphical
+  become: yes
+  dnf:
+    state: present
+    name:
+      - calibre
+      - dayjournal
+      - firefox
+      - mozilla-https-everywhere
+      - hexchat
+      - chromium
+      - shotwell
+
+- name: Package install - user setup needs - CLI
+  become: yes
+  dnf:
+    state: present
+    name:
+      - pass
+      - pass-otp
+      - zbar
+      - oathtool
+      - pius
+      - stow
+      - xclip
+      - vim-enhanced
+      - bat
+      - exa
+      - ripgrep
+      - imapsync
+      - youtube-dl
+      - krb5-workstation
+      - ledger
+      - python3-mailmerge

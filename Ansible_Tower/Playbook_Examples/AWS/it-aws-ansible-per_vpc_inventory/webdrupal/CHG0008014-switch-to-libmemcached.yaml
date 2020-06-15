@@ -1,0 +1,149 @@
+# Playbook: switch-to-libmemcached.yaml
+#
+#   Migrates app hosts from memcache to memcached.
+#
+---
+#
+# Pre-tasks for rolling release
+#
+- hosts: webdrupal-app
+  gather_facts: true
+  pre_tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=60 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: set nagios downtime for proxy services
+      nagios: action=downtime minutes=60 service=all host="{{ item }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: groups['webdrupal-proxy']
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=60 service="{{ item }}" host="{{ admin_host_secondary }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: disable puppet
+      shell: service puppet stop
+      tags:
+        - puppet
+
+
+#
+# Tasks for full outage migration to memcached for app nodes
+#
+- hosts: webdrupal-app
+  gather_facts: true
+  tasks:
+    - name: disable puppet
+      shell: webdrupal disable_puppet
+      tags: puppet
+
+    - name: gathering ec2 facts
+      ec2_facts:
+      tags:
+        - out_rotation
+        - in_rotation
+
+    # TODO: enable that thing on ELBs so connections aren't dropped
+    - name: instance de-register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        state: 'absent'
+      tags:
+        - out_rotation
+
+    - name: webdrupal disable
+      shell: webdrupal disable
+      tags:
+        - webdrupal_disable
+
+    - name: start puppet
+      shell: service puppet start
+      tags:
+        - puppet
+
+    - name: enabling puppet
+      shell: puppet agent --enable
+      tags:
+        - puppet
+
+    - name: run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes
+      tags:
+        - puppet
+
+    - name: disable puppet
+      shell: webdrupal disable_puppet
+      tags: always_do_this
+
+    - name: Remove /tmp/.htaccess
+      shell: rm -f /tmp/.htaccess
+      ignore_errors: true
+
+    - name: flush memcache
+      shell: webdrupal flush_memcache
+      when: inventory_hostname == update_node
+      tags:
+        - memcache
+        - webdrupal_flush_memcache
+
+    - name: Reset drupal cache
+      shell: sudo -u apache drush cc all
+      when: inventory_hostname == update_node
+      ignore_errors: true
+
+    - name: webdrupal enable
+      shell: webdrupal enable
+      tags:
+        - webdrupal_enable
+
+    - name: re-add cmsapp1 to price editing hack elb
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ price_hack_id }}"
+        ec2_elbs: "{{ price_hack_elb }}"
+        state: 'present'
+      when: price_hack_id is defined and price_hack_elb is defined
+      ignore_errors: yes
+      tags:
+        - in_rotation
+        - price_hack
+
+    - name: instance register
+      local_action: ec2_elb
+      args:
+        instance_id: "{{ ansible_ec2_instance_id }}"
+        ec2_elbs: "{{ elb_name }}"
+        state: 'present'
+      ignore_errors: yes
+      tags:
+        - in_rotation
+
+    - name: flush memcache
+      shell: webdrupal flush_memcache
+      when: inventory_hostname == update_node
+      tags:
+        - memcache
+        - webdrupal_flush_memcache
+
+    - name: Remove /tmp/.htaccess
+      shell: rm -f /tmp/.htaccess
+      ignore_errors: true
+
+    - name: re-enable puppet
+      shell: webdrupal enable_puppet
+      tags: always_do_this

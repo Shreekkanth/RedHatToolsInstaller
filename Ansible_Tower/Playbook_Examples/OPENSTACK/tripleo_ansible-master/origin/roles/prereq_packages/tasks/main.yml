@@ -1,0 +1,6 @@
+---
+
+- name: install prereq packages for install
+  yum: name={{ item }} state=latest enablerepo=epel
+  with_items: "{{ install_prereq_packages }}"
+

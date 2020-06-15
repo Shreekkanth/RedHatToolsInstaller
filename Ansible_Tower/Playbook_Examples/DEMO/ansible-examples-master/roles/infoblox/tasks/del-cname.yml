@@ -1,0 +1,9 @@
+---
+- name: '[INFOBLOX][ADD-CNAME] ADD cname'
+  infoblox:
+    server: "{{ ifserver }}"
+    username: "{{ ifuser }}"
+    password: "{{ ifpass }}"
+    action: delete_cname
+    cname: "{{ record }}"
+    api_version: "{{ wapi }}"

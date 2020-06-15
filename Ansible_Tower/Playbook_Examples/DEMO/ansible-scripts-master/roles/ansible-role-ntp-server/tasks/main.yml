@@ -1,0 +1,37 @@
+---
+# tasks file for roles/ansible-role-ntp-server
+- name: Ensure NTP-related packages are installed.
+  package:
+    name: ntp
+    state: present
+
+- name: Ensure tzdata package is installed (Linux).
+  package:
+    name: tzdata
+    state: present
+  when: ansible_system == "Linux"
+
+- name: Set timezone
+  timezone:
+    name: "{{ ntp_timezone }}"
+
+- name: Ensure NTP is running and enabled as configured.
+  service:
+    name: "{{ ntp_daemon }}"
+    state: started
+    enabled: yes
+  when: ntp_enabled
+
+- name: Ensure NTP is stopped and disabled as configured.
+  service:
+    name: "{{ ntp_daemon }}"
+    state: stopped
+    enabled: no
+  when: not ntp_enabled
+
+- name: Generate ntp.conf file
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+  notify: restart ntp
+  when: ntp_manage_config

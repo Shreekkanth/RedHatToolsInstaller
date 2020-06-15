@@ -1,0 +1,22 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name: Register with Red Hat
+  redhat_subscription:
+    state: present
+    activationkey: "{{ rh_ak }}"
+    org_id: "{{ rh_orgid }}"
+    force_register: yes
+
+- name: Disable all RHSM repositories
+  rhsm_repository:
+    name: '*'
+    state: disabled
+
+- name: Enable all repositories required for lab
+  rhsm_repository:
+    name: "{{ item.key }}"
+    state: enabled
+  with_dict: "{{ rhsm_repos }}"
+

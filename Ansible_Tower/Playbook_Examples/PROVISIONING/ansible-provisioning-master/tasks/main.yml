@@ -1,0 +1,21 @@
+---
+# tasks file for provisioning
+- include: facts.yml
+- include: network.yml
+- include: subscription.yml
+- include: repos.yml
+- include: pinning.yml
+
+- include: update.yml
+  when: provisioning_update_system and provisioning_update_system == true
+
+- include: packages.yml
+
+- include: openvpn.yml
+  when: provisioning_openvpn and provisioning_openvpn == true
+
+- include: ssh.yml
+- include: users.yml
+
+- include: undercloud.yml
+  when: provisioning_undercloud and provisioning_undercloud == true

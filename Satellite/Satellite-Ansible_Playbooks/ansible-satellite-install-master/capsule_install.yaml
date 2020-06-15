@@ -1,0 +1,120 @@
+- name: satellite - install sat server
+  hosts: capsule
+  remote_user: root
+
+## Set some facts.
+  tasks:
+
+    - include_vars: /etc/ansible/satellite_facts.yaml
+
+    - set_fact: eth_alias_name="{{ ansible_default_ipv4["alias"] }}"
+    - set_fact: eth_alias_path="/etc/sysconfig/network-scripts/ifcfg-{{ eth_alias_name }}"
+
+    - name: set hostname to newsat
+      raw: hostnamectl set-hostname "{{ cap_hostname }}"
+
+    - name: hosts file with correct hostname
+      template: src=include/hosts dest=/etc/hosts owner=root group=root mode=0644
+
+    - lineinfile:
+        dest=/etc/hosts
+        regexp="^127.0.0.1 .*$"
+        line="127.0.0.1   {{ cap_hostname }} localhost localhost.localdomain localhost4 localhost4.localdomain4"
+
+    - lineinfile:
+        dest=/etc/hosts
+        regexp="^#OTHERSERVERNAME.*$"
+        line="{{ sat_ipaddr }}   {{ sat_hostname }}"
+
+    - name: ifcfg config template
+      template: src=include/ifcfg-template dest="{{ eth_alias_path }}" owner=root group=root mode=0644
+
+    - lineinfile:
+        dest="{{ eth_alias_path }}"
+        regexp=^IPADDR
+        line="IPADDR={{ cap_ipaddr }}"
+
+    - lineinfile:
+        dest="{{ eth_alias_path }}"
+        regexp=^GATEWAY
+        line="GATEWAY={{ sat_gateway }}"
+
+    - lineinfile:
+        dest="{{ eth_alias_path }}"
+        regexp=^NETMASK
+        line="NETMASK={{ sat_netmask }}"
+
+    - lineinfile:
+        dest="{{ eth_alias_path }}"
+        regexp=^NAME
+        line="NAME=\"{{ eth_alias_name }}\""
+
+    - lineinfile:
+        dest="{{ eth_alias_path }}"
+        regexp=^DEVICE
+        line="DEVICE=\"{{ eth_alias_name }}\""
+
+    - name: motd
+      template: src=include/motd_capsule dest=/etc/motd owner=root group=root mode=0644
+
+    - lineinfile: 
+        dest=/etc/motd
+        regexp=^HOSTNAME
+        line="                     HOSTNAME  ===>  {{ cap_hostname }} "
+
+    - lineinfile: 
+        dest=/etc/motd
+        regexp=^IPADDRESS
+        line="                    IP ADDRESS ===>  {{ cap_ipaddr }} "
+
+    - name: get the satellite server certificates
+      get_url:  url="https://{{ sat_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm" dest=/root owner=root group=root mode=644 validate_certs=no
+
+    - name: install the satellite server certificates
+      yum:
+        name: /root/katello-ca-consumer-latest.noarch.rpm
+        state: present
+
+    - name: register the machine
+      raw: "subscription-manager register --username admin --password {{ sat_password }} --force --auto-attach --org {{ sat_organization }}"
+
+    - name: yum install nano     
+      yum: name=nano state=latest
+
+    - name: look for subscriptions consumed
+      raw: subscription-manager list --consumed --matches *Satellite* --pool-only
+      register: sat_subpool_consumed
+
+    - name: look for subscriptions available
+      raw: subscription-manager list --all --available --matches *Satellite* --pool-only | xargs echo -n
+      register: sat_subpool_available
+
+    - name: CONDITION no pool available and no pool consumed -- we exit with message.
+      fail: msg="No Satellite pool is available with your subscription."
+      when: (sat_subpool_available.stdout == "") and (sat_subpool_consumed.stdout == "")
+
+    - name: CONDITION a pool is already consumed -- we announce it and keep going.
+      debug: msg="we are already subscribed with pool {{ sat_subpool_consumed.stdout }}"
+      when: sat_subpool_consumed.stdout != ""
+
+    - name: CONDITION a pool is available but no pool is currently consumed -- we attach the pool and keep going.
+      raw: "subscription-manager attach --pool={{ sat_subpool_available.stdout }}"
+      when: (sat_subpool_available.stdout != "") and (sat_subpool_consumed.stdout == "")
+
+    - name: disable all repos
+      raw: "subscription-manager repos --disable \"*\""
+
+    - name: enable specific repos we need
+      raw:  subscription-manager repos --enable=rhel-7-server-satellite-tools-6.2-rpms
+
+    - name: yum clean all
+      raw: yum clean all
+
+    - name: yum install satellite
+      yum: name=katello-agent state=latest
+
+    - name: yum install hostname
+      yum: name=hostname state=latest
+
+    - name: enable firewall port for satellite6
+      firewalld: service=RH-Satellite-6 immediate=true permanent=true state=enabled

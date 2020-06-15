@@ -1,0 +1,30 @@
+---
+- hosts: webdrupal-mysql
+
+  gather_facts: true
+
+  pre_tasks:
+    - name: set nagios downtime for application services
+      nagios: action=downtime minutes=30 service=all host={{ inventory_hostname }}
+      delegate_to: "{{ nagios_host }}"
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=30 service="{{ item }}" host="{{ admin_host }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+    - name: set nagios downtime for elbs
+      nagios: action=downtime minutes=30 service="{{ item }}" host="{{ admin_host_secondary }}"
+      delegate_to: "{{ nagios_host }}"
+      with_items: elbs
+      when: elbs is defined
+      tags: nagios
+
+  tasks:
+    - name: Run puppet
+      shell: /usr/bin/puppet agent --test
+      ignore_errors: yes
+      tags: puppet

@@ -1,0 +1,16 @@
+---
+
+- name: create .kube
+  file: path=~/.kube state=directory
+- name: check admin.conf
+  shell: test -f /etc/kubernetes/admin.conf
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: copy .config
+  shell: cp -i {{ item }} ~/.kube/config
+  with_items:
+    - /etc/kubernetes/admin.conf
+  when: result|success

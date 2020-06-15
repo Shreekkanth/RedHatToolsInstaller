@@ -1,0 +1,34 @@
+---
+
+- name: Unregister idm systems
+  hosts: idm 
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: rhsm_unregister
+
+
+- name: Remove idm lab based on var file   
+  hosts: kvm
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: clear_down_lab
+
+- name: Configure Ansible Host to remove Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - vars/idm_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible_host_clear_entries
+
+

@@ -1,0 +1,32 @@
+---
+# vars file for ansible-satellite6-deployment/
+rhn_username: rhn-gps-amaliver
+# run ansible-vault encrypt_string "rhn password" --ask-vault-pass
+rhn_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          38396237303534366136393664643765303631363866646565323832393139333334386161643139
+          6630396239663936653835666638366438376535363033350a666164616661663061386439623863
+          35373939626133633762333066333336353732383033373763303936393331333431363165376630
+          6265363830643164610a383166336164323631393538333832363633336264303465336634353639
+          6635
+
+connected: true
+foreman_admin: admin
+# run ansible-vault encrypt_string "rhn password" --ask-vault-pass to encrypt password
+admin_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31383136303833623963393337636536373862626163633532346266633366613631383761366635
+          6164633432353039306534383330313835353036396530330a633633373835323162386566396461
+          61656438393833306362616638306365666339383831666165373031653130393962633637336364
+          3066663262326535350a653366346331313133366634326364623631643664383664643930356361
+          3065
+
+initial_org: "RedHat"
+initial_loc: "pub"
+custom_cert: "false"
+# URL to server that's hosting the repos synced from connected satellite
+repo_server: "cdn.example.com"
+sat6_version: "6.3"
+custom_ca: false
+#new_install: false
+manifests_file: "/Users/amaliver/Documents/ansible/ansible-satellite6-deployment/files/Cloud_Suite_Latest.zip"

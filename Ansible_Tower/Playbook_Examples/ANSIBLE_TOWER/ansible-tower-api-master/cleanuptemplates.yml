@@ -1,0 +1,190 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Get all job template id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v1/job_templates/
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    ignore_errors: yes
+    register: get_job_template
+    tags: template-id
+
+  - name: Print all Job Template ID
+    debug:
+      msg: "{{ item }}"
+    with_items: "{{ get_job_template.json.results }}"
+    tags: template-id
+    ignore_errors: yes
+
+  - name: Delete all job template id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/job_templates/{{ item.id }}/
+      method: DELETE
+      validate_certs: false
+      return_content: no
+      body_format: json
+      status_code: 204
+    with_items: "{{ get_job_template.json.results }}"
+    tags: template-id
+    ignore_errors: yes
+
+  - name: Get all workflow template id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/workflow_job_templates/
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: get_workflow_template
+    tags: worfklow-id
+    ignore_errors: yes
+
+  - name: Print all Workflow Template ID
+    debug:
+      msg: "{{ item }}"
+    with_items: "{{ get_workflow_template.json.results }}"
+    tags: worfklow-id
+    ignore_errors: yes
+
+  - name: Delete all Workflow template id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/workflow_job_templates/{{ item.id }}/
+      method: DELETE
+      validate_certs: false
+      return_content: no
+      body_format: json
+      status_code: 204
+    with_items: "{{ get_workflow_template.json.results }}"
+    tags: worfklow-id
+    ignore_errors: yes
+
+  - name: Get all inventories ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/inventories/
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: get_inv_id
+    tags: inv-id
+    ignore_errors: yes
+
+  - name: Print all Inv Template ID
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ get_inv_id.json.results }}"
+    tags: inv-id
+    ignore_errors: yes
+
+  - name: Delete all Inv id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/inventories/{{ item.id }}/
+      method: DELETE
+      validate_certs: false
+      return_content: no
+      body_format: json
+      status_code: 202
+    with_items: "{{ get_inv_id.json.results }}"
+    tags: inv-id
+    ignore_errors: yes
+
+  - name: Get all creds ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/credentials/
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: get_creds_id
+    tags: creds-id
+    ignore_errors: yes
+
+  - name: Print all Creds ID
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ get_creds_id.json.results }}"
+    tags: creds-id
+    ignore_errors: yes
+
+  - name: Delete all Creds id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/credentials/{{ item.id }}/
+      method: DELETE
+      validate_certs: false
+      return_content: no
+      body_format: json
+      status_code: 204
+    with_items: "{{ get_creds_id.json.results }}"
+    tags: creds-id
+    ignore_errors: yes
+
+  - name: Get all Project ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/projects/
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: get_proj_id
+    tags: proj-id
+    ignore_errors: yes
+
+  - name: Print all Proj ID
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ get_proj_id.json.results }}"
+    tags: proj-id
+    ignore_errors: yes
+
+  - name: Delete all Creds id
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: https://tower.bytewise.com.my/api/v2/projects/{{ item.id }}/
+      method: DELETE
+      validate_certs: false
+      return_content: no
+      body_format: json
+      status_code: 204
+    with_items: "{{ get_proj_id.json.results }}"
+    tags: proj-id
+    ignore_errors: yes

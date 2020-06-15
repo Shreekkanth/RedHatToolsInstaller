@@ -1,0 +1,17 @@
+---
+# tasks file for bind
+
+- include_vars: ../../virt/defaults/main.yml
+  tags: bind_main
+
+- include: enable_repository.yml
+  when:
+  - bind_enable_repository == true
+  - bind_requisite_repositories is defined
+  tags: enable_repository
+
+- include: install_requisite.yml
+  tags: install_requisite
+
+- include: create_zone.yml
+  tags: create_zone

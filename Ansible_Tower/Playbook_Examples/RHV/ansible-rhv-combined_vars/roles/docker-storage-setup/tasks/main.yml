@@ -1,0 +1,41 @@
+---
+# tasks file for docker-storage-setup
+
+  - name: Install docker
+    yum:
+      name: "{{ docker_package_name }}"
+      state: "{{ docker_package_version }}"
+
+  - name: docker-storage-setup (remove overlay2)
+    lineinfile:
+      path: "{{ docker_storage_setup_path }}"
+      regexp: overlay2
+      state: absent
+    tags:
+      - storage-setup
+      - remove-overlay2
+
+  - name: "docker-storage-setup (add DEV={{ docker_storage_device }})"
+    lineinfile:
+      path: "{{ docker_storage_setup_path }}"
+      regexp: DEVS
+      line: "DEVS={{ docker_storage_device}}"
+    tags:
+      - storage-setup
+
+  - name: "docker-storage-setup (add VG={{ docker_storage_volume_group }})"
+    lineinfile:
+      path: "{{ docker_storage_setup_path }}"
+      regexp: VG=
+      line: "VG={{ docker_storage_volume_group }}"
+    tags:
+      - storage-setup
+
+  - name: "docker-storage-setup (add WIPE_SIGNATURES={{ docker_wipe_signatures }})"
+    lineinfile:
+      path: "{{ docker_storage_setup_path }}"
+      regexp: WIPE_SIGNATURES
+      line: "WIPE_SIGNATURES={{ docker_wipe_signatures }}"
+    tags:
+      - storage-setup
+      - wipe-signatures

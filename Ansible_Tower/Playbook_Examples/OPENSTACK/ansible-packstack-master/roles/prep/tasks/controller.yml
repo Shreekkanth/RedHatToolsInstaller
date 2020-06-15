@@ -1,0 +1,17 @@
+---
+- name: Determine if server is virtual
+  command: virt-what
+  register: is_virt
+
+- name: Install rhev guest agent
+  yum:
+    name: rhevm-guest-agent-common
+    state: latest
+  when: is_virt.stdout == 'kvm'
+
+- name: Start rhev guest agent
+  service:
+    enabled: yes
+    name: ovirt-guest-agent
+    state: started
+  when: is_virt.stdout == 'kvm'

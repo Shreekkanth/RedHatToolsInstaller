@@ -1,0 +1,10 @@
+---
+#TODO ntp config
+- hosts: clients
+  vars_files:
+    - ./vars/common.yml
+    - ./roles/satellite-install/vars/main.yml
+
+  roles:
+    - client-register
+...

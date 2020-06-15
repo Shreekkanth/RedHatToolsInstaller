@@ -1,0 +1,69 @@
+---
+- name: Get authentication key
+  uri:
+    url: "{{ sdm_create_ticket_api_base_url }}/rest_access"
+    method: POST
+    headers:
+      Accept: Application/json
+      Authorization: "Basic {{ sdm_create_ticket_api_key }}"
+      Content-Type: Application/Json
+    body:
+      rest_access:
+    body_format: json
+    return_content: yes
+    status_code: 201
+  register: auth_key_result
+- name: Debug auth_key_result
+  debug:
+    var: auth_key_result
+    verbosity: 1
+
+- name: Get requestor account UUID
+  uri:
+    url: "{{ sdm_create_ticket_api_base_url }}/cnt?WC=userid%3D'{{ sdm_create_ticket_requestor_id }}'"
+    method: GET
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    return_content: yes
+  register: user_id_result
+- name: Debug user_id_result
+  debug:
+    var: user_id_result
+    verbosity: 1
+
+- name: Create interaction record
+  uri:
+    url: "{{ sdm_create_ticket_api_base_url }}/cr"
+    method: POST
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    body: "{{ lookup('template', 'create_request.j2') }}"
+    return_content: yes
+    status_code: 201
+  register: create_ticket_result
+
+- name: Register result
+  set_fact:
+    sdm_create_ticket:
+      raw_result: "{{ create_ticket_result }}"
+      ticket_id: "{{ create_ticket_result.json.cr['@id'] }}"
+
+- name: Delete access key
+  uri:
+    url: "{{ sdm_create_ticket_api_base_url }}/rest_access/{{ auth_key_result.json.rest_access['@id'] }}"
+    method: DELETE
+    headers:
+      Accept: application/json
+      Content-Type: application/xml;charset=UTF-8
+      X-AccessKey: "{{ auth_key_result.json.rest_access.access_key }}"
+    return_content: yes
+    status_code: 204
+  register: delete_access_key_result
+- name: Debug delete_access_key_result
+  debug:
+    var: delete_access_key_result
+    verbosity: 1

@@ -1,0 +1,6 @@
+---
+# defaults file for idm config env
+
+dns_record_state: present
+
+

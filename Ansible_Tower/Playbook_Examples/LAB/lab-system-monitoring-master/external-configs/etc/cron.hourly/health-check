@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/sbin/logrotate --force /etc/logrotate.d/health-check &> /dev/null

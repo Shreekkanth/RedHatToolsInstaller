@@ -1,0 +1,68 @@
+---
+
+- name: Wait at least 10 min for the vms to start before we can configre.
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 600
+
+- name: Configure SELinux to targeted and enforcing
+  selinux: 
+    policy: targeted
+    state: enforcing
+
+- name: Install packages
+  yum:
+    name: 
+      - wget
+      - git
+      - net-tools
+      - bind-utils
+      - yum-utils
+      - iptables-services
+      - bridge-utils
+      - bash-completion
+      - kexec-tools
+      - sos
+      - psacct
+      - docker-1.13.1
+    state: present
+
+- name: Install Ansible Openshift Packages for Openshift 3.11
+  yum:
+    name: 
+      - atomic-openshift-utils
+    state: present
+  when: "ocp_ver != 3.11"
+
+- name: Install Ansible Openshift Packages for Openshift 3.11
+  yum:
+    name: 
+      - openshift-ansible
+    state: present
+  when: "ocp_ver == 3.11"
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+  register: task_result
+
+- name: Reboot immediately if there was a change.
+  shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+  when: task_result is changed
+
+- name: Wait for the reboot to complete if there was a change.
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 300
+  when: task_result is changed
+
+
+
+

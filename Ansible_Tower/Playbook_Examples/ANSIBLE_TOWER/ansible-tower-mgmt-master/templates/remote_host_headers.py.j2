@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+
+{% set comma = joiner(",") %}
+{% if proxy_ip_whitelist is defined and proxy_ip_whitelist|length > 0 %}
+PROXY_IP_WHITELIST = [{% for host in proxy_ip_whitelist %}{{ comma() }}'{{ host }}'{% endfor %}]
+{% endif %}
+

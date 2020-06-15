@@ -1,0 +1,6 @@
+---
+linux_disk_management_vg_name: vg02
+linux_disk_management_disk_name: /dev/sdb
+linux_disk_management_volume_name: lv_opt_usr
+linux_disk_management_mount_point: /opt/usr
+linux_disk_management_filesystem_type: xfs

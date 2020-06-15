@@ -1,0 +1,28 @@
+---
+# tasks file for webserver
+- name: Install pkgs
+  yum:
+    name: "{{ item }}" 
+    state: latest
+  with_items: "{{ pkg_list }}" 
+
+- name:  Setup configfile
+  template:
+    src: httpd.conf.j2
+    dest: /etc/httpd/conf/httpd.conf
+  notify: web-restart
+
+- name: Setup services
+  service: 
+    name: "{{ item }}" 
+    state: started
+  with_items: "{{ svcs }}" 
+
+- name: Open {{ svcs }}
+  firewalld:
+    service: "{{ item }}" 
+    state: enabled
+    immediate: 1
+    permanent: 1
+  with_items: "{{ fw_services }}" 
+

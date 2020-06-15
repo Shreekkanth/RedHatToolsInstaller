@@ -1,0 +1,51 @@
+---
+- debug:
+    msg: "System {{ inventory_hostname }} will be an icinga2 {{icinga2_role}}"
+  tags:
+    - install
+    - config
+
+- name: Manage icinga2 zones.conf
+  template:
+    src: zones.conf.j2
+    dest: /etc/icinga2/zones.conf
+    owner: "{{icinga2_user[ansible_os_family]}}"
+    group: "{{ icinga2_group[ansible_os_family] }}"
+    mode: 0640
+  notify: Test config before restart icinga 2
+  tags:
+    - install
+    - config
+    - zones
+
+- name: Manage icinga2 constants.conf
+  template:
+    src: constants.conf.j2
+    dest: /etc/icinga2/constants.conf
+    owner: "{{icinga2_user[ansible_os_family]}}"
+    group: "{{ icinga2_group[ansible_os_family] }}"
+    mode: 0640
+  notify: Test config before restart icinga 2
+
+- name: restart icinga after change
+  meta: flush_handlers
+  tags:
+    - install
+    - config
+
+- name: Manage Certificates
+  include_tasks: "pki.yml"
+  tags:
+    - install
+    - update
+
+- name: Disable conf.d on Client
+  replace:
+    destfile: /etc/icinga2/icinga2.conf
+    regexp: '^include_recursive "conf.d"$'
+    replace: '//include_recursive "conf.d"'
+  notify: Test config before restart icinga 2
+  tags:
+    - install
+    - config
+

@@ -1,0 +1,49 @@
+---
+sudo: required
+services:
+  - docker
+branches:
+  only:
+    - master
+language: python
+python: "2.7"
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/585695e300c1647225df
+      - https://api.opsgenie.com/v1/json/travisci?apiKey=2d473151-7b86-415e-9e66-6d5146e14720
+      - https://galaxy.ansible.com/api/v1/notifications/
+    on_success: always  # options: [always|never|change] default: always
+    on_failure: always  # options: [always|never|change] default: always
+    on_start: never     # options: [always|never|change] default: always
+
+env:
+  - DISTRO=ubuntu
+  - DISTRO=ubuntu-12.04
+  - DISTRO=ubuntu-14.04
+  - DISTRO=ubuntu-15.04
+  - DISTRO=ubuntu-15.10
+  - DISTRO=debian
+  - DISTRO=debian-jessie
+  - DISTRO=debian-squeeze
+  - DISTRO=debian-wheezy
+  - DISTRO=debian-stable
+  - DISTRO=centos
+  - DISTRO=centos-6
+  - DISTRO=centos-7
+
+install:
+# Install Ansible.
+- pip install ansible
+
+# Add ansible.cfg to pick up roles path.
+- "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
+
+script:
+# Check the role/playbook's syntax.
+- ansible-playbook -i tests/inventory tests/test.yml --syntax-check
+
+# Check Playbook and idempotency on different platforms
+- ansible-playbook -i tests/inventory tests/template.yml -e "path=`pwd` distro=$DISTRO"
+- docker build -f Dockerfile .

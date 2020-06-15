@@ -1,0 +1,374 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    project_id: 318
+    spmgr_os_cred: 36
+    oracle_os_cred: 37
+    db_inv: 65
+    app_inv: 64
+    web_inv: 63
+    spmgr_inv: 66
+    oracle_inv: 67
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name:  3DS DR Activation- Disable Cronjob  
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/disable_cronjob_primary_secondary.yml",
+          "inventory": "{{ spmgr_inv }}",
+          "name": "3DS DR Activation: Disable Cronjob"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  3DS DR Activation- Disable Cronjob DB  
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/disable_cronjob_primary_secondary.yml",
+          "inventory": "{{ oracle_inv }}",
+          "name": "3DS DR Activation: Disable Cronjob DB"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  3DS DR Activation- Stop Prod WebServer 
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_prod_webservers.yml",
+          "inventory": "{{ web_inv }}",
+          "name": "3DS DR Activation: Stop Prod WebServer"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  3DS DR Activation- Stop Prod App
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_prod_appservers.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "3DS DR Activation: Stop Prod App"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name:  3DS DR Activation- Move Archivelog to Standby DB
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/move_archive_to_standby.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\nhome: /home/oracle\njobdir: /usr/bin\ndbname: SP",
+          "name": "3DS DR Activation: Move Archivelog to Standby DB"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+
+  - name:  3DS DR Activation- Apply Archivelog at Standby DB
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/apply_archive_log.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\nhome: /home/oracle\njobdir: /usr/bin\ndbname: SP",
+          "name": "3DS DR Activation: Apply Archivelog at Standby DB"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+
+  - name: 3DS DR Activation- Stop Primary DB
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/stop_primary_prod_db.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\nhome: /home/oracle\njobdir: /usr/bin\ndbname: SP",
+          "name": "3DS DR Activation: Stop Primary DB"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+
+  - name: 3DS DR Activation-Graceful DB Switchover 
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/switchover_gracefully.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\nhome: /home/oracle\njobdir: /usr/bin\ndbname: SP",
+          "name": "3DS DR Activation: Graceful DB Switchover"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: 3DS DR Activation- Verify DEKM status 
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/check_dekm.yml",
+          "inventory": "{{ db_inv }}",
+          "extra_vars": "---\nhome: /home/oracle\njobdir: /usr/bin\ndbname: SP",
+          "name": "3DS DR Activation: Verify DEKM status"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: 3DS DR Activation- Update DR App /etc/hosts
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_appservers/update_hosts_file.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "3DS DR Activation: Update DR App /etc/hosts"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: 3DS DR Activation- Start DR App Server
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_appservers/start_dr_apps.yml",
+          "inventory": "{{ app_inv }}",
+          "name": "3DS DR Activation: Start DR App Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+
+  - name: 3DS DR Activation- Update DR Web /etc/hosts
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_webservers/update_hosts_file.yml",
+          "inventory": "{{ web_inv }}",
+          "name": "3DS DR Activation: Update DR Web /etc/hosts"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: 3DS DR Activation- Start DR Web Server
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/start_dr_webservers/start_dr_webservers.yml",
+          "inventory": "{{ web_inv }}",
+          "name": "3DS DR Activation: Start DR Web Server"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: 3DS DR Activation- Enable Cronjob
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ spmgr_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/enable_cronjob_primary_secondary.yml",
+          "inventory": "{{ spmgr_inv }}",
+          "name": "3DS DR Activation: Enable Cronjob"
+        }
+      status_code: 201
+    ignore_errors: yes
+
+  - name: .3DS DR Activation- Enable DB Cronjob
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v1/job_templates/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body_format: json
+      body: >
+        {
+          "project": "{{ project_id }}",
+          "credential": "{{ oracle_os_cred }}",
+          "become_enabled": false,
+          "verbosity": 3,
+          "playbook": "DR Activation/enable_cronjob_primary_secondary.yml",
+          "inventory": "{{ oracle_inv }}",
+          "name": "3DS DR Activation: Enable DB Cronjob"
+        }
+      status_code: 201
+    ignore_errors: yes

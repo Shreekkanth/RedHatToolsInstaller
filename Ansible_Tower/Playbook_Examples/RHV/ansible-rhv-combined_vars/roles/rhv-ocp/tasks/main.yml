@@ -1,0 +1,302 @@
+---
+# tasks file for rhv-ocp
+
+#- include_vars: ovirt_password.yml
+
+#- name: Obtain SSO token with using username/password credentials
+#  ovirt_auth:
+#    url: https://rhvm.rhv.homelab.work/ovirt-engine/api/v3
+#    username: admin@internal
+#    ca_file: ca.crt
+#    password: "{{ ovirt_password }}"
+
+## Create the VMs
+- name: Obtain SSO token
+  ovirt_auth:
+    state: present
+
+### Creates the Ansible host
+
+- name: Creates OCP Ansible Host Virtual Machine from template
+  ovirt_vms:
+    name: "{{ ansible_bastion_name }}"
+    template: "{{ rhv_template }}"
+    state: running
+    cluster: Default
+    cpu_cores: "{{ ansible_bastion_cpu_cores }}"
+    memory: "{{ ansible_bastion_memory }}"
+    wait: True
+    storage_domain: "{{ storage_domain }}"
+    cloud_init:
+      host_name: "{{ ansible_bastion_name }}.{{ domain_name }}"
+      dns_search: homelab.work
+      nic_boot_protocol: static
+      nic_ip_address: 192.168.2.225
+      nic_netmask: 255.255.255.0
+      nic_gateway: 192.168.2.1
+      nic_name: eth0
+      nic_on_boot: true
+      custom_script: |
+        runcmd:
+         - [ ipa-client-install, -U, --password, {{ ipa_password }}, --realm, HOMELAB.WORK, -p, {{ ipa_user }}, --mkhomedir, --enable-dns-updates, --hostname={{ ansible_bastion_name }}.{{ domain_name }}, --domain={{ domain_name }}, server={{ ldap_server }} ]
+
+- name: Add NIC to VM
+  ovirt_nics:
+    state: present
+    vm: "{{ ansible_bastion_name }}"
+    name: "{{ ansible_bastion_name }}-dc"
+    interface: virtio
+    profile: disconnected
+    network: disconnected
+
+- name: Tag as a rhv-ocp system
+  ovirt_tags:
+    name: rhv-ocp
+    state: attached
+    vms:
+      - "{{ ansible_bastion_name }}"
+
+- name: Tag the bastion
+  ovirt_tags:
+    name: rhv-ocp-bastion
+    state: attached
+    vms:
+      - "{{ ansible_bastion_name }}"
+
+### Creates the Masters
+- name: Creates OCP masters Virtual Machine from template
+  ovirt_vms:
+    state: running
+    name: "{{ master_name }}-{{ item }}"
+    template: "{{ rhv_template }}"
+    cluster: Default
+    cpu_cores: "{{ master_cpu_cores }}"
+    memory: "{{ master_memory }}"
+    wait: True
+    storage_domain: "{{ storage_domain }}"
+    cloud_init:
+      host_name: "{{ master_name }}-{{ item }}.{{ domain_name }}"
+      dns_search: homelab.work
+      nic_boot_protocol: static
+      nic_ip_address: 192.168.2.221
+      nic_netmask: 255.255.255.0
+      nic_gateway: 192.168.2.1
+      nic_name: eth0
+      nic_on_boot: true
+      custom_script: |
+        runcmd:
+         - [ ipa-client-install, -U, --password, {{ ipa_password }}, --realm, HOMELAB.WORK, -p, {{ ipa_user }}, --mkhomedir, --enable-dns-updates, --hostname={{ master_name }}-{{ item }}.{{ domain_name }}, --domain={{ domain_name }}, --force-join ]
+  with_sequence: count={{ master_count }}
+
+- name: Create OCP Master Docker disk
+  ovirt_disks:
+    name: "{{ master_name }}-{{ item }}-docker-disk"
+    vm_name: "{{ master_name }}-{{ item }}"
+    storage_domain: "{{ storage_domain }}"
+    size: "{{ master_docker_disk_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ master_count }}
+
+- name: Create OCP Master ETCd disk
+  ovirt_disks:
+    name: "{{ master_name }}-{{ item }}-etcd-disk"
+    vm_name: "{{ master_name }}-{{ item }}"
+    storage_domain: "{{ storage_domain }}"
+    size: "{{ master_etcd_disk_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ master_count }}
+
+- name: Tag as rhv-ocp host
+  ovirt_tags:
+    name: rhv-ocp
+    state: attached
+    vms:
+      - "{{ master_name }}-{{ item }}"
+  with_sequence: count={{ master_count }}
+
+- name: Tag the masters
+  ovirt_tags:
+    name: rhv-ocp-master
+    state: attached
+    vms:
+      - "{{ master_name }}-{{ item }}"
+  with_sequence: count={{ master_count }}
+
+########### INFRA NODES ##############
+
+- name: Creates OCP Infra Virtual Machine from template
+  ovirt_vms:
+    state: running
+    name: "{{ infra_name }}-{{ item }}"
+    template: "{{ rhv_template }}"
+    cluster: Default
+    cpu_cores: "{{ infra_cpu_cores }}"
+    memory: "{{ infra_memory }}"
+    wait: true
+    storage_domain: "{{ storage_domain }}"
+    cloud_init:
+      host_name: "{{ infra_name }}-{{ item }}.{{ domain_name }}"
+      dns_search: homelab.work
+      nic_boot_protocol: static
+      nic_ip_address: 192.168.2.222
+      nic_netmask: 255.255.255.0
+      nic_gateway: 192.168.2.1
+      nic_name: eth0
+      nic_on_boot: true
+      custom_script: |
+        runcmd:
+         - [ ipa-client-install, -U, --password, {{ ipa_password }}, --realm, HOMELAB.WORK, -p, {{ ipa_user }}, --mkhomedir, --enable-dns-updates, --hostname={{ infra_name }}-{{ item }}.{{ domain_name }}, --domain={{ domain_name }}, --force-join ]
+  with_sequence: count={{ infra_count }}
+
+- name: Create OCP Infra Docker disk
+  ovirt_disks:
+    name: "{{ infra_name }}-{{ item }}-docker-disk"
+    vm_name: "{{ infra_name }}-{{ item }}"
+    storage_domain: "{{ storage_domain }}"
+    size: "{{ infra_docker_disk_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ infra_count }}
+
+- name: Create OCP Infra Origin disk
+  ovirt_disks:
+    name: "{{ infra_name }}-{{ item }}-origin-disk"
+    vm_name: "{{ infra_name }}-{{ item }}"
+    storage_domain: "{{ storage_domain }}"
+    size: "{{ infra_origin_disk_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ infra_count }}
+
+- name: Tag as rhv-ocp host
+  ovirt_tags:
+    name: rhv-ocp
+    state: attached
+    vms:
+      - "{{ infra_name }}-{{ item }}"
+  with_sequence: count={{ infra_count }}
+
+- name: Tag the infra nodes
+  ovirt_tags:
+    name: rhv-ocp-infra
+    state: attached
+    vms:
+      - "{{ infra_name }}-{{ item }}"
+  with_sequence: count={{ infra_count }}
+
+########### APP NODES ##############
+
+- name: Creates OCP App Nodes Virtual Machine from template
+  ovirt_vms:
+    state: running
+    name: "{{ appnode_name }}-{{ item }}"
+    template: "{{ rhv_template }}"
+    cluster: Default
+    cpu_cores: "{{ appnode_cpu_cores }}"
+    memory: "{{ appnode_memory }}"
+    wait: true
+    storage_domain: "{{ storage_domain }}"
+    cloud_init:
+      host_name: "{{ appnode_name }}-{{ item }}.{{ domain_name }}"
+      dns_search: homelab.work
+      nic_boot_protocol: static
+      nic_ip_address: 192.168.2.223
+      nic_netmask: 255.255.255.0
+      nic_gateway: 192.168.2.1
+      nic_name: eth0
+      nic_on_boot: true
+      custom_script: |
+        runcmd:
+         - [ ipa-client-install, -U, --password, {{ ipa_password }}, --realm, HOMELAB.WORK, -p, {{ ipa_user }}, --mkhomedir, --enable-dns-updates, --hostname={{ appnode_name }}-{{ item }}.{{ domain_name }}, --domain={{ domain_name }}, --force-join ]
+  with_sequence: count={{ appnode_count }}
+
+- name: Create OCP App Node Docker disk
+  ovirt_disks:
+    name: "{{ appnode_name }}-{{ item }}-docker-disk"
+    vm_name: "{{ appnode_name }}-{{ item }}"
+    storage_domain: "{{ storage_domain }}"
+    size: "{{ appnode_docker_disk_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ appnode_count }}
+
+- name: Create OCP App Node Origin disk
+  ovirt_disks:
+    name: "{{ appnode_name }}-{{ item }}-origin-disk"
+    vm_name: "{{ appnode_name }}-{{ item }}"
+    storage_domain: "{{ storage_domain }}"
+    size: "{{ appnode_origin_disk_size }}"
+    format: cow
+    interface: virtio
+  with_sequence: count={{ appnode_count }}
+
+- name: Tag as rhv-ocp host
+  ovirt_tags:
+    name: rhv-ocp
+    state: attached
+    vms:
+      - "{{ appnode_name }}-{{ item }}"
+  with_sequence: count={{ appnode_count }}
+
+- name: Tag the infra nodes
+  ovirt_tags:
+    name: rhv-ocp-appnode
+    state: attached
+    vms:
+      - "{{ appnode_name }}-{{ item }}"
+  with_sequence: count={{ appnode_count }}
+
+## Reboot all the nodes to clear run-once
+
+#- name: Pause for 2 minutes to ensure that cloud-init has finished
+#  pause:
+#    minutes: 2
+
+#- name: Power off OCP Ansible Host
+#  ovirt_vms:
+#    state: stopped
+#    name: "{{ ansible_bastion_name }}"
+
+#- name: Power on OCP Ansible Host
+#  ovirt_vms:
+#    state: running
+#    name: "{{ ansible_bastion_name }}"
+#    cluster: Default
+
+#- name: Stop OCP masters Virtual Machines
+#  ovirt_vms:
+#    state: stopped
+#    name: "{{ master_name }}-{{ item }}"
+#  with_sequence: count={{ master_count }}
+
+#- name: Start OCP masters Virtual Machines
+#  ovirt_vms:
+#    state: running
+#    name: "{{ master_name }}-{{ item }}"
+#  with_sequence: count={{ master_count }}
+
+#- name: Stop OCP Infra Virtual Machines
+#  ovirt_vms:
+#    state: stopped
+#    name: "{{ infra_name }}-{{ item }}"
+#  with_sequence: count={{ infra_count }}
+
+#- name: Start OCP Infra Virtual Machines
+#  ovirt_vms:
+#    state: running
+#    name: "{{ infra_name }}-{{ item }}"
+#  with_sequence: count={{ infra_count }}
+
+#- name: Start OCP App Node Virtual Machines
+#  ovirt_vms:
+#    state: stopped
+#    name: "{{ appnode_name }}-{{ item }}"
+#  with_sequence: count={{ appnode_count }}
+
+#- name: Start OCP App Node Virtual Machines
+#  ovirt_vms:
+#    state: running
+#    name: "{{ appnode_name }}-{{ item }}"
+#  with_sequence: count={{ appnode_count }}

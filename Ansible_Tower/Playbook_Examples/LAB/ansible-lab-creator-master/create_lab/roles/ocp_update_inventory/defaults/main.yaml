@@ -1,0 +1,17 @@
+---
+# Tmp inventory location and permissions
+tmp_inv_loc: "/tmp/inventory"
+tmp_inv_owner: "root"
+tmp_inv_group: "root"
+tmp_inv_permissions: "0644"
+
+# What kind of authentication are you using, options are apache only for now. LDAP to come soon.
+authconfig: "apache"
+
+# Gluster config for CNS nodes 
+gluster_device_name: "/dev/vdc"
+
+# Login details for Red Hat registries
+oreg_user:
+oreg_token:
+

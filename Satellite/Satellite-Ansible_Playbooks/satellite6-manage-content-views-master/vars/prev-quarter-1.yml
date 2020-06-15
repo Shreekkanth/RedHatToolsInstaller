@@ -1,0 +1,51 @@
+---
+sat6_content_views:
+  - name: "RHEL 5 CV 32-bit"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"
+  - name: "RHEL 5 CV 64-bit"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"
+  - name: "RHEL 6 CV"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"
+  - name: "RHEL 7 CV"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"
+  - name: "RHEL 7 Sat Capsule"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"
+  - name: "RHEL 7 with RHDS CV"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"
+  - name: "RHEL 8 CV"
+    publish_new_version: False
+    publish_description: "Published by Ansible"
+    promote_description: "Promoted by Ansible"
+    keep_content_view_versions_count: "2"
+    promote_to:
+      - "prev-quarter-1"

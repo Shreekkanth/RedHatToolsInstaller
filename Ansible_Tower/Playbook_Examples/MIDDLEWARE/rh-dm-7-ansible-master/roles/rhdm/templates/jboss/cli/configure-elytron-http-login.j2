@@ -1,0 +1,25 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Configure HTTP LOGIN
+# ============================================================
+#
+# How to execute:
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/configure-elytron-http-login.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+/subsystem=elytron/http-authentication-factory=iberdrola:add(http-server-mechanism-factory=global,security-domain=ApplicationDomain,mechanism-configurations=[{mechanism-name=FORM,mechanism-realm-configurations=[{realm-name=iberdrola}]}])
+/subsystem=undertow/application-security-domain=iberdrola:add(http-authentication-factory=iberdrola)
+
+
+run-batch
+#
+# EOF

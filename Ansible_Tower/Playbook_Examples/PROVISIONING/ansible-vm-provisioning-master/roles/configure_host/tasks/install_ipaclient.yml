@@ -1,0 +1,9 @@
+- name: Install ipa-client
+  yum:
+    name: ipa-client
+    state: latest
+
+- name: Join IDM
+  command: "/usr/sbin/ipa-client-install --mkhomedir --domain {{ satinfo.realm_name }} --hostname {{ inventory_hostname }} --no-ssh --no-ntp --no-nisdomain -U -p {{ idm_auth.username }} -w {{ idm_auth.password }}"
+  args:
+    creates: "/var/lib/ipa-client/sysrestore/sysrestore.state"

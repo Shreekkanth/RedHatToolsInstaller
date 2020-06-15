@@ -1,0 +1,25 @@
+- set_fact:
+    public_subnets: []
+    private_subnets: []
+    subnets: []
+
+- set_fact:
+    public_subnets: "{{ public_subnets }} + [ '{{ pbnets.name }}' ]"
+  with_items: "{{ vpc_subnets }}"
+  when: '"public" in pbnets.name'
+  loop_control:
+    loop_var: pbnets
+
+- set_fact:
+    private_subnets: "{{ private_subnets }} + [ '{{ prnets.name }}' ]"
+  with_items: "{{ vpc_subnets }}"
+  when: '"private" in prnets.name'
+  loop_control:
+    loop_var: prnets
+
+- set_fact:
+    subnets: "{{ subnets }} + [ '{{ allnet.name }}' ]"
+  with_items: "{{ vpc_subnets }}"
+  loop_control:
+    loop_var: allnet
+

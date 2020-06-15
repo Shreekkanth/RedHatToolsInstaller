@@ -1,0 +1,26 @@
+- name: Install puppet
+  yum:
+    name: puppet
+    state: present
+
+- name: Configure puppet
+  template:
+    dest: "/etc/puppetlabs/puppet/puppet.conf"
+    src: puppet.conf.j2
+  register: puppetconf
+
+- name: Create missing directories
+  file:
+    path: "/opt/puppetlabs/server/data/puppetserver"
+    state: directory
+
+- name: Run puppet first time
+  command: "puppet agent -t --no-splay"
+  ignore_errors: true
+  when: puppetconf is changed
+  
+- name: Start puppet
+  service:
+    name: puppet
+    enabled: true
+    state: started

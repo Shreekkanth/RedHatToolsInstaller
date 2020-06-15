@@ -1,0 +1,81 @@
+---
+
+- name: Install Tower License
+  hosts: tower[0]
+  tasks:
+
+    # https://access.redhat.com/solutions/3065701
+    - name: Post Tower License
+      uri:
+        url: "http://localhost/api/v1/config/"
+        method: POST
+        body: "{{ ansible_tower_license }}"
+        body_format: json
+        user: admin
+        password: "{{ admin_password }}"
+        validate_certs: no
+        follow_redirects: all
+      when: "ansible_tower_license is defined"
+
+    - name: Configure Tower Through Rest API
+      uri:
+        url: "http://localhost/api/{{ item['endpoint'] }}"
+        method: "{{ item['method'] | default( 'PATCH' ) }}"
+        body: "{{ item['body'] }}"
+        body_format: json
+        user: admin
+        password: "{{ admin_password }}"
+        validate_certs: no
+        follow_redirects: all
+      loop: "{{ tower_api_settings }}"
+      when: "tower_api_settings is defined and tower_api_settings|length > 0"
+
+- name: Enforce config on Ansible Tower Nodes
+  hosts: tower
+  gather_facts: no
+  tasks:
+
+    #  Automate fix in this article:
+    #+ https://access.redhat.com/solutions/3228681
+    - name: Set fix path permission bug    
+      file:
+        path: '/var/lib/awx/venv/awx/lib/python2.7/site-packages/awx/plugins/inventory'
+        recurse: yes
+        state: directory
+        owner: awx
+        group: awx
+
+    - name: Set Static Ansible Tower Configuration Files
+      copy:
+        owner: awx
+        group: awx
+        src: "{{ item['src'] }}"
+        dest: "{{ item['dest'] }}"
+        mode: "{{ item['mode'] | default('0640') }}"
+      register: static_config_files
+      with_items:
+        - src: settings.py
+          dest: /etc/tower/settings.py
+
+    - name: Set Templated Ansible Tower Configuration Files
+      template:
+        owner: awx
+        group: awx
+        src: "{{ item['src'] }}"
+        dest: "{{ item['dest'] }}"
+        mode: "{{ item['mode'] | default('0640') }}"
+      register: templated_config_files
+      with_items:
+        - src: remote_host_headers.py.j2
+          dest: /etc/tower/conf.d/remote_host_headers.py
+
+- name: Ansible Tower Rolling Restart
+  hosts: all
+  serial: 1
+  gather_facts: no
+  tasks:
+
+    - name: Restart ansible tower node
+      command: /usr/bin/ansible-tower-service restart
+      when: "static_config_files is changed or templated_config_files is changed"
+

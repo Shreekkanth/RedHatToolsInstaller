@@ -1,0 +1,49 @@
+---
+tower_roles:
+  - name: role1
+    credential:
+    inventory:
+    job_template:
+    organization: 
+    project:
+    role: member
+    state: present
+    target_team: Team - Ship
+    team:
+    user: userone
+
+  - name: role2
+    credential:
+    inventory:
+    job_template:
+    organization: 
+    project:
+    role: admin
+    state: present
+    target_team: Team - Shore
+    team:
+    user: usertwo
+
+  - name: role3
+    credential: SCM Test Cred
+    inventory:
+    job_template:
+    organization: 
+    project:
+    role: admin
+    state: present
+    target_team:
+    team: Team - Ship
+    user:
+
+  - name: role4
+    credential:
+    inventory: Demo Inventory
+    job_template:
+    organization: 
+    project:
+    role: use
+    state: present
+    target_team:
+    team:
+    user: userone

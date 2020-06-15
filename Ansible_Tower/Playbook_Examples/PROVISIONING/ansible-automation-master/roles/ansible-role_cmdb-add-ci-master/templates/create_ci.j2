@@ -1,0 +1,12 @@
+<nr>
+  <name>{{ cmdb_add_ci_server_name }}</name>
+  <class COMMON_NAME="{{ cmdb_add_ci_class_name }}"/>
+  <smag_1>Intel</smag_1>
+  <contact_1  id="{{ assignment_group_query.json.collection_cnt.cnt['@id'] }}"/>
+  <resource_contact id="{{ requestor_query.json.collection_cnt.cnt['@id'] }}"/>
+  <contact_2 id="{{ manager_query.json.collection_cnt.cnt['@id'] }}"/>
+  <is_ci REL_ATTR="{{ cmdb_add_ci_is_ci | int }}"/>
+  <is_asset REL_ATTR="{{ cmdb_add_ci_is_asset | int }}"/>
+  <delete_flag REL_ATTR="{{ cmdb_add_ci_delete_flag | int }}"/>
+  <z_is_backup REL_ATTR="{{ (cmdb_add_ci_z_is_backup | bool | int) | default(1) }}"/>
+</nr>

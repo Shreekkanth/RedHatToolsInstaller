@@ -1,0 +1,7 @@
+- name: Remove RHV VM
+  ovirt_vm:
+    timeout: 600
+    auth: "{{ ovirt_auth }}"
+    state: "absent"
+    name: "{{ item.name }}-rhv"
+

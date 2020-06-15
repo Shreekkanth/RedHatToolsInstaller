@@ -1,0 +1,227 @@
+---
+  # Check variables
+  - assert:
+      that: capsule_ha_vip is defined
+      msg: " Variable capsule_ha_vip = '{{ capsule_ha_vip }}' NOT defined)"
+ 
+  # Check if pulp wilcard ssl certificate for VIP on satellite already exists
+  - name: "Check if pulp wilcard ssl certificate for VIP on satellite already exists | DO NOT WORRY IF IT FAILS ITS JUST A TEST"
+    shell:
+      test -d  /root/ssl-build/{{ capsule_ha_vip }} 
+    register: "katello_lb_cert_exists"
+    ignore_errors: yes
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    run_once: true
+
+  # Generate set_cname_capsules var from capsule_ha_vip_list
+  - name: "Generate set_cname_capsules var from capsule_ha_vip_list"
+    set_fact:
+      set_cname_capsules: '{{ item.vip_members | regex_replace("^", "--set-cname ") | regex_replace(",", " --set-cname ") }}'
+    with_items: '{{ capsule_ha_vip_list }}'
+    run_once: true 
+    when: item.vip_name ==  capsule_ha_vip and katello_lb_cert_exists.rc > 0
+
+  # Generate pulp wilcard ssl certificate for VIP on satellite
+  - name: "Generate pulp wilcard ssl certificate for VIP on satellite"
+    shell:
+      "cd /root &&  /usr/bin/katello-ssl-tool --gen-server                                   \
+                 --set-hostname {{ capsule_ha_vip }}                                         \
+                 {{ set_cname_capsules }}                                                    \
+                 --server-cert {{ capsule_ha_vip }}-apache.crt                               \
+                 --server-cert-req {{ capsule_ha_vip }}-apache.crt.req                       \
+                 --server-key {{ capsule_ha_vip }}-apache.key                                \
+                 --server-rpm {{ capsule_ha_vip }}-apache                                    \
+                 -p file:/etc/pki/katello/private/katello-default-ca.pwd                     \
+                 --set-hostname {{ capsule_ha_vip }}                                         \
+                 --set-common-name {{ capsule_ha_vip }}                                      \
+                 --ca-cert /etc/pki/katello-certs-tools/certs/katello-default-ca.crt         \
+                 --ca-key /etc/pki/katello-certs-tools/private/katello-default-ca.key        \
+                 --set-country '{{ katello_lb_country }}'                                    \
+                 --set-state '{{ katello_lb_state }}'                                        \
+                 --set-city  '{{ katello_lb_city }}'                                         \
+                 --set-org   '{{ katello_lb_org }}'                                          \
+                 --set-org-unit '{{ katello_lb_org_unit }}'                                  \
+                 --set-email '{{ katello_lb_email }}'                                        \
+                 --cert-expiration '{{ katello_lb_ca_expiration }}' "
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    run_once: true
+    when: katello_lb_cert_exists.rc > 0
+
+  # Distribute pulp wilcard ssl certificate for VIP from satellite to capsules - fetch certs from satellite
+  - name: "Distribute pulp wilcard ssl certificate for VIP from satellite to capsules - fetch certs from satellite"
+    fetch:
+      src: '{{ item }}'
+      dest: "tmp/{{ katello_lb_root }}/{{ capsule_ha_vip }}/"
+      flat: yes
+      fail_on_missing: yes
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    with_items:
+      - '{{ katello_lb_root }}/{{ capsule_ha_vip }}/{{ capsule_ha_vip }}-apache.crt'
+      - '{{ katello_lb_root }}/{{ capsule_ha_vip }}/{{ capsule_ha_vip }}-apache.key'
+    run_once: true
+    when: katello_lb_cert_exists.rc > 0
+
+  # Distribute pulp wilcard ssl certificate for VIP from satellite to capsules 
+  - name: "Distribute pulp wilcard ssl certificate for VIP from satellite to capsules"
+    copy:
+      src: "tmp/{{ katello_lb_root }}/{{ capsule_ha_vip }}/{{ item }}"
+      dest: "{{ katello_lb_certs_dir }}/{{ item }}"
+      force: yes
+    with_items:
+      - '{{ capsule_ha_vip }}-apache.crt'
+      - '{{ capsule_ha_vip }}-apache.key'
+    when: katello_lb_cert_exists.rc > 0
+
+  # Distribute pulp wilcard ssl certificate for VIP from satellite to capsules - fix permission
+  - name: "Distribute pulp wilcard ssl certificate for VIP from satellite to capsules - fix permission"
+    file:
+      path: '{{ katello_lb_certs_dir }}/{{ capsule_ha_vip }}-apache.key'
+      mode: 0400
+    when: katello_lb_cert_exists.rc > 0
+
+  # Configure pulp SSL HA 
+  - name: "Configure pulp SSL HA - ServerName"
+    replace:
+      dest: "/etc/httpd/conf.d/05-pulp-https.conf"
+      regexp: '^(\s*ServerName\s+{{ inventory_hostname }}\s*)$' 
+      replace: '  ###\1  ServerName {{ capsule_ha_vip }}\n'
+    notify:
+      - restart_katello
+   
+  # Configure pulp SSL HA - SSLCertificateFile 
+  - name: "Configure pulp SSL HA - VIP SSLCertificateFile"
+    replace:
+      dest: "/etc/httpd/conf.d/05-pulp-https.conf"
+      regexp: '^(\s*SSLCertificateFile\s+"/etc/pki/katello/certs/katello-apache.crt"\s*)$'
+      replace: '  ###\1\n  SSLCertificateFile           "{{ katello_lb_certs_dir }}/{{ capsule_ha_vip }}-apache.crt"'
+    notify:
+      - restart_katello
+
+  # Configure pulp SSL HA - SSLCertificateFile 
+  - name: "Configure pulp SSL HA - VIP SSLCertificateKeyFile"
+    replace:
+      dest: "/etc/httpd/conf.d/05-pulp-https.conf"
+      regexp: '^(\s*SSLCertificateKeyFile\s+"/etc/pki/katello/private/katello-apache.key"\s*)$'
+      replace: '  ###\1\n  SSLCertificateKeyFile        "{{ katello_lb_certs_dir }}/{{ capsule_ha_vip }}-apache.key"'
+    notify:
+      - restart_katello
+
+  # Configure pulp server to use lazy sync with capsule VIP as redirect_host 
+  - name: "Configure pulp server to use lazy sync with capsule VIP as redirect_host"
+    replace:
+      dest: "/etc/pulp/server.conf"
+      regexp: '^(\s*redirect_host:\s+{{ inventory_hostname }}\s*)$'
+      replace: '###\1\nredirect_host: {{ capsule_ha_vip }}'
+    notify:
+      - restart_katello
+
+  # Check if puppet wilcard certificate exists
+  - name: "Check if puppet wilcard certificate exists | DO NOT WORRY IF IT FAILS ITS JUST A TEST"
+    shell:
+      test -f /var/lib/puppet/ssl/ca/signed/{{ capsule_ha_vip }}.pem
+    register: "puppet_lb_cert_exists"
+    ignore_errors: yes
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    run_once: true
+  
+  # Generate wilcard puppet cert on satellite
+  - name: "Generate and sign wilcard puppet cert on satellite | DO NOT WORRY IF IT FAILS IF USSING DNS_ALT_NAMES"
+    shell:
+      'puppet cert --allow-dns-alt-names generate {{ capsule_ha_vip }} --dns_alt_names={{ item.vip_members }},{{ capsule_ha_vip }}'
+    ignore_errors: yes
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    with_items: '{{ capsule_ha_vip_list }}'
+    run_once: true
+    when: item.vip_name ==  capsule_ha_vip and puppet_lb_cert_exists.rc > 0
+
+  # Sign wilcard puppet cert on satellite
+  - name: "Sign wilcard puppet cert on satellite"
+    shell:
+      'puppet cert --allow-dns-alt-names sign {{ capsule_ha_vip }}'
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    with_items: '{{ capsule_ha_vip_list }}'
+    run_once: true
+    when: item.vip_name ==  capsule_ha_vip and puppet_lb_cert_exists.rc > 0
+
+  # Distribute signed wildcard puppet cert from satellite to capsules - fetch certs from satellite 
+  - name: "Distribute puppet wilcard ssl certificate for VIP from satellite to capsules - fetch certs from satellite"
+    fetch:
+      src: '{{ item.src_file }}'
+      dest: "tmp/{{ groups['satellite-servers']|first }}/{{ item.src_file }}"
+      fail_on_missing: yes
+      flat: yes
+    delegate_to: "{{ groups['satellite-servers']|first }}"
+    with_items: "{{ puppet_lb_certs }}"
+    run_once: true
+    when: puppet_lb_cert_exists.rc > 0 
+
+  # Distribute signed wildcard puppet cert from satellite to capsules 
+  - name: "Distribute signed wildcard puppet cert from satellite to capsules"
+    copy:
+      src: "tmp/{{ groups['satellite-servers']|first }}/{{ item.src_file }}"
+      dest: "{{ item.dst_file }}"
+      force: yes
+    with_items: '{{ puppet_lb_certs }}'
+    when: puppet_lb_cert_exists.rc > 0
+
+###################################################################
+#  DO NOT use the following in sat6.2 deployment
+###################################################################
+#  # Configure puppetmaster SSL HA - ServerName
+#  - name: "Configure puppetmaster SSL HA - ServerName"
+#    replace:
+#      dest: "/etc/httpd/conf.d/25-puppet.conf"
+#      regexp: '^(\s*ServerName\s+puppet\s*)$'
+#      replace: '  ###\1  ServerName {{ capsule_ha_vip }}\n'
+#     backup: yes
+#    notify:
+#      - restart_katello
+
+  # Configure puppetmaster SSL HA - SSLCertificateFile 
+  - name: "Configure puppetmaster SSL HA - VIP SSLCertificateFile"
+    replace:
+      dest: "/etc/httpd/conf.d/25-puppet.conf"
+      regexp: '^(\s*SSLCertificateFile\s+"/var/lib/puppet/ssl/certs/{{ inventory_hostname }}.pem"\s*)$'
+      replace: '  ###\1\n  SSLCertificateFile      "/var/lib/puppet/ssl/certs/{{ capsule_ha_vip }}.pem"'
+    notify:
+      - restart_katello
+
+  # Configure puppetmaster SSL HA - SSLCertificateKeyFile 
+  - name: "Configure puppetmaster SSL HA - VIP SSLCertificateKeyFile"
+    replace:
+      dest: "/etc/httpd/conf.d/25-puppet.conf"
+      regexp: '^(\s*SSLCertificateKeyFile\s+"/var/lib/puppet/ssl/private_keys/{{ inventory_hostname }}.pem"\s*)$'
+      replace: '  ###\1\n  SSLCertificateKeyFile      "/var/lib/puppet/ssl/private_keys/{{ capsule_ha_vip }}.pem"'
+    notify:
+      - restart_katello
+
+  # Configure puppetmaster puppet.conf to accept alt_dns  
+  - name: "Configure puppetmaster puppet.conf to accept alt_dns_names"
+    replace:
+      dest: "/etc/puppet/puppet.conf"
+      regexp: '^(\[main\])\n(\s*#\s*Where\s+Puppet.*)$'
+      replace: '\1\n    # DNS alternatives names\n    dns_alt_names = {{ item.vip_name }},{{ item.vip_members }}\n\n\2'
+      backup: yes
+    when: item.vip_name ==  capsule_ha_vip
+    with_items: '{{ capsule_ha_vip_list }}'
+    notify:
+      - restart_katello
+
+  # Configure http HA - ServerName
+  - name: "Configure http HA - ServerName"
+    replace:
+      dest: "/etc/httpd/conf.d/05-capsule.conf"
+      regexp: '^(\s*ServerName\s+{{ inventory_hostname }}\s*)$'
+      replace: '  ###\1  ServerName {{ capsule_ha_vip }}\n'
+    notify:
+      - restart_katello
+
+  # Configure katello-reverse-proxy HA - ServerName
+  - name: "Configure katello-reverse-proxy HA - ServerName"
+    replace:
+      dest: "/etc/httpd/conf.d/28-katello-reverse-proxy.conf"
+      regexp: '^(\s*ServerName\s+{{ inventory_hostname }}\s*)$'
+      replace: '  ###\1  ServerName {{ capsule_ha_vip }}\n'
+    notify:
+      - restart_katello
+...

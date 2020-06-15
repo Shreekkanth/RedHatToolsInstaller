@@ -1,0 +1,20 @@
+- name: Install logrotate
+  yum:
+    name: logrotate
+    state: present
+
+- name: Copy the rsyslog logrotate conf file
+  copy:
+    src: rsyslog
+    dest: /etc/logrotate.d/rsyslog
+  register: logrotate
+
+- name: Remove entry for syslog
+  file:
+    path: /etc/logrotate.d/syslog
+    state: absent
+
+- name: Mnually logrotate if conf changed
+  shell: logrotate -f /etc/logrotate.conf
+  when: logrotate.changed
+  register: foo

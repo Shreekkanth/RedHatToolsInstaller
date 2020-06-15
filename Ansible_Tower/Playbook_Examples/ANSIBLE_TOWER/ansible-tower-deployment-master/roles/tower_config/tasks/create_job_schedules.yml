@@ -1,0 +1,21 @@
+- name: Get Job template
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/job_templates/?search={{ schedule.job_template_name }}"
+    method: GET
+    validate_certs: no
+    user: admin
+    password: password
+  register: job_template
+
+- name: Create Job Schedule
+  uri:
+    url: "https://{{ ansible_tower }}/api/v2/job_templates/{{ job_template.json.results[0].id }}/schedules/"
+    method: POST
+    validate_certs: no
+    body: {"name": "{{ schedule.name }}", "description": "{{ schedule.description }}", "enabled": "{{ schedule.enabled }}", "rrule": "{{ schedule.rrule }}", "extra_data": "{{ schedule.extra_data }}" }
+    body_format: json
+    status_code: 201
+    user: admin
+    password: password
+  register: create_response
+  failed_when: "create_response.status != 201 and 'already exists' not in create_response.content"

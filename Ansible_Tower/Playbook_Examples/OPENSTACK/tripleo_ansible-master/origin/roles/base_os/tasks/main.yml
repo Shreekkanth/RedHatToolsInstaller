@@ -1,0 +1,21 @@
+---
+
+- name: dot files (root)
+  unarchive: src=dotfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: ssh files (root)
+  unarchive: src=sshfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: install origin common packages
+  yum: name={{ item }} state=latest
+  with_items: "{{ common_packages }}"
+
+- name: install ocp packages
+  yum: name={{ item }} state=latest
+  with_items: "{{ ocp_packages }}"
+  when: origin.distribution == "ocp"
+
+- name: install origin packages
+  yum: name={{ item }} state=latest enablerepo=epel
+  with_items: "{{ origin_packages }}"
+  when: origin.distribution == "origin"

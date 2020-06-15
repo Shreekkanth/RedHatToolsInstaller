@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---:  Create Users to JBoss EAP & RHPAM
+# ============================================================
+#
+# chmod 774 *.sh
+#
+#
+# EOH
+#
+# Users Admin JBoss EAP Administration
+{% for item in admin_users %}
+{{ jboss_eap_home }}bin/add-user.sh  -u {{item.name}} -p {{item.password}}
+{% endfor %}
+
+# Users RH PAM
+{% for item in rhpam_users %}
+{{ jboss_eap_home }}bin/add-user.sh -a -u {{item.name}} -p {{item.password}} --role "{{item.roles}}"
+
+{% endfor %}
+
+#
+# EOF

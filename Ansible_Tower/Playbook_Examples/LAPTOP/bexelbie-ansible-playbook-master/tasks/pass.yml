@@ -1,0 +1,12 @@
+---
+# We should already have the repo cloned ...
+#- name: Clone password store
+# git:
+#   repo: "{{ pass_repo }}"
+#   dest: ~/.password-store
+
+- name: Install pass post-commit hook
+  copy:
+    src: "{{ playbook_dir }}/dot-files/pass/post-commit.hook"
+    dest: "~/.password-store/.git/hooks/post-commit"
+    mode: 0775

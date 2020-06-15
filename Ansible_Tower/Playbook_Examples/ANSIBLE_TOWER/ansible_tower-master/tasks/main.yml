@@ -1,0 +1,7 @@
+---
+# tasks file for ansible_tower
+
+- include: get_archive.yml
+  tags: get_archive
+- include: install_tower.yml
+  tags: install_tower

@@ -1,0 +1,6 @@
+[jumpbox]
+localhost ansible_connection=local
+
+[jumpbox:vars]
+pam_demo_route_base='pam.apps.brasilia-b36a.openshiftworkshop.com'
+jenkins_maven_agent_image='registry.access.redhat.com/openshift3/jenkins-agent-maven-35-rhel7:latest'

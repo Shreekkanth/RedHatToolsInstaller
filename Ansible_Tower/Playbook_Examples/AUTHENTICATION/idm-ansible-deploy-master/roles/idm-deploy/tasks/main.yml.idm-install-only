@@ -1,0 +1,19 @@
+---
+# Run the satellite installer command
+ - name: Configure and Start the IDM server
+   command: >
+     ipa-server-install
+     -U 
+     --realm {{ realm }}
+     --domain {{ domain }}
+     -a {{ admin_password }}
+     -p {{ ds_password }}
+     --hostname {{ hostname }}
+     --ip-address {{ ip_address }}
+     --setup-dns
+     --forwarder {{ forwarder }}
+     --forward-policy {{ forward_policy }}
+     --reverse-zone {{ reverse_zone }}
+   args:
+     creates: /etc/ipa/default.conf
+

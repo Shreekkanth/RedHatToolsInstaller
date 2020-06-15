@@ -1,0 +1,69 @@
+# Safety Check - Fail if ran against the newer RHEL 7 box 
+- name: RHEL5-U | Check Redhat version
+  fail: msg="This playbook is only for RHEL 5 hosts"
+  when:
+    - ansible_distribution == "RedHat"
+    - ansible_distribution_major_version == 5
+
+# Don't use the mount module as it will add it to fstab
+- name: RHEL5-U | Temp mount secondary HD that contains our ISO
+  command: mount /dev/sdb1 /mnt
+  args:
+    creates: /mnt/rhel-server-7.3-x86_64-dvd.iso
+    warn: false
+
+- name: RHEL5-U | Mount ISO
+  command: mount -t iso9660 -o loop /mnt/rhel-server-7.3-x86_64-dvd.iso /media/
+  args:
+    creates: /media/media.repo
+    warn: false
+
+- name: RHEL5-U | Add PXE vmlinuz file to boot
+  command: /bin/cp -u /media/images/pxeboot/vmlinuz /boot/vmlinuz-rhel7
+
+- name: RHEL5-U | Add PXE initrd.img file to boot
+  command: /bin/cp -u /media/images/pxeboot/initrd.img /boot/initrd-rhel7.img
+
+- name: RHEL5-U | Get UUID of sdb1
+  shell: blkid -s UUID -o value /dev/sdb1
+  register: sdb_uuid
+
+- name: RHEL5-U | Copy Kickstart script to Secondardy Drive
+  template: 
+    src=rhel7-ks.cfg.j2
+    dest=/mnt/rhel7-ks.cfg
+
+- name: RHEL5-U | Unmount ISO
+  command: umount /media/
+  args:
+    warn: false
+
+- name: RHEL5-U | Unmount Secondary Drive
+  command: umount /mnt/
+  args:
+    warn: false
+
+- name: RHEL5-U | Add new Grub entry for Local PXE
+  blockinfile:
+    dest: /boot/grub/grub.conf
+    insertafter: "hiddenmenu"
+    block: |
+      title Install RHEL7 via Local PXE Images
+        root (hd0,0)
+        kernel /vmlinuz-rhel7 ip={{ ansible_default_ipv4.address }} netmask={{ ansible_default_ipv4.netmask }} gateway={{ ansible_default_ipv4.gateway }} nameserver={{ ansible_dns.nameservers[0] }} hostname={{ ansible_hostname }} ks=hd:UUID={{ sdb_uuid.stdout }}:rhel7-ks.cfg 
+        initrd /initrd-rhel7.img
+
+- name: RHEL5-U | Change Default Boot to 0
+  lineinfile:
+    dest: /boot/grub/grub.conf
+    state: present
+    regexp: '^default='
+    line: 'default=0'
+
+- name: RHEL5-U | Reboot the Server to install RHEL 7
+  command: /sbin/reboot
+
+
+
+
+

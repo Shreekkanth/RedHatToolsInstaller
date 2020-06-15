@@ -1,0 +1,49 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars:
+      storage_account_name: "ansibleworkshopdiag965"
+      virtual_network_name: "ansible-workshop-vnet"
+      rhel7_version: "7.3.2017032021"
+      resource_group: ""
+      location: "westeurope"
+      vm_size: "Standard_F1s"
+      rhel_sku: "7.3"
+
+  tasks:
+
+  - fail:
+      msg: "Thou shall not try and create more Tower nodes!"
+    when: vm_name | search("tower")
+
+  - name: Create VMs
+    azure_rm_virtualmachine:
+      name: "{{ vm_name }}"
+      resource_group: "{{ resource_group }}"
+      location: "{{ localhost }}"
+      vm_size: "{{ vm_size }}"
+      public_ip_allocation_method: Dynamic
+      open_ports: 
+        - 22
+        - 80
+        - 9090
+      image:
+        offer: RHEL
+        publisher: RedHat
+        sku: "{{ rhel_sku }}"
+        version: "{{ rhel7_version }}"
+      admin_username: "{{ admin_user }}"
+      admin_password: "{{ admin_password }}"
+      ssh_password_enabled: True
+      storage_account_name: "{{ storage_account_name }}"
+      virtual_network_name: "{{ virtual_network_name }}"
+      state: present
+      subscription_id: "{{ lookup('env','AZURE_SUBSCRIPTION_ID') }}"
+      secret: "{{ lookup('env', 'AZURE_SECRET') }}"
+      tenant: "{{ lookup('env', 'AZURE_TENANT') }}"
+      client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
+    delegate_to: localhost
+    register: azure_vm
+
+  - name: Display information
+    debug: var=azure_vm

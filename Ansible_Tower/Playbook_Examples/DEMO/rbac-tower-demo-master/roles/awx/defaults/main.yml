@@ -1,0 +1,27 @@
+---
+# awx/defaults/main.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+# Tower Configuration
+admin_username: "admin"
+admin_password: "nothing01"
+secret_key: "aabbcc"
+tower_config_file: "{{ playbook_dir }}/build/{{ env }}/tower_cli.cfg"
+
+# Postgre SQL Configuration
+pg_host: "{{ env }}_postgres"
+pg_port: 5432
+pg_database: "awx"
+pg_username: "awx"
+pg_password: "nothing01"
+
+# Memcached Configuration
+memcached_host: "{{ env }}_memcached"
+memcached_port: 11211
+
+# RabbitMQ Configuration
+rabbitmq_host: "{{ env }}_rabbitmq"
+rabbitmq_username: "tower"
+rabbitmq_password: "nothing01"
+rabbitmq_port: 5672
+rabbitmq_cookie: "cookiemonster"

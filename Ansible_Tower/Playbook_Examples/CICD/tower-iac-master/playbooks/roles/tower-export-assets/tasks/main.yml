@@ -1,0 +1,78 @@
+---
+- name: Export all assets
+  tower_receive:
+    all: True
+  register: exported_assets
+
+- name: Create temp directory for GIT
+  tempfile:
+    state: "directory"
+    suffix: "build"
+  register: temp_directory
+  notify: "Remove temporary git directory"
+
+- name: Get assets from gitlab
+  git:
+    repo: "{{ gitlab_url }}"
+    dest: "{{ temp_directory.path }}"
+
+- name: Make directories (if needed)
+  file:
+    state: "directory"
+    path: "{{ temp_directory.path }}/{{ item }}"
+  with_items:
+    - "{{ exported_assets.assets | map(attribute='asset_type') | list | unique }}"
+
+- name: Write export into git repository
+  copy:
+    content: "{{ item | to_nice_json }}"
+    dest: "{{ temp_directory.path }}/{{ item.asset_type }}/{{ item.name | default(item.username) }}.json"
+  with_items:
+    - "{{ exported_assets.assets }}"
+  when: item.name | default(item.username) is not search("SR ")
+  loop_control:
+    label: "{{ item.asset_type}}/{{ item.name | default(item.username) }}"
+
+- name: Add changes
+  command: 'git add --all'
+  args:
+    chdir: "{{ temp_directory.path }}"
+
+- name: See if any changes were made
+  command: 'git status --short'
+  args:
+    chdir: "{{ temp_directory.path }}"
+  register: git_status_result
+
+- name: Configure user in git repo
+  git_config:
+    name: "user.name"
+    value: "{{ gitlab_name }}"
+    scope: "local"
+    repo: "{{ temp_directory.path }}"
+  when: git_status_result.stdout | length > 0
+
+- name: Configure email in git repo
+  git_config:
+    name: "user.email"
+    value: "{{ gitlab_email }}"
+    scope: "local"
+    repo: "{{ temp_directory.path }}"
+  when: git_status_result.stdout | length > 0
+
+- name: Commit changes
+  command: 'git commit -m {{ change_comment | quote }} --all'
+  args:
+    chdir: "{{ temp_directory.path }}"
+  register: git_commit_result
+  failed_when: git_commit_result.rc > 1
+  changed_when: git_commit_result.rc == 0
+  when: git_status_result.stdout | length > 0
+
+- name: Push changes to git repository
+  command: 'git push'
+  args:
+    chdir: "{{ temp_directory.path }}"
+  when:
+    - git_status_result.stdout | length > 0
+    - git_commit_result.rc == 0

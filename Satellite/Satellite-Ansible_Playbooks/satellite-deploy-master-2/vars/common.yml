@@ -1,0 +1,12 @@
+---
+# Common config across all satellite playbooks
+timeout_post_reboot: 150
+sat_org: ITnow
+sat_location: Caixa
+capsule_cv_name: cv_capsule
+capsule_ak_name: ak_capsule 
+rhel7_cv_name: cv_rhel7
+rhel7_ak_name: ak_rhel7
+client_repos: 'rhel-{{ ansible_distribution_major_version }}-server-rpms,rhel-{{ ansible_distribution_major_version }}-server-satellite-tools-{{ satellite_deployment_version }}-rpms'
+puppetca_autosign: '*.info.net'
+...

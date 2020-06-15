@@ -1,0 +1,35 @@
+- hosts: nodes
+  become: yes
+  vars_prompt:  
+   - name: "local_directory"  
+     prompt: "Insert a directory of your local system where you want download the sosreport files:"  
+     default: "/tmp"  
+  tasks:  
+    - name: yum install sosreport  
+      yum:  
+        name: sos 
+        state: installed
+
+    - name: create a local temp directory  
+      shell: mktemp -d "/tmp/ansible-sosreport.XXXX"  
+      register: tmpdir  
+
+    - name: Execute sosreport   
+      shell: "sosreport --batch --tmp-dir {{ tmpdir.stdout }}"  
+
+    - name: Get sos report file list
+      shell: "find {{tmpdir.stdout}} -maxdepth 1 -type f"
+      register: sosreport_files
+  
+    - name: Download report on local system  
+      fetch: >  
+        src={{item}}  
+        dest={{local_directory}}/  
+        fail_on_missing=yes  
+        flat=yes  
+        validate_md5=yes  
+      with_items: "{{sosreport_files.stdout_lines}}"
+  
+  
+    - name: Remove temp directory   
+      file: path={{tmpdir.stdout}} state=absent  

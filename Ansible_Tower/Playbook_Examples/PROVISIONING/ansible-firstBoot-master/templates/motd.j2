@@ -1,0 +1,4 @@
+Equipo           : {{ ansible_fqdn }}
+Entorno          : {{_maqueta.split('-')[-1]}}
+Maqueta Instalada: {{_maqueta.split('-')[:-1] | join('-')}}
+Fecha Instalacion: {{ ansible_date_time.date }} {{ ansible_date_time.time }}

@@ -1,0 +1,47 @@
+---
+# Set this to true if you want to delete lab before rebuilding
+local_lab_delete: "true"
+
+# Environmental variables
+platform_group_name: "newvms"
+
+#Dictonary of Repos for this Lab environment
+rhsm_repos:
+  rhel-7-server-rpms:
+    enable: true
+
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  ml-dev001:
+    vmname: "ml-dev001"
+    vmtype: "rhel7"
+    vmtemplate: "rhel7-image"
+    cluster: "na"
+    vmnics:
+      - nic:
+          vmnicstate: present
+          vmnic_name: eth1
+          vmnic_boot_protocol: static
+          vmnic_ip_address:
+          vmnic_netmask:
+          vmnic_gateway:
+          vmnic_interface: virtio
+          vmnic_profile:
+          vmnic_network:
+    user_name: root
+    state: present
+    vmmem: 8192
+    vmcores: 4
+    vmsockets: 2
+    vmgrowdisk: 20
+    vmdisks:
+      - disk:
+          vmdiskname: na
+          vmdisksize: na
+          vmdiskformat: na
+          vmdiskinterface: na
+          vmdisksd: na
+          vmdiskstate: absent
+    vmos_type: rhel7
+    vmfile_type: qcow2
+    ipaddress: 192.168.122.240

@@ -1,0 +1,39 @@
+- name: Deploy VM by YAML
+  gather_facts: false
+  hosts: localhost
+  tasks:
+
+  # Creazione delle VM
+  - name: Deploy VM
+    include_role:
+      name: provision_vm
+    with_items: "{{ instances }}"
+
+- name: Refresh Virt-who
+  hosts: localhost
+  become: true
+  gather_facts: false
+  tasks:
+  - name: Restart Virt-who service
+    delegate_to: cdprh33.cdpsede.cassaddpp.it
+    systemd:
+      name: virt-who
+      state: restarted
+    when: satellite_restart_virtwho
+    register: virtwho
+
+  - name: Give virt-who time to settle
+    pause:
+      seconds: 10
+    when: virtwho is changed
+
+
+# Configurazione delle VM
+- name: Configure basic aspects of the new VMs
+  gather_facts: true
+  hosts: provisioned
+  become: true
+  tasks:
+  - name: Configure VM
+    import_tasks: configurevm.yaml
+

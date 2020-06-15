@@ -1,0 +1,17 @@
+---
+## Role to deploy Satellite 6.2+
+- name: SATELLITE | Obatin RHN credentials
+  hosts: satellite
+  remote_user: root
+  vars_prompt:
+    - name: "rhn_user"
+      prompt: "RHN User Name"
+      private: no
+
+    - name: "rhn_password"
+      prompt: "RHN Password"
+      private: yes
+  when: rhn_registration == True
+  tasks:
+    - include: tasks/main.yml
+

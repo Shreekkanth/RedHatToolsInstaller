@@ -1,0 +1,7 @@
+---
+compose_repository_server: http://compose.sat.engineering.redhat.com/
+compose_repository_compose: Satellite
+compose_repository_type: Satellite
+compose_repository_path: "composes/latest-{{ compose_repository_compose }}-{{ compose_repository_version }}-RHEL-{{ ansible_distribution_major_version }}/compose/{{ compose_repository_type }}/x86_64/os/"
+compose_repository_addons: []
+compose_repository_tools_addons: []

@@ -1,0 +1,74 @@
+---
+osp_ver: 3.9
+vm_location: "/var/lib/libvirt/images/"
+working_location: "/root/"
+root_pass: "password"
+template_name: "rhel7-image"
+domain_name: "kenlab.external"
+gateway: 192.168.122.1
+dns1: 192.168.122.10
+dns2: 192.168.122.1
+
+# This is my own Red Hat activation key i created with my org id, you will 
+# need to update with your own details or use a satellite
+rh_orgid: 11546460
+rh_ak: build-labs-all
+
+install_node: "ocp-master001.kenlab.external"
+
+# Disk is the size to increase by and NOT the total size. IE: 10G initial disk to be increased by 30
+guests:
+  ocp-master001:
+    mem: 16384
+    cpus: 4
+    disk: 40
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.21
+    ocp_role: master
+    installer_node: yes
+  ocp-master002:
+    mem: 16384
+    cpus: 4
+    disk: 40
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.22
+    ocp_role: master
+    installer_node: no
+  ocp-master003:
+    mem: 16384
+    cpus: 4
+    disk: 40
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.23
+    ocp_role: master
+    installer_node: no
+  ocp-infranode001:
+    mem: 8192
+    cpus: 4
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.31
+    ocp_role: infranode
+    installer_node: no
+  ocp-infranode002:
+    mem: 8192
+    cpus: 4
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.32
+    ocp_role: infranode
+    installer_node: no
+  ocp-appnode001:
+    mem: 16384
+    cpus: 8
+    disk: 10
+    os_type: rhel7
+    file_type: qcow2
+    ipaddress: 192.168.122.41
+    ocp_role: appnode
+    installer_node: no

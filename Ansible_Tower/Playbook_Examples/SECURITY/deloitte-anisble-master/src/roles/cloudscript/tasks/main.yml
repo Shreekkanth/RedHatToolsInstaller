@@ -1,0 +1,56 @@
+---
+- name: get api access token
+  uri:
+    url: "{{ spn_auth_url }}"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      grant_type: client_credentials
+      resource: "{{ spn_resource }}"
+      client_id: "{{ spn_client_id }}"
+      client_secret: "{{ spn_client_secret }}"
+  register: oauth_token_response
+  delegate_to: localhost
+  run_once: true
+
+- name: create elevated groups facter directory
+  win_file:
+    path: C:\ProgramData\PuppetLabs\facter\facts.d
+    state: directory
+
+- name: set facter directory permissions
+  win_acl:
+    user: BUILTIN\Administrators
+    path: C:\ProgramData\PuppetLabs\facter\facts.d
+    type: allow
+    rights: FullControl
+
+- name: create elevated_groups.json
+  win_copy:
+    content: "{{ elevated_groups }}"
+    dest: C:\ProgramData\PuppetLabs\facter\facts.d\elevated_groups.json
+
+- name: provision with cloudscript
+  uri:
+    url: "{{ cloudscript_url }}"
+    method: POST
+    body_format: json
+    headers:
+      Authorization: "{{ oauth_token_response.json.access_token }}"
+    body:
+      AccountID: "{{ subscription_id }}"
+      ResourceLocation: "{{ location }}"
+      ResourceIdentifier: "{{ ansible_hostname }}"
+      Domain: "{{ deloitte_domain }}"
+      Environment: "{{ deloitte_environment }}"
+      Provider: "{{ provider }}"
+      OperatingSystem: "{{ os_type }}" 
+  register: cloudscript_response
+  delegate_to: localhost
+
+- debug:
+    msg: "{{ cloudscript_response }}"
+
+- name: check for waiting status
+  assert: 
+    that: "cloudscript_response['json']['status'] == 'WAITING"

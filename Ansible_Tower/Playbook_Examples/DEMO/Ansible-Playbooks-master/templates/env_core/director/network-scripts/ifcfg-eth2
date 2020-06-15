@@ -1,0 +1,9 @@
+BOOTPROTO=none
+NAME=eth2
+DEVICE=eth2
+ONBOOT=yes
+PEERDNS=no
+IPADDR={{ director.eth2.ipaddr | mandatory }}
+NETMASK={{ director.eth2.netmask | mandatory }}
+GATEWAY={{ director.eth2.gateway | mandatory }}
+DNS1={{ director.eth2.dns[0] }}

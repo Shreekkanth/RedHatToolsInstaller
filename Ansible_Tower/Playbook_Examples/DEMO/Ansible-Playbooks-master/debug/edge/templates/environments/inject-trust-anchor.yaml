@@ -1,0 +1,40 @@
+parameter_defaults:
+  # The content of a CA's SSL certificate file in PEM format. This is evaluated on the client side.
+  # Mandatory. This parameter must be set by the user.
+  # Type: string
+  SSLRootCertificate: |
+    -----BEGIN CERTIFICATE-----
+    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
+    +Sfco6GjWmmpf5ZcIPfyo5nLKfXsix0mig==
+    -----END CERTIFICATE-----
+
+resource_registry:
+  OS::TripleO::NodeTLSCAData: /usr/share/openstack-tripleo-heat-templates/puppet/extraconfig/tls/ca-inject.yaml

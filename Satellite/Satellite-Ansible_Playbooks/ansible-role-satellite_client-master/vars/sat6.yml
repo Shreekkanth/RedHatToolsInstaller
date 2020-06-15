@@ -1,0 +1,5 @@
+# defaults file for satellite 6
+---
+satellite_capsule: sat6cap01.intranet.prod.int.phx2.redhat.com
+satellite_org: rhit
+satellite_key: default

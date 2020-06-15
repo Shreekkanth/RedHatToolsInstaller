@@ -1,0 +1,26 @@
+---
+- name: Install icinga2 basic packages
+  apt:
+    name: gnupg
+    state: present
+
+- name: Add icinga2 repo key
+  apt_key:
+    url: "{{ icinga2_apt_repo.gpgkey }}"
+    state: present
+  when: icinga2_apt_repo.gpgkey is defined
+        and icinga2_manage_repo_icinga
+
+- name: Add icinga2 repository
+  apt_repository:
+    repo: "{{ icinga2_apt_repo.repo }}"
+    state: present
+    update_cache: yes
+  when: icinga2_manage_repo_icinga
+
+- name: Install icinga2 basic packages
+  apt:
+    name: "{{ item }}"
+    state: "{{ icinga2_state }}"
+  register: track_icinga2_install
+  with_items: "{{ packages_debian }}" 

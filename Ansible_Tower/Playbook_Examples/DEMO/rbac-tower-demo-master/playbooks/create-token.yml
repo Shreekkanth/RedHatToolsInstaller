@@ -1,0 +1,18 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - include_role:
+        name: ../awx-add-role
+      vars:
+        tower_domain: "localhost" # required: no, default: localhost
+        tower_user: "admin" # required: no, default: admin
+        tower_password: "nothing01" # required: no, default: nothing01
+        # tower_token: "replace_me" # required: no, default: Creates a new token, we recommend saving the token it generates
+        ports: {
+          "http": 80
+        }
+        organization: "Default"
+        team: "Infrastructure"
+        # TODO add documentation for http://localhost/api/v2/organizations/, all role options
+        role: "credential_admin_role"

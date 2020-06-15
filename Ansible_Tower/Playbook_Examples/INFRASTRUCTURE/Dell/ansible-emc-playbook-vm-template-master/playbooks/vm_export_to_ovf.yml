@@ -1,0 +1,89 @@
+---
+- name: "Export VM Template to OVF and Convert to OVA"
+  hosts: "localhost"
+  gather_facts: True
+  tasks:
+    - name: "Export VM Template block"
+      block:
+        - name: "Export VM"
+          include_role:
+            name: "vmware_export_ovf"
+          vars:
+            vm_export_ovf_export_folder: "{{ vm_template_export_path }}"
+
+    # Need to convert the OVF format to OVA:
+    #   You will need to download the VMware OVF Tool for Linux 64-bit manually (behind download wall)
+    #   Current downloads found here: https://my.vmware.com/group/vmware/details?downloadGroup=OVFTOOL430&productId=742
+    #   Once downloaded, scp it to the Ansible Control Node
+    #   Install the tool by running sudo ./VMware-ovftool-*.bundle
+    #     User Guide for current version can be found here: https://www.vmware.com/support/developer/ovf/ovftool-430-userguide.pdf
+
+
+    # Ensure we have support for samba/cifs shares installed
+        - name: "Ensure cifs-utils are installed"
+          package:
+            name: "cifs-utils"
+            state: "installed"
+          become: True
+
+        - name: "Create a temporary directory to mount the template export Windows share"
+          tempfile:
+            state: "directory"
+          register: "windows_share"
+          become: True
+
+        - name: "Create temporary file for mounting Windows share"
+          tempfile:
+            state: "file"
+          register: "cred"
+          become: True
+
+        - name: "Template out temporary file"
+          copy:
+            content: "password={{ win_export_pass }}"
+            dest: "{{ cred.path }}"
+            mode: "0600"
+            owner: "root"
+            group: "root"
+          become: True
+          no_log: True
+
+        - name: "Mount the template export Windows share"
+          shell: '/usr/bin/mount -t cifs {{ vm_template_export_win_share }} {{ windows_share.path }} -o username={{ win_export_user | quote }},credentials={{ cred.path | quote }},workgroup={{ win_export_domain | quote }}'
+          args:
+            warn: False
+          become: True
+
+        - name: "Convert the exported OVF to an OVA"
+          command: '/usr/bin/ovftool -st=OVF {% if vm_template_ova_force_sha1_hash_algo %}--shaAlgorithm=SHA1 {% endif %}{{ vm_template_export_path }}/{{ vctr_vm_template_name }}/{{ vctr_vm_template_name }}.ovf {{ windows_share.path }}/{{ vctr_vm_template_name }}-{{ ansible_date_time.year }}-{{ ansible_date_time.month }}-{{ ansible_date_time.day }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.ova'
+          register: "ovftool_results"
+          become: True
+
+        - debug:
+            var: "ovftool_results"
+            verbosity: "1"
+
+      always:
+        # Unmount the CIFS Share
+        - name: "Unmount the template export Windows share"
+          command: '/usr/bin/umount {{ windows_share.path }}'
+          become: True
+          ignore_errors: True
+
+        - name: "Remove the temporary template extract mountpoint"
+          file:
+            path: "{{ windows_share.path }}"
+            state: "absent"
+          become: True
+
+        - name: "Remove the temporary windows share file"
+          file:
+            path: "{{ cred.path }}"
+            state: "absent"
+          become: True
+
+        - name: "Remove the exported OVF"
+          file:
+            path: "{{ vm_template_export_path }}/{{ vctr_vm_template_name }}"
+            state: "absent"
+          become: True

@@ -1,0 +1,10 @@
+---
+nagios_host: nagios1.prod.a4.vary.redhat.com
+admin_host: admin0.prod.a4.vary.redhat.com
+admin_host_secondary: admin1.prod.a4.vary.redhat.com
+elbs:
+  - ELB-CMSInternalELB
+  - ELB-CMSPublicELB
+public_elb: CMSStagePublicELB
+internal_elb: CMSStageInternalELB
+admin_elb: CMSStageAdminELB

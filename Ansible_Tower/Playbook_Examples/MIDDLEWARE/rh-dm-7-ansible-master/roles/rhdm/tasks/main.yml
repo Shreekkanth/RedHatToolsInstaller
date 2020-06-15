@@ -1,0 +1,155 @@
+---
+#
+# tasks file for rhdm role
+#
+#### Include vars files
+- include_vars:
+    file: vars_secret.yml
+  tags:
+    - always
+
+- include_vars:
+    file: users.yml
+  tags:
+    - always
+
+- include_vars:
+    file: rhdm.yml
+  tags:
+    - always
+
+
+#### Set Facts
+- name: Set JBoss EAP Install Facts
+  set_fact:
+    jboss_eap_artifact:     "{{ base_dir_download + jboss_eap_artifact_name_7_1 }}"
+    jboss_eap_base:         "{{ base_dir_install }}"
+    jboss_eap_base_name:    "{{ 'jboss-eap-' + jboss_eap_base_version }}"
+    jboss_eap_patch_dest:   "{{ base_dir_working }}"
+    jboss_eap_patches_list: "{{ jboss_eap_patches_7_1 }}"
+    user_lib_systemd:       "/usr/lib/systemd/system/"
+    etc_sysconfig:          "/etc/sysconfig/"
+  tags:
+    - always
+
+- name: Set JBoss EAP Home Facts
+  set_fact:
+    jboss_eap_home:               "{{ jboss_eap_base + jboss_eap_base_name + '/' }}"
+    jboss_eap_home_without_slash: "{{ jboss_eap_base + jboss_eap_base_name }}"
+    jboss_admin_home:             "{{ jboss_eap_base + 'admin' }}"
+  tags:
+    - always
+
+- name: Set JBoss EAP Standalone Facts
+  set_fact:
+    jboss_eap_version_txt_path:     "{{ jboss_eap_home + 'version.txt' }}"
+    jboss_eap_standalone_conf_file: "{{ jboss_eap_home + 'bin/standalone.conf' }}"
+    jboss_eap_conf:                 "{{ jboss_eap_home + 'bin/init.d/' + jboss_name_to_conf + '.conf'}}"
+    jboss_eap_deployments:          "{{ jboss_eap_home + 'standalone/deployments/' }}"
+  tags:
+    - always
+
+#### Set Facts RH DM
+- name: Set RH DM Directories
+  set_fact:
+    rhdm_work_dir:                             "{{ base_dir_working + 'rhdm/'}}"
+    rhdm_decision_central_war:                 "{{ jboss_eap_home + 'standalone/deployments/decision-central.war' }}"
+    rhdm_decision_central_base:                "{{ jboss_eap_home + 'standalone/deployments/decision-central.war' }}"
+    rhdm_kieserver_war:                        "{{ jboss_eap_home + 'standalone/deployments/kie-server.war' }}"
+    rhdm_decision_central_WEB_INF:             "{{ jboss_eap_home + 'standalone/deployments/decision-central.war/WEB-INF/' }}"
+    rhdm_kieserver_WEB_INF:                    "{{ jboss_eap_home + 'standalone/deployments/kie-server.war/WEB-INF/' }}"
+    rhdm_decision_central_ds_management_props: "{{ jboss_eap_home + 'standalone/deployments/decision-central.war/WEB-INF/classes/datasource-management.properties' }}"
+  tags:
+    - always
+
+- name: Set RHDM Deployable
+  set_fact:
+    jboss_eap_config_cli:              "{{ rhdm_work_dir + 'cli/' }}"
+    rhdm_patch_dest:                   "{{ rhdm_work_dir }}"
+    rhdm_patches_list:                 "{{ rhdm_patches_7_1 }}"
+    rhdm_decision_central_deployable:  "{{ rhdm_work_dir + 'rhdm-' + rhdm_version + '-decision-central-eap7-deployable/' + jboss_eap_base_dir  }}"
+    rhdm_kie_server_base_deployable:   "{{ rhdm_work_dir + 'rhdm-' + rhdm_version + '-kie-server-ee7/' }}"
+    rhdm_kie_server_deployable:        "{{ rhdm_work_dir + 'rhdm-' + rhdm_version + '-kie-server-ee7/kie-server.war' }}"
+    rhdm_controller_base_deployable:   "{{ rhdm_work_dir + 'rhdm-' + rhdm_version + '-add-ons/rhdm-7.1-controller-ee7/' }}"
+    rhdm_controller_deployable:        "{{ rhdm_work_dir + 'rhdm-' + rhdm_version + '-add-ons/rhdm-7.1-controller-ee7/controller.war' }}"
+    rhdm_runtime_path_base:            "{{ base_dir_install  + 'rhdm/' }}"
+    rhdm_decision_central_webinf_lib:  "{{ rhdm_decision_central_WEB_INF + 'lib' }}"
+    rhdm_kieserver_webinf_lib:         "{{ rhdm_kieserver_WEB_INF + 'lib' }}"
+    rhdm_extra_libs_dir:               "files/"
+  tags:
+    - always
+
+- name: "Set kie server controller url {{kie_server_controller_url_ws}}"
+  set_fact:
+    kie_server_controller_url: "{{kie_server_controller_url_ws}}"
+  when: rhdm_dc_install
+  tags:
+    - always
+
+- name: "Set kie server controller url {{kie_server_controller_url_controller}}"
+  set_fact:
+    kie_server_controller_url: "{{kie_server_controller_url_controller}}"
+  when: rhdm_controller_install
+  tags:
+    - always
+
+#
+# Certificates (pks12, truststore, etc.) Facts
+#
+- name: Set Certificates Facts
+  set_fact:
+    certificates_base_src:  "{{ base_dir_download + 'security/certs/' }}"
+    certificates_base_dest: "{{ rhdm_work_dir + 'tmp/' }}"
+    cacerts_path_ori:       "{{ java_home_real_path + 'jre/lib/security/cacerts' }}"
+    cacerts_path_dest:      "{{ rhdm_runtime_path_base + 'security/cacerts' }}"
+    cacerts_pass_ori:       "changeit"
+    keytool_executable:     "{{ java_home_real_path + 'bin/keytool' }}"
+  tags:
+    - always
+
+####
+- name: "Create the Base Destination"
+  become: true
+  file:
+    path:  "{{ jboss_eap_base }}"
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+    state: directory
+    mode: "0775"
+  tags:
+    - always
+
+#### Create User Account "rhdm"
+- import_tasks: jboss_user.yml
+
+#### Install JBoss EAP
+- import_tasks: jboss_eap_install.yml
+
+#### Install RHDM
+- import_tasks: rhdm_install.yml
+
+#### Copy the .bash_profile_ext file to ${HOME}
+- import_tasks: config_bash_profile.yml
+
+#### Deploy OA&M scripts
+- import_tasks: jboss_eap_deploy_oam_scripts.yml
+
+#############################
+# Branding Decision Central #
+#############################
+- import_tasks: rhdm_deploy_branding_central.yml
+
+##############################
+# Uninstall JBoss EAP & RHDM #
+##############################
+- import_tasks: rhdm_uninstall.yml
+
+####
+- name: Log Final
+  debug:
+    msg: "------ Final ----"
+  tags:
+   - always
+
+#
+# EOF

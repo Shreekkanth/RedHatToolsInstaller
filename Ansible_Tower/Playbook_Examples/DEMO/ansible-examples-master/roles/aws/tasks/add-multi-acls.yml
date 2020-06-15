@@ -1,0 +1,17 @@
+- block:
+  
+    - set_fact:
+        subnets: "{{ public_subnets }}"
+
+    - import_tasks: add-acl.yml
+
+  when: '"public" in acl'
+
+- block:
+  
+    - set_fact:
+        subnets: "{{ private_subnets }}"
+
+    - import_tasks: add-acl.yml
+
+  when: '"private" in acl'

@@ -1,0 +1,30 @@
+---
+- name: Test a Windows module
+  hosts: all
+  vars:
+    ansible_port: 5985
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: basic
+    ansible_winrm_kerberos_delegation: yes
+  tasks:
+#  - name: Test a Windows module
+#    raw: Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+
+#  - name: Test a Windows module
+#    raw: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+#  - name: Test a Windows module
+#    raw: Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+
+#  - name: test
+#    raw: Start-Service RemoteRegistry
+
+#  - name: test
+#    raw: Get-Service
+    
+  - name: test
+    win_shell: type c:\windows\system32\sysprep\panther\SetupACT.log
+    
+#  - name: Reboot
+#    win_reboot:

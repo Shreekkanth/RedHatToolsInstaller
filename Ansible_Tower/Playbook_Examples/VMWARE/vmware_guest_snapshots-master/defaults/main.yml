@@ -1,0 +1,12 @@
+---
+# defaults file for vmware_guest_snapshots
+vm_name: "{{ inventory_hostname }}"
+vm_datacenter:
+vm_snapshot_name: Ansible_Snapshot
+vm_snapshot_description: 'Created by Ansible Tower'
+vm_snapshot_state: present
+# vm_hostname:
+# vm_hostname_password:
+# vm_hostname_username:
+vm_hostname_validate_certs: 'no'
+# vm_hostname_port:

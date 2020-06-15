@@ -1,0 +1,38 @@
+---
+- name: parser meta data
+  parser_metadata:
+    version: 1.0
+    command: show macro auto interface
+    network_os: ios
+
+- name: match lines
+  pattern_match:
+    regex: "^Gi.*$"
+    match_all: true
+    match_greedy: true
+  register: context
+
+# Gi1/1         FALSE             None        ISE-STD-Data
+- name: match interface values
+  pattern_match:
+    regex: "(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+.+$)"
+    content: "{{ item }}"
+  loop: "{{ context }}"
+  register: values
+
+- name: template port macro info
+  loop: "{{ values }}"
+  register: macro_info
+  export: true
+  export_as: dict
+  extend: cisco_ios
+  json_template:
+    template:
+      - key: "{{ item.matches.0 }}"
+        object:
+          - key: auto_smart_port
+            value: "{{ item.matches.1 }}"
+          - key: fallback
+            value: "{{ item.matches.2 }}"
+          - key: macro_description
+            value: "{{ item.matches.3 | trim() }}"

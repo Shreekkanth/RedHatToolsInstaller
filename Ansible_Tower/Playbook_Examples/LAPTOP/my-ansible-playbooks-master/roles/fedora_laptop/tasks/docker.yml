@@ -1,0 +1,41 @@
+---
+- block:
+  - name: install Docker packages
+    dnf:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - docker
+      - docker-compose
+
+  - name: create docker group
+    group:
+      name: docker
+      state: present
+
+  - name: add user to docker group
+    user:
+      name: "{{ ansible_user_id }}"
+      groups: docker
+      append: yes
+
+  - name: start Docker daemon
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: get installed Docker images
+    shell: bash -c "docker images | grep -v REPOSITORY | awk '{print \$1\":\"\$2}'"
+    register: installed_docker_images
+    changed_when: false
+    when: docker_pull_images
+
+  - name: pull Docker images
+    command: docker pull {{ item }}
+    with_items: "{{ docker_images }}"
+    when: docker_pull_images and item not in installed_docker_images.stdout
+  become: yes
+  become_user: root
+  tags:
+  - docker

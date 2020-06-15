@@ -1,0 +1,5 @@
+---
+nagios_host: nagios1.prod.a4.vary.redhat.com
+admin_host: admin0.prod.a4.vary.redhat.com
+admin_host_secondary: admin1.prod.a4.vary.redhat.com
+stunnel_server: true

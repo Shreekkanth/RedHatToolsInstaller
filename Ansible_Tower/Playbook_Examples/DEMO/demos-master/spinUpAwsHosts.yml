@@ -1,0 +1,25 @@
+---
+- name: Create a sandbox instance
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    region: us-west-1
+    env: Production
+    image: ami-d1315fb1
+    count: 1
+    security_group: aws_spinup
+
+  tasks:
+  - name: Launch!
+    ec2:
+      keypair: bcoursen
+      group: "{{ security_group }}"
+      image: "{{ image }}"
+      type: t2.micro
+      region: "{{ region }}"
+      instance_tags:
+          Name: "brian"
+          server: spinup
+      count: "{{ count }}"
+      wait: true

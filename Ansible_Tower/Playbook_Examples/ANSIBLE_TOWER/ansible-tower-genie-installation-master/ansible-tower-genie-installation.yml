@@ -1,0 +1,107 @@
+---
+- name: Ansible Tower Genie Installation
+  hosts: localhost
+  vars_files:
+    - "vars/genie-install-vars.yml"
+  vars_prompt:
+    - name: "git_repo_url"
+      prompt: "Enter the URL for the Git Repository to house the assembled Ansible Tower Genie playbooks"
+      private: no
+
+    - name: "git_user"
+      prompt: "Enter the Git Repository's Git username"
+      private: no
+
+    - name: "git_pass"
+      prompt: "Enter the Git Repository user's password if not using SSH protocol"
+      default: ""
+      private: yes
+
+    - name: "git_ssh_private_key_path"
+      prompt: "If using SSH protocol with your Git repository, enter the full path to the private SSH key"
+      default: ""
+      private: no
+
+    - name: "tower_url"
+      prompt: "Enter the Ansible Tower URL to install to"
+      private: no
+
+    - name: "tower_user"
+      prompt: "Enter the Ansible Tower admin username"
+      private: no
+
+    - name: "tower_pass"
+      prompt: "Enter the Ansible Tower admin user's password"
+      private: yes
+
+    - name: "tower_org"
+      prompt: "Enter the Ansible Tower Organization"
+      private: no
+
+    - name: "tower_verify_ssl"
+      prompt: "Verify Ansible Tower's Certificates?"
+      default: False
+      private: no
+
+    - name: "onboarding_vault_pass"
+      prompt: "Please Enter an Ansible Vault password to encrypt the onboarding secrets with.  Make note of what is entered as you may need to update the vaulted variables in the future."
+      private: yes
+
+    - name: "env_count"
+      prompt: "How many Ansible Tower environments/clusters would you like to be able to onboard credentials, inventories, job templates, and teams to?"
+      default: 1
+      private: no
+
+    - name: "onboard_in_scm"
+      prompt: "Create new repositories and branches for Ansible Tower Teams in your Source Control system when performing Team platfrom onboarding? (True/False) **Gitlab Only right now**"
+      default: True
+      private: no
+
+  tasks:
+    - name: Collect Information to Build Variable Files
+      include_tasks: "tasks/variable-builder.yml"
+
+  # Output data collection message to end-user
+    - debug:
+        msg: "Thank you for filling out all the required information.  Ansible Tower Genie Installation is now ready to begin."
+
+  # Prerequisite prep work
+    - name: Ensure git is installed
+      package:
+        name: "git"
+        state: "installed"
+      become: True
+
+    - name: Clone Ansible Tower Genie installation required roles
+      git:
+        dest: "./{{ item.dest }}"
+        repo: "{{ item.url }}"
+        umask: "0022"
+      with_items: "{{ genie_role_repos }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: (item.name == "genie-credentials") or
+            (item.name == "genie-job-templates") or
+            (item.name == "genie-projects") or
+            (item.name == "genie-prerequisites")
+
+    - name: Ensure tower-cli is installed
+      include_role:
+        name: "genie-prerequisites"
+
+  # Build the repository
+    - name: Create temporary directory to build Ansible Tower Genie
+      tempfile:
+        state: "directory"
+      register: temp_dir
+
+    - name: Run Ansible Tower Genie build procedure
+      include_tasks: "tasks/build.yml"
+
+    - name: Setup Ansible Tower Genie in Ansible Tower
+      include_tasks: "tasks/tower.yml"
+
+    - name: Remove temporary Ansible Tower Genie build directory
+      file:
+        path: "{{ temp_dir.path }}"
+        state: "absent"

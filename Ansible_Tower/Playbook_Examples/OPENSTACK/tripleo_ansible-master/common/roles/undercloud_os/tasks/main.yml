@@ -1,0 +1,75 @@
+---
+
+- name: set hostname for sure
+  shell: hostnamectl set-hostname {{ hostname_fqdn }} && hostnamectl set-hostname --transient {{ hostname_fqdn }}
+  changed_when: false
+
+- name: create '{{ stack_user }}' user
+  user: name={{ stack_user }}
+
+- name: set password
+  shell: echo '{{ stack_user }}:{{ stack_password }}' | chpasswd
+  changed_when: false
+
+- name: create sudoers file
+  template: src=sudoers.j2 dest=/etc/sudoers.d/{{ stack_user }} mode=0440
+
+- name: dot files (root)
+  unarchive: src=dotfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: ssh files (root)
+  unarchive: src=sshfiles.tar.gz dest=/root extra_opts=-p owner=root group=root
+
+- name: dot files (stack)
+  unarchive: src=dotfiles.tar.gz dest=/home/{{ stack_user }} extra_opts=-p owner={{ stack_user }} group={{ stack_user }}
+
+- name: ssh files (stack)
+  unarchive: src=sshfiles.tar.gz dest=/home/{{ stack_user }} extra_opts=-p owner={{ stack_user }} group={{ stack_user }}
+
+- name: get short hostname
+  shell: hostname -s
+  changed_when: false
+  check_mode: no
+  register: hostname_short
+
+- name: get fqdn hostname
+  shell: hostname -f
+  changed_when: false
+  check_mode: no
+  register: hostname_fqdn
+
+- debug: msg='{{ hostname_short.stdout }} {{ hostname_fqdn.stdout }}'
+
+- name: check if loopback line in /etc/hosts contains hostname
+  shell: grep {{ hostname_short.stdout }} /etc/hosts
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: hosts_contains_hostname
+
+- name: update /etc/hosts
+  lineinfile: >-
+    dest=/etc/hosts
+    state=present
+    regexp={{ item.regexp }}
+    line={{ item.line }}
+    backrefs=yes
+    backup=yes
+  with_items:
+    - regexp: '^(127.0.0.1\s+)(localhost.*)$'
+      line: '\1{{ hostname_fqdn.stdout }} {{ hostname_short.stdout }} \2'
+  when: hosts_contains_hostname|failed
+
+- name: setup external interface
+  template: src=ifcfg-external.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{ undercloud.external_interface.name }}
+
+- name: ifup external interface
+  shell: ifup {{ undercloud.external_interface.name }}
+
+- name: install common packages
+  yum: name={{ item }} state=latest
+  with_items: "{{ common_packages }}"
+
+- name: install python-tripleoclient
+  yum: name=python-tripleoclient state=latest
+

@@ -1,0 +1,66 @@
+---
+- hosts: localhost
+  vars:
+    sat6capsule: capsule.example.com
+    activationkey: ak-example
+    organization: example
+    
+  tasks:
+  
+    - name: Check all required port are accesible
+      wait_for:
+        host: "{{ sat6capsule }}"
+        port: "{{ item }}"
+        state: started
+        delay: 0         
+        timeout: 3
+      with_items:
+      - 80
+      - 443
+      - 5647
+      - 8443
+      
+    - name: Ensure RHN Tools are removed
+      yum:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - yum-rhn-plugin
+        - osad
+
+    - name: Ensure katello-ca-consumer-latest is Installed
+      yum: 
+        name: http://{{ sat6capsule }}/pub/katello-ca-consumer-latest.noarch.rpm
+        state: present
+
+    - name: Remove RHN System ID
+      file:
+        path: /etc/sysconfig/rhn/systemid
+        state: absent
+
+    - name: Register System to Satellite 6
+      redhat_subscription:
+        state: present
+        activationkey: "{{ activationkey }}"
+        org_id: "{{ organization }}"
+
+    - name: Ensure katello-agent is Installed
+      yum:
+        name: katello-agent
+        state: latest
+
+    - name: Ensure goferd (katello-agent) is Started and Enabled
+      service:
+        name: goferd
+        state: started
+        enabled: yes
+
+    - name: Enable Remote Execution by Distributing foreman-proxy user's public key
+      authorized_key:
+        user: root
+        key: '{{ item }}'
+        state: present
+      with_file:
+        - id_rsa_foreman_proxy.pub
+      tags:
+        - ssh-keys

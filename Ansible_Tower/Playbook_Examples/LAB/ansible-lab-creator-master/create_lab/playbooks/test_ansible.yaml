@@ -1,0 +1,72 @@
+---
+- name: Test Ansible plays
+  hosts: newvms 
+#  hosts: osp_systems 
+#  hosts: kvm 
+#  hosts: ocp_systems
+#  hosts: ansible_host
+  gather_facts: yes
+  become: true
+  vars_files:
+    - ../vars/new_vms.yml
+
+  tasks:
+    - include_vars: "{{ playbook_dir }}/config.yaml"
+    - name: Update /etc/sssd/sssd.conf with correct path to home directories
+      lineinfile:
+        dest: /etc/sssd/sssd.conf
+        regexp: "^homedir_substring"
+        line: "homedir_substring = /opt/home/"
+        state: present
+
+
+#    - include_role: 
+#        name: config-dnsenv
+#      vars:
+#         dns_record_state: absent 
+#        name: install_ansible_tower
+#      vars:
+#        webserver: "http://192.168.122.200/pub"
+#        tower_download_file: "ansible-tower-setup-bundle-latest.el7.tar.gz"
+#        tower_extracted_dir: "ansible-tower-setup-bundle-3.4.1-1.el7"
+
+#        name: rhsm
+#        name: install_apache_webserver
+
+#        name: configure_ansible_host
+#        name: clear_ansible_host
+#        name: clear_down_lab
+#        name: add_vm_disks
+#        name: build_ocp_inventory
+#        name: configure_installer_node
+
+#
+#
+#     - include_role: 
+#         name: build_ocp_inventory
+
+#    - name: Configure SELinux to targeted and enforcing
+#      selinux: 
+#        policy: targeted
+#        state: enforcing
+#    - debug:
+#        msg: "{{item.key}} is the installer node : {{ item.value.installer_node }}"
+#      with_dict: "{{ guests }}"
+#      when: "item.key in inventory_hostname and item.value.installer_node == True"
+
+#    - name: Check if inventory inplace already
+#      stat: path=/root/inventory
+#      with_dict: "{{ guests }}"
+#      when: "item.key in inventory_hostname and item.value.installer_node == True"
+#      register: st_invfile
+
+#    - name: Create Inventory file on install node
+#      copy:
+#        src: files/inventory
+#        dest: /root/inventory
+#        owner: root
+#        group: root
+#        mode: 0640
+#      with_items: "{{ st_invfile.results }}"
+#      when: "item.item.key in inventory_hostname and item.item.value.installer_node == True"
+

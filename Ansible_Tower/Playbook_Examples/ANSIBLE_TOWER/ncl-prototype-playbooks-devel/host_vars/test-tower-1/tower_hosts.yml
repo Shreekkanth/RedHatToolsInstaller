@@ -1,0 +1,9 @@
+---
+tower_hosts:
+  - name: 127.0.0.1
+    description: My host 1
+    enabled: true
+    inventory: Tower test inventory
+    state: present
+    variables:
+      example_var: abc123

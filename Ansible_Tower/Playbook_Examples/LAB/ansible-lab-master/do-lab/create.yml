@@ -1,0 +1,65 @@
+---
+- name: build a do environment
+  hosts: local
+  vars_files:
+  - group_vars/vaultfile.yml
+  - group_vars/hostnames.yml
+  vars:
+    http_port: 80
+
+  tasks:
+  - name: Create instance
+    digital_ocean:
+      state: present
+      command: droplet
+      ssh_key_ids: 4305229
+      name: "{{ item }}"
+      unique_name: yes
+      api_token: "{{ vault_api_token }}" 
+      size_id: s-1vcpu-1gb
+      region_id: ams3
+      image_id: centos-7-x64
+      wait_timeout: 600
+      private_networking: no
+    register: droplets
+    with_items: 
+      - "{{ hostnames }}"
+
+  - name: Add all ips to hostgroup
+    add_host: 
+      hostname: "{{ item.droplet.ip_address }}"
+      groups: dohosts
+    with_items: "{{ droplets.results }}"
+    
+- name: Setup ssh
+  hosts: dohosts
+  user: root
+  gather_facts: no
+  vars_files:
+  - group_vars/vaultfile.yml
+  - group_vars/hostnames.yml
+
+  tasks:
+  - name: Wait for it
+    wait_for_connection:
+     delay: 1
+     timeout: 300
+
+  - name: Ensure ssh dir exists
+    file:
+      path: /root/.ssh
+      state: directory
+      mode: 0700
+
+  - name: copy file into root account once instances are up
+    copy: 
+      content: |
+        {{ vault_rsa }}
+      dest: /root/.ssh/id_rsa
+      mode: 0400
+      owner: root
+      group: root
+  - name: add line to authorized_keys
+    lineinfile:
+      path: /root/.ssh/authorized_keys
+      line: '{{ vault_key }}'

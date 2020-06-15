@@ -1,0 +1,153 @@
+---
+- name: "Post VM template build cleanup"
+  hosts: "new_template"
+  gather_facts: False
+  vars_files:
+    - "vars/emc-vm-template-postprovision.yml"
+  tasks:
+    - name: "Remove ssh_host_* files"
+      block:
+        - name: "Find ssh_host_* files"
+          find:
+            paths: "/etc/ssh"
+            patterns: "ssh_host_*"
+          register: "ssh_host_files"
+          failed_when: "ssh_host_files.files | length < 1"
+
+        - debug:
+            var: "ssh_host_files.files"
+            verbosity: "1"
+
+        - name: "Remove ssh_host_* files"
+          file:
+            path: "{{ item.path }}"
+            state: "absent"
+          with_items: "{{ ssh_host_files.files }}"
+      become: True
+
+    - name: "Stop rsyslog"
+      service:
+        name: "rsyslog"
+        state: "stopped"
+      become: True
+
+    #  auditd can only be stopped using service command
+    - name: "Stop auditd"
+      command: '/usr/sbin/service auditd stop'
+      args:
+        warn: False
+      become: True
+
+    - name: "Clean up yum"
+      block:
+        - name: "Clean up yum cache"
+          file:
+            path: "/var/cache/yum"
+            state: "absent"
+
+        - name: "Clean yum"
+          command: '/usr/bin/yum clean all'
+          args:
+            warn: False
+
+        - name: "Cleanup extra kernels"
+          command: '/bin/package-cleanup --oldkernels --count=1 -y'
+      become: True
+
+    - name: "Stop and disable katello-agent"
+      service:
+        name: "goferd"
+        state: "stopped"
+        enabled: False
+      become: True
+
+    - name: "Ensure katello-agent is removed"
+      package:
+        name: "katello-agent"
+        state: "absent"
+      become: True
+
+    - name: "Unregister client from Satellite 6"
+      redhat_subscription:
+        state: "absent"
+      become: True
+
+    - name: "Ensure Satellite 6 CA is removed"
+      package:
+        name: "katello-ca-consumer-*"
+        state: "absent"
+      become: True
+
+    - name: "Ensure subscription-manager is removed"
+      package:
+        name: "subscription-manager"
+        state: "absent"
+      become: True
+      when: 'hostvars["localhost"]["satellite_sub_mgmt_version"] == "sat5"'
+
+    - name: "Cleanup temporary files"
+      block:
+        - name: "Find temporary files"
+          find:
+            paths:
+              - "/tmp"
+              - "/var/tmp"
+          register: "temp_files"
+
+        - debug:
+            var: "temp_files | json_query('files[*].path')"
+            verbosity: "1"
+
+        - name: "Cleanup temporary files"
+          file:
+            path: "{{ item.path }}"
+            state: "absent"
+          with_items: "{{ temp_files.files }}"
+      become: True
+
+    - name: "Cleanup logs"
+      block:
+        - name: "Force logrotate"
+          command: '/usr/sbin/logrotate -f /etc/logrotate.conf'
+
+        - name: "Find archived logs"
+          find:
+            paths: "/var/log"
+            patterns: "*.gz"
+          register: "archived_logs"
+          failed_when: 'archived_logs.files | length < 1'
+
+        - debug:
+            var: "archived_logs | json_query('files[*].path')"
+
+        - name: "Cleanup old logs"
+          file:
+            path:
+            state: "absent"
+          with_items:
+            - "{{ archived_logs | json_query('files[*].path') }}"
+            - "/var/log/dmesg.old"
+            - "/var/log/anaconda"
+
+        - name: "Refresh logs"
+          copy:
+            content: ""
+            dest: "{{ path }}"
+          with_items: "{{ clean_log_paths }}"
+          loop_control:
+            loop_var: "path"
+      become: True
+
+    - name: "Clear command history"
+      command: '/bin/bash -c history -c'
+      become: True
+
+    - name: "Write clean command history"
+      command: '/bin/bash -c history -w'
+      become: True
+
+    - name: "Ensure template kickstart SSH key is removed"
+      authorized_key:
+        user: "root"
+        key: "{{ ks_template_ssh_pub_key }}"
+        state: "absent"

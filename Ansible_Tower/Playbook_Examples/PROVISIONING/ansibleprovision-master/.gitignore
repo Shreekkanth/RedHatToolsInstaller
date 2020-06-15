@@ -1,0 +1,6 @@
+*.retry
+hosts
+*.yamllint
+callback_plugins/__pycache__
+venv
+*.pyc

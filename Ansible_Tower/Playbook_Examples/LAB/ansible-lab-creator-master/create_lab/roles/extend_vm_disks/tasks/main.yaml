@@ -1,0 +1,39 @@
+---
+
+- stat:
+    path: /dev/vda3
+  register: part_created
+
+- name: Extend disks in VM
+  shell: |
+         printf "n\np\n3\n\n\nt\n3\n8e\nw\n" | fdisk /dev/vda
+         partprobe
+  ignore_errors: yes
+  when: part_created.stat.exists != true
+
+#  parted:
+#    device: /dev/vda
+#    part_type: primary
+#    number: 3
+#    flags: [ lvm ]
+#    state: present
+#    part_end: 100%
+
+- name: Creates pvs and extends volume group
+  lvg:
+    vg: rhel
+    pvs: /dev/vda2,/dev/vda3
+  when: part_created.stat.exists != true
+
+- name: Extend the logical volume to consume all remaining space in the volume group
+  lvol:
+    vg: rhel
+    lv: root
+    size: +100%FREE
+    resizefs: true
+  when: part_created.stat.exists != true
+
+
+
+
+

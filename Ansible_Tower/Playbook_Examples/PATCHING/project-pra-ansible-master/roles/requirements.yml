@@ -1,0 +1,33 @@
+# requirements repo yaml
+---
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/role-patch-windows.git
+  name: role-patch-windows
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/demo-role-patch-windows.git
+  name: demo-role-patch-windows
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/demo-role-manage-services.git
+  name: demo-role-manage-services
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/role-notification-email.git
+  name: role-notification-email
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/role-patch-linux.git
+  name: role-patch-linux
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/role-unmanage-remanage.git
+  name: role-unmanage-remanage
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/role-vmware-snapshot.git
+  name: role-vmware-snapshot
+  scm: git
+
+- src: git@gitlab.prahs.com:pra-ansible/os-patching/role-converge.git
+  name: role-converge
+  scm: git

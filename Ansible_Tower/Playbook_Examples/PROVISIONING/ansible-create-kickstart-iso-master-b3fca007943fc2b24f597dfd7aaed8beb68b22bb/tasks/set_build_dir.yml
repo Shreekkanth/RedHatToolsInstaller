@@ -1,0 +1,12 @@
+---
+- name: "Create temporary directory to build the custom ISO"
+  tempfile:
+    state: "directory"
+  register: "ks_iso_build_dir"
+  become: True
+
+# to avoid removing a custom build dir in cleanup.yml
+- name: "Set ks_iso_is_tmp_dir"
+  set_fact:
+    ks_iso_is_tmp_dir: True
+  when: "ks_iso_build_dir is succeeded"

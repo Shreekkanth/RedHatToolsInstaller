@@ -1,0 +1,34 @@
+---
+
+# Example
+# $  ansible-playbook infoblox-registerip.yml -i hosts -l localhost --extra-vars="ACTION=deploy ENV=pro RECORD=server01.example.com CIDR=10.218.16.0" --ask-vault-pass -vvv
+# $  ansible-playbook infoblox-registerip.yml -i hosts -l localhost --extra-vars="ACTION=destroy ENV=pro RECORD=server01.example.com" --ask-vault-pass -vvv
+
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - include_vars:
+        file: "{{ item }}"
+      with_items:
+        - "vars/{{ ENV }}.yml"
+  roles:
+    - role: infoblox
+      vars:
+        - action: new-host
+        - ifuser : "{{ infobloxuser }}"
+        - ifpass: "{{ infobloxpass }}"
+        - ifserver: "{{ infobloxhost }}"
+        - record: "{{ RECORD }}"
+        - cidr: "{{ CIDR }}"
+        - wapi: "{{ WAPI | default ('2.7.1') }}"
+      when: ACTION == 'deploy'
+
+    - role: infoblox
+      vars:
+        - action: del-record
+        - ifuser : "{{ infobloxuser }}"
+        - ifpass: "{{ infobloxpass }}"
+        - ifserver: "{{ infobloxhost }}"
+        - record: "{{ RECORD }}"
+        - wapi: "{{ WAPI | default ('2.7.1') }}"
+      when: ACTION == 'destroy'

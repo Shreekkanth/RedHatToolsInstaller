@@ -1,0 +1,138 @@
+vpc_bits_one: 72
+vpc_bits_two: 80
+vpc_bits_three: 88
+application: gdo
+aws_region: eu-west-1
+gateway_id: N/A
+aws_key: XXXXXXXXXXXXXXXXXXXXXXXX
+aws_secret: XXXXXXXXXXXXX
+
+dhcp_config:
+  dhcp:
+    domain_name: "{{ aws_region }}.compute.internal bankia.int cm.es"
+    dns_servers:
+        - AmazonProvidedDNS
+    ntp_servers:
+        - 10.63.1.1
+
+vpc_config:
+  vpc1:
+    name: "am-euw1-bk-{{ application }}-operation-vpc01-epd"
+    cidr: "10.80.{{ vpc_bits_one }}.0/21"
+    subnets:
+      - name: "am-euw1-bk-{{ application }}-public-subnet01-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 0 }}.0/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-public-subnet02-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 1 }}.0/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-public-subnet03-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 2 }}.0/25"
+        az: "{{ aws_region }}c"
+      - name: "am-euw1-bk-{{ application }}-private-subnet04-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 0 }}.128/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-private-subnet05-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 1 }}.128/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-private-subnet06-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 2 }}.128/25"
+        az: "{{ aws_region }}c"
+      - name: "am-euw1-bk-{{ application }}-private-subnet07-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 3 }}.0/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-private-subnet08-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 4 }}.0/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-private-subnet09-epd" 
+        cidr: "10.80.{{ vpc_bits_one + 5 }}.0/25"
+        az: "{{ aws_region }}c"
+    route_tables:
+      - "am-euw1-bk-{{ application }}-operation-rtb01-epd"
+    default_secgroups:
+      - "am-euw1-bk-{{ application }}-public-nsg01-epd"
+      - "am-euw1-bk-{{ application }}-private-nsg01-epd"
+      - "am-euw1-bk-{{ application }}-private-nsg02-epd"
+    default_acls:
+      - "am-euw1-bk-{{ application }}-public-nacl01-epd"
+      - "am-euw1-bk-{{ application }}-private-nacl01-epd"
+  vpc2:
+    name: "am-euw1-bk-{{ application }}-operation-vpc01-ep1"
+    cidr: "10.80.{{ vpc_bits_two }}.0/21"
+    subnets:
+      - name: "am-euw1-bk-{{ application }}-public-subnet01-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 0 }}.0/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-public-subnet02-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 1 }}.0/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-public-subnet03-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 2 }}.0/25"
+        az: "{{ aws_region }}c"
+      - name: "am-euw1-bk-{{ application }}-private-subnet04-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 0 }}.128/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-private-subnet05-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 1 }}.128/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-private-subnet06-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 2 }}.128/25"
+        az: "{{ aws_region }}c"
+      - name: "am-euw1-bk-{{ application }}-private-subnet07-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 3 }}.0/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-private-subnet08-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 4 }}.0/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-private-subnet09-epi1" 
+        cidr: "10.80.{{ vpc_bits_two + 5 }}.0/25"
+        az: "{{ aws_region }}c"
+    route_tables:
+      - "am-euw1-bk-{{ application }}-operation-rtb01-epi1"
+    default_secgroups:
+      - "am-euw1-bk-{{ application }}-public-nsg01-epi1"
+      - "am-euw1-bk-{{ application }}-private-nsg01-epi1"
+      - "am-euw1-bk-{{ application }}-private-nsg02-epi1"
+    default_acls:
+      - "am-euw1-bk-{{ application }}-public-nacl01-epi1"
+      - "am-euw1-bk-{{ application }}-private-nacl01-epi1"
+  vpc3:
+    name: "am-euw1-bk-{{ application }}-operation-vpc01-ep2"
+    cidr: "10.80.{{ vpc_bits_three }}.0/21"
+    subnets:
+      - name: "am-euw1-bk-{{ application }}-public-subnet01-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 0 }}.0/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-public-subnet02-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 1 }}.0/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-public-subnet03-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 2 }}.0/25"
+        az: "{{ aws_region }}c"
+      - name: "am-euw1-bk-{{ application }}-private-subnet04-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 0 }}.128/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-private-subnet05-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 1 }}.128/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-private-subnet06-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 2 }}.128/25"
+        az: "{{ aws_region }}c"
+      - name: "am-euw1-bk-{{ application }}-private-subnet07-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 3 }}.0/25"
+        az: "{{ aws_region }}a"
+      - name: "am-euw1-bk-{{ application }}-private-subnet08-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 4 }}.0/25"
+        az: "{{ aws_region }}b"
+      - name: "am-euw1-bk-{{ application }}-private-subnet09-epi2" 
+        cidr: "10.80.{{ vpc_bits_three + 5 }}.0/25"
+        az: "{{ aws_region }}c"
+    route_tables:
+      - "am-euw1-bk-{{ application }}-operation-rtb01-epi2"
+    default_secgroups:
+      - "am-euw1-bk-{{ application }}-public-nsg01-epi2"
+      - "am-euw1-bk-{{ application }}-private-nsg01-epi2"
+      - "am-euw1-bk-{{ application }}-private-nsg02-epi2"
+    default_acls:
+      - "am-euw1-bk-{{ application }}-public-nacl01-epi2"
+      - "am-euw1-bk-{{ application }}-private-nacl01-epi2"

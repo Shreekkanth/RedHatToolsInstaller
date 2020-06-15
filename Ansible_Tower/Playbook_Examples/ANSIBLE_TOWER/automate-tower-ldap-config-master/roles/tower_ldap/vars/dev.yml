@@ -1,0 +1,53 @@
+---
+# vars/dev.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+ldap_server_uri: "ldap://localhost:389'"
+ldap_bind_dn: "cn=admin,DC=ent,DC=wfb,DC=bank,DC=corp"
+ldap_bind_password: "nothing01"
+
+ldap_group_ou_base: "ou=Groups,OU=DTC,OU=ENT,DC=ent,DC=wfb,DC=bank,DC=corp"
+awx_superuser: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,{{ ldap_group_ou_base }}"
+awx_systemauditor: "cn=DTCA_EIT_MW_DEV_ANSBL_AUDIT,{{ ldap_group_ou_base }}"
+awx_organizations:
+- name: DTCA-EIT-Middleware
+  admin_ldap: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,{{ldap_group_ou_base}}"
+  teams:
+    - name: "DTCA-EIT-Middleware DEV/QA"
+      ldap_users: "cn=DTCA_EIT_MW_DEV_ANSBL_DEV,{{ ldap_group_ou_base }}"
+      roles:
+      - job_template_admin
+      - workflow_admin
+      - project_admin
+
+    - name: "DTCA-EIT-Middleware Operation Executor"
+      ldap_users: "cn=DTCA_EIT_MW_DEV_ANSBL_EXE,{{ ldap_group_ou_base }}"
+      roles:
+      - execute
+
+    - name: "DTCA-EIT-Middleware Inventory Credential Manager"
+      ldap_users: "cn=DTCA_EIT_MW_DEV_ANSBL_INVMGR,{{ ldap_group_ou_base }}"
+      roles:
+      - inventory_admin
+      - credential_admin
+
+- name: DTCA-EIT-Infra
+  admin_ldap: "cn=DTCA_EIT_MW_DEV_ANSBL_ADMIN,{{ldap_group_ou_base}}"
+  teams:
+    - name: "DTCA-EIT-Infra DEV/QA"
+      ldap_users: "cn=DTCA_EIT_MW_DEV_ANSBL_DEV,{{ ldap_group_ou_base }}"
+      roles:
+      - job_template_admin
+      - workflow_admin
+      - project_admin
+
+    - name: "DTCA-EIT-Infra Operation Executor"
+      ldap_users: "cn=DTCA_EIT_MW_DEV_ANSBL_EXE,{{ ldap_group_ou_base }}"
+      roles:
+      - execute
+
+    - name: "DTCA-EIT-Infra Inventory Credential Manager"
+      ldap_users: "cn=DTCA_EIT_MW_DEV_ANSBL_INVMGR,{{ ldap_group_ou_base }}"
+      roles:
+      - inventory_admin
+      - credential_admin

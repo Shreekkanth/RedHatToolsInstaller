@@ -1,0 +1,132 @@
+- name: Get ansible venv directory info
+  stat:
+    path: "{{ ansible_venv }}"
+  register: ansible_venv_path
+
+- name: Get tower venv directory info
+  stat:
+    path: /var/lib/awx/venv/awx
+  register: tower_venv_path
+
+# There are a couple of scenarios we need to capture here:
+#       1) no ansible venv is installed at all (install the venv to do customizations)
+#       2) ansible venv is installed but Tower venv is not (insatll to the venv to get latest)
+#       3) ansible venv and tower is installed (let tower installer update the ansible venv)
+- name: Install Ansible venv
+  yum:
+    name: "https://releases.ansible.com/ansible-tower/rpm/epel-7-x86_64/ansible-tower-venv-ansible-3.2.6-1.el7.x86_64.rpm"
+    state: present
+  when: not tower_venv_path.stat.exists or not ansible_venv_path.stat.exists
+
+- name: Prevent venv from utilizing system packages
+  copy:
+    dest: "{{ ansible_venv }}/lib/python2.7/no-global-site-packages.txt"
+    content: ""
+
+- name: Install pyhthon-pip
+  yum:
+    name: python-pip
+    state: installed
+
+- name: Laydown /etc/pip.conf
+  copy:
+    content: |
+      [global]
+      index-url=https://repo-man.aetna.com/nexus/repository/ae-pypi-group/simple
+    dest: /etc/pip.conf
+
+
+- name: Install kerberos packages
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - krb5-libs
+    - krb5-workstation
+    - krb5-devel
+    - python-devel
+
+- name: Configure Kerberos
+  template:
+    src: templates/krb5.conf
+    dest: /etc/krb5.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install devel modules
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - gcc
+    - libcurl-devel
+    - openssl-devel
+    - zlib-devel
+    - libxml2-devel
+    - xz-devel
+
+- name: Upgrade pip
+  pip:
+    name: "pip"
+    version: "{{ pip_version }}"
+    state: forcereinstall
+    extra_args: "--upgrade"
+    virtualenv: "{{ ansible_venv }}"
+
+- name: Install required python modules in Ansible venv
+  pip:
+    name: "{{ item.key }}"
+    version: "{{ item.value }}"
+    state: present
+    extra_args: "--upgrade --no-deps"
+    virtualenv: "{{ ansible_venv }}"
+  with_dict: "{{ pip_packages }}"
+  loop_control:
+    label: "{{ item.key }} ({{ item.value }}"
+  environment:
+    PYCURL_SSL_LIBRARY: openssl
+    LDFLAGS: -L/usr/local/opt/openssl/lib;
+    CPPFLAGS: -I/usr/local/opt/openssl/include
+
+# Until our contributed changes get fully released in TowerCLI (>3.3.0)
+# we have to build this from source
+- name: Download TowerCLI
+  git:
+    repo: https://github.com/ansible/tower-cli.git
+    dest: /tmp/tower-cli
+    refspec: 7cfd4f419b0a35de6364dc6f464a4583a4d9cc1c
+  tags:
+    - install_python
+    - install_tower_cli
+  environment:
+    HTTPS_PROXY: "{{ https_proxy | default('') }}"
+    GIT_SSL_NO_VERIFY: "{{ git_ssl_no_verify | default('') }}"
+
+- name: Build TowerCLI
+  shell: "source /var/lib/awx/venv/ansible/bin/activate && python setup.py install"
+  args:
+    chdir: /tmp/tower-cli
+  tags:
+    - install_python
+    - install_tower_cli
+
+- name: Cleanup TowerCLI temp folder
+  file:
+    path: /tmp/tower-cli
+    state: absent
+  tags:
+    - install_python
+    - install_tower_cli
+
+- name: Remove devel modules
+  yum:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - gcc
+    - libcurl-devel
+    - openssl-devel
+    - zlib-devel
+    - libxml2-devel
+    - xz-devel

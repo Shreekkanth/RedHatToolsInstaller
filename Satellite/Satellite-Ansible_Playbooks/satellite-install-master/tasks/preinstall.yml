@@ -1,0 +1,121 @@
+---
+# Check that needed packages are installed
+- name: "Check that unzip is installed"
+  command: rpm -qa unzip
+  register: unzip_installed
+  delegate_to: localhost
+
+- name: "Check that python-requests is installed"
+  command: rpm -qa python*-requests 
+  register: pyrequest_installed
+  delegate_to: localhost
+
+- fail:
+    msg: "Package unzip is not installed on the system running this playbook"
+  when: '"unzip" not in unzip_installed.stdout'
+
+- fail:
+    msg: "Package python-requests is not installed on the system running this playbook"
+  when: '"requests" not in pyrequest_installed.stdout'
+
+# Disk partition / LV config
+- name: "Check that data_disk  is not partitioned | DO NOT WORRY IF IT FAILS, ITS JUST A TEST"
+  command:
+    test -b /dev/{{ data_disk }}1
+  register: "disk_partition"
+  ignore_errors: yes
+
+  # lvmetadata.rc > 0 -> there is not lvmetadata on disk
+- name: "Check that the entire disk has not LV metadata | DO NOT WORRY IF IT FAILS, ITS JUST A TEST"
+  command:
+    pvck /dev/{{ data_disk }}
+  register: "disk_lvmetadata"
+  ignore_errors: yes
+
+  # diskfs.rc > 0  ->  there is not a FS on entire disk
+- name: "Check that the entire disk has not a FS | DO NOT WORRY IF IT FAILS, ITS JUST A TEST"
+  command:
+    blkid /dev/{{ data_disk }}
+  register: "disk_fs"
+  ignore_errors: yes
+
+  # Generate partitionate_disk fact from previous disk checking conditions
+- name: "Generate partitionate_disk fact from disk checking conditions"
+  set_fact:
+    partitionate_disk: True
+  when: disk_partition.rc > 0 and disk_lvmetadata.rc > 0 and disk_fs.rc > 0
+
+- name: Create disk partition
+  command: >
+    creates="/dev/{{ data_disk }}1"
+    parted --script "/dev/{{ data_disk }}" mklabel msdos mkpart primary 0% 100% set 1 lvm on
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Create Volume Group
+  lvg:
+    vg: "{{ data_vgname }}"
+    force: yes
+    pvs: /dev/{{ data_disk }}1
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Create custom logical volume
+  lvol:
+    lv: '{{ item.lv_name }}'
+    vg: '{{ data_vgname }}'
+    state: present
+    size: '{{ item.lv_size }}'
+  ignore_errors: yes
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Create FS for custom lvs
+  filesystem:
+    fstype: '{{ data_fs }}'
+    dev: '/dev/mapper/{{ data_vgname }}-{{ item.lv_name }}'
+    opts: '-L {{ item.name }}'
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Ensure mount points are created
+  file:
+    path: '{{ item.mount_dir }}'
+    state: directory
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+- name: Config mount points in fstab
+  mount:
+    name: '{{ item.mount_dir }}'
+    src: 'LABEL={{ item.name }}'
+    fstype: '{{ data_fs }}'
+    dump: 0
+    passno: 0
+    opts: defaults
+    state: mounted
+  with_items: '{{ data_lv }}'
+  when: partitionate_disk is defined and partitionate_disk == True
+
+#Install firewalld and enable it
+- name: "Install firewalld"
+  yum:
+    name: "firewalld"
+    state: "present"
+  ignore_errors: yes
+
+- name: "Enable Firewalld"
+  service:
+    enabled: "yes"
+    name: "firewalld"
+    state: "started"
+
+#Opening firewall ports
+- name: "Firewall and hostname | Opening Firewalld ports"
+  firewalld:
+    permanent: "yes"
+    immediate: "yes"
+    port: "{{ item }}"
+    state: "enabled"
+  with_items: "{{ satellite_deployment_fw_ports +
+    satellite_deployment_plugin_ports }}"
+  ignore_errors: yes
+...

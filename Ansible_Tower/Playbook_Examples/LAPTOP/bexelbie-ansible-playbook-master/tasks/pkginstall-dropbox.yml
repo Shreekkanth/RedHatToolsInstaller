@@ -1,0 +1,19 @@
+---
+# Add a yum repository for Dropbox and install it
+
+- name: Add Dropbox Repository
+  become: yes
+  yum_repository:
+    name: dropbox
+    description: Dropbox
+    baseurl: http://linux.dropbox.com/fedora/$releasever/
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: http://linux.dropbox.com/fedora/rpm-public-key.asc
+
+- name: Package install - Dropbox
+  become: yes
+  dnf:
+    state: present
+    name:
+      - nautilus-dropbox

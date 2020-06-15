@@ -1,0 +1,22 @@
+---
+
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+# This module is not available yet in 2.7 it seems.
+#- name: Generate rsa ssh key if it doesnt exist.
+#  openssh_keypair:
+#    path: "{{ SSH_KEY_PATH }}"
+#    state: present
+#
+- name: Copy pre created ssh keys
+  copy:
+    src: "{{ role_path }}/files/{{item}}"
+    dest: "{{ SSH_USER_HOME_DIR }}.ssh/{{ item }}"
+    owner: "{{ ANSIBLE_USER }}" 
+    group: "{{ ANSIBLE_GROUP }}"
+    mode: 0600
+  with_items:
+    - id_rsa
+    - id_rsa.pub
+

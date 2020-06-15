@@ -1,0 +1,124 @@
+- name: satellite - install sat server
+  hosts: satellite
+  remote_user: root
+
+
+  vars:
+    install_packages:
+      - nano
+      - satellite
+      - hostname
+
+  tasks:
+  - name: install packages with yum
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ install_packages }}"
+    ignore_errors: yes
+
+  - include_vars: /etc/ansible/satellite_facts.yaml
+
+  - set_fact: eth_alias_name="{{ ansible_default_ipv4["alias"] }}"
+  - set_fact: eth_alias_path="/etc/sysconfig/network-scripts/ifcfg-{{ eth_alias_name }}"
+
+  - name: set hostname to newsat
+    raw: hostnamectl set-hostname "{{ sat_hostname }}"
+
+  - name: hosts file with correct hostname
+    template: src=include/hosts_satellite dest=/etc/hosts owner=root group=root mode=0644
+
+  - name: ifcfg config template
+    template: src=include/ifcfg_satellite dest="{{ eth_alias_path }}" owner=root group=root mode=0644
+
+  - name: motd
+    template: src=include/motd_satellite dest=/etc/motd owner=root group=root mode=0644
+
+  - name: register the machine
+    raw:  subscription-manager register --username {{ redhat_user }} --password {{ redhat_pass }} --force --auto-attach
+
+# This module is not yet working for our purpose, but I'm leaving it in here in hopes...
+#	https://github.com/ansible/ansible-modules-core/issues/3300
+#
+#    - redhat_subscription:
+#        username={{ redhat_user }}
+#        password={{ redhat_pass }}
+#        state=present
+#        autosubscribe=true
+#        pool="*Satellite*"
+#        pool='^(Satellite)$'
+
+
+  - name: look for subscriptions consumed
+    raw: subscription-manager list --consumed --matches *Satellite* --pool-only
+    register: sat_subpool_consumed
+
+  - name: look for subscriptions available
+    raw: subscription-manager list --all --available --matches *Satellite* --pool-only | xargs echo -n
+    register: sat_subpool_available
+
+  - name: CONDITION no pool available and no pool consumed -- we exit with message.
+    fail: msg="No Satellite pool is available with your subscription."
+    when: (sat_subpool_available.stdout == "") and (sat_subpool_consumed.stdout == "")
+
+  - name: CONDITION a pool is already consumed -- we announce it and keep going.
+    debug: msg="we are already subscribed with pool {{ sat_subpool_consumed.stdout }}"
+    when: sat_subpool_consumed.stdout != ""
+
+  - name: CONDITION a pool is available but no pool is currently consumed -- we attach the pool and keep going.
+    raw: "subscription-manager attach --pool={{ sat_subpool_available.stdout }}"
+    when: (sat_subpool_available.stdout != "") and (sat_subpool_consumed.stdout == "")
+
+  - name: disable all repos
+    raw: "subscription-manager repos --disable \"*\""
+
+  - name: enable specific repos we need
+    raw: subscription-manager repos --enable rhel-7-server-rpms --enable rhel-server-rhscl-7-rpms --enable rhel-7-server-satellite-6.2-rpms --enable rhel-7-server-satellite-tools-6.2-rpms
+
+  - name: yum clean all
+    raw: yum clean all
+
+  - name: remove old Puppet certificates
+    file: path=/var/lib/puppet/ssl/ state=absent
+
+  - name: generate puppet certs
+    raw: "puppet cert generate \"{{ sat_hostname }}\""
+
+  - name: NON-DHCP SERVER install
+    raw: "satellite-installer --scenario satellite --foreman-initial-organization \"{{ sat_organization }}\" --foreman-initial-location \"{{ sat_location }}\" --foreman-admin-password \"{{ sat_password }}\" --capsule-puppet true --foreman-proxy-puppetca true --foreman-proxy-tftp true --enable-foreman-plugin-discovery"
+    when: ( {{ sat_dhcp_lo }}  == "") or ( {{ sat_dhcp_hi }} == "")
+
+  - name: SAT-AS-A-DHCP SERVER install
+    raw: "satellite-installer --scenario satellite --foreman-initial-organization \"{{ sat_organization }}\" --foreman-initial-location \"{{ sat_location }}\" --foreman-admin-password \"{{ sat_password }}\" --capsule-puppet true --foreman-proxy-puppetca true --foreman-proxy-tftp true --enable-foreman-plugin-discovery --foreman-proxy-dns true --foreman-proxy-dns-interface \"{{ eth_alias_name }}\" --foreman-proxy-dns-zone \"{{ sat_domain }}\" --foreman-proxy-dns-forwarders \"{{ sat_gateway }}\" --foreman-proxy-dns-reverse \"{{ sat_zone_arpa }}\" --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface \"{{ eth_alias_name }}\" --foreman-proxy-dhcp-range \"{{ sat_dhcp_lo }} {{ sat_dhcp_hi }}\" --foreman-proxy-dhcp-gateway \"{{ sat_gateway }}\" --foreman-proxy-dhcp-nameservers \"{{ 192.168.1.100 }}\" --foreman-proxy-tftp true --foreman-proxy-tftp-servername \"{{ sat_hostname }}\" "
+    when: ( {{ sat_dhcp_lo }}  != "") and ( {{ sat_dhcp_hi }} != "")
+
+  - name: create directory for hammer
+    file: state=directory recurse=yes path=/root/.hammer
+
+  - name: hammer config template
+    template: src=include/cli_config.yml dest=/root/.hammer/cli_config.yml owner=root group=root mode=0600
+
+  - name: hammer update user to default org and location
+    raw: "hammer user update --login admin --default-location-id 1 --default-organization-id 1 --locations \"{{ sat_location }}\" --organizations \"{{ sat_organization }}\""
+
+  - name: generate certs for capsule
+    raw: "capsule-certs-generate --capsule-fqdn \"{{ cap_hostname }}\" --certs-tar /root/\"{{ cap_hostname }}\"-certs.tar"
+
+
+## Not working yet, but soon:
+## upload a manifest using Hammer
+#hammer subscription upload --organization-label ORG_LABEL --file PATH_TO_MANIFEST
+#
+#Create a daily sync plan:
+#hammer sync-plan create --interval=daily --name='Daily sync' --organization=fite.cat.lab
+
+#    - name: enable firewall ports for satellite6 http, https, tftp services
+  - firewalld: service=RH-Satellite-6 immediate=true permanent=true state=enabled
+  - firewalld: service=http immediate=true permanent=true state=enabled
+  - firewalld: service=https immediate=true permanent=true state=enabled
+  - firewalld: service=tftp immediate=true permanent=true state=enabled
+  - firewalld: port=5674/tcp immediate=true permanent=true state=enabled
+
+#    - name: enable firewall ports for satellite6 DNS and DHCP services
+  - firewalld: service=dns immediate=true permanent=true state=enabled
+  - firewalld: service=dhcp immediate=true permanent=true state=enabled

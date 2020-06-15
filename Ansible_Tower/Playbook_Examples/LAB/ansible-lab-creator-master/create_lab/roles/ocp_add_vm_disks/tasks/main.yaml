@@ -1,0 +1,28 @@
+---
+- name: include vars
+  include_vars: "{{ playbook_dir }}/config.yaml"
+
+- name : Check if Disks already created
+  stat: path={{ vm_location }}{{ item.key }}.{{ domain_name }}-vm-disk-docker
+  register: st_vmdiskdocker
+  with_dict: "{{ guests }}"
+
+- name: Add extra disk for docker configuration
+  shell: |
+    qemu-img create -f qcow2 {{ vm_location }}{{ item.item.key }}.{{ domain_name }}-vm-disk-docker -o preallocation=full {{docker_disk_size}}G
+    virsh attach-disk {{ item.item.key }}.{{ domain_name }} {{ vm_location }}{{ item.item.key }}.{{ domain_name }}-vm-disk-docker vdb --cache none --persistent
+  with_items: "{{ st_vmdiskdocker.results }}"
+  when: not item.stat.exists
+
+- name : Check if Gluster Disks already created
+  stat: path={{ vm_location }}{{ item.key }}.{{ domain_name }}-vm-disk-gluster
+  register: st_vmdiskgluster
+  with_dict: "{{ guests }}"
+#  when: "glusterconfig == 'yes' and item.value.ocp_role == 'cnsnode'"
+
+- name: Add extra disk for Gluster configuration
+  shell: |
+    qemu-img create -f qcow2 {{ vm_location }}{{ item.item.key }}.{{ domain_name }}-vm-disk-gluster {{item.item.value.gluster_disk_size}}G
+    virsh attach-disk {{ item.item.key }}.{{ domain_name }} {{ vm_location }}{{ item.item.key }}.{{ domain_name }}-vm-disk-gluster vdc --cache none --persistent
+  with_items: "{{ st_vmdiskgluster.results }}"
+  when: "not item.stat.exists and item.item.value.ocp_role == 'cnsnode' and glusterconfig == 'yes'"

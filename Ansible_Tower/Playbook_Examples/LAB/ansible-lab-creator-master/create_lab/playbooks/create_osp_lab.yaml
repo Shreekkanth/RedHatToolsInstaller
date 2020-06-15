@@ -1,0 +1,47 @@
+---
+
+- name: Build VMs Ready for Openstack  
+  hosts: kvm
+  become: true
+  vars_files:
+    - ../vars/simple_osp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/libvirt_build_vms
+
+    - include_role:
+        name: ../roles/libvirt_start_vms
+
+- name: Configure Ansible Host with Openstack Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - ../vars/simple_osp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/ansible_host_configure 
+
+- name: Configure OpenStack systems 
+  hosts: osp_systems 
+  become: true
+  vars_files:
+    - ../vars/simple_osp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/rhsm_register
+
+    - include_role:
+        name: ../roles/extend_vm_disks
+
+- name: Configure Undercloud
+  hosts: osp_systems 
+  become: true
+  vars_files:
+    - ../vars/simple_osp_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/config-undercloud

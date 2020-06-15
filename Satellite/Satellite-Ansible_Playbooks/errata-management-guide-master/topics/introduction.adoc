@@ -1,0 +1,37 @@
+
+= Chapter 1
+
+== Introduction
+
+This document explains how Red Hat Satellite 6 can support a rigid patching lifecycle for Red Hat Enterprise Linux systems.
+
+== Audience
+The audience for this guide is Systems and Security Administrators who are responsible for implementing a scalable and rigid patching schedule.
+
+== Requirements
+Readers of this guide should be familiar with Red Hat Satellite and its terminology.
+
+
+== Goals
+This document explains how to build a flexible framework for deploying Red Hat Enterprise Linux Errata, how to make sure that errata are properly progressed from development environments to QA environments to production environments, how to decouple the release of errata from Red Hat from the release of errata within your own organization's environment, and how to choose how current you want your organization's systems to be.
+
+== Policy Considerations
+Here are some considerations that organizations might consider when designing a patching strategy:
+
+== Change Types
+There are three levels of update speed: standard, normal, and emergency.
+
+=== Standard Change
+A standard change is a change to a service or infrastructure for which the approach is pre-authorized by change management and which has an accepted and established procedure to provide a specific change requirement. The elements of a standard change are that there is a defined trigger to initiate the request for change, the activities and tasks are all well known, documented, and proven, authorization has been given in advance, and the risk is low.
+
+Most patching of Red Hat Enterprise Linux Systems falls into the category of Standard Changes. Standard Changes should be automated because they do not require a reboot.
+
+
+=== Normal Changes -- three levels of impact
+A normal change is a change that must follow the complete change management process. Normal changes are often categorized according to risk and after an assessment of the impact they will have on the organization. A minor change has low risk and low impact. A significant change has medium risk and medium impact. A major change has high risk and high impact.
+
+Some packages associated with normal changes might require human interaction due to required reboots, downtime periods, or processes of validation. Many organizations classify hardware maintenance and firmware updates as normal updates that require human interaction because they require reboots in order to reload the kernel and this creates downtime.
+
+
+=== Emergency Changes
+Emergency changes repair errors in IT services that (1) impact the business to a high degree or (2) protect the organization from a threat. Emergency changes include critical zero-day vulnerabilities that must be addressed prior to the next patching event in the patch cycle and bugfixes for production issues that must be addressed prior to the next patching event in the patch cycle.

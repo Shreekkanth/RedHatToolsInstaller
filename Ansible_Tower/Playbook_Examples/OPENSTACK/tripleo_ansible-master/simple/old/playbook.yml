@@ -1,0 +1,100 @@
+---
+- hosts: all
+  sudo: true
+  user: root
+  vars:
+#    password_raw: redhat
+    password_enc: $1$hoge$WKstSnZjw7ItuVMNMMvZh. # openssl passwd -salt hoge -1 password
+#    reposerver: 10.64.193.236
+#    grubconf: /boot/grub/grub.conf
+#    ifcfg_eth0: /etc/sysconfig/network-scripts/ifcfg-eth0
+#    ifcfg_eth1: /etc/sysconfig/network-scripts/ifcfg-eth1
+#    ifcfg_eth2: /etc/sysconfig/network-scripts/ifcfg-eth2
+  tasks:
+    - name: update packages
+      yum: name=* state=latest
+
+    - name: install basic packages
+      yum: name={{ item }} state=installed
+      with_items:
+        - zsh
+        - sudo
+        - patch
+        - psmisc
+        - openssh-clients
+        - vim-enhanced
+        - git
+        - strace
+        - tcpdump
+        - wireshark
+        - traceroute
+        - mtr
+        - bind-utils
+        - nfs-utils
+        - telnet
+        - lftp
+        - curl
+        - wget
+        - rsync
+        - ntp
+        - ntpdate
+        - man
+        - man-pages
+        - ipmitool
+        - net-tools
+        - screen
+        - sysstat
+        - dstat
+        - w3m
+        - xterm
+
+    - name: group install font related packages
+      yum: name="{{ item }}" state=installed
+      with_items:
+        - "@fonts"
+
+    - name: install font related packages
+      yum: name={{ item }} state=installed
+      with_items:
+        - google-noto-sans-fonts
+        - google-noto-sans-cjk-fonts
+        - google-noto-serif-fonts
+        - ipa-ex-gothic-fonts
+        - ipa-ex-mincho-fonts
+        - ipa-gothic-fonts
+        - ipa-mincho-fonts
+        - ipa-pgothic-fonts
+        - ipa-pmincho-fonts
+
+#    - name: sshd_config
+#      lineinfile: dest=/etc/ssh/sshd_config backup=yes regexp={{ item.regexp }} insertafter={{ item.insertafter }} line='{{ item.line }}'
+#      with_items:
+#        - { regexp: '^UseDNS', line: 'UseDNS no', insertafter: '#UseDNS' }
+#    - name: sshd restart
+#      service: name=sshd state=restarted
+
+    - name: prepare for yum groups hack
+      shell: yum groups
+      register: yum_groups_result
+      changed_when: false
+      always_run: yes
+
+    - name: yum groups hack
+      shell: yum groups mark convert
+      when: yum_groups_result.stdout | search("There is no installed groups file\.")
+#      debug: var=yum_groups_result
+#      when: yum_groups_result.stdout | search("langpack")
+
+    - name: install virtualization related packages
+      yum: name={{ item }} state=installed
+      with_items:
+        - virt-install
+        - libvirt-daemon-config-network
+        - libvirt-daemon-kvm
+        - qemu-kvm
+        - virt-manager
+        - virt-viewer
+        - guestfs-browser
+        - libguestfs-tools
+        - python-libguestfs
+        - virt-top

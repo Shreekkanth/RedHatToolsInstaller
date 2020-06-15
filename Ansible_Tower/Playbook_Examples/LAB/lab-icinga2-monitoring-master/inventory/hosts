@@ -1,0 +1,30 @@
+[master-nodes]
+icinga2.srv.cdn.dynetics.com ansible_user=root ansible_host=192.168.20.254
+
+[client-nodes]
+devvm1.srv.cdn.dynetics.com
+gitlab.srv.cdn.dynetics.com
+idm.srv.cdn.dynetics.com
+jenkins.srv.cdn.dynetics.com
+# Review repos for conflicts on OCP Cluster
+#ocpapp1.srv.cdn.dynetics.com
+#ocpapp2.srv.cdn.dynetics.com
+#ocpapp3.srv.cdn.dynetics.com
+#ocpinfra1.srv.cdn.dynetics.com
+#ocpinfra2.srv.cdn.dynetics.com
+#ocpinfra3.srv.cdn.dynetics.com
+#ocpmaster1.srv.cdn.dynetics.com
+#ocpmaster2.srv.cdn.dynetics.com
+#ocpmaster3.srv.cdn.dynetics.com
+replica01.srv.cdn.dynetics.com
+replica02.srv.cdn.dynetics.com
+rhelrt1.srv.cdn.dynetics.com
+rhsat.srv.cdn.dynetics.com
+rhvh1.srv.cdn.dynetics.com
+rhvh2.srv.cdn.dynetics.com
+rhvh3.srv.cdn.dynetics.com
+sonarqube.srv.cdn.dynetics.com
+
+[dynetics-nodes:children]
+master-nodes
+client-nodes

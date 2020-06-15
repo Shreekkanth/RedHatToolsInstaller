@@ -1,0 +1,102 @@
+---
+
+- name: Install and Configure an Icinga2 Master
+  hosts: master-nodes
+  become: True
+  vars:
+    icinga2_manage_repo_epel: false
+    icingaweb2_manage_repo_epel: false
+    icingaweb2_manage_repo_scl: false
+    icinga2_master: true
+    icinga2_master_update_objects: true
+    icinga2_master_plugins: true
+    icinga2_ca_host: icinga2.srv.cdn.dynetics.com
+    icinga2_role: master
+    icinga2_features: [ "ido-mysql", "checker", "api", "notification", "mainlog" ]
+    icinga2_ido_dbname: icinga
+    icinga2_ido_user: icinga
+    icinga2_ido_password: icinga
+    icinga2_endpoints:
+      icinga2.srv.cdn.dynetics.com:
+        host: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        port: "5665"
+    icinga2_zones:
+      master:
+        endpoints:
+          - icinga2.srv.cdn.dynetics.com
+      director-global:
+        global: true
+      global-templates:
+        global: true
+    mysql_databases:
+      - name: icinga
+      - name: icingaweb
+        collation: utf8_general_ci
+        encoding: utf8
+      - name: director
+        collation: utf8_general_ci
+        encoding: utf8
+    mysql_users:
+      - name: icinga
+        host: "%"
+        password: icinga
+        priv: 'icinga.*:ALL'
+      - name: icinga
+        host: 127.0.0.1
+        password: icinga
+        priv: 'icinga.*:ALL'
+      - name: icingaweb
+        host: "%"
+        password: icingaweb
+        priv: "icingaweb.*:ALL"
+      - name: icingaweb
+        host: 127.0.0.1
+        password: icingaweb
+        priv: "icingaweb.*:ALL"
+      - name: director
+        host: "%"
+        password: director
+        priv: 'director.*:ALL'
+      - name: director
+        host: 127.0.0.1
+        password: director
+        priv: "director.*:ALL"
+    mysql_root_password: icinga2MYSQL
+    mysql_root_password_update: true 
+    icingaweb2_php_timezone: "America/Chicago"
+    icingaweb2_master_fqdn: "{{ inventory_hostname }}"
+    icingaweb2_modules: 
+      - doc
+      - monitoring
+      - director
+  roles:
+  - role: geerlingguy.mysql
+  - role: chrnie.icinga2
+  - role: chrnie.icingaweb2
+  - role: icinga2-dynetics
+
+- name: Install and Configure an Icinga2 Client
+  hosts: client-nodes
+  become: True
+  vars:
+    #icinga2_manage_repo_epel: false
+    icinga2_cert_request_host: icinga2.srv.cdn.dynetics.com
+    icinga2_ca_host: icinga2.srv.cdn.dynetics.com
+    icinga2_role: agent
+    icinga2_manage_mysql: false
+    icinga2_endpoints:
+      icinga2.srv.cdn.dynetics.com:
+        host: "192.168.20.254"
+        port: "5665"
+      client: ""
+    icinga2_zones:
+      master:
+        endpoints:
+          - icinga2.srv.cdn.dynetics.com
+      client:
+        endpoints:
+          - "{{ inventory_hostname }}"
+        parent: "master"
+  roles: 
+  - role: chrnie.icinga2
+  - role: icinga2-dynetics

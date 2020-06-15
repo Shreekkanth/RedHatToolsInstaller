@@ -1,0 +1,4 @@
+---
+
+- name: activate network
+  command: nmcli connection up "{{ansible_networkmanager["devices"][ansible_default_ipv4["interface"]]["CONNECTION"]}}"

@@ -1,0 +1,11 @@
+- name: "[INFOBLOX][DEL-RECORD] Delete an ipv4 host record"
+  nios_host_record:
+    name: "{{ record }}"
+    state: absent
+    provider:
+      host: "{{ ifserver }}"
+      username: "{{ ifuser }}"
+      password: "{{ ifpass }}"
+      wapi_version: "{{ wapi }}"
+      ssl_verify: no
+

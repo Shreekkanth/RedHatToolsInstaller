@@ -1,0 +1,19 @@
+---
+
+- name: obtain openshift-ansible
+  git: >-
+    repo=https://github.com/openshift/openshift-ansible
+    dest=openshift-ansible
+  when: origin.distribution == "origin"
+
+- name: create inventory directory
+  file: path=~/inv state=directory
+
+- name: install playbook
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - src: hosts.multi.j2
+      dest: ~/inv/hosts.multi
+    - src: hosts.single.j2
+      dest: ~/inv/hosts.single
+

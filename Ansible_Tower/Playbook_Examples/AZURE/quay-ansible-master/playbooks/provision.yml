@@ -1,0 +1,7 @@
+- name: Create lab instances in Azure
+  hosts: localhost
+  connection: local
+  become: no
+  gather_facts: no
+  roles:
+    - manage-azure

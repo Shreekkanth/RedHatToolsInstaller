@@ -1,0 +1,135 @@
+{#
+#
+#title           :health-check-short.j2
+#description     :template for brief health-check status within development
+#included tools  :reference playbook health-check.yml
+#author		 :todd penn
+#date            :20190124
+#version         :0.1    
+#usage		 :template module has lookup function from yaml parser in ansible
+#notes           :current release includes specific hosts used in development
+                   - devvm1
+                   - gitlab
+                   - jenkins
+                   - ocp
+                   - rhev cluster
+                   - rocketchat
+#TODO		 :determine additional resources and specific checks for monitoring
+#=======================================================================================
+#}
+{{ ansible_managed | regex_replace('\s', '\t\t\t') }}
+{{ ansible_date_time.iso8601 | regex_replace('T', '\t\t') }}	
+
+SYSTEM                  STATUS
+
+{% for inventory_hostname in groups['health-check'] %}
+
+{{ inventory_hostname | regex_search('(^\w+[^\.])') | upper }}
+{% if hostvars[inventory_hostname]['ansible_all_ipv4_addresses'] is not defined %}
+----------x	CHECK FAILED
+	xxx	HOST UNREACHABLE	xxx
+{% endif %}
+{% if hostvars[inventory_hostname]['ansible_all_ipv4_addresses'] is defined %}
+{% if ( (not hostvars[inventory_hostname]['low_disk_space']['stdout']|length) and
+        (not hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] < 1024) and
+        (not hostvars[inventory_hostname]['ansible_hostname'] == 'gitlab') and
+        (not hostvars[inventory_hostname]['ansible_hostname'] == 'jenkins') and
+        (not hostvars[inventory_hostname]['ansible_hostname'] == ocp.name) ):
+%}
+---------->	CHECK PASSED
+{% endif %}
+{% if ( (hostvars[inventory_hostname]['ansible_hostname'] == 'gitlab') and
+        (not hostvars[inventory_hostname]['low_disk_space']['stdout']|length) and
+        (not hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] < 1024) and
+        (get_gitlab_url['status'] == 200) and
+        (get_gitlab_probe['status'] == 200) ):
+%}
+---------->	CHECK PASSED
+{% endif %}
+{% if ( (hostvars[inventory_hostname]['ansible_hostname'] == 'jenkins') and
+        (not hostvars[inventory_hostname]['low_disk_space']['stdout']|length) and
+        (not hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] < 1024) and
+        (jenkins_svc['rc'] == 0) and
+        (get_jenkins_url['status'] == 200) and
+        (get_jenkins_job['status'] == 201) ):
+%}
+---------->	CHECK PASSED
+{% endif %}
+{% if ( (hostvars[inventory_hostname]['ansible_hostname'] == ocp.name) and
+        (not hostvars[inventory_hostname]['low_disk_space']['stdout']|length) and
+        (not hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] < 1024) and
+        (get_nodes['rc'] == 0) ):
+%}
+---------->	CHECK PASSED
+{% endif %}
+{% if hostvars[inventory_hostname]['low_disk_space']['stdout']|length %}
+----------x	CHECK FAILED
+	--x	FILESYSTEMS OVER 80% CAPACITY	x--
+		{{  hostvars[inventory_hostname]['low_disk_space']['stdout_lines'] | join("\n\t\t") }}
+
+{% endif %}
+{% if hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] < 1024 %}
+----------x	CHECK FAILED
+	--x	MEMORY BELOW 1024 MB FREE	x--
+   		{{ hostvars[inventory_hostname]['ansible_memory_mb']['nocache']['free'] }}
+
+{% endif %}
+{% if hostvars[inventory_hostname]['ansible_hostname'] is defined and hostvars[inventory_hostname]['ansible_hostname'] == 'gitlab' %}
+{% if get_gitlab_url is defined and get_gitlab_url['status'] != 200 %}
+----------x	CHECK FAILED
+	--x	URL http://{{ gitlab.fqdn}}	x--
+		{{ get_gitlab_url.msg }}
+
+{% endif %}
+{% if get_gitlab_probe is defined and get_gitlab_probe['status'] != 200 %}
+----------x	CHECK FAILED
+	--x	HEALTH PROBE	x--
+		{{ get_gitlab_probe.msg }}
+
+{% endif %}
+{% endif %}
+{% if hostvars[inventory_hostname]['ansible_hostname'] is defined and hostvars[inventory_hostname]['ansible_hostname'] == 'jenkins' %}
+{% if jenkins_svc is defined and jenkins_svc['rc'] != 0 %}
+----------x	CHECK FAILED
+	--x	SYSTEM SERVICE	x--
+		{{ jenkins_svc.stdout_lines[0] | regex_search('(jenkins.*$)') }}
+	     {{ jenkins_svc.stdout_lines[2] }}
+
+{% endif %}
+{% if get_jenkins_url is defined and get_jenkins_url['status'] != 200 %}
+----------x	CHECK FAILED
+	--x	URL http://{{ jenkins.fqdn}}	x--
+		{{ get_jenkins_url.msg }}
+
+{% endif %}
+{% if get_jenkins_job is defined and get_jenkins_job['status'] != 201 %}
+----------x	CHECK FAILED
+	--x	TEST JOB {{ get_jenkins_job.url | regex_search('(^http[\:\w+\.\/\-]+check)')  }}	x--
+		{{ get_jenkins_job.msg }}
+
+{% endif %}
+{% endif %}
+{% if hostvars[inventory_hostname]['ansible_hostname'] is defined and hostvars[inventory_hostname]['ansible_hostname'] == ocp.name %}
+{% if get_nodes is defined and get_nodes['rc'] != 0 %}
+----------x	CHECK FAILED
+	--x	OCP NODES	x--
+		{{ get_nodes.stdout }}
+
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{{ rchat.name | upper }}
+{% if 'OK' in get_rocketchat_url['msg'] and get_rocketchat_check['msg'] == 'OK' %}
+---------->	CHECK PASSED
+{% else %}
+----------x	CHECK FAILED
+	--x	URL http://{{ rchat.fqdn}}	x--
+		{{ get_rocketchat_url.msg }}
+
+----------x	CHECK FAILED
+	--x	TEST CHAT http://{{ rchat.fqdn}}	x--
+		{{ get_rocketchat_check.msg }}
+
+{% endif %}

@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  tasks:
+    - name: Pre-Installation Task
+      debug:
+        msg: "Pre-Installation Task"
+

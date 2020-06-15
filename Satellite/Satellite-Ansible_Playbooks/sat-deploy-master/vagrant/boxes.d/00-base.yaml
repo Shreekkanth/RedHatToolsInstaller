@@ -1,0 +1,27 @@
+rhel6:
+  box_name: 'rhel6_9'
+  memory:   2048
+  default:  true
+  pty:      true
+  libvirt:  'http://dogfood.sat.engineering.redhat.com/pulp/isos/Sat6-CI/Library/custom/Vagrant_Boxes/RHEL_Boxes/rhel-6.9_x86_64-server.box'
+
+rhel7:
+  box_name: 'rhel7_7'
+  memory:   2048
+  default:  true
+  pty:      true
+  libvirt:  'http://dogfood.sat.engineering.redhat.com/pulp/isos/Sat6-CI/Library/custom/Vagrant_Boxes/RHEL_Boxes/rhel-7.7_x86_64-server.box'
+
+rhel8:
+  box_name: 'rhel8_0'
+  memory:   2048
+  default:  true
+  pty:      true
+  libvirt:  'http://dogfood.sat.engineering.redhat.com/pulp/isos/Sat6-CI/Library/custom/Vagrant_Boxes/RHEL_Boxes/rhel-8.0_x86_64-server.box'
+
+rhel7-atomic:
+  box_name: 'rhel7_1_atomic'
+  memory:   2048
+  default:  true
+  pty:      true
+  libvirt:  'http://dogfood.sat.engineering.redhat.com/pulp/isos/Sat6-CI/Library/custom/Vagrant_Boxes/RHEL_Boxes/rhel-atomic-libvirt-7.1-1.x86_64.box'

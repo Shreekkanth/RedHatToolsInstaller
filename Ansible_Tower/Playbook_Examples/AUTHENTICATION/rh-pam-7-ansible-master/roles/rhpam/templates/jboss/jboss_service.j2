@@ -1,0 +1,50 @@
+#
+#
+#
+#
+#
+# https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+# https://dev.mysql.com/doc/refman/5.7/en/mysqld-safe.html
+#
+#
+# Type=forking | simple | oneshot | dbus | notify | idle
+#
+# systemctl {start|stop|restart|status} mysqld
+#
+# EOH
+#
+[Unit]
+Description=JBoss Server Custom: Red Hat Process Automation Manager
+Documentation=https://www.freedesktop.org/software/systemd/man/systemd.service.html
+Documentation=https://access.redhat.com/solutions/1320133
+{% if mysql_service_requires %}
+Requires={{mysql_dev_service_name}}
+After=network.target syslog.target {{mysql_dev_service_name}}
+{% else %}
+After=network.target syslog.target
+{% endif %}
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=forking
+#User={{jboss_eap_user}}
+#Group={{jboss_eap_group}}
+EnvironmentFile=/etc/sysconfig/{{rhpam_service_conf_name}}
+# Execute pre and post scripts as root:
+PermissionsStartOnly=false
+#
+ExecStart={{jboss_eap_home}}bin/init.d/jboss-eap-rhel.sh start
+ExecStop={{jboss_eap_home}}bin/init.d/jboss-eap-rhel.sh stop
+#
+RemainAfterExit=no
+PrivateTmp=false
+TimeoutStartSec=300
+TimeoutStopSec=300
+#
+RestartPreventExitStatus=1
+Restart=on-failure
+#
+# EOF

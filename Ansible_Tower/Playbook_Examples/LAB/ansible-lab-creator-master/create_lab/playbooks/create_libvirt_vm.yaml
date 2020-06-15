@@ -1,0 +1,29 @@
+---
+
+- name: Build VMs Ready for Ansible Tower 
+  hosts: kvm
+  become: true
+  tasks:
+    - include_role:
+        name: libvirt_build_vms 
+
+    - include_role:
+        name: libvirt_start_vms
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  tasks:
+    - include_role:
+        name: ansible_host_configure 
+
+- name: Configure VM
+  hosts: "{{platform_group_name}}" 
+  become: true
+  tasks:
+    - include_role:
+        name: extend_vm_disks
+
+    - include_role:
+        name: rhsm_register
+

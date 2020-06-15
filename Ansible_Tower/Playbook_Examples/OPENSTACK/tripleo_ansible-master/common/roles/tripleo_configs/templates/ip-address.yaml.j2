@@ -1,0 +1,131 @@
+# Environment file demonstrating how to pre-assign IPs to all node types
+resource_registry:
+  OS::TripleO::Controller::Ports::ExternalPort: /home/stack/templates/tht/network/ports/external_from_pool.yaml
+  OS::TripleO::Controller::Ports::InternalApiPort: /home/stack/templates/tht/network/ports/internal_api_from_pool.yaml
+  OS::TripleO::Controller::Ports::StoragePort: /home/stack/templates/tht/network/ports/storage_from_pool.yaml
+  OS::TripleO::Controller::Ports::StorageMgmtPort: /home/stack/templates/tht/network/ports/storage_mgmt_from_pool.yaml
+  OS::TripleO::Controller::Ports::TenantPort: /home/stack/templates/tht/network/ports/tenant_from_pool.yaml
+  # Management network is optional and disabled by default
+{% if osp_version <= 9 %}
+  OS::TripleO::Controller::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% else %}
+  #OS::TripleO::Controller::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% endif %}
+
+  OS::TripleO::Compute::Ports::ExternalPort: /home/stack/templates/tht/network/ports/noop.yaml
+  OS::TripleO::Compute::Ports::InternalApiPort: /home/stack/templates/tht/network/ports/internal_api_from_pool.yaml
+  OS::TripleO::Compute::Ports::StoragePort: /home/stack/templates/tht/network/ports/storage_from_pool.yaml
+  OS::TripleO::Compute::Ports::StorageMgmtPort: /home/stack/templates/tht/network/ports/noop.yaml
+  OS::TripleO::Compute::Ports::TenantPort: /home/stack/templates/tht/network/ports/tenant_from_pool.yaml
+{% if osp_version <= 9 %}
+  OS::TripleO::Compute::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% else %}
+  #OS::TripleO::Compute::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% endif %}
+
+  OS::TripleO::CephStorage::Ports::ExternalPort: /home/stack/templates/tht/network/ports/noop.yaml
+  OS::TripleO::CephStorage::Ports::InternalApiPort: /home/stack/templates/tht/network/ports/noop.yaml
+  OS::TripleO::CephStorage::Ports::StoragePort: /home/stack/templates/tht/network/ports/storage_from_pool.yaml
+  OS::TripleO::CephStorage::Ports::StorageMgmtPort: /home/stack/templates/tht/network/ports/storage_mgmt_from_pool.yaml
+  OS::TripleO::CephStorage::Ports::TenantPort: /home/stack/templates/tht/network/ports/noop.yaml
+{% if osp_version <= 9 %}
+  OS::TripleO::CephStorage::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% else %}
+  #OS::TripleO::CephStorage::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% endif %}
+
+  OS::TripleO::SwiftStorage::Ports::ExternalPort: /home/stack/templates/tht/network/ports/noop.yaml
+  OS::TripleO::SwiftStorage::Ports::InternalApiPort: /home/stack/templates/tht/network/ports/internal_api_from_pool.yaml
+  OS::TripleO::SwiftStorage::Ports::StoragePort: /home/stack/templates/tht/network/ports/storage_from_pool.yaml
+  OS::TripleO::SwiftStorage::Ports::StorageMgmtPort: /home/stack/templates/tht/network/ports/storage_mgmt_from_pool.yaml
+  OS::TripleO::SwiftStorage::Ports::TenantPort: /home/stack/templates/tht/network/ports/noop.yaml
+{% if osp_version <= 9 %}
+  OS::TripleO::SwiftStorage::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% else %}
+  #OS::TripleO::SwiftStorage::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% endif %}
+
+  OS::TripleO::BlockStorage::Ports::ExternalPort: /home/stack/templates/tht/network/ports/noop.yaml
+  OS::TripleO::BlockStorage::Ports::InternalApiPort: /home/stack/templates/tht/network/ports/internal_api_from_pool.yaml
+  OS::TripleO::BlockStorage::Ports::StoragePort: /home/stack/templates/tht/network/ports/storage_from_pool.yaml
+  OS::TripleO::BlockStorage::Ports::StorageMgmtPort: /home/stack/templates/tht/network/ports/storage_mgmt_from_pool.yaml
+  OS::TripleO::BlockStorage::Ports::TenantPort: /home/stack/templates/tht/network/ports/noop.yaml
+{% if osp_version <= 9 %}
+  OS::TripleO::BlockStorage::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% else %}
+  #OS::TripleO::BlockStorage::Ports::ManagementPort: /home/stack/templates/tht/network/ports/management_from_pool.yaml
+{% endif %}
+
+  OS::TripleO::Network::Ports::NetVipMap: /usr/share/openstack-tripleo-heat-templates/network/ports/net_vip_map_external.yaml
+  OS::TripleO::Network::Ports::ExternalVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/noop.yaml
+  OS::TripleO::Network::Ports::InternalApiVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/noop.yaml
+  OS::TripleO::Network::Ports::StorageVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/noop.yaml
+  OS::TripleO::Network::Ports::StorageMgmtVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/noop.yaml
+  OS::TripleO::Network::Ports::RedisVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/from_service.yaml
+
+parameter_defaults:
+  ControlPlaneIP: 10.{{ osp_version }}.9.10
+  ExternalNetworkVip: 10.{{ osp_version }}.1.10
+  InternalApiNetworkVip: 172.16.{{ osp_version }}.10
+  StorageNetworkVip: 172.17.{{ osp_version }}.10
+  StorageMgmtNetworkVip: 172.18.{{ osp_version }}.10
+  ServiceVips:
+    redis: 172.16.{{ osp_version }}.9
+
+  ControllerIPs:
+    external:
+    - 10.{{ osp_version }}.1.11
+    - 10.{{ osp_version }}.1.12
+    - 10.{{ osp_version }}.1.13
+    internal_api:
+    - 172.16.{{ osp_version }}.11
+    - 172.16.{{ osp_version }}.12
+    - 172.16.{{ osp_version }}.13
+    storage:
+    - 172.17.{{ osp_version }}.11
+    - 172.17.{{ osp_version }}.12
+    - 172.17.{{ osp_version }}.13
+    storage_mgmt:
+    - 172.18.{{ osp_version }}.11
+    - 172.18.{{ osp_version }}.12
+    - 172.18.{{ osp_version }}.13
+    tenant:
+    - 172.19.{{ osp_version }}.11
+    - 172.19.{{ osp_version }}.12
+    - 172.19.{{ osp_version }}.13
+{% if osp_version <= 9 %}
+    management:
+    - 172.20.{{ osp_version }}.11
+    - 172.20.{{ osp_version }}.12
+    - 172.20.{{ osp_version }}.13
+{% endif %}
+  NovaComputeIPs:
+    internal_api:
+    - 172.16.{{ osp_version }}.21
+    - 172.16.{{ osp_version }}.22
+    storage:
+    - 172.17.{{ osp_version }}.21
+    - 172.17.{{ osp_version }}.22
+    tenant:
+    - 172.19.{{ osp_version }}.21
+    - 172.19.{{ osp_version }}.22
+{% if osp_version <= 9 %}
+    management:
+    - 172.20.{{ osp_version }}.21
+    - 172.20.{{ osp_version }}.22
+{% endif %}
+  CephStorageIPs:
+    storage:
+    - 172.17.{{ osp_version }}.31
+    - 172.17.{{ osp_version }}.32
+    - 172.17.{{ osp_version }}.33
+    storage_mgmt:
+    - 172.18.{{ osp_version }}.31
+    - 172.18.{{ osp_version }}.32
+    - 172.18.{{ osp_version }}.33
+{% if osp_version <= 9 %}
+    management:
+    - 172.20.{{ osp_version }}.31
+    - 172.20.{{ osp_version }}.32
+    - 172.20.{{ osp_version }}.33
+{% endif %}

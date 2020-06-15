@@ -1,0 +1,16 @@
+---
+
+- hosts: ns
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - yum_repository
+    - epel
+    - ../common/roles/ntp
+    - base_os
+    - base_os_extra
+    - dns_authority
+    - prereq_packages
+    - ansible_installer
+    - openshift_client

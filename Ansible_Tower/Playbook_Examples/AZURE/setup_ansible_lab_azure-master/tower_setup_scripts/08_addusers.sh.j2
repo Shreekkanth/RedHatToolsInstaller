@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# {{ ansible_managed }}
+
+for i in $(seq $1 $2)
+do
+echo wsuser$i
+adduser wsuser$i
+echo "wsuser$i:{{ participant_password }}" | chpasswd
+cat << EOF > /home/wsuser$i/.ansible.cfg
+[defaults]
+inventory      = \$HOME/ansible/hosts
+EOF
+done

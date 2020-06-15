@@ -1,0 +1,10 @@
+---
+- name: Test workflow
+  description: my test workflow
+
+  schema:
+    - job_template: "EOS: Create configuration checkpoint"
+      success_nodes:
+        - job_template: "EOS: set device hostname"
+          success_nodes:
+            - job_template: "EOS: save running-config"

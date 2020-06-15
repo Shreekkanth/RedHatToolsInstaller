@@ -1,0 +1,9 @@
+#!/bin/bash
+# needs a loop to add multiple ips
+
+/usr/sbin/ip a | grep -q {{ dr_keepalived_vip }}
+if [ "$?" -ne 0 ] ; then 
+  /usr/sbin/ip addr add {{ dr_keepalived_vip }} dev eth0
+else
+  :
+fi

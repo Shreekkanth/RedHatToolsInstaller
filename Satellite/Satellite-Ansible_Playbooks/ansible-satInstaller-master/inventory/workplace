@@ -1,0 +1,102 @@
+#### HOST DEFINITIONS ####
+
+[satellite-servers]
+sat63 ansible_host=192.168.122.10 ansible_port=22 ansible_user='root'
+capsule ansible_host=192.168.122.12 ansible_port=22 ansible_user='root'
+
+[satellite-servers:vars]
+
+# Connectivity configurations
+
+# General Settings
+satellite_deployment_version = 6.3
+current_rhel_major_version = 7
+current_rhel_minor_version = 5
+sat_org = "Laboratory"
+sat_location = "Laptop"
+
+# Sync settings
+# Time to wait for repositories to be synched (in seconds)
+repo_sync_wait = 20000
+# Time to wait for capsules to be synched (in seconds)
+capsule_sync_wait = 20000
+
+# Content Settings
+capsule_cv_name = "cv-capsule"
+capsule_ak_name = "ak-capsule"
+capsule_sub_name = "Red Hat Satellite Capsule Server"
+rhel7_cv_name = "cv-rhel7"
+rhel7_ak_name = "ak-rhel7"
+rhel7_sub_name = "Red Hat Enterprise Linux Server, Standard (Physical or Virtual Nodes)"
+
+# Custom org certs config
+cert_ca_exp = 4400
+cert_city = "Valencia"
+cert_country = "ES"
+cert_exp = 2200
+cert_org = "Laboratory S.A."
+cert_org_unit = "Departamento de Administracion"
+cert_state = "Valencia"
+
+# Puppet Settings
+#puppetca_autosign = "*"
+
+# Other settings
+timeout_post_reboot = 300
+
+# Infra settings
+data_disk = "vdb"
+data_vgname = "data"
+data_fs = "xfs"
+
+# TONI: remove port 8140/tcp for Puppet
+satellite_deployment_fw_ports = [ "22/tcp", "80/tcp", "443/tcp", "5646/tcp", "5647/tcp", "5671/tcp", "5674/tcp", "8000/tcp", "8443/tcp", "9090/tcp", "53/udp", "53/tcp", "67/udp", "68/udp", "69/udp" ]
+satellite_deployment_plugin_ports = []
+
+## Path where custom libs will be deployed
+python_path = "{{ inventory_dir }}/../library"
+satapi_config = "{{ python_path }}/libs/satapi/config/config.py"
+satapi_uri ="https://{{ groups['satellite-servers']|first }}"
+
+# Labo custom config
+sat_merca_lifenv = [ "itg", "pre", "pro" ]
+sat_merca_env = "itg"
+sat_files_dir = "{{ inventory_dir }}/../files"
+sat_manifest = "{{ inventory_dir }}/../files/{{ sat_merca_env }}/manifest/Satellite_All_Latest.zip"
+
+# Satellite large deployment tuning config
+sat_systemd_limits = [ {"name":"httpd", "dir":"/etc/systemd/system/httpd.service.d/" ,"file":"limits.conf", "nofile":"1000000"},{"name":"qpidd", "dir":"/etc/systemd/system/qpidd.service.d/" ,"file":"limits.conf", "nofile":"1000000"}, {"name":"qdrouterd", "dir":"/etc/systemd/system/qdrouterd.service.d/" ,"file":"limits.conf", "nofile":"1000000"},{"name":"smart_proxy_dynflow_core", "dir":"/etc/systemd/system/smart_proxy_dynflow_core.service.d/" ,"file":"limits.conf", "nofile":"1000000"} ]
+sat_pgsql_tuning = [ {"pgsql_var":"work_mem", "pgsql_value":"32MB" ,"pgsql_regex":"#work_mem"}, {"pgsql_var":"shared_buffers", "pgsql_value":"128MB", "pgsql_regex":"shared_buffers"}, {"pgsql_var":"max_connections", "pgsql_value":"500", "pgsql_regex":"max_connections" } ]
+sat_sysctl_tuning = [ {"name":"fs.aio-max-nr" , "value":"1000000", "file": "/etc/sysctl.d/satellite.conf" } ]
+sat_passenger_pool = "6"
+
+
+[satellite-servers:vars]
+data_lv = [{"name":"pulp", "lv_name":"lv_pulp", "lv_size":"30%FREE", "mount_dir":"/var/lib/pulp"},{"name":"mongodb", "lv_name":"lv_mongodb", "lv_size":"20%FREE", "mount_dir":"/var/lib/mongodb"},{"name":"pulpcache", "lv_name":"lv_pulpcache", "lv_size":"5%FREE", "mount_dir":"/var/cache/pulp"},{"name":"pgsql", "lv_name":"lv_pgsql", "lv_size":"20%FREE", "mount_dir":"/var/lib/pgsql"},{"name":"qpid", "lv_name":"lv_qpid", "lv_size":"2%FREE", "mount_dir":"/var/lib/qpidd"}]
+
+
+rhsm_pool = "Red Hat Satellite"
+rhsm_proxy=[{"use_proxy":"no", "server":"192.168.122.1", "port":"13128", "user":"", "passwd":""}]
+sat_install_source = "cdn"
+sat_repo_file = "{{ inventory_dir }}/../files/satellite.repo"
+sat_cdn_reponame = "rhel-{{ ansible_distribution_major_version }}-server-satellite-{{ satellite_deployment_version }}-rpms"
+sat_installer_pkg = "satellite"
+sat_installer_cmd = "satellite-installer --scenario satellite"
+sat_extra_options = "--foreman-proxy-tftp true --certs-ca-expiration {{ cert_ca_exp }} --certs-city '{{ cert_city }}' --certs-country '{{ cert_country }}' --certs-expiration {{ cert_exp }} --certs-org '{{ cert_org }}' --certs-org-unit '{{ cert_org_unit }}' --certs-state '{{ cert_state }}'"
+sat_sync_method = "on_demand"
+
+sat_repos_sync = [{"product_name":"Red Hat Enterprise Linux Server", "name_repo":"Red Hat Enterprise Linux 7 Server (Kickstart)", "rel":"7Server", "architecture":"x86_64", "state":"enable"}, {"product_name":"Red Hat Enterprise Linux Server", "name_repo":"Red Hat Enterprise Linux 7 Server (RPMs)", "rel":"7Server", "architecture":"x86_64", "state":"enable"}, {"product_name":"Red Hat Enterprise Linux Server", "name_repo":"Red Hat Satellite Tools {{ satellite_deployment_version }} (for RHEL 7 Server) (RPMs)", "rel":"", "architecture":"x86_64", "state":"enable"}, {"product_name":"Red Hat Satellite Capsule", "name_repo":"Red Hat Satellite Capsule {{ satellite_deployment_version }} (for RHEL 7 Server) (RPMs)", "rel":"", "architecture":"x86_64", "state":"enable"}, {"product_name":"Red Hat Software Collections for RHEL Server", "name_repo":"Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server", "rel":"7Server", "architecture":"x86_64", "state":"enable"}]
+
+sat_repos_to_sync = [ "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7Server", "Red Hat Satellite Capsule {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64", "Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server x86_64 7Server", "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server", "Red Hat Satellite Tools {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64" ]
+
+capsule_repos = "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,Red Hat Satellite Capsule {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64,Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server x86_64 7Server"
+
+rhel7_repos = "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,Red Hat Satellite Tools {{ satellite_deployment_version }} for RHEL 7 Server RPMs x86_64"
+base_lfcenv_name = "Library"
+
+#sat_puppet_product = "Custom Puppet"
+#sat_puppet_repo = "Dummy Puppet Modules"
+#sat_puppet_dummy = "custom-dummy-0.0.2.tar.gz"
+#sat_pdummy_name = "dummy"
+#sat_pdummy_file = "{{ inventory_dir }}/../files/{{ sat_puppet_dummy }}"
+sat_base_hostgroup = "hg-{{ sat_location }}-rhel{{ ansible_distribution_major_version }}"

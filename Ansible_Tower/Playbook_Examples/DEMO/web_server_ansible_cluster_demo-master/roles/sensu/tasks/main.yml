@@ -1,0 +1,95 @@
+---
+- name: Add Sensu repo
+  yum_repository:
+    name: sensu
+    description: Sensu OSS Repo
+    baseurl: https://sensu.global.ssl.fastly.net/yum/$releasever/$basearch/
+    gpgcheck: no
+    enabled: yes
+
+# - name: Add RabbitMQ repo
+#   yum_repository:
+#     name: rabbitmq_rabbitmq-server
+#     description: RabbitMQ repo
+#     baseurl: https://packagecloud.io/rabbitmq/rabbitmq-server/el/$releasever/$basearch
+#     repo_gpgcheck: yes
+#     gpgcheck: no
+#     enabled: yes
+#     gpgkey: https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
+#     sslverify: yes
+#     sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+#     metadata_expire: 300
+
+- name: Install EPEL rpm
+  yum:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
+
+- name: Install required packages
+  yum:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - sensu
+    - redis
+    - gcc-c++
+    - uchiwa
+
+- name: Copy Sensu redis config
+  copy:
+    src: redis.json
+    dest: /etc/sensu/conf.d/redis.json
+    owner: sensu
+    group: sensu
+
+- name: Copy Sensu transport config
+  copy:
+    src: transport.json
+    dest: /etc/sensu/conf.d/transport.json
+    owner: sensu
+    group: sensu
+
+- name: Copy Sensu API config
+  copy:
+    src: api.json
+    dest: /etc/sensu/conf.d/api.json
+    owner: sensu
+    group: sensu
+
+- name: Copy Sensu client config
+  copy:
+    src: client.json
+    dest: /etc/sensu/conf.d/client.json
+    owner: sensu
+    group: sensu
+
+- name: Copy Uchiwa config
+  template:
+    src: uchiwa.json.j2
+    dest: /etc/sensu/uchiwa.json
+    owner: uchiwa
+    group: uchiwa
+
+- name: Copy Sensu check config
+  template:
+    src: check-nginx-servers.json.j2
+    dest: /etc/sensu/conf.d/check-nginx-servers.json
+    owner: sensu
+    group: sensu
+
+- name: Start and enable all the services
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  with_items:
+    - redis
+    - sensu-client
+    - sensu-server
+    - sensu-api
+    - uchiwa
+
+- name: Install Sensu http check plugin
+  shell: sensu-install -p sensu-plugins-http
+  changed_when: false

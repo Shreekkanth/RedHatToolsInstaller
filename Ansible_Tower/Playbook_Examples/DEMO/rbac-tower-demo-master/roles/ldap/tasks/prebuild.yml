@@ -1,0 +1,15 @@
+---
+# ldap/tasks/prebuild.yml
+# @author Anthony Loukinas <anthony.loukinas@redhat.com>
+
+- name: Pull LDAP Images
+  docker_image:
+    name: "{{ item }}"
+    docker_host: unix://var/run/docker.sock
+    tag: latest
+    pull: true
+    debug: false
+    state: present
+  loop:
+    - osixia/openldap:latest
+    - osixia/phpldapadmin:latest

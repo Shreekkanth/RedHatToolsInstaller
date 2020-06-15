@@ -1,0 +1,8 @@
+aws_efs_name: wjktest-data01
+aws_efs_tag: wjktest-data01
+aws_kms_key_id: 0bd6cd23-f534-495b-bf4e-8079728aca7c
+aws_region: us-east-1
+subnet_id_AzB: subnet-77ccdc5f
+subnet_id_AzC: subnet-a504d2d2
+subnet_id_AzD: subnet-18e81841
+vpc_security_group: sg-7ec4da1b

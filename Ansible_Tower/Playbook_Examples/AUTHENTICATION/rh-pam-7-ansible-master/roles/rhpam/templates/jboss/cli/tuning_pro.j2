@@ -1,0 +1,28 @@
+#
+#
+#
+#connect
+batch
+
+# Disable deployment-scanner
+/subsystem=deployment-scanner/scanner=default/:write-attribute(name=scan-enabled,value=true)
+#
+# If you want to execute deployment scan only once at start-up
+/subsystem=deployment-scanner/scanner=default:write-attribute(name=scan-interval,value=0)
+
+#
+# Remove Headers Undertow to PRO:
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=server-header:remove()
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=x-powered-by-header:remove()
+
+
+# Remove DataSource Default "ExampleDS":
+#data-source remove --name=ExampleDS
+# Undefine ExampleDS from default datasource in ee subsystem
+#/subsystem=ee/service=default-bindings:undefine-attribute(name=datasource)
+#/subsystem=datasources/jdbc-driver=h2:remove
+
+
+run-batch
+#
+# EOF

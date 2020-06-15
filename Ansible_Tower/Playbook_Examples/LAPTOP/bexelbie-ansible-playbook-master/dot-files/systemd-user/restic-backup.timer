@@ -1,0 +1,12 @@
+# Partially derived from
+# https://fedoramagazine.org/automate-backups-with-restic-and-systemd/ and the role provided by Fredrik Rambris in the comments
+
+[Unit]
+Description=Run restic backup
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=user-graphical-login.target

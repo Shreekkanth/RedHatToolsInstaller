@@ -1,0 +1,63 @@
+- name: Deploy VM by Tower Survey
+  gather_facts: false
+  hosts: all:!provisioned
+  tasks:
+
+  # Conversione da textarea in lista yaml
+  - set_fact:
+      vm_names_list: "{{ vm_names.split('\n') }}"
+  - set_fact:
+      vm_ips_list: "{{ vm_ips.split('\n') }}"
+
+  # Verifica delle liste nomi e ip
+  - name: Asserting names and ips are the same length
+    assert:
+      that: 
+        - "vm_names_list | length > 0"
+        - "vm_ips_list | length > 0"
+        - "vm_ips_list | length == vm_names_list | length"
+      msg: "ERRORE: Lista NOMI e lista IP devono coincidere numero di occorrenze {{ (vm_ips_list | length) }} != {{ (vm_names_list | length) }}"
+
+  # Verifica duplicati in lista
+  - name: Asserting no duplicates are found
+    assert:
+      that:
+        - "vm_names_list | unique | length == vm_names_list | length"
+        - "vm_ips_list | unique | length == vm_ips_list | length"
+      msg: "ERRORE: Sono presenti duplicati in lista NOMI o in lista IP"
+
+  # Creazione delle VM
+  - name: 
+    include_role:
+      name: provision_vm
+      tasks_from: from_survey.yaml
+    with_together:
+    - "{{ vm_names_list }}"
+    - "{{ vm_ips_list }}"
+
+- name: Refresh Virt-who
+  hosts: localhost
+  become: true
+  gather_facts: false
+  tasks:
+  - name: Restart Virt-who service
+    delegate_to: cdprh33.cdpsede.cassaddpp.it
+    systemd:
+      name: virt-who
+      state: restarted
+    when: satellite_restart_virtwho
+    register: virtwho
+
+  - name: Give virt-who time to settle
+    pause:
+      seconds: 10
+    when: virtwho is changed
+
+# Configurazione delle VM
+- name: Configure basic aspects of the new VMs
+  gather_facts: true
+  hosts: provisioned
+  become: true
+  tasks:
+  - name: Configure VM
+    import_tasks: configurevm.yaml

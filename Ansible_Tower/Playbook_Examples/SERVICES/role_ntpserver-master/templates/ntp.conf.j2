@@ -1,0 +1,31 @@
+# {{ ansible_managed }}
+
+# Enable tinker options
+# 'tinker panic 0' tells NTP that no matter what the time offset is, do not panic and exit.
+# This assists VM's that may be paused and resumed hours later.
+tinker panic 0
+
+# Disable monlist requests
+disable monitor
+
+# Default usage restrictions - by default deny kiss-o-death, config mods, ntpc traps, ntpq queries and peering
+restrict default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+
+# Allow localhost to do everything
+restrict 127.0.0.1
+restrict -6 ::1
+
+# Allow our partner server to peer with usage
+restrict {{ lookup('dig', ntp_peer ) }}
+
+# Define upstream NTP servers
+{% for item in ntpservers %}
+server {{ item }} iburst
+{% endfor %}
+
+# Peer with our partner server
+peer {{ lookup('dig', ntp_peer) }}
+
+# Driftfile
+driftfile /var/lib/ntp/drift

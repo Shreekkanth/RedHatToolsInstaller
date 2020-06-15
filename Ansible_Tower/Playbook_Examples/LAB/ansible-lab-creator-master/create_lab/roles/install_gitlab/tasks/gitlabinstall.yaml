@@ -1,0 +1,10 @@
+---
+- name: Enable Gitlab repo
+  shell: |
+         curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+
+- name: Install Gitlab packages
+  yum:
+    name: gitlab-ee
+    state: present
+

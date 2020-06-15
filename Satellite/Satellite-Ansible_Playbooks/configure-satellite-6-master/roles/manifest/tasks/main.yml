@@ -1,0 +1,12 @@
+---
+# tasks file for manifest
+- name: upload manifest to specified orgnization
+  katello_manifest:
+    username: "{{ satellite_user }}"
+    password: "{{ satellite_password }}"
+    server_url: "https://{{ satellite_host }}"
+    verify_ssl: false
+    organization: "{{ org_name }}"
+    manifest_path: "{{ manifest }}"
+    state: present
+

@@ -1,0 +1,25 @@
+---
+# EPEL required for python-pip install
+- name: Ensure EPEL repository is installed | RHEL7
+  package:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+    state: "installed"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version == "7"
+  become: True
+
+- name: Ensure pip is installed
+  package:
+    name: "python-pip"
+    state: "latest"
+  when: (ansible_os_family == "RedHat" and ansible_distribution_major_version == "7") or
+        (ansible_distribution == "Fedora")
+  become: True
+
+- name: Ensure Prerequisites are Installed
+  pip:
+    name: "{{ prq_pylibs }}"
+    umask: "0022"
+    state: "latest"
+  become: True

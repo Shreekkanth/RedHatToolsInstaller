@@ -1,0 +1,54 @@
+---
+
+- name: obtaiin subnet id of ctrl plane
+  shell: . ~/stackrc && neutron subnet-list | awk '/{{ undercloud_conf.dhcp_start }}/ { print $2}'
+  changed_when: false
+  check_mode: no
+  ignore_errors: true
+  register: subnet
+- debug: msg={{ subnet.stdout }}
+
+- name: set dns nameservers
+  shell: . ~/stackrc && neutron subnet-update {{ subnet.stdout }} --dns-nameservers list=true {{ overcloud.dns_nameservers|join(' ') }}
+  changed_when: false
+  check_mode: no
+  ignore_errors: true
+
+- name: neutron subnet-show
+  shell: . ~/stackrc && neutron subnet-show {{ subnet.stdout }}
+  changed_when: false
+  check_mode: no
+  ignore_errors: true
+#  register: result
+#- debug: msg={{ result.stdout }}
+
+- name: set dhcp domain (nova.conf)
+  become: yes
+  ini_file: >
+    dest=/etc/nova/nova.conf
+    section=DEFAULT
+    option=dhcp_domain
+    value={{ overcloud.domainname }}
+  notify: restart nova
+
+- name: set dhcp domain (neutron.conf)
+  become: yes
+  ini_file: >
+    dest=/etc/neutron/neutron.conf
+    section=DEFAULT
+    option=dns_domain
+    value={{ overcloud.domainname }}
+  notify: restart neutron
+
+- name: set dhcp domain (dhcp_agent.ini)
+  become: yes
+  ini_file: >
+    dest=/etc/neutron/dhcp_agent.ini
+    section=DEFAULT
+    option=dhcp_domain
+    value={{ overcloud.domainname }}
+  notify: restart dhcp_agent
+
+#- name: keystone houskeeping cron job
+#  become: yes
+#  file: src=keystone dest=/var/spool/cron/keystone mode=0600

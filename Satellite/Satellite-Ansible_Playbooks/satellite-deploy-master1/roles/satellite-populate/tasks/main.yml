@@ -1,0 +1,285 @@
+---
+
+#Verify that satellite services are running as expexcted
+- name: "Verify that satellite services are running as expexcted"
+  command: 
+    "/usr/bin/katello-service status"
+
+#Create Hammer directory on /root
+- name: "Configure | create .hammer directory on user"
+  file:
+    path: "~/.hammer"
+    state: "directory"
+    mode: "0755"
+
+#Copy the hammer configuration from template to the .hammer directory
+- name: "Configure | set configuration for hammer from template"
+  template:
+    src: "hammer_config.yml.j2"
+    dest: "~/.hammer/cli_config.yml"
+
+- name: "Configure | Create libs folder"
+  file:
+    path: "{{ python_path }}/libs"
+    state: directory
+  delegate_to: localhost
+
+- name: "Configure | Create python lib file"
+  file:
+    path: "{{ python_path }}/libs/__init__.py"
+    state: touch
+  delegate_to: localhost
+
+- name: "Configure | Download latest satapi release"
+  unarchive:
+    src: https://github.com/soukron/satapi/archive/master.zip
+    dest: "{{ python_path }}/libs"
+    remote_src: True
+  delegate_to: localhost
+
+- name: "Configure | Link satapi folder"
+  file:
+    src: "{{ python_path }}/libs/satapi-master"
+    dest: "{{ python_path }}/libs/satapi"
+    state: link
+  delegate_to: localhost
+
+- name: "Configure | Add credentials to satapi config"
+  lineinfile:
+    dest: "{{ satapi_config }}"
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+  with_items:
+    - { line: "    APILocation = '{{ satapi_uri }}'", regexp: "APILocation" }
+    - { line: "    APIUser = '{{ sat_user }}'", regexp: "APIUser" }
+    - { line: "    APIPassword = '{{ sat_pass }}'", regexp: "APIPassword" }
+    - { line: "    Organization = '{{ sat_org }}'", regexp: "Organization" }
+    - { line: "    Location = '{{ sat_location }}'", regexp: "Location" }
+  delegate_to: localhost
+  no_log: true
+
+#Upload the manifest to the satellite
+- name: "Configure | upload the manifest"
+  satellite_manifest:
+    manifest_zip: "{{ sat_manifest }}"
+    force: false
+    organization: "{{ sat_org }}"
+  delegate_to: localhost
+
+- name: "Wait for manifest to be upload"
+  satellite_task:
+    task_type: "manifest_import"
+    check_every: 10
+    timeout: 300
+  delegate_to: localhost
+
+#Change sync policy to on_demand (lazy sync) if required
+- name: "Configure | set on_demand lazy sync method as default"
+  satellite_config:
+    setting: "default_download_policy"
+    value: "on_demand"
+  when: "sat_sync_method == 'on_demand'"
+  delegate_to: localhost
+
+# Configure ldap authentication
+- name: "Configure | Enable ldap authentication"
+  satellite_ldap:
+    name: "{{ item.name }}"
+    ldap_host: "{{ item.server }}"
+    ldap_port: "{{ item.port }}"
+    server_type: "{{ item.server_type }}"
+    ldap_account: "{{ item.bind_account }}"
+    account_password: "{{ item.bind_password }}"
+    base_dn: "{{ item.base_dn }}"
+    group_base: "{{ item.group_dn }}"
+    attr_login: "{{ item.attr_login }}"
+    attr_name: "{{ item.attr_name }}"
+    attr_lastname: "{{ item.attr_lastname }}"
+    attr_mail: "{{ item.attr_mail }}"
+    attr_photo: "{{ item.attr_photo }}"
+    auto_register: "{{ item.auto_register }}"
+    group_sync: "{{ item.group_sync }}"
+    tls: "{{ item.use_tls }}"
+    ldap_filter: "{{ item.ldap_filter }}"
+    locations: "{{ item.locations }}"
+    organizations: "{{ item.organizations }}"
+  with_items: '{{ ldap_auth }}'
+  when: item.use_ldap == "yes" 
+  delegate_to: localhost
+  no_log: true
+
+#Enabling repos on satellite
+- name: "Configure | enable repos"
+  satellite_repository:
+    action: "manage"
+    organization: "{{ sat_org }}"
+    product_name: "{{ item.product_name }}"
+    repo_name: "{{ item.name_repo }}"
+    basearch: "{{ item.architecture}}"
+    releasever: "{{ item.rel }}"
+    task: "{{ item.state }}"
+  with_items: "{{ sat_repos_sync }}"
+  ignore_errors: yes
+  delegate_to: localhost
+
+- name: "Wait for repos to be enabled"
+  satellite_task:
+    task_type: "enable_repository"
+    check_every: 10
+    timeout: 300
+  delegate_to: localhost
+
+#Sync the repos
+- name: "Configure | sync repos on satellite"
+  satellite_repository:
+    action: "synchronize"
+    organization: "{{ sat_org }}"
+    repo_name: "{{ item }}"
+  with_items:
+    - "{{ sat_repos_to_sync }}"
+  delegate_to: localhost
+
+- name: "Wait for repos to be synched"
+  satellite_task:
+    task_type: "repository_sync"
+    check_every: 60
+    timeout: "{{ repo_sync_wait }}"
+  delegate_to: localhost
+
+#Create capsule CV to install capsules and add repos to install capsules
+- name: "Configure | Create capsule CV on Library"
+  satellite_contentview:
+    action: "create"
+    organization: "{{ sat_org }}"
+    name: "{{ capsule_cv_name }}"
+    repositories: "{{ capsule_repos }}"
+  delegate_to: localhost
+
+#- pause: seconds=10
+
+#Publish capsule CV
+- name: "Configure | Publish capsule CV"
+  satellite_contentview:
+    action: "publish"
+    organization: "{{ sat_org }}"
+    name: "{{ capsule_cv_name }}"
+  delegate_to: localhost
+
+- name: "Wait for cv to be published"
+  satellite_task:
+    task_type: "contentview_publish"
+    check_every: 60
+    timeout: 3600
+  delegate_to: localhost
+
+#Create AK for capsule CV
+- name: "Configure | Create AK for capsule CV"
+  satellite_activationkey:
+    action: "create"
+    name: "{{ capsule_ak_name }}"
+    organization: "{{ sat_org }}"
+    contentview: "{{ capsule_cv_name }}"
+    subscription: "Red Hat Satellite Capsule Server"
+  delegate_to: localhost
+
+#Create Custom Puppet product needed for register clients via bootstrap.py
+- name: "Configure | Create Custom Puppet product"
+  satellite_product:
+    action: "create"
+    product_name: "{{ sat_puppet_product }}"
+    organization: "{{ sat_org }}"
+  delegate_to: localhost
+
+#Create dummy puppet repo on Custom Product product
+- name: "Configure | Create dummy puppet repo on Custom Product product "
+  satellite_repository:
+    action: "create"
+    product_name: "{{ sat_puppet_product }}"
+    repo_name: "{{ sat_puppet_repo }}"
+    content_type: "puppet"
+    organization: "{{ sat_org }}"
+  delegate_to: localhost
+
+#Add custom-dummy puppet module on dummy puppet repo
+- name: "Configure | Add custom-dummy puppet module ion dummy puppet repo"
+  satellite_repository:
+    action: "upload-content"
+    repo_name: "{{ sat_puppet_repo }}"
+    content_file: "{{ sat_pdummy_file }}"
+    organization: "{{ sat_org }}"
+  delegate_to: localhost
+
+#Create rhel7 CV 
+- name: "Configure | Create rhel7 CV on Library"
+  satellite_contentview:
+    action: "create"
+    organization: "{{ sat_org }}"
+    name: "{{ rhel7_cv_name }}"
+    repositories: "{{ rhel7_repos }}"
+  delegate_to: localhost
+
+#- pause: seconds=10
+   
+#Add dummy puppet module to rhel7 CV
+- name: "Configure | Add dummy puppet module to rhel7 CV"
+  satellite_contentview:
+    action: "add-module"
+    name: "{{ rhel7_cv_name }}"
+    organization: "{{ sat_org }}"
+    module: "{{ sat_pdummy_name }}"
+  delegate_to: localhost
+
+#Publish rhel7 CV
+- name: "Configure | Publish rhel7 CV"
+  satellite_contentview:
+    action: "publish"
+    organization: "{{ sat_org }}"
+    name: "{{ rhel7_cv_name }}"
+  delegate_to: localhost
+
+- name: "Wait for cv to be published"
+  satellite_task:
+    task_type: "contentview_publish"
+    check_every: 60
+    timeout: 3600
+  delegate_to: localhost
+
+#Create AK for rhel7 CV and add subscription
+- name: "Configure | Create AK for rhel7 CV"
+  satellite_activationkey:
+    action: "create"
+    name: "{{ rhel7_ak_name }}"
+    organization: "{{ sat_org }}"
+    contentview: "{{ rhel7_cv_name }}"
+    subscription: "Red Hat Enterprise Linux Server, Standard (Physical or Virtual Nodes)"
+  delegate_to: localhost
+
+- name: "Wait for ak to be created"
+  satellite_task:
+    task_type: "activationkey_create"
+    check_every: 10
+    timeout: 500
+  delegate_to: localhost
+
+#Create base hostgroup needed by bootstrap.py script to register clients
+- name: "Configure | Create base hostgroup"
+  satellite_hostgroup:
+    action: "create"
+    name: "{{ sat_base_hostgroup }}"
+    organization: "{{ sat_org }}"
+    location: "{{ sat_location }}"
+    contentview: "{{ rhel7_cv_name }}"
+    environment: "{{ base_lfcenv_name }}"
+    puppetenv: "KT_{{ sat_org }}_Library_{{ rhel7_cv_name }}_{{ current_rhel_minor_version }}"
+    puppetclasses: "{{ sat_pdummy_name }}"
+  delegate_to: localhost
+
+#Create puppetca autosign entry if any
+- name: "Configure | Configure puppetca autosign entry"
+  lineinfile:
+    dest: "/etc/puppet/autosign.conf"
+    line: "{{ puppetca_autosign }}"
+    insertafter: EOF
+  when: puppetca_autosign is defined
+...

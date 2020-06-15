@@ -1,0 +1,44 @@
+---
+#### Set Facts to bash_profile
+- name: Set Configuration bash_profile_ext Facts
+  set_fact:
+    bash_profile_ext_path:         "{{ '/home/' + jboss_eap_user + '/.bash_profile_ext' }}"
+    bashrc_path:                   "{{ '/home/' + jboss_eap_user + '/.bashrc' }}"
+    last_line_bashrc:              "# User specific aliases and functions"
+    check_bash_profile_ext_string: "# Add custom .bash_profile_ext"
+  tags:
+    - jboss_home
+
+#### Generate bash_profile_ext
+- name: Generate bash_profile_ext
+  template:
+    src:  home/bash_profile_ext.j2
+    dest: "{{ bash_profile_ext_path }}"
+    mode: 0644
+  tags:
+    - jboss_home
+
+# Check the Deployment Descriptor Files
+- name: "Check .bash_profile_ext in .bashrc"
+  shell: 'grep "{{check_bash_profile_ext_string}}" {{ bashrc_path }} | wc -l'
+  register: test_check_bash_profile_ext_in_bashrc
+  tags:
+    - jboss_home
+
+#### Include
+- name: Insert .bash_profile_ext in .bashrc
+  blockinfile:
+    path:   "{{ bashrc_path }}"
+    insertafter: 'last_line_bashrc'
+    backup: yes
+    marker: "{{check_bash_profile_ext_string}}"
+    content: |
+      if [ -f ~/.bash_profile_ext ]; then
+        . ~/.bash_profile_ext
+      fi
+  tags:
+     - jboss_home
+  when: test_check_bash_profile_ext_in_bashrc.stdout == "0"
+
+#
+# EOF

@@ -1,0 +1,4 @@
+source 'https://rubygems.org'
+gem 'vagrant', '2.0.1', :github => 'hashicorp/vagrant', :tag => 'v2.0.1'
+gem 'inspec', '~> 1.48'
+gem 'json', '~> 2.0.4'

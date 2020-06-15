@@ -1,0 +1,14 @@
+---
+nagios_host: nagios0.prod.a1.vary.redhat.com
+admin_host: admin0.prod.a1.vary.redhat.com
+admin_host_secondary: admin1.prod.a1.vary.redhat.com
+update_node: cmsapp1.stage.a1.vary.redhat.com
+elb_name: CMSDevAppELB
+elbs:
+  - CMSDevAdminELB
+  - CMSDevAppELB
+  - CMSDevInternalELB
+  - CMSDevPublicELB
+price_hack_id: i-fe611857
+price_hack_elb: CMSDevPriceEditingELB
+git_branch: dev

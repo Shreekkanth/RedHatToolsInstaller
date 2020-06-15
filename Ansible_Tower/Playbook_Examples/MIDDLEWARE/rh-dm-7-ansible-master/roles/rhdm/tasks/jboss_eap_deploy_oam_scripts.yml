@@ -1,0 +1,23 @@
+---
+#### Set Facts
+- name: "Set JBoss EAP OA&M Scripts Facts"
+  set_fact:
+    jboss_oam_zip: "rhdm-oam-1.0-SNAPSHOT-admin.zip"
+  tags:
+    - deploy_oam
+
+####
+- name: "Extract JBoss OA&M Scripts"
+  unarchive:
+    src:  "{{ 'files/' + jboss_oam_zip }}"
+    dest: "{{  jboss_eap_base }}"
+    remote_src: no
+    mode: 0774
+    owner: "{{ jboss_eap_user }}"
+    group: "{{ jboss_eap_group }}"
+  tags:
+    - deploy_oam
+  when: jboss_deploy_oam
+
+#
+# EOF

@@ -1,0 +1,22 @@
+---
+- hosts: capsules
+  remote_user: root
+  ###gather_facts: no
+  vars_files:
+    - ../../conf/satperf.yaml
+    - ../../conf/satperf.local.yaml
+  roles:
+    ###- common-eth1
+    - common
+    - epel-not-present
+    - rhsm-satellite
+    - ntp
+    ###- upgrade-restart
+    ###- capsule-ec2-partitioning
+    - { role: capsule-stalelabkvm-partitioning, when: "'.openstack.engineering.' in inventory_hostname"}
+    - capsule
+    - capsule-location
+    - enlarge-arp-table
+    ###- capsule-myrhev-partitioning
+    - capsule-populate
+    - pbench_client

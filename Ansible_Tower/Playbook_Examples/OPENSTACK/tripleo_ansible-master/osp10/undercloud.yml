@@ -1,0 +1,25 @@
+---
+
+- hosts: undercloud
+  remote_user: root
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - ../common/roles/yum_repository
+    - ../common/roles/ntp
+    - ../common/roles/undercloud_os
+
+- hosts: undercloud
+  remote_user: stack
+  vars_files:
+    - ../common/vars/common.yml
+  roles:
+    - undercloud_prepare
+    - ../common/roles/undercloud_install
+    - ../common/roles/undercloud_image
+    - ../common/roles/undercloud_post
+    - ../common/roles/tripleo_configs
+    - ../common/roles/register
+    - discover
+    - download_discovered_data
+    - ../common/roles/tagging

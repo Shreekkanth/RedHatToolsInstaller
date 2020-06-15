@@ -1,0 +1,252 @@
+---
+- name: Tower Job template
+  hosts: localhost
+  gather_facts: false
+  vars:
+    tower_url: https://tower.bytewise.com.my
+    web1: 10.2.1.13
+    web2: 10.2.1.14
+    web_dr: 10.10.1.19
+    app1: 100.1.1.64
+    app2: 100.1.1.70
+    app_dr: 200.1.1.116
+    db: 100.1.1.63
+    db_dr: 200.1.1.115
+  vars_prompt:
+    - name: "toweruser"
+      prompt: "Enter Ansible Tower Username?"
+      private: no
+    - name: "towerpass"
+      prompt: "Enter Ansible Tower Password?"
+  tasks:
+  - name: Get Group ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/'
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: grp_id
+
+  - name: Get INV ID
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/inventories/'
+      method: GET
+      validate_certs: false
+      return_content: no
+      body_format: json
+    register: inv_id
+
+  - name: Group identified 
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ grp_id.json.results }}"
+
+  - name: Inv identified 
+    debug:
+      msg: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+
+  - name: Set 3DS Web Server Inv id
+    set_fact:
+      web_inv_id: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS Web Server"
+
+  - name: Set 3DS Apps Server Inv id
+    set_fact:
+      app_inv_id: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS Apps Server"
+
+  - name: Set 3DS DB Server Inv id
+    set_fact:
+      db_inv_id: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS DB Server"
+
+  - name: Set 3DS SPMGR Servers Inv id
+    set_fact:
+      spmgr_inv_id: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS SPMGR Servers"
+
+  - name: Set 3DS Oracle Servers Inv id
+    set_fact:
+      oracle_inv_id: "{{ item.id }}"
+    with_items: "{{ inv_id.json.results }}"
+    when: item.name == "3DS SPMGR Servers"
+
+  - name: Create 3ds_web group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+          { 
+          "description": "web1",
+          "name": "{{ web1 }}",
+          "inventory": "{{ web_inv_id }}" 
+          }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_web"
+    ignore_errors: yes
+
+  - name: Create 3ds_web group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "web2",
+          "name": "{{ web2 }}",
+          "inventory": "{{ web_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_web"
+    ignore_errors: yes
+
+  - name: Create 3ds_web_dr group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "webdr",
+          "name": "{{ web_dr }}",
+          "inventory": "{{ web_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_web_dr"
+    ignore_errors: yes
+
+  - name: Create 3ds_app group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "app1",
+          "name": "{{ app1 }}",
+          "inventory": "{{ app_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_app"
+    ignore_errors: yes
+
+  - name: Create 3ds_app group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "app2",
+          "name": "{{ app2 }}",
+          "inventory": "{{ app_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_app"
+    ignore_errors: yes
+
+  - name: Create 3ds_app_dr group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "appdr",
+          "name": "{{ app_dr }}",
+          "inventory": "{{ app_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_app_dr"
+    ignore_errors: yes
+
+  - name: Create 3ds_db group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "db",
+          "name": "{{ db }}",
+          "inventory": "{{ db_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_db"
+    ignore_errors: yes
+
+  - name: Create 3ds_db_dr group host
+    uri:
+      force_basic_auth: yes
+      url_username: "{{ toweruser }}"
+      url_password: "{{ towerpass }}"
+      url: '{{ tower_url }}/api/v2/groups/{{ item.id }}/hosts/'
+      method: POST
+      validate_certs: false
+      return_content: no
+      body: >
+        { 
+          "description": "db_dr",
+          "name": "{{ db_dr }}",
+          "inventory": "{{ db_inv_id }}" 
+        }
+      body_format: json
+      status_code: 201
+    with_items: "{{ grp_id.json.results }}"
+    when: item.name == "3ds_db_dr"
+    ignore_errors: yes

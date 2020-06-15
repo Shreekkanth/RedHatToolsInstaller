@@ -1,0 +1,13 @@
+match_cvs_les: true
+keys:
+  - name: key1
+    cv: content_view1
+    le: lifecycle_environment1
+ak_overrides:
+  - label: rhel-6-server-satellite-tools-6.5-rpms
+    override: enabled
+  - label: rhel-7-server-satellite-tools-6.5-rpms
+    override: enabled
+  - label: satellite-tools-6.5-for-rhel-8-x86_64-rpms
+    override: enabled
+

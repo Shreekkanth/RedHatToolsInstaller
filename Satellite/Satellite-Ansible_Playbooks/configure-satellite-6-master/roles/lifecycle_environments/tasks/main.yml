@@ -1,0 +1,14 @@
+---
+# tasks file for lifecycle_environments
+- name: Build lifecycle environments
+  katello_lifecycle_environment:
+    name: "{{ item.name }}"
+    organization: "{{ org_name }}"
+    prior: "{{ item.prior | default ('Library') }}"
+    state: present
+    username: "{{ satellite_user }}"
+    password: "{{ satellite_password }}"
+    server_url: "https://{{ satellite_host }}"
+    verify_ssl: false
+  loop: "{{ le_pairs }}"
+

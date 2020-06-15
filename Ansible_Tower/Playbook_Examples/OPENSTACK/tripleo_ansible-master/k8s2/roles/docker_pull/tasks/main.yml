@@ -1,0 +1,6 @@
+---
+
+- name: etcd image
+  shell: docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+- name: etcd start script
+  template: src=etcd.sh.j2 dest=etcd.sh mode=0755

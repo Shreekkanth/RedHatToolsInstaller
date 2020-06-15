@@ -1,0 +1,6 @@
+BOOTPROTO=none
+NAME=ens2f0.2450
+DEVICE=ens2f0.2450
+ONBOOT=yes
+BRIDGE=br-internalapi
+VLAN=yes

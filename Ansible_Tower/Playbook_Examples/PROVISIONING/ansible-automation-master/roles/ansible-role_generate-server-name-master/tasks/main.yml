@@ -1,0 +1,29 @@
+---
+- name: Check for required variables
+  assert:
+    that:
+      - generate_server_name_hostname != ''
+      - generate_server_name_username != ''
+      - generate_server_name_password != ''
+      - generate_server_name_database != ''
+      - generate_server_name_requestor_id != ''
+      - generate_server_name_server_type != ''
+      - generate_server_name_application != ''
+      - generate_server_name_primary_contact != ''
+      - generate_server_name_secondary_contact != ''
+      - generate_server_name_tertiary_contact != ''
+      - generate_server_name_assignment_group != ''
+
+- name: Insert row into techmap
+  mssql_query:
+    login_host: "{{ generate_server_name_hostname }}"
+    login_user: "{{ generate_server_name_username }}"
+    login_password: "{{ generate_server_name_password }}"
+    db: "{{ generate_server_name_database }}"
+    as_dict: yes
+    query: "{{ techmap_query }}"
+  register: query_return
+
+- name: Return server_name stat
+  set_fact:
+    generate_server_name_result: "{{ query_return.result[0]['Server_Name'] }}"

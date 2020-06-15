@@ -1,0 +1,14 @@
+---
+- name: "Post-provisioning"
+  hosts: "new_template"
+  gather_facts: False
+  vars_files:
+    - "vars/emc-vm-template-postprovision.yml"
+    - "vars/secrets.yml"
+  tasks:
+    # Move fact gathering into tasks to avoid execution when tag is not run
+    - name: "Gather facts"
+      setup:
+
+    - name: "Run Post-provisioning"
+      include_tasks: "tasks/post-provision-tasks.yml"

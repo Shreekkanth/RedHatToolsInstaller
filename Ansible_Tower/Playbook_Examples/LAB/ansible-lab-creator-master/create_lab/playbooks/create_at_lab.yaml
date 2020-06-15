@@ -1,0 +1,54 @@
+---
+
+- name: Build VMs Ready for Ansible Tower 
+  hosts: kvm
+  become: true
+  vars_files:
+    - vars/at_vms.yml
+
+  tasks:
+    - include_role:
+        name: libvirt_build_vms
+
+    - include_role:
+        name: libvirt_start_vms
+
+- name: Configure Ansible Host with New Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - vars/at_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible_host_configure
+
+- name: Configure VM for Ansible Tower
+  hosts: tower
+  become: true
+  vars_files:
+    - vars/at_vms.yml
+
+  tasks:
+    - include_role:
+        name: extend_vm_disks
+
+    - include_role:
+        name: rhsm_register
+
+- name: Install Ansible Tower
+  hosts: tower
+  become: true
+  vars_files:
+    - vars/at_vms.yml
+
+  tasks:
+    - include_role:
+        name: ansible-role-towerinstall
+
+      vars: 
+        webserver: "http://192.168.122.200/pub"
+        tower_download_file: "ansible-tower-setup-bundle-latest.el7.tar.gz"
+        tower_extracted_dir: "ansible-tower-setup-bundle-3.4.1-1.el7"
+
+

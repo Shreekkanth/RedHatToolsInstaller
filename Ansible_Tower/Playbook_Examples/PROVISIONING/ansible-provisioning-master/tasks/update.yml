@@ -1,0 +1,7 @@
+---
+# file: roles/provisioning/tasks/update.yml
+- name: Updating the system with the lastest package
+  yum: name=* state=latest
+  tags:
+    - provisioning
+    - provisioning-update

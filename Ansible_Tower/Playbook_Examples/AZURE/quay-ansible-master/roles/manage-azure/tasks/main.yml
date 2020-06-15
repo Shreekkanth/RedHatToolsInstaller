@@ -1,0 +1,108 @@
+---
+
+- block:
+  - debug:
+      msg: "Create Resource Level Assets"
+
+  - name: Create Resource Group
+    azure_rm_resourcegroup:
+      name: "{{ quay_resource_group }}"
+      location: "{{ quay_deployment_location }}"
+    tags:
+      - create_resource_group
+
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      name: "{{ quay_vnet_name }}"
+      resource_group: "{{ quay_resource_group }}"
+      address_prefixes_cidr: "{{ quay_virtual_net }}"
+    tags:
+      - create_virtual_network
+
+  - name: Create subnet
+    azure_rm_subnet:
+      name: "{{ quay_subnet_name }}"
+      virtual_network_name: "{{ quay_vnet_name }}"
+      resource_group: "{{ quay_resource_group }}"
+      address_prefix_cidr: "{{ quay_virtual_net }}"
+    tags:
+      - create_subnet
+
+- block:
+  - debug:
+      msg: "Create Security Groups"
+
+  - name: Create Bastion Security Group
+    azure_rm_securitygroup:
+      name: "{{ bastion_nsg_name }}"
+      resource_group: "{{ quay_resource_group }}"
+      rules:
+        - name: "AllowSSH"
+          protocol: "Tcp"
+          source_address_prefix: "*"
+          destination_port_range: "{{ bastion_ssh_port }}"
+          access: "{{ bastion_ssh_nsg_access }}"
+          priority: 100
+          direction: "Inbound"
+    tags:
+      - create_security_group
+
+  - name: Create Internal Security Groups
+    azure_rm_securitygroup:
+      name: "{{ item }}"
+      resource_group: "{{ quay_resource_group }}"
+    loop:
+      - "{{ redis_nsg_name }}"
+      - "{{ clair_nsg_name }}"
+    tags:
+      - create_security_group
+
+  - name: Create Quay Security Group
+    azure_rm_securitygroup:
+      name: "{{ quay_nsg_name }}"
+      resource_group: "{{ quay_resource_group }}"
+      rules:
+        - name: "AllowHTTPS"
+          protocol: "Tcp"
+          source_address_prefix: "VirtualNetwork"
+          destination_port_range: "{{ quay_https_port }}"
+          access: "Allow"
+          priority: 100
+          direction: "Inbound"  
+    tags:
+      - create_security_group
+
+- block:
+  - debug:
+      msg: "Create IP Addresses"
+
+  - name: Create a public ip address
+    azure_rm_publicipaddress:
+      resource_group: "{{ quay_resource_group }}"
+      name: "{{ item.name }}"
+      allocation_method: "{{ item.allocation_method }}"
+    loop: "{{ quay_ecosystem_public_ips }}"
+
+- block:
+  - debug:
+      msg: "Manage Storage"
+  
+  - name: Create Quay storage account
+    azure_rm_storageaccount:
+      resource_group: "{{ quay_resource_group }}"
+      name: "{{ quay_storage_account_name }}"
+      type: "{{ quay_storage_account_type }}"
+      kind: BlobStorage
+      access_tier: Hot
+    tags:
+      - create_storage_account
+
+  - name: Create Quay Container
+    azure_rm_storageblob:
+      resource_group: "{{ quay_resource_group }}"
+      storage_account_name: "{{ quay_storage_account_name }}"
+      container: "{{ quay_container_storage_name }}"
+    tags:
+        - create_storage_blob
+
+

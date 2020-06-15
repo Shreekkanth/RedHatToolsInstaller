@@ -1,0 +1,43 @@
+---
+# tasks file for openshift-storage-setup
+
+  - name: Install lvm2
+    yum:
+      name: "{{ lvm_package_name }}"
+      state: "{{ lvm_package_version }}"
+
+  #- name: "Create VG {{ openshift_storage_vg_name }}"
+  #  command: "vgcreate {{ openshift_storage_vg_name }} {{ openshift_storage_device }}"
+  #  ignore_errors: yes
+
+  - name: "Create VG {{ openshift_storage_vg_name }}"
+    lvg:
+      vg: "{{ openshift_storage_vg_name }}"
+      pvs: "{{ openshift_storage_device }}"
+
+  #- name: "Create LV {{openshift_storage_lv_name}}"
+  #  command: "lvcreate -n {{openshift_storage_lv_name}} -l "{{ openshift_storage_lv_size }}" {{ openshift_storage_vg_name }}"
+  #  ignore_errors: yes
+
+  - name: "Create LV {{ openshift_storage_lv_name }}"
+    lvol:
+      vg: "{{ openshift_storage_vg_name }}"
+      lv: "{{ openshift_storage_lv_name }}"
+      size: "{{ openshift_storage_lv_size }}"
+
+  - name: "Make filesystem of {{ openshift_storage_lv_fstype }} on {{ openshift_storage_lv_name }}"
+    filesystem:
+      fstype: "{{ openshift_storage_lv_fstype }}"
+      dev: "{{ openshift_storage_lv_path }}"
+
+  - name: "Make {{ openshift_storage_mount_path }}"
+    file:
+      path: "{{ openshift_storage_mount_path }}"
+      state: directory
+
+  - name: "Mount filesystem {{ openshift_storage_lv_path }} at {{ openshift_storage_mount_path }}"
+    mount:
+      path: "{{ openshift_storage_mount_path }}"
+      src: "{{ openshift_storage_lv_path }}"
+      fstype: "{{ openshift_storage_lv_fstype }}"
+      state: mounted

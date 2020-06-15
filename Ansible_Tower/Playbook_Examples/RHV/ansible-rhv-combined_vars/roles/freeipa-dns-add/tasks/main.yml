@@ -1,0 +1,33 @@
+---
+# tasks file for freeipa-dns-add
+
+
+- name: "Add A record of {{ ovirt_vm }} to Freeipa DNS"
+  ipa_dnsrecord:
+    ipa_host: "{{ ipa_server_hostname }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_password }}"
+    state: present
+    zone_name: "{{ ipa_zone_name }}"
+    record_name: "{{ ipa_dns_entry.split('.')[0] }}"
+    record_type: 'A'
+    record_value: "{{ ipa_nic_ip_address }}"
+  tags:
+    - forward-dns
+    - freeipa
+    - dns
+
+- name: "Add PTR record for {{ ovirt_vm }} to Freeipa DNS"
+  ipa_dnsrecord:
+    ipa_host: "{{ ipa_server_hostname }}"
+    ipa_user: "{{ ipa_user }}"
+    ipa_pass: "{{ ipa_password }}"
+    state: present
+    zone_name: "{{ ipa_reverse_zone_name }}"
+    record_name: "{{ ipa_nic_ip_address.split('.')[3] }}"
+    record_type: 'PTR'
+    record_value: "{{ ipa_dns_entry }}"
+  tags:
+    - reverse-dns
+    - freeipa
+    - dns

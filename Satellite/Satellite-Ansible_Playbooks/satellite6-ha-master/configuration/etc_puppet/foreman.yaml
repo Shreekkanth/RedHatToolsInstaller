@@ -1,0 +1,12 @@
+---
+:url: "https://sat6-ha.sysmgmt.bos.redhat.com"
+:ssl_ca: "/etc/puppet/ssl_ca.pem"
+:ssl_cert: "/etc/puppet/client_cert.pem"
+:ssl_key: "/etc/puppet/client_key.pem"
+:user: ""
+:password: ""
+:puppetdir: "/var/lib/puppet"
+:puppetuser: "puppet"
+:facts: true
+:timeout: 10
+:threads: null

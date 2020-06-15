@@ -1,0 +1,40 @@
+localhost ansible_connection=local
+
+
+[all:vars]
+# Azure account settings
+subscription_id="..."
+client_id="..."
+tenant="..."
+secret="..."
+
+# Other Azure settings
+storage_account_name="ansibleworkshopdiag965"
+rhel7_version="7.3.2017032021"
+location="westeurope"
+#vm_size="Standard_F2s_v2"
+vm_size="Standard_F16s_v2"
+rhel_sku="7.3"
+
+# resource group, network and storage will be created by the playbooks
+# Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only
+# following settings match with the settings hardcoded in the create_vms script
+resource_group_name="ansible-workshop"
+virtual_network_name="ansible-workshop-vnet"
+storage_account_name="ansibleworkshopdiag965"
+subnet_name="ansiblehandson"
+
+# vm settings
+admin_user="dieter"
+
+# Tower settings
+# Some characters, like $ should be escaped
+admin_password="..."
+nr_of_participants=3
+participant_password="..."
+
+[azure_vms]
+# azure VMs are created by the playbook and dynamically added to the inventory. Just need to configure the key
+
+[azure_vms:vars]
+ansible_ssh_private_key_file="id_rsa"

@@ -1,0 +1,34 @@
+---
+
+- name: Unregister systems
+  hosts: satellite 
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/rhsm_unregister
+
+
+- name: Remove lab based on var file   
+  hosts: kvm
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/clear_down_lab
+
+- name: Configure Ansible Host to remove Systems
+  hosts: ansible_host
+  become: true
+  vars_files:
+    - ../vars/satellite_vms.yml
+
+  tasks:
+    - include_role:
+        name: ../roles/ansible_host_clear_entries
+
+

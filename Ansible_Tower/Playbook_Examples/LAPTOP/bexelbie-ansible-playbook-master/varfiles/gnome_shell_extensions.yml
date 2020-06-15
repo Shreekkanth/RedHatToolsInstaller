@@ -1,0 +1,3 @@
+# Used for extensions not packaged in Fedora
+gnome_extension_ids:
+  - 517 # Caffeine

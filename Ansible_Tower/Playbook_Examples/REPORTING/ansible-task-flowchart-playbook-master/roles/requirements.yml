@@ -1,0 +1,7 @@
+- src: geerlingguy.repo-epel
+- src: geerlingguy.nodejs
+- src: ssh://git@gitlab.consulting.redhat.com:2222/skarundi/ansible-task-flowchart-role.git
+  scm: git
+  version: master
+
+

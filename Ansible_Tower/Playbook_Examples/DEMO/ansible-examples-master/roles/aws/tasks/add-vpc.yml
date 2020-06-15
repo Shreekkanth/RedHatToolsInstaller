@@ -1,0 +1,15 @@
+- debug:
+    msg: "Creating {{ vpc_name }} VPC..."
+
+- name: "Create VPC"
+  ec2_vpc_net:
+    aws_access_key: "{{ key }}"
+    aws_secret_key: "{{ secret }}"
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ cidr }}"
+    region: "{{ region }}"
+    state: present
+    validate_certs: no
+    tags:
+      module: ec2_vpc_net
+      orchestrator: ansible

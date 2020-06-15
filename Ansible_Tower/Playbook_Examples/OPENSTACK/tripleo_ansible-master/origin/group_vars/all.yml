@@ -1,0 +1,34 @@
+origin:
+  distribution: origin
+  prefix: origin
+ose_version: 3.6
+#ose_packages:
+#origin_packages:
+common_packages:
+  - wget
+  - git
+  - net-tools
+  - bind-utils
+  - iptables-services
+  - bridge-utils
+  - bash-completion
+#  - kexec
+  - kexec-tools
+  - sos
+  - psacct
+origin_packages:
+  - ansible
+  - pyOpenSSL
+  - atomic
+install_prereq_packages:
+  - java-1.8.0-openjdk-headless
+  - python-passlib
+  - httpd-tools
+ocp_packages:
+  - atomic-openshift-utils
+  - atomic-openshift-excluder
+  - atomic-openshift-docker-excluder
+images:
+  - docker.io/openshift/origin-metrics-hawkular-metrics:latest
+  - docker.io/openshift/origin-metrics-heapster:latest
+  - docker.io/openshift/origin-logging-fluentd:latest

@@ -1,0 +1,9 @@
+---
+- name: CIS Benchmark Hardening
+  hosts: all
+  remote_user: root
+
+  roles:
+  - harden-rhel7
+
+

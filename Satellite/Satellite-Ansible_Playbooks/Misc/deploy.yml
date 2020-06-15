@@ -1,0 +1,64 @@
+---
+- hosts: all
+  connection: local
+
+  tasks:
+    - name: Generate the root password hash for kickstart template (would prefer a prompt, as password is stored in variables file)
+      local_action: command python -c 'import crypt; print crypt.crypt("{{ satellite_kickstart_root_password }}", "$6$3dgaQk0H")'
+      register: root_pass_hash
+      tags:
+        - kickstart
+
+    - name: Generate the ansible user password hash for kickstart template (would prefer a prompt, as password is stored in variables file)
+      local_action: command python -c 'import crypt; print crypt.crypt("{{ ansible_kickstart_password }}", "$6$3dgaQk0H")'
+      register: ansible_pass_hash
+      tags:
+        - kickstart
+
+    - name: Create Satellite Kickstart file
+      template:
+        src: "../templates/satellite-ks.cfg.j2"
+        dest: /var/www/html/satellite-ks.cfg
+        mode: 0644
+      become: yes
+      tags:
+        - kickstart
+
+    - name:     restorecon on /var/www/html (this should really be a notify if we create the kickstart or generate the template)
+      command:  restorecon -Rv /var/www/html
+      become: yes
+      tags:
+        - deploy
+
+    - name: Install DEMO-Satellite from Kickstart
+      command: virt-install --name DEMO-Satellite --memory {{satellite_memory}} --vcpus {{satellite_vcpus}} --disk size=125,pool={{libvirt_storage_pool_name}} --location /home/{{laptop_local_user}}/{{libvirt_storage_pool_name}}/original/rhel-server-7.4-x86_64-dvd.iso --extra-args "ks=http://{{libvirt_ip_address}}/satellite-ks.cfg" --os-type linux --noautoconsole
+      become: yes
+      tags: deploy
+
+    - name: check that DEMO-Satellite VM is stopped
+      action: virt name=DEMO-Satellite command=status
+      register: result
+      until: result.status.find("shutdown") != -1
+      retries: 100
+      delay: 5
+      become: yes
+      tags: deploy
+
+    - name: Update Network Source from 'default' to '{{libvirt_network_name}}'
+      script: files/vifmove.sh DEMO-Satellite - {{libvirt_network_name}}
+      become: yes
+      tags: deploy
+
+    - name: Start the VM
+      command: virsh start DEMO-Satellite
+      become: yes
+      tags: deploy
+
+    - name: Wait for SSH to come up on Satellite
+      local_action:
+        module: wait_for
+          host={{ satellite_hostname }}
+          port=22
+          delay=1
+          timeout=300
+      tags: deploy

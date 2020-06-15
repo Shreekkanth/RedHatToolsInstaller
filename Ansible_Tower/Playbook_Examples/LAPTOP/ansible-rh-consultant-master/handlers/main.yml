@@ -1,0 +1,6 @@
+---
+# handlers file for role_rh_consultant
+- name: restart cups
+  service:
+    name: cups-browsed
+    state: restarted

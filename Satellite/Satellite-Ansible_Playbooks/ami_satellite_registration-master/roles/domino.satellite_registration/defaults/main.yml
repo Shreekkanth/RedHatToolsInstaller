@@ -1,0 +1,4 @@
+---
+katello_ca_consumer: "http://sat6cap01.prod.a4.vary.redhat.com/pub/katello-ca-consumer-latest.noarch.rpm"
+organization: "rhit"
+activationkey: "default"

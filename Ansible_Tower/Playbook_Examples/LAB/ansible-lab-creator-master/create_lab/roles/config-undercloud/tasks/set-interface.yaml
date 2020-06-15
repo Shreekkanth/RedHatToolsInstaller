@@ -1,0 +1,7 @@
+- nmcli:
+    conn_name: management
+    ifname: eth0
+    type: ethernet
+    ip4: {{config-undercloud-management-ipv4}} 
+    gw4: {{config-undercloud-management-gw4}}
+    state: present

@@ -1,0 +1,47 @@
+---
+# Sane defaults for MOTD
+system: Unknown
+sys_env: Unknown
+role: Unknown
+
+# Default NTP client to install
+ntp_client: chrony
+
+# NTP Servers to use
+ntpservers:
+  - ntp1.example.com
+  - ntp2.example.com
+  - ntp3.example.com
+
+# CDN defaults (default assumes we are using Satellite)
+register_with_cdn: false
+cdn_user: jbloggs
+cdn_password: Password123
+cdn_product: Red Hat Enterprise Linux
+
+# Defaults for Satellite user registration
+sat_user: jbloggs
+sat_password: Password123
+sat_env: Library
+# Defaults for Satallite Activation Key registration
+satellite_version: '6.5'
+sat_org: MyOrg
+sat_activation_key: rhel-7-server
+
+# If we are registered to Satellite, install the katello-host-tools ?
+install_katello_tools: true
+install_katello_tracer: true
+
+# Enable EPEL
+enable_epel: no
+# Use EPEL from Satellite. If 'register_with_cdn' is set to true this will be
+# forced to 'false'
+use_satellite_epel: true
+# If we are using Satellite EPEL define the name of the repo
+sat_epel_repo: epel-7-x86_64
+
+# Disable all RedHat repos first - ensure only the ones we specify are enabled
+reset_redhat_repos: true
+
+# Empty list, populated by specific distro configurations
+additional_packages: []

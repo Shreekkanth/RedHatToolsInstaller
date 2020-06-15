@@ -1,0 +1,5 @@
+---
+- name: Enable local repositories 
+  template: 
+    src: redhat.repo
+    dest: /etc/yum.repos.d/local_repositories.repo

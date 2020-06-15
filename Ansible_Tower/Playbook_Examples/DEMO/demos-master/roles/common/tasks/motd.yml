@@ -1,0 +1,4 @@
+---
+- template:
+   src: "{{lookup('template_url', target_url)}}"
+   dest: /etc/motd

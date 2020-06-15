@@ -1,0 +1,12 @@
+# unmanage-remanage for solarwinds entrypoint
+---
+- hosts: localhost
+  gather_facts: yes
+  become: no
+  connection: local
+  
+  tasks:
+    - name: include vmware snapshot role to create and revert snapshots
+      include_role:
+        name: role-vmware-snapshot
+

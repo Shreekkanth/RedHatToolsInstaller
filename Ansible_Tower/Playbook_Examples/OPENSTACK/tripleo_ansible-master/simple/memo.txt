@@ -1,0 +1,2 @@
+ansible -i hostfile dell-server -m ping -k
+ansible-playbook -v -i hostfile playbook.yml -k

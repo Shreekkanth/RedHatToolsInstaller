@@ -1,0 +1,23 @@
+1/ create a file called "tower_license.json" containing the Tower license in this folder.
+Make sure your license can manage enough nodes. Each participants uses 2 nodes (localhost and an external IP)
+Send an email to sales@ansible.com
+
+
+2/ Copy inventory.example to inventory and fill in the missing parameters
+
+Some parameters can be found from Azure CLI as follows:
+# from Shell in Azure
+# PS Azure:\> az ad sp create-for-rbac --query '{"client_id": appId, "secret": password, "tenant": tenant}'
+# {
+#   "client_id": "***",
+#   "secret": "***",
+#   "tenant": "***"
+# }
+
+
+3/ id_rsa will be used to pull the scripts from gitlab. Make sure id_rsa.pub is added as key
+
+
+4/ Run "ansible-playbook tower_setup_azure.yml
+   to save time when tower is already installed: 
+   ansible-playbook tower_setup_azure.yml --skip-tags install_tower

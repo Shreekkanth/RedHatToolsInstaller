@@ -1,0 +1,21 @@
+# demo patch windows entrypoint
+---
+- hosts: win2012
+  gather_facts: yes
+  ignore_unreachable: yes
+
+  tasks:
+    - name: include windows patching role-patch-windows
+      include_role:
+        name: demo-role-patch-windows
+      when: ansible_facts['os_family'] == "Windows"
+      ignore_errors: yes
+      ignore_unreachable: yes
+
+  post_tasks:
+    - name: set stat
+      set_stats:
+        data:
+          windows_patching_status: "complete"
+        aggregate: no
+        per_host: no

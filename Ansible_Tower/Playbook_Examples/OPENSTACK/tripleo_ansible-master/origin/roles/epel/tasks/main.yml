@@ -1,0 +1,15 @@
+---
+
+#- debug: msg="{{ origin.distribution }}"
+
+- name: install epel repo rpm
+  yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=installed
+  when: origin.distribution == "origin"
+
+- name:  disable epel repo
+  lineinfile: >-
+    dest=/etc/yum.repos.d/epel.repo
+    state=present
+    regexp="^enabled=1"
+    line="enabled=0"
+  when: origin.distribution == "origin"

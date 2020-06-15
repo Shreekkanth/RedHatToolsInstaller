@@ -1,0 +1,10 @@
+---
+# tasks file for phpvirtualbox
+- name: "Include Dependencies tasks"
+  include_tasks: install_dependencies.yml
+
+- name: "Include VirtualBox Installation"
+  include_tasks: install_virtualbox.yml
+
+- name: "Include PHPVirtalBox Installation"
+  include_tasks: install_phpvirtualbox.yml

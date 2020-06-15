@@ -1,0 +1,340 @@
+---
+# tasks file for openstack
+- name: Install Packstack
+  yum:
+    name: openstack-packstack
+    state: present
+
+- name: Set answer file fact
+  set_fact:
+    answer_file: "{{ 'packstack-answers-' + hostvars[inventory_hostname].ansible_hostname + '.txt' }}"
+
+- name: Generate Packstack answer file
+  command: packstack --gen-answer-file=/tmp/{{ answer_file }}
+
+- name: Copy generated file
+  command: cp /tmp/{{ answer_file }} /tmp/{{ answer_file }}.orig
+
+# create comma separated list of network hosts
+- name: Build a list of Network Hosts
+  set_fact:
+    network_hosts: ""
+
+- set_fact:
+    network_hosts: "{{ [hostvars[item]['ansible_' + mgmt_interface].ipv4.address | default('')] | join(',') }}"
+  with_items: "{{ groups['network'] }}"
+
+- set_fact:
+    network_hosts: "{{ network_hosts | regex_replace('^(.*),$', '\\1') }}"
+
+# create comma separated list of compute hosts
+- name: Build a list of Compute Hosts
+  set_fact:
+    compute_hosts: ""
+
+- set_fact:
+    compute_hosts: "{{ [hostvars[item]['ansible_' + mgmt_interface].ipv4.address | default('')] | join(',') }}"
+  with_items: "{{ groups['compute'] }}"
+
+- set_fact:
+    compute_hosts: "{{ compute_hosts | regex_replace('^(.*),$', '\\1') }}"
+
+- debug:
+    var:
+      "{{ item }}"
+  with_items:
+    - network_hosts
+    - compute_hosts
+
+- name: Configure Packstack variable controller_host
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_CONTROLLER_HOST=.*$"
+    line: 'CONFIG_CONTROLLER_HOST={{ hostvars[inventory_hostname]["ansible_" + mgmt_interface].ipv4.address }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable compute_hosts
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_COMPUTE_HOSTS=.*$"
+    line: 'CONFIG_COMPUTE_HOSTS={{ compute_hosts }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable network_hosts
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NETWORK_HOSTS=.*$"
+    line: 'CONFIG_NETWORK_HOSTS={{ network_hosts }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable debug_mode
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_DEBUG_MODE=.*$"
+    line: 'CONFIG_DEBUG_MODE=y'
+    state: present
+    create: no
+  when: debug
+
+- name: Configure Packstack variable nagios_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NAGIOS_INSTALL=.*$"
+    line: 'CONFIG_NAGIOS_INSTALL=n'
+    state: present
+    create: no
+
+- name: Configure Packstack variable default_password
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_DEFAULT_PASSWORD=.*$"
+    line: 'CONFIG_DEFAULT_PASSWORD={{ password }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable mariadb_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_MARIADB_INSTALL=.*$"
+    line: 'CONFIG_MARIADB_INSTALL={{ mariadb_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable glance_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_GLANCE_INSTALL=.*$"
+    line: 'CONFIG_GLANCE_INSTALL={{ glance_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable cinder_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_CINDER_INSTALL=.*$"
+    line: 'CONFIG_CINDER_INSTALL={{ cinder_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable manila_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_MANILA_INSTALL=.*$"
+    line: 'CONFIG_MANILA_INSTALL={{ manila_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable nova_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NOVA_INSTALL=.*$"
+    line: 'CONFIG_NOVA_INSTALL={{ nova_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NEUTRON_INSTALL=.*$"
+    line: 'CONFIG_NEUTRON_INSTALL={{ neutron_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable horizon_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_HORIZON_INSTALL=.*$"
+    line: 'CONFIG_HORIZON_INSTALL={{ horizon_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable swift_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_SWIFT_INSTALL=.*$"
+    line: 'CONFIG_SWIFT_INSTALL={{ swift_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable ceilometer_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_CEILOMETER_INSTALL=.*$"
+    line: 'CONFIG_CEILOMETER_INSTALL={{ ceilometer_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable sahara_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_SAHARA_INSTALL=.*$"
+    line: 'CONFIG_SAHARA_INSTALL={{ sahara_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable heat_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_HEAT_INSTALL=.*$"
+    line: 'CONFIG_HEAT_INSTALL={{ heat_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable trove_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_TROVE_INSTALL=.*$"
+    line: 'CONFIG_TROVE_INSTALL={{ trove_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable ironic_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_IRONIC_INSTALL=.*$"
+    line: 'CONFIG_IRONIC_INSTALL={{ ironic_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable client_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_CLIENT_INSTALL=.*$"
+    line: 'CONFIG_CLIENT_INSTALL={{ client_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable nagios_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NAGIOS_INSTALL=.*$"
+    line: 'CONFIG_NAGIOS_INSTALL={{ nagios_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable lbaas_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_LBAAS_INSTALL=.*$"
+    line: 'CONFIG_LBAAS_INSTALL={{ lbaas_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_fwaas
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NEUTRON_FWAAS=.*$"
+    line: 'CONFIG_NEUTRON_FWAAS={{ neutron_fwaas }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_metering_agent_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NEUTRON_METERING_AGENT_INSTALL=.*$"
+    line: 'CONFIG_NEUTRON_METERING_AGENT_INSTALL={{ neutron_metering_agent_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable heat_cloudwatch_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_HEAT_CLOUDWATCH_INSTALL=.*$"
+    line: 'CONFIG_HEAT_CLOUDWATCH_INSTALL={{ heat_cloudwatch_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable heat_cfn_install
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_HEAT_CFN_INSTALL=.*$"
+    line: 'CONFIG_HEAT_CFN_INSTALL={{ heat_cfn_install }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable keystone_admin_pw
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_KEYSTONE_ADMIN_PW=.*$"
+    line: 'CONFIG_KEYSTONE_ADMIN_PW={{ password }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable ntp_servers
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NTP_SERVERS=.*$"
+    line: 'CONFIG_NTP_SERVERS={{ ntp_server }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_l3_ext_bridge
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "CONFIG_NEUTRON_L3_EXT_BRIDGE=.*$"
+    line: 'CONFIG_NEUTRON_L3_EXT_BRIDGE=provider'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_ml2_type_drivers
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "^CONFIG_NEUTRON_ML2_TYPE_DRIVERS=.*$"
+    line: 'CONFIG_NEUTRON_ML2_TYPE_DRIVERS=vxlan,flat,vlan'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_ml2_vlan_ranges
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "^CONFIG_NEUTRON_ML2_VLAN_RANGES=.*$"
+    line: 'CONFIG_NEUTRON_ML2_VLAN_RANGES={{ provider_network }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_ovs_bridge_mappings
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "^CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS=.*$"
+    line: 'CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS={{ provider_network }}:br-ex'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_ovs_bridge_ifaces
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "^CONFIG_NEUTRON_OVS_BRIDGE_IFACES=.*$"
+    line: 'CONFIG_NEUTRON_OVS_BRIDGE_IFACES=br-ex:{{ external_interface }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable neutron_ovs_tunnel_if
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "^CONFIG_NEUTRON_OVS_TUNNEL_IF=.*$"
+    line: 'CONFIG_NEUTRON_OVS_TUNNEL_IF={{ tunnel_interface }}'
+    state: present
+    create: no
+
+- name: Configure Packstack variable provision_demo
+  lineinfile:
+    dest: /tmp/{{ answer_file }}
+    regexp: "^CONFIG_PROVISION_DEMO=.*$"
+    line: 'CONFIG_PROVISION_DEMO={{ provision_demo }}'
+    state: present
+    create: no
+
+- name: Run Packstack
+  command: packstack --answer-file=/tmp/{{ answer_file }}
+  register: packstack
+
+- debug:
+    var:
+      packstack.stdout_lines
+
+- name: Restart OpenStack Services
+  command: openstack-service restart
+

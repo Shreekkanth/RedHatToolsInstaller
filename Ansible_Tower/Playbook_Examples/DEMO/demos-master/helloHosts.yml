@@ -1,0 +1,8 @@
+---
+- name: Let's say hello!
+  hosts: all
+  vars:
+    name: "{{ ansible_hostname }}"
+  tasks:
+    - name: Acknowledge connection
+      shell: echo "Hello {{ name }}, how are you today?"

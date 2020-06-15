@@ -1,0 +1,11 @@
+---
+# file: roles/provisioning/tasks/packages.yml
+- name: Installing packages
+  yum:
+    name="{{ item }}"
+    state=present
+    update_cache=yes
+  with_items: "{{ provisioning_packages }}"
+  tags:
+    - provisioning
+    - provisioning-packages

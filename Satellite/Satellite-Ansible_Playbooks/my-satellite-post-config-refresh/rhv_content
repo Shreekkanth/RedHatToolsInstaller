@@ -1,0 +1,61 @@
+ORG=ACME
+ARCH="x86_64"
+LC_ENVS="Testing Production"
+CV_PRODUCT="rhv"
+releasever="7Server"
+CV_DESCRIPTION='"Red Hat Virtualization"'
+CV_TYPE="app"
+CCV_TYPE="infra"
+
+# Content view nomenclature, order is important
+if [ "$CV_TYPE" == "app" ];
+then
+    ROLE=$(echo ${CV_PRODUCT} | tr '[:upper:]' '[:lower:]')
+else
+    ROLE=$(echo ${CV_PRODUCT}-${releasever}-${ARCH} | tr '[:upper:]' '[:lower:]')
+fi
+CV="cv-${CV_TYPE}-${ROLE}"
+CCV="ccv-${CCV_TYPE}-${CV_PRODUCT}"
+
+# Should we publish and promote CV
+# yes - publish if changes to CV
+# force = always publish
+publish_promote=yes
+
+# should activationkeys be created
+create_activationkey=yes
+
+# should this be a composit content view
+create_ccv=yes
+composite_cv='cv-os-rhel-7server cv-app-rhv'
+
+
+# "hammer repository-set list --product "$PRODUCT" --organization ACME"
+PRODUCT='"Red Hat Gluster Storage Server for On-premise"'
+
+# hammer repository-set list --product "$PRODUCT" --organization ACME
+REPOSITORY_SETS=$(mktemp)
+cat > $REPOSITORY_SETS <<EOF
+"Red Hat Virtualization Manager", "Red Hat Virtualization Manager v4.2 (RHEL 7 Server) (RPMs)", "Red Hat Virtualization Manager 4 Tools RHEL 7 Server RPMs x86_64",
+"Red Hat Virtualization Manager", "Red Hat Virtualization Manager 4 Tools (RHEL 7 Server) (RPMs)", "Red Hat Virtualization Manager v4.2 RHEL 7 Server RPMs x86_64", --releasever $releaseve
+"Red Hat Virtualization", "Red Hat Virtualization 4 Management Agents for RHEL 7 (RPMs)", "Red Hat Virtualization 4 Management Agents for RHEL 7 RPMs x86_64 7Server", --releasever $releasever
+"Red Hat Virtualization Host", "Red Hat Virtualization Host 7 (RPMs)", "Red Hat Virtualization Host 7 RPMs x86_64", --releasever $releasever
+"JBoss Enterprise Application Platform", "JBoss Enterprise Application Platform 7.2 (RHEL 7 Server) (RPMs)", "JBoss Enterprise Application Platform 7.2 RHEL 7 Server RPMs x86_64",
+EOF
+
+ACTKEY_REPOS="$(mktemp)"
+cat > $ACTKEY_REPOS << EOF
+rhel-7-server-satellite-tools-6.4-rpms
+rhel-7-server-optional-rpms
+rhel-7-server-rpms
+rhel-7-server-supplementary-rpms
+rhel-7-server-extras-rpms
+rh-gluster-3-for-rhel-7-server-rpms
+EOF
+
+SUBSCRIPTIONS="$(mktemp)"
+cat > $SUBSCRIPTIONS <<EOF
+Red Hat Enterprise Linux Server with Smart Management, Premium (Physical or Virtual Nodes; 100
+Red Hat Gluster Storage , Premium (1 Node); 25
+EOF
+

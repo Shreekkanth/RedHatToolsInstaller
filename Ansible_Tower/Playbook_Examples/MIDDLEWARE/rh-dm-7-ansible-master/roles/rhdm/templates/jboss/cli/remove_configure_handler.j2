@@ -1,0 +1,32 @@
+#
+#
+# ============================================================
+# Red Hat Consulting EMEA, 2018
+#
+# ============================================================
+# Description---: Remove periodic-size-rotating-file-handler Logging
+# https://access.redhat.com/solutions/384393
+# https://access.redhat.com/documentation/en-us/red_hat_jboss_enterprise_application_platform/7.0/html/configuration_guide/logging_with_jboss_eap#configure_periodic_size_log_handler
+# ============================================================
+#
+# ./jboss-cli.sh --connect --file=${WORK_DIR}/remove_configure_handler.cli
+#
+#
+# EOH
+#
+#connect
+batch
+
+#
+/subsystem=logging/root-logger=ROOT:remove-handler(name={{periodic_size_rotating_handler_name}})
+/subsystem=logging/periodic-size-rotating-file-handler={{periodic_size_rotating_handler_name}}:remove()
+/subsystem=logging/pattern-formatter={{periodic_named_formatter}}/:remove()
+
+#
+/subsystem=logging/periodic-rotating-file-handler=FILE:add(autoflush="true",named-formatter=PATTERN,append=true, \
+file={relative-to="{{periodic_relative_to}}", path="server.log"},suffix=".yyyy-MM-dd")
+/subsystem=logging/root-logger=ROOT:add-handler(name=FILE)
+
+run-batch
+#
+# EOF

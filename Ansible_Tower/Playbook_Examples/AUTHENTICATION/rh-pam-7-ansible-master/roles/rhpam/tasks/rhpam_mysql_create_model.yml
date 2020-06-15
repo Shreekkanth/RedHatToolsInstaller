@@ -1,0 +1,89 @@
+---
+- name: Check Existence of MySQL tmp directory
+  stat:
+    path: "{{ mysql_tmp_dir }}"
+  register: mysql_tmp_dir_exists
+  tags:
+    - rhpam_model_mysql
+  when: is_mysql_ds
+
+- name: Check Existence of tmp directory
+  stat:
+    path: "{{ mysql_ddl_scripts_mysql5_dir }}"
+  register: mysql_ddl_scripts_mysql5_dir_exists
+  tags:
+    - rhpam_model_mysql
+  when: is_mysql_ds
+
+# Generate MySQL configuration file
+- name: Generate MySQL script to Create DB RH PAM
+  template:
+    src:  mysql/rhpam/create_db.sql.j2
+    dest: "{{ mysql_create_rhpam_db_sql }}"
+    mode: 0644
+  tags:
+    - rhpam_model_mysql
+  when: is_mysql_ds and mysql_tmp_dir_exists.stat.exists == true
+
+# Generate MySQL configuration file
+- name: Generate MySQL script to Create DB EJBTIMER
+  template:
+    src:  mysql/rhpam/create_db_ejbtimer.sql.j2
+    dest: "{{ mysql_create_ejbtimer_db_sql }}"
+    mode: 0644
+  tags:
+    - rhpam_model_mysql
+  when: is_mysql_ds and mysql_tmp_dir_exists.stat.exists == true
+
+#- name: Create RH PAM Data Base
+#  mysql_db:
+#    name: all
+#    config_file:    "{{ mysql_conf_file }}"
+#    state:          import
+#    target:         "{{ mysql_create_rhpam_db_sql }}"
+#    login_user:     "root"
+#    login_password: "{{ mysql_user_root_pwd }}"
+#  register: mysql_createdb_user_status
+#  tags:
+#    - rhpam_model_mysql
+#  when: is_mysql_ds
+
+#- name: Create Model RH PAM
+#  mysql_db:
+#    name:           "{{ mysql_rhpam_db_name }}"
+#    config_file:    "{{ mysql_conf_file }}"
+#    state:          import
+#    target:         "{{ mysql_ddl_scripts_mysql5_dir + item }}"
+#    login_user:     "{{ mysql_user_rhpam_name }}"
+#    login_password: "{{ mysql_user_rhpam_pwd }}"
+#  tags:
+#    - rhpam_model_mysql
+#  with_items: "{{ mysql_ddl_scripts_mysql5 }}"
+#  when: is_mysql_ds and mysql_ddl_scripts_mysql5_dir_exists.stat.exists == true
+
+
+#### Create RH PAM Data Base with command
+- name: Create RH PAM Data Base with command
+  shell: "{{ mysql_home + 'bin/mysql --defaults-file=' + mysql_conf_file + ' -u root --password=' + mysql_user_root_pwd + ' < ' + mysql_create_rhpam_db_sql }}"
+  tags:
+    - rhpam_model_mysql
+  when: is_mysql_ds
+
+#### Create EJBTIMER Data Base with command
+- name: Create EJBTIMER Data Base with command
+  shell: "{{ mysql_home + 'bin/mysql --defaults-file=' + mysql_conf_file + ' -u root --password=' + mysql_user_root_pwd + ' < ' + mysql_create_ejbtimer_db_sql }}"
+  tags:
+    - rhpam_model_mysql
+  when: is_mysql_ds
+
+#### Create Model RH PAM with command
+- name: Create Model RH PAM with command
+  shell: "{{ mysql_home + 'bin/mysql --defaults-file=' + mysql_conf_file + ' -u ' + mysql_user_rhpam_name + ' --password=' + mysql_user_rhpam_pwd + ' ' + mysql_rhpam_db_name +' < ' + mysql_ddl_scripts_mysql5_dir + item }}"
+  register: mysql_set_password_root_status
+  tags:
+    - rhpam_model_mysql
+  with_items: "{{ mysql_ddl_scripts_mysql5 }}"
+  when: is_mysql_ds and mysql_ddl_scripts_mysql5_dir_exists.stat.exists == true
+
+#
+# EOF

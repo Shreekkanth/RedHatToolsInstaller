@@ -1,0 +1,20 @@
+---
+# file: main.yml
+
+- name: create the temporary folder structure in which to work
+  file:
+    path: '{{ pam_demo_working_dir }}'
+    state: directory
+
+- include: 00-config-tasks.yml
+
+- include: 01-nexus-tasks.yml
+
+- include: 02-jenkins-tasks.yml
+
+- include: 03-s2i-tasks.yml
+
+- name: clean up the temporary folder structure
+  file:
+    path: '{{ pam_demo_working_dir }}'
+    state: absent

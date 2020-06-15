@@ -1,0 +1,18 @@
+---
+
+- name: install nginx config file
+  template: src=nginx-default.conf.j2 dest=/root/kubeadm-ha/nginx-default.conf
+
+- name: pull nginx docker image
+  shell: docker pull nginx:latest
+
+- name: check if nginx container ran
+  shell: docker ps | grep nginx-lb
+  changed_when: false
+  check_mode: no
+  ignore_errors: yes
+  register: result
+
+- name: run nginx
+  shell: docker run -d -p 8443:8443 --name nginx-lb --restart always -v /root/kubeadm-ha/nginx-default.conf:/etc/nginx/nginx.conf nginx
+  when: result|failed

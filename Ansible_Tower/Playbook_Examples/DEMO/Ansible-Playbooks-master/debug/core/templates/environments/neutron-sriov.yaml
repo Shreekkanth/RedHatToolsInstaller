@@ -1,0 +1,65 @@
+parameter_defaults:
+  NovaSchedulerDefaultFilters:
+    - RetryFilter
+    - AvailabilityZoneFilter
+    - RamFilter
+    - ComputeFilter
+    - ComputeCapabilitiesFilter
+    - ImagePropertiesFilter
+    - ServerGroupAntiAffinityFilter
+    - ServerGroupAffinityFilter
+    - PciPassthroughFilter
+    - NUMATopologyFilter
+    - CoreFilter
+    - DiskFilter
+    - SameHostFilter
+    - AggregateRamFilter
+    - AggregateCoreFilter
+    - AggregateInstanceExtraSpecsFilter
+    - DifferentHostFilter
+    - AggregateMultiTenancyIsolation
+
+  NovaSchedulerAvailableFilters:
+    - nova.scheduler.filters.all_filters
+    - nova.scheduler.filters.pci_passthrough_filter.PciPassthroughFilter
+
+  ControllerExtraConfig:
+    neutron::config::server_config:
+      DEFAULT/l3_ha_network_type:
+        value: vxlan
+
+  ComputeSriovParameters:
+    KernelArgs: 'intel_iommu=on'
+    #TunedProfileName: cpu-partitioning
+    #IsolCpusList: 0-23,26-35,38-47
+    NovaPCIPassthrough:
+      - devname: p1p0
+        physical_network: sriov1
+      - devname: p2p0
+        physical_network: sriov2
+    #NovaVcpuPinSet: 0-23,26-35,38-47
+    #NovaReservedHostMemory: 12288
+    intel_iommu: 'on'
+
+  # Set to empty string to enable multiple external networks or VLANs
+  NeutronExternalNetworkBridge: "''"
+  NeutronGlobalPhysnetMtu: 9000
+
+  # https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/advanced_overcloud_customization/index
+  NeutronNetworkType: flat,vlan
+  NeutronNetworkVLANRanges: 'datacentre:10:3000,sriov1:10:3000,sriov2:10:3000'
+  NeutronBridgeMappings:
+    - datacentre:br-ex
+  # not used?
+  # NeutronEnableTunnelling: false
+  NeutronMechanismDrivers: 'openvswitch,sriovnicswitch'
+  NeutronFlatNetworks: 'datacentre,sriov1,sriov2'
+
+  # ????
+  # not used?
+  # NeutronSupportedPCIVendorDevs: ['8086:10ed']
+  NeutronPhysicalDevMappings: 'sriov1:p1p0,sriov2:p2p0'
+  NeutronSriovNumVFs:
+    - p1p0:30
+    - p2p0:30
+  # NeutronGlobalPhysnetMtu: 8996

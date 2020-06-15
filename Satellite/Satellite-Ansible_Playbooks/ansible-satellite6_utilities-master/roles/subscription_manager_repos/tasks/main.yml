@@ -1,0 +1,18 @@
+---
+# OVERVIEW
+#   Enables Subscription Manager repositories only if not already enabled.
+#
+# VARS
+#   subscription_manager_enabled_repos - List of repositories to enable
+
+- name: Determine if Repositories are Enabled
+  shell: subscription-manager repos --list-enabled | grep {{ item }}
+  register: subscription_manager_enabled_repos_result
+  changed_when: false
+  ignore_errors: true
+  with_items: "{{ subscription_manager_enabled_repos }}"
+
+- name: Enable Repositories
+  command: subscription-manager repos --enable={{ item.item }}
+  when: item.rc != 0
+  with_items: "{{ subscription_manager_enabled_repos_result.results }}"

@@ -1,0 +1,15 @@
+- name: Install logrotate
+  apt:
+    name: logrotate
+    state: present
+
+- name: Copy the rsyslog logrotate conf file
+  copy:
+    src: rsyslog
+    dest: /etc/logrotate.d/rsyslog
+  register: logrotate
+
+- name: Mnually logrotate if conf changed
+  shell: logrotate -f /etc/logrotate.conf
+  when: logrotate.changed
+  register: foo

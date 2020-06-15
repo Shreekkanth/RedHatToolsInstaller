@@ -1,0 +1,23 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "build-ug",
+    "labels": {
+        "name": "build-ug"
+    }
+  },
+  "spec": {
+    "containers": [
+      {
+        "name": "build-ug",
+        "image": "openshift/hello-openshift",
+        "ports": [
+          {
+            "containerPort": 8080
+          }
+        ]
+      }
+    ]
+  }
+}

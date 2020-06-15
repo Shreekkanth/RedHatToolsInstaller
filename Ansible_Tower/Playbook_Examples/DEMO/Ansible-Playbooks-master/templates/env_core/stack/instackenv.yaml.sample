@@ -1,0 +1,18 @@
+---
+nodes:
+{% for node in nodes %}
+  - name: {{ node.name }}
+    arch: x86_64
+    pm_type: {{ node.pm_type }}
+    pm_user: {{ node.pm_user }}
+    pm_password: {{ node.pm_password }}
+    pm_addr: {{ node.pm_addr }}
+{% if 'pm_port' in node %}
+    pm_port: {{ node.pm_port }}
+{% endif %}
+    capabilities: profile:{{ node.role }},boot_option:local
+{% if 'mac' in node %}
+    mac: {{ node.mac | to_yaml | trim }}
+{% endif %}
+
+{% endfor %}

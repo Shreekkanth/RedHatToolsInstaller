@@ -1,0 +1,24 @@
+---
+- name: "Shutdown clean VM"
+  hosts: "localhost"
+  gather_facts: False
+  tasks:
+    - name: "Include appropriate variables for datacenter provided"
+      include_vars: "../vars/emc-vm-template-{{ vctr_datacenter_name }}.yml"
+
+    # since vmware-tools is now installed we can cleanly shutdown the guest VM
+    - name: "Ensure VM is Shutdown prior to final snapshot"
+      vmware_guest_powerstate:
+        hostname: "{{ vctr_hostname }}"
+        username: "{{ vctr_user }}"
+        password: "{{ vctr_pass }}"
+        validate_certs: "{{ vctr_validate_certs }}"
+        folder: "/{{ vctr_datacenter }}/{{ vctr_vm_template_folder }}"
+        name: "{{ vctr_vm_template_name }}"
+        state: "shutdown-guest"
+      register: "vm_shutdown_result"
+      no_log: True
+
+    - debug:
+        var: "vm_shutdown_result"
+        verbosity: "1"

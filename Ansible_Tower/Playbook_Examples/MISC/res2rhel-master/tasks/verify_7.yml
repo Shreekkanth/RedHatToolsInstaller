@@ -1,0 +1,10 @@
+---
+- name: Fail if system is not running Red Hat based Linux kernel
+  shell: "rpm -q kernel-$(uname -r) --qf '%{packager}\n' | grep -qi 'red hat'"
+  args:
+    warn: no
+
+- name: Fail if system is not genuine Red Hat
+  shell: "rpm -q redhat-release-server kernel glibc linux-firmware systemd udev openssl-libs gnutls dbus grub grub2 --qf '%{name}-%{version}-%{release}.%{arch} | %{packager}\n'|sed '/.*is not installed/d'|grep -qi 'red hat'"
+  args:
+    warn: no

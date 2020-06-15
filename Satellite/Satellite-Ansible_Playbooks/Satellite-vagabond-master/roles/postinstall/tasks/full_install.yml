@@ -1,0 +1,291 @@
+---
+- name: Create {{ lifecycle01 | capitalize }} lifecycle environment
+  katello_lifecycle_environment:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: "{{ lifecycle01 | capitalize }}"
+    label: "{{ lifecycle01 }}"
+    organization: "{{ initial_org }}"
+    prior: "Library"
+    description: "The {{ lifecycle01 | capitalize }} Environment"
+    state: "present"
+    validate_certs: false
+
+- name: Create {{ lifecycle02 | capitalize }} lifecycle environment
+  katello_lifecycle_environment:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: "{{ lifecycle02 | capitalize }}"
+    label: "{{ lifecycle02 }}"
+    organization: "{{ initial_org }}"
+    prior: "{{ lifecycle01 | capitalize }}"
+    description: "The {{ lifecycle02 | capitalize }} Environment"
+    state: "present"
+    validate_certs: false
+
+- name: Create {{ lifecycle03 | capitalize }} lifecycle environment
+  katello_lifecycle_environment:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: "{{ lifecycle03 | capitalize }}"
+    label: "{{ lifecycle03 }}"
+    organization: "{{ initial_org }}"
+    prior: "{{ lifecycle02 | capitalize }}"
+    description: "The {{ lifecycle03 | capitalize }} Environment"
+    state: "present"
+    validate_certs: false
+
+- name: "Enable RHEL 8 BaseOS RPMs repository"
+  katello_repository_set:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    organization: "{{ initial_org }}"
+    state: enabled
+    validate_certs: false
+    label: rhel-8-for-x86_64-baseos-rpms
+    repositories:
+      - releasever: "8"
+
+- name: "Enable RHEL 8 AppStream RPMs repository"
+  katello_repository_set:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    organization: "{{ initial_org }}"
+    state: enabled
+    validate_certs: false
+    label: rhel-8-for-x86_64-appstream-rpms
+    repositories:
+      - releasever: "8"
+
+- name: "Enable RHEL 8 BaseOS Kickstart RPMs repository"
+  katello_repository_set:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    organization: "{{ initial_org }}"
+    state: enabled
+    validate_certs: false
+    label: rhel-8-for-x86_64-baseos-kickstart
+    repositories:
+      - releasever: "8.0"
+
+- name: "Enable RHEL 8 Appstream Kickstart RPMs repository"
+  katello_repository_set:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    organization: "{{ initial_org }}"
+    state: enabled
+    validate_certs: false
+    label: rhel-8-for-x86_64-appstream-kickstart
+    repositories:
+      - releasever: "8.0"
+
+#- name: "Enable RHEL 8 Satellite Tools RPMs repository"
+#  katello_repository_set:
+#    username: "{{ admin_user }}"
+#    password: "{{ admin_pass }}"
+#    server_url: "https://{{ ansible_fqdn }}"
+#    organization: "{{ initial_org }}"
+#    state: enabled
+#    validate_certs: false
+#    label: satellite-tools-6.5-for-rhel-8-x86_64-rpms
+#    repositories:
+#      - basearch: "x86_64"
+
+# Workaround for adding Satellite Tools until issue is resolved
+# https://github.com/theforeman/foreman-ansible-modules/issues/355
+
+- name: "Enable RHEL 8 Satellite Tools RPMs repository"
+  command: >
+    hammer repository-set enable --id 8693
+    && touch /root/.satellite/sat_tools
+  args:
+    creates: /root/.satellite/sat_tools
+
+- name: Get all the repositories
+  foreman_search_facts:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    validate_certs: false
+    resource: repositories
+  register: repositories
+
+- name: Start all repository sync tasks
+  katello_sync:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    product: "{{ item.product.name }}"
+    repository: "{{ item.name }}"
+    organization: "{{ initial_org }}"
+    validate_certs: false
+  loop: "{{ repositories.resources }}"
+  when: item.url
+  async: 999999
+  poll: 0
+  register: repo_sync_sleeper
+
+- name: Wait until all syncs have finished
+  async_status:
+    jid: "{{ repo_sync_sleeper_item.ansible_job_id }}"
+  loop: "{{ repo_sync_sleeper.results }}"
+  loop_control:
+    loop_var: repo_sync_sleeper_item
+  when: repo_sync_sleeper_item.ansible_job_id is defined
+  register: async_job_result
+  until: async_job_result.finished
+  retries: 999
+  delay: 10
+
+- name: Create OS content view
+  katello_content_view:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: cv-os-rhel-8
+    state: present
+    organization: "{{ initial_org }}"
+    validate_certs: false
+    repositories:
+      - name: Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
+        product: Red Hat Enterprise Linux for x86_64
+      - name: Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
+        product: Red Hat Enterprise Linux for x86_64
+      - name: Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.0
+        product: Red Hat Enterprise Linux for x86_64
+      - name: Red Hat Enterprise Linux 8 for x86_64 - AppStream Kickstart 8.0
+        product: Red Hat Enterprise Linux for x86_64
+
+- name: Create Tools content view
+  katello_content_view:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: cv-tools-rhel-8
+    state: present
+    organization: "{{ initial_org }}"
+    validate_certs: false
+    repositories:
+      - name: Red Hat Satellite Tools 6.5 for RHEL 8 x86_64 RPMs
+        product: Red Hat Enterprise Linux for x86_64
+
+- name: Create Composite Content view
+  katello_content_view:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: ccv-soe-rhel-8
+    state: present
+    organization: "{{ initial_org }}"
+    composite: true
+    auto_publish: true
+    validate_certs: false
+    components:
+      - content_view: cv-os-rhel-8
+        latest: true
+      - content_view: cv-tools-rhel-8
+        latest: true
+
+- name: Publish OS content view
+  katello_content_view_version:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    content_view: cv-os-rhel-8
+    organization: "{{ initial_org }}"
+    force_promote: true
+    validate_certs: false
+    lifecycle_environments:
+      - Library
+      - "{{ lifecycle01 | capitalize }}"
+
+- name: Publish Tools content view
+  katello_content_view_version:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    content_view: cv-tools-rhel-8
+    organization: "{{ initial_org }}"
+    force_promote: true
+    validate_certs: false
+    lifecycle_environments:
+      - Library
+      - "{{ lifecycle01 | capitalize }}"
+
+- name: Publish Composite Content view
+  katello_content_view_version:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    content_view: ccv-soe-rhel-8
+    organization: "{{ initial_org }}"
+    force_promote: true
+    validate_certs: false
+    lifecycle_environments:
+      - Library
+      - "{{ lifecycle01 | capitalize }}"
+
+- name: Create client activation key
+  katello_activation_key:
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    name: act-rhel8-dev
+    organization: "{{ initial_org }}"
+    lifecycle_environment: "{{ lifecycle01 | capitalize }}"
+    content_view: ccv-soe-rhel-8
+    validate_certs: false
+    subscriptions:
+      - name: "{{ subscriptions }}"
+    content_overrides:
+      - label: satellite-tools-6.5-for-rhel-8-x86_64-rpms
+        override: enabled
+    auto_attach: true
+
+- name: Create a default subnet
+  foreman_subnet:
+    name: "{{ ansible_default_ipv4.network }}"
+    network: "{{ ansible_default_ipv4.network }}"
+    mask: "{{ ansible_default_ipv4.netmask }}"
+    gateway: "{{ ansible_default_ipv4.gateway }}"
+    dns_primary: "{{ ansible_default_ipv4.gateway }}"
+    tftp_proxy: "{{ ansible_fqdn }}"
+    remote_execution_proxies: "{{ ansible_fqdn }}"
+    discovery_proxy: "{{ ansible_fqdn }}"
+    organizations:
+      - "{{ initial_org }}"
+    locations:
+      - "{{ initial_loc }}"
+    server_url: "https://{{ ansible_fqdn }}"
+    username: "{{ admin_user }}"
+    password: "{{ admin_pass }}"
+    state: present
+    validate_certs: false
+
+# Needs further testing
+#- name: Create a host group
+#  foreman_hostgroup:
+#    name: hostgroup-rhel8-devel
+#    architecture: x86_64
+#    operatingsystem: "RedHat 8.0"
+#    content_view: ccv-soe-rhel-8
+#    lifecycle_environment: "{{ lifecycle01 | capitalize }}"
+#    subnet: "{{ ansible_default_ipv4.network }}"
+#    organization: "{{ initial_org }}"
+#    organizations:
+#      - "{{ initial_org }}"
+#    locations:
+#      - "{{ initial_loc }}"
+#    root_pass: 'redhat'
+#    server_url: "https://{{ ansible_fqdn }}"
+#    username: "{{ admin_user }}"
+#    password: "{{ admin_pass }}"
+#    state: present
+#    validate_certs: false

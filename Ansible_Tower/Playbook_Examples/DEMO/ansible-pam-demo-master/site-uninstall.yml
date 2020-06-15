@@ -1,0 +1,6 @@
+---
+- hosts: jumpbox
+  any_errors_fatal: true
+  gather_facts: false
+  roles:
+  - pam-demo-uninstall

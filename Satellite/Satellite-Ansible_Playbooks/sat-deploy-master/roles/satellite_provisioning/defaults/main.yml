@@ -1,0 +1,21 @@
+---
+satellite_version: '6.7'
+satellite_provisioning_activation_key: "satellite-{{ satellite_version }}-qa-rhel7"
+activation_key: "{{ satellite_provisioning_activation_key }}"
+satellite_provisioning_in_beaker: False
+satellite_provisioning_internal_options: "{{ '--disable-system-checks' }} {{ '--no-lock-package-versions' if satellite_version is version('6.6', '>=') else '' }}"
+satellite_provisioning_networking: "{{ 'libvirt' }}"
+satellite_provisioning_managed_tftp: "{{ '--foreman-proxy-tftp-managed false' }}"
+satellite_provisioning_hammer: hammer
+satellite_provisioning_organization: Default Organization
+satellite_provisioning_organization_label: "{{ satellite_provisioning_organization|regex_replace('\\s', '_') }}"
+satellite_provisioning_location: Default Location
+satellite_provisioning_beaker_forwarders: "{{ '--foreman-proxy-dns-forwarders 10.16.36.29 --foreman-proxy-dns-forwarders 10.11.5.19 --foreman-proxy-dns-forwarders 10.5.30.160' if satellite_provisioning_in_beaker else '' }}"
+satellite_provisioning_proxy_name: "{{ ansible_fqdn }}"
+satellite_provisioning_proxy_dns_reverse: 73.168.192.in-addr.arpa
+satellite_provisioning_ip_address: 192.168.73.1
+satellite_provisioning_dhcp_start: 192.168.73.2
+satellite_provisioning_dhcp_end: 192.168.73.254
+satellite_provisioning_network: 192.168.73.0
+satellite_provisioning_domain: example.com
+satellite_provisioning_dogfood_tools_url: http://dhcp-8-29-228.lab.eng.rdu2.redhat.com/pulp/repos/Sat6-CI/Library/custom/Satellite_Tools_6_7_Composes/Satellite_Tools_6_7_RHEL7_x86_64/

@@ -1,0 +1,1821 @@
+#
+# --------------------------------- AD.1.5.1.1 ---------------------------------
+#
+- name: AD.1.5.1.1 | GATHER_INFO_RHEL | NETWORK SETTINGS | Restrict ftp access
+  stat:
+    path: /etc/ftpusers
+  when: ad_1_5_1_1
+  register: __ad_1_5_1_1_ftpstat
+  tags:
+    - AD.1.5.1.1
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.1 | PATCH_RHEL | NETWORK SETTINGS | Restrict ftp access
+  lineinfile:
+    path: /etc/ftpusers
+    line: "{{ item }}"
+  with_items: "{{ ftpusers }}"
+  when:
+    - ad_1_5_1_1
+    - __ad_1_5_1_1_ftpstat.stat.exists
+  register: __ad_1_5_1_1
+  tags:
+    - AD.1.5.1.1
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.1 | AUDIT_RHEL | NETWORK SETTINGS | Restrict ftp access
+  debug:
+    msg: "{{ __ad_1_5_1_1 }}"
+  when: 
+    - ad_1_5_1_1
+    - ansible_check_mode
+    - __ad_1_5_1_1_ftpstat.stat.exists
+    - __ad_1_5_1_1 | changed
+  tags:
+    - AD.1.5.1.1
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.1 | GATHER_INFO_RHEL | NETWORK SETTINGS | Restrict vsftpd access
+  stat:
+    path: /etc/vsftpd/ftpusers
+  when: ad_1_5_1_1
+  register: __ad_1_5_1_1_vsftpdstat
+  tags:
+    - AD.1.5.1.1
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.1 | PATCH_RHEL | NETWORK SETTINGS | Restrict vsftpd access
+  lineinfile:
+    path: /etc/vsftpd/ftpusers
+    line: "{{ item }}"
+  with_items: "{{ ftpusers }}"
+  when:
+    - ad_1_5_1_1
+    - __ad_1_5_1_1_vsftpdstat.stat.exists
+  register: __ad_1_5_1_1_vs
+  tags:
+    - AD.1.5.1.1
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.1 | AUDIT_RHEL | NETWORK SETTINGS | Restrict vsftpd access
+  debug:
+    msg: "{{ __ad_1_5_1_1_vs }}"
+  when: 
+    - ad_1_5_1_1
+    - ansible_check_mode
+    - __ad_1_5_1_1_vsftpdstat.stat.exists
+    - __ad_1_5_1_1_vs | changed
+  tags:
+    - AD.1.5.1.1
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.2 ---------------------------------
+#
+- name: AD.1.5.1.2 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - ftp account home directory
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_2
+  register: __ad_1_5_1_2_ftpconfstat
+  tags:
+    - AD.1.5.1.2
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.2 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - ftp account home directory
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  check_mode: no
+  when: __ad_1_5_1_2_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.2
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.2 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - ftp account home directory
+  file:
+    path: /var/ftp
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when: anon_ftp|succeeded
+  register: __ad_1_5_1_2
+  tags:
+    - AD.1.5.1.2
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.2 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - ftp account home directory
+  debug:
+    msg: "{{ __ad_1_5_1_2 }}"
+  when: 
+    - ad_1_5_1_2
+    - ansible_check_mode
+    - __ad_1_5_1_2 | changed
+  tags:
+    - AD.1.5.1.2
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.3 ---------------------------------
+#
+- name: AD.1.5.1.3 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - bin subdirectory config
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_3
+  register: __ad_1_5_1_3_ftpconfstat
+  tags:
+    - AD.1.5.1.3
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.3 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - bin subdirectory config
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  failed_when: anon_ftp.rc > 1
+  check_mode: no
+  when: __ad_1_5_1_3_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.3
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.3 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - bin subdirectory config
+  stat: 
+    path: /var/ftp/bin
+  register: __ad_1_5_1_3_stat
+  when:
+    - ad_1_5_1_3
+  tags:
+    - AD.1.5.1.3
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.3 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - bin subdirectory config
+  file:
+    path: /var/ftp/bin
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_3_stat.stat.exists
+  register: __ad_1_5_1_3
+  tags:
+    - AD.1.5.1.3
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.3 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - bin subdirectory config
+  debug:
+    msg: "{{ __ad_1_5_1_3 }}"
+  when: 
+    - ad_1_5_1_3
+    - ansible_check_mode
+    - __ad_1_5_1_3 | changed
+  tags:
+    - AD.1.5.1.3
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.4 ---------------------------------
+#
+- name: AD.1.5.1.4 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - lib subdirectory config
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_4
+  register: __ad_1_5_1_4_ftpconfstat
+  tags:
+    - AD.1.5.1.4
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.4 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - lib subdirectory config
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  failed_when: anon_ftp.rc > 1
+  check_mode: no
+  when: __ad_1_5_1_4_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.4
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.4 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - lib subdirectory config
+  stat: 
+    path: /var/ftp/lib 
+  register: __ad_1_5_1_4_stat
+  when:
+    - ad_1_5_1_4
+  tags:
+    - AD.1.5.1.4
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.4 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - lib subdirectory config
+  file:
+    path: /var/ftp/lib
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_4_stat.stat.exists == True
+  register: __ad_1_5_1_4
+  tags:
+    - AD.1.5.1.4
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.4 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - lib subdirectory config
+  debug:
+    msg: "{{ __ad_1_5_1_4 }}"
+  when: 
+    - ad_1_5_1_4
+    - ansible_check_mode
+    - __ad_1_5_1_4 | changed
+  tags:
+    - AD.1.5.1.4
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.5 ---------------------------------
+#
+- name: AD.1.5.1.5 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - etc subdirectory config
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_5
+  register: __ad_1_5_1_5_ftpconfstat
+  tags:
+    - AD.1.5.1.5
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.5 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - etc subdirectory config
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  failed_when: anon_ftp.rc > 1
+  check_mode: no
+  when: __ad_1_5_1_5_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.5
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.5 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - etc subdirectory config
+  stat: 
+    path: /var/ftp/etc 
+  register: __ad_1_5_1_5_stat
+  when:
+    - ad_1_5_1_5
+  tags:
+    - AD.1.5.1.5
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.5 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - etc subdirectory config
+  file:
+    path: /var/ftp/etc
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_5_stat.stat.exists
+  register: __ad_1_5_1_5
+  tags:
+    - AD.1.5.1.5
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.5 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - etc subdirectory config
+  debug:
+    msg: "{{ __ad_1_5_1_5 }}"
+  when: 
+    - ad_1_5_1_5
+    - ansible_check_mode
+    - __ad_1_5_1_5 | changed
+  tags:
+    - AD.1.5.1.5
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.6 ---------------------------------
+#
+- name: AD.1.5.1.6 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_6
+  register: __ad_1_5_1_6_ftpconfstat
+  tags:
+    - AD.1.5.1.6
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.6 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  failed_when: anon_ftp.rc > 1
+  check_mode: no
+  when: __ad_1_5_1_6_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.6
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.6 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  stat: 
+    path: /var/ftp 
+  register: __ad_1_5_1_6_stat
+  when:
+    - ad_1_5_1_6
+  tags:
+    - AD.1.5.1.6
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.6 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  file:
+    path: /var/ftp
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_6_stat.stat.exists
+  register: __ad_1_5_1_6
+  tags:
+    - AD.1.5.1.6
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.6 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  debug:
+    msg: "{{ __ad_1_5_1_6 }}"
+  when: 
+    - ad_1_5_1_6
+    - ansible_check_mode
+    - __ad_1_5_1_6 | changed
+  tags:
+    - AD.1.5.1.6
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.7 ---------------------------------
+#
+- name: AD.1.5.1.7 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_7
+  register: __ad_1_5_1_7_ftpconfstat
+  tags:
+    - AD.1.5.1.7
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.7 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  failed_when: anon_ftp.rc > 1
+  check_mode: no
+  when: __ad_1_5_1_7_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.7
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.7 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  stat: 
+    path: /var/ftp 
+  register: __ad_1_5_1_7_stat
+  when:
+    - ad_1_5_1_7
+  tags:
+    - AD.1.5.1.7
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.7 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  file:
+    path: /var/ftp
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_7_stat.stat.exists
+  register: __ad_1_5_1_7
+  tags:
+    - AD.1.5.1.7
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.7 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - other files & dirs
+  debug:
+    msg: "{{ __ad_1_5_1_7 }}"
+  when: 
+    - ad_1_5_1_7
+    - ansible_check_mode
+    - __ad_1_5_1_7 | changed
+  tags:
+    - AD.1.5.1.7
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.1.8 ---------------------------------
+#
+- name: AD.1.5.1.8 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - read OR write access to anonymous users
+  stat:
+    path: /etc/vsftpd/vsftpd.conf
+  when: ad_1_5_1_8
+  register: __ad_1_5_1_8_ftpconfstat
+  tags:
+    - AD.1.5.1.8
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.8 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - read OR write access to anonymous users
+  shell: grep -E '^anonymous_enable=YES$' /etc/vsftpd/vsftpd.conf
+  register: anon_ftp
+  changed_when: no
+  failed_when: anon_ftp.rc > 1
+  check_mode: no
+  when:
+    - ad_1_5_1_8
+    - __ad_1_5_1_8_ftpconfstat.stat.exists
+  tags:
+    - AD.1.5.1.8
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.8 | GATHER_INFO_RHEL | NETWORK SETTINGS | Anonymous FTP - read OR write access to anonymous users
+  shell: find /var/ftp/* -type d -perm /0002
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_8_ftpconfstat.stat.exists
+  register: __ad_1_5_1_8_files
+  check_mode: no
+  tags:
+    - AD.1.5.1.8
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.1.8 | PATCH_RHEL | NETWORK SETTINGS | Anonymous FTP - read OR write access to anonymous users
+  file:
+    path: "{{ item }}"
+    mode: o-r
+  with_items: "{{ __ad_1_5_1_8_files.stdout_lines }}"
+  when:
+    - anon_ftp|succeeded
+    - __ad_1_5_1_8_ftpconfstat.stat.exists
+  register: __ad_1_5_1_8
+  tags:
+    - AD.1.5.1.8
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.1.8 | AUDIT_RHEL | NETWORK SETTINGS | Anonymous FTP - read OR write access to anonymous users
+  debug:
+    msg: "{{ __ad_1_5_1_8 }}"
+  when: 
+    - ad_1_5_1_8
+    - ansible_check_mode
+    - __ad_1_5_1_8 | changed
+  tags:
+    - AD.1.5.1.8
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.2.1 ---------------------------------
+#
+- name: AD.1.5.2.1 | GATHER_INFO_RHEL | NETWORK SETTINGS | TFTP access control - server_args
+  stat:
+    path: /etc/xinetd.d/tftp
+  when: ad_1_5_2_1
+  register: __ad_1_5_2_1
+  tags:
+    - AD.1.5.2.1
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.2.1 | PATCH_RHEL | NETWORK SETTINGS | TFTP access control - server_args
+  lineinfile:
+    path: /etc/xinetd.d/tftp
+    regexp: '(\s*)server_args(\s*)=(?!-s)(\s*)/(.*)'
+    line: '\1server_args\2= -s /\4'
+    backrefs: yes
+  when: 
+    - ad_1_5_2_1
+    - __ad_1_5_2_1.stat.exists
+  register: __ad_1_5_2_1
+  tags:
+    - AD.1.5.2.1
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.2.1 | AUDIT_RHEL | NETWORK SETTINGS | TFTP access control - server_args
+  debug:
+    msg: "{{ __ad_1_5_2_1 }}"
+  when: 
+    - ad_1_5_2_1
+    - ansible_check_mode
+    - __ad_1_5_2_1 | changed
+  tags:
+    - AD.1.5.2.1
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.2.2 ---------------------------------
+#
+- name: AD.1.5.2.2 | GATHER_INFO_RHEL | NETWORK SETTINGS | TFTP access control - directores
+  stat:
+    path: /etc/xinetd.d/tftp
+  when: ad_1_5_2_2
+  register: __ad_1_5_2_2
+  tags:
+    - AD.1.5.2.2
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.2.2 | PATCH_RHEL | NETWORK SETTINGS | TFTP access control - directores
+  lineinfile:
+    path: /etc/xinetd.d/tftp
+    regexp: '(\s*)server_args(\s*)=(?!-s)(\s*)/(.*)'
+    line: '\1server_args\2= -s /\4'
+    backrefs: yes
+  when: 
+    - ad_1_5_2_2
+    - __ad_1_5_2_2.stat.exists
+  register: __ad_1_5_2_2
+  tags:
+    - AD.1.5.2.2
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.2.2 | AUDIT_RHEL | NETWORK SETTINGS | TFTP access control - directories
+  debug:
+    msg: "{{ __ad_1_5_2_2 }}"
+  when: 
+    - ad_1_5_2_2
+    - ansible_check_mode
+    - __ad_1_5_2_2 | changed
+  tags:
+    - AD.1.5.2.2
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.3.1 ---------------------------------
+#
+- name: AD.1.5.3.1 | GATHER_INFO_RHEL | NETWORK SETTINGS | NFS | /etc/exports
+  shell: systemctl is-active nfs-server
+  register: nfs_service
+  changed_when: no
+  failed_when: stderr != ""
+  check_mode: no
+  ignore_errors: yes
+  tags:
+    - AD.1.5.3.1
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.3.1 | PATCH_RHEL | NETWORK SETTINGS | NFS | /etc/exports
+  file:
+    path: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  when: ad_1_5_3_1
+  register: __ad_1_5_3_1
+  tags:
+    - AD.1.5.3.1
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.3.1 | AUDIT_RHEL | NETWORK SETTINGS | NFS | /etc/exports
+  debug:
+    msg: "{{ __ad_1_5_3_1 }}"
+  when: 
+    - ad_1_5_3_1
+    - ansible_check_mode
+    - __ad_1_5_3_1 | changed
+  tags:
+    - AD.1.5.3.1
+    - audit
+    - network_settings 
+    - B
+
+#
+# --------------------------------- AD.1.5.3.2 ---------------------------------
+#
+- name: AD.1.5.3.2 | GATHER_INFO_RHEL | NETWORK SETTINGS | /etc/exports - classified information
+  shell: service nfs-server status
+  register: nfs_service
+  changed_when: no
+  failed_when: stderr != ""
+  check_mode: no
+  ignore_errors: yes
+  tags:
+    - AD.1.5.3.2
+    - audit
+    - network_settings 
+    - B
+
+- name: AD.1.5.3.2 | PATCH_RHEL | NETWORK SETTINGS | /etc/exports - classified information
+  file:
+    path: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  when: ad_1_5_3_2
+  register: __ad_1_5_3_2
+  tags:
+    - AD.1.5.3.2
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.3.2 | AUDIT_RHEL | NETWORK SETTINGS | /etc/exports - classified information
+  debug:
+    msg: "{{ __ad_1_5_3_2 }}"
+  when: 
+    - ad_1_5_3_2
+    - ansible_check_mode
+    - __ad_1_5_3_2 | changed
+  tags:
+    - AD.1.5.3.2
+    - audit
+    - network_settings 
+    - B
+
+#
+# --------------------------------- AD.1.5.4.1 ---------------------------------
+#
+- name: AD.1.5.4.1 | PATCH_RHEL | NETWORK SETTINGS | /etc/hosts.equiv
+  file:
+    path: /etc/hosts.equiv
+    state: absent
+  when: ad_1_5_4_1
+  register: __ad_1_5_4_1
+  tags:
+    - AD.1.5.4.1
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.4.1 | AUDIT_RHEL | NETWORK SETTINGS | /etc/hosts.equiv
+  debug:
+    msg: "{{ __ad_1_5_4_1 }}"
+  when: 
+    - ad_1_5_4_1
+    - ansible_check_mode
+    - __ad_1_5_4_1 | changed
+  tags:
+    - AD.1.5.4.1
+    - audit
+    - network_settings 
+    - S
+
+#
+# --------------------------------- AD.1.5.4.2 ---------------------------------
+#
+- name: AD.1.5.4.2 | GATHER_INFO_RHEL | NETWORK SETTINGS | Berkeley remote access commands settings
+  stat:
+    path: /etc/pam.d/rlogin
+  when: ad_1_5_4_2
+  register: __ad_1_5_4_2_stat
+  tags:
+    - AD.1.5.4.2
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.4.2 | GATHER_INFO_RHEL | NETWORK SETTINGS | Berkeley remote access commands settings
+  shell: cat /etc/pam.d/rlogin | grep pam_rhosts.so
+  check_mode: no
+  failed_when: __ad_1_5_4_2_shell.rc > 1 
+  when:
+    - ad_1_5_4_2
+    - __ad_1_5_4_2_stat.stat.exists
+  register: __ad_1_5_4_2_shell
+  tags:
+    - AD.1.5.4.2
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.4.2 | PATCH_RHEL | NETWORK SETTINGS | Berkeley remote access commands settings
+  lineinfile:
+    path: /etc/pam.d/rlogin
+    backrefs: yes
+    regexp: '^(.*)pam_rhosts.so(.*)'
+    line: '\1pam_rhosts.so\2no_hosts_equiv'
+  when:
+    - ad_1_5_4_2
+    - __ad_1_5_4_2_stat.stat.exists
+    - __ad_1_5_4_2_shell.stdout != ""
+  register: __ad_1_5_4_2
+  tags:
+    - AD.1.5.4.2
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.4.2 | AUDIT_RHEL | NETWORK SETTINGS | Berkeley remote access commands settings
+  debug:
+    msg: "{{ __ad_1_5_4_2 }}"
+  when: 
+    - ad_1_5_4_2
+    - ansible_check_mode
+    - __ad_1_5_4_2 | changed
+  tags:
+    - AD.1.5.4.2
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.5 ---------------------------------
+#
+- name: AD.1.5.5 | PATCH_RHEL | NETWORK SETTINGS | REXD daemon must have no processes or ports used 
+  service:
+    name: rexd
+    state: stopped
+    enabled: no
+  when: ad_1_5_5
+  ignore_errors: yes
+  register: __ad_1_5_5
+  tags:
+    - AD.1.5.5
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.5 | AUDIT_RHEL | NETWORK SETTINGS | REXD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_5 }}"
+  when: 
+    - ad_1_5_5
+    - ansible_check_mode
+  tags:
+    - AD.1.5.5
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.6 ---------------------------------
+#
+- name: AD.1.5.6 | GATHER_INFO_RHEL | NETWORK SETTINGS | Check NNTP Port
+  local_action:
+    module: wait_for
+    port: 119
+    host: "{{ inventory_hostname }}"
+    timeout: 2
+  register: __ad_1_5_6_audit
+  failed_when: false
+  ignore_errors: true
+  check_mode: no
+  when:
+    - ad_1_5_6
+    - ansible_check_mode
+  tags:
+    - AD.1.5.6
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.6 | AUDIT_RHEL | NETWORK SETTINGS | Check NNTP Port
+  debug:
+    msg: "Port check NNTP {{ __ad_1_5_6_audit }}"
+  when:
+    - ad_1_5_6
+    - ansible_check_mode
+    - __ad_1_5_6_audit
+  tags:
+    - AD.1.5.6
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.7 ---------------------------------
+#
+- name: AD.1.5.7 | GATHER_INFO_RHEL | NETWORK SETTINGS | X-server access control
+  shell: rpm -qa | grep xorg-x11-server-utils
+  when: ad_1_5_7
+  check_mode: no
+  failed_when: __ad_1_5_7_shell.rc > 1
+  register: __ad_1_5_7_shell
+  args:
+    warn: no
+  tags:
+    - AD.1.5.7
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.7 | GATHER_INFO_RHEL | NETWORK SETTINGS | X-server access control
+  shell: xhost 2> /dev/null | grep disabled
+  check_mode: no
+  failed_when: __ad_1_5_7_shell2.rc > 1
+  when:
+    - ad_1_5_7
+    - __ad_1_5_7_shell.stdout is defined
+    - __ad_1_5_7_shell.stdout != ""
+  register: __ad_1_5_7_shell2
+  tags:
+    - AD.1.5.7
+    - audit
+    - network_settings
+    - B
+
+- name: AD.1.5.7 | PATCH_RHEL | NETWORK SETTINGS | X-server access control
+  shell: xhost -
+  when:
+    - ad_1_5_7
+    - __ad_1_5_7_shell.stdout is defined
+    - __ad_1_5_7_shell.stdout != ""
+    - __ad_1_5_7_shell2.stdout != ""
+  register: __ad_1_5_7
+  tags:
+    - AD.1.5.7
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.7 | AUDIT_RHEL | NETWORK SETTINGS | X-server access control
+  debug:
+    msg: "{{ __ad_1_5_7_enabled }}"
+  when: 
+    - ad_1_5_7
+    - ansible_check_mode
+    - __ad_1_5_7 | changed
+  tags:
+    - AD.1.5.7
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.8.1 ---------------------------------
+#
+- name: AD.1.5.8.1 | PATCH_RHEL | NETWORK SETTINGS | CHARGEN-STREAM service must have no processes or ports used
+  service:
+    name: chargen-stream
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: 
+    - ad_1_5_8_1
+  register: __ad_1_5_8_1
+  tags:
+    - AD.1.5.8.1
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.1 | AUDIT_RHEL | NETWORK SETTINGS | CHARGEN-STREAM service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_1 }}"
+  when: 
+    - ad_1_5_8_1
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.1
+    - audit
+    - network_settings
+      - S
+
+- name: AD.1.5.8.1 | PATCH_RHEL | NETWORK SETTINGS | CHARGEN-DGRAM service must have no processes or ports used
+  service:
+    name: chargen-dgram
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: 
+    - ad_1_5_8_1
+  register: __ad_1_5_8_1
+  tags:
+    - AD.1.5.8.1
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.1 | AUDIT_RHEL | NETWORK SETTINGS | CHARGEN-DGRAM service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_1 }}"
+  when: 
+    - ad_1_5_8_1
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.1
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.2 ---------------------------------
+#
+- name: AD.1.5.8.2 | PATCH_RHEL | NETWORK SETTINGS | DAYLIGHT service must have no processes or ports used
+  service:
+    name: daylight
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_8_2
+  register: __ad_1_5_8_2
+  tags:
+    - AD.1.5.8.2
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.2 | AUDIT_RHEL | NETWORK SETTINGS | DAYLIGHT service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_2 }}"
+  when: 
+    - ad_1_5_8_2
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.2
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.3 ---------------------------------
+#
+- name: AD.1.5.8.3 | PATCH_RHEL | NETWORK SETTINGS | DISCARD service must have no processes or ports used
+  service:
+    name: discard
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_8_3
+  register: __ad_1_5_8_3
+  tags:
+    - AD.1.5.8.3
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.3 | AUDIT_RHEL | NETWORK SETTINGS | DISCARD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_3 }}"
+  when: 
+    - ad_1_5_8_3
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.3
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.4 ---------------------------------
+#
+- name: AD.1.5.8.4 | PATCH_RHEL | NETWORK SETTINGS | ECHO service must have no processes or ports used
+  service:
+    name: echo
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_8_4
+  register: __ad_1_5_8_4
+  tags:
+    - AD.1.5.8.4
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.4 | AUDIT_RHEL | NETWORK SETTINGS | ECHO service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_4 }}"
+  when: 
+    - ad_1_5_8_4
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.4
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.5 ---------------------------------
+#
+- name: AD.1.5.8.5 | PATCH_RHEL | NETWORK SETTINGS | FINGER service must have no processes or ports used
+  service:
+    name: finger
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_8_5
+  register: __ad_1_5_8_5
+  tags:
+    - AD.1.5.8.5
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.5 | AUDIT_RHEL | NETWORK SETTINGS | FINGER service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_5 }}"
+  when: 
+    - ad_1_5_8_5
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.5
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.6 ---------------------------------
+#
+- name: AD.1.5.8.6 | PATCH_RHEL | NETWORK SETTINGS | SYSTAT service must have no processes or ports used
+  service:
+    name: systat
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_8_6
+  register: __ad_1_5_8_6
+  tags:
+    - AD.1.5.8.6
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.6 | AUDIT_RHEL | NETWORK SETTINGS | SYSTAT service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_6 }}"
+  when: 
+    - ad_1_5_8_6
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.6
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.7 ---------------------------------
+#
+- name: AD.1.5.8.7 | PATCH_RHEL | NETWORK SETTINGS | RWHO service must have no processes or ports used
+  service:
+    name: rwho
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_8_7
+  register: __ad_1_5_8_7
+  tags:
+    - AD.1.5.8.7
+    - network_settings
+    - patch
+    - S
+
+- name: AD.1.5.8.7 | AUDIT_RHEL | NETWORK SETTINGS | RWHO service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_8_7 }}"
+  when: 
+    - ad_1_5_8_7
+    - ansible_check_mode
+  tags:
+    - AD.1.5.8.7
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.8.8 ---------------------------------
+#
+- name: AD.1.5.8.8 | PATCH_RHEL | NETWORK SETTINGS | NETSTAT must be enabled for monitoring
+  yum:
+    name: net-tools
+    state: present
+  ignore_errors: yes
+  when: ad_1_5_8_8
+  register: __ad_1_5_8_8
+  tags:
+    - AD.1.5.8.8
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.8.8 | AUDIT_RHEL | NETWORK SETTINGS | NETSTAT must be enabled for monitoring
+  debug:
+    msg: __ad_1_5_8_8
+  when: 
+    - ad_1_5_8_8
+    - ansible_check_mode
+    - __ad_1_5_8_8 | changed
+  tags:
+    - AD.1.5.8.8
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.1 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.4
+
+#
+# --------------------------------- AD.1.5.9.2 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.1
+
+#
+# --------------------------------- AD.1.5.9.3 ---------------------------------
+#
+- name: AD.1.5.9.3 | PATCH_RHEL | NETWORK SETTINGS | RSTATD service must have no processes or ports used
+  service:
+    name: rstatd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_3
+  register: __ad_1_5_9_3
+  tags:
+    - AD.1.5.9.3
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.3 | AUDIT_RHEL | NETWORK SETTINGS | RSTATD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_3 }}"
+  when: 
+    - ad_1_5_9_3
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.3
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.4 ---------------------------------
+#
+- name: AD.1.5.9.4 | PATCH_RHEL | NETWORK SETTINGS | TFTP service must have no processes or ports used
+  service:
+    name: tftp
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_4
+  register: __ad_1_5_9_4
+  tags:
+    - AD.1.5.9.4
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.4 | AUDIT_RHEL | NETWORK SETTINGS | TFTP service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_4 }}"
+  when: 
+    - ad_1_5_9_4
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.4
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.5 ---------------------------------
+#
+- name: AD.1.5.9.5 | PATCH_RHEL | NETWORK SETTINGS | RWALLD service must have no processes or ports used
+  service:
+    name: rwalld
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_5
+  register: __ad_1_5_9_5
+  tags:
+    - AD.1.5.9.5
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.5 | AUDIT_RHEL | NETWORK SETTINGS | RWALLD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_5 }}"
+  when: 
+    - ad_1_5_9_5
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.5
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.6 ---------------------------------
+#
+- name: AD.1.5.9.6 | PATCH_RHEL | NETWORK SETTINGS | RUSERD service must have no processes or ports used
+  service:
+    name: ruserd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_6
+  register: __ad_1_5_9_6
+  tags:
+    - AD.1.5.9.6
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.6 | AUDIT_RHEL | NETWORK SETTINGS | RUSERD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_6 }}"
+  when: 
+    - ad_1_5_9_6
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.6
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.7 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.3
+
+#
+# --------------------------------- AD.1.5.9.8 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.2
+
+#
+# --------------------------------- AD.1.5.9.9 ---------------------------------
+#
+- name: AD.1.5.9.9 | PATCH_RHEL | NETWORK SETTINGS | BOOTPS service must have no processes or ports used
+  service:
+    name: bootps
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_9
+  register: __ad_1_5_9_9
+  tags:
+    - AD.1.5.9.9
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.9 | AUDIT_RHEL | NETWORK SETTINGS | BOOTPS service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_9 }}"
+  when: 
+    - ad_1_5_9_9
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.9
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.10 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.5
+
+#
+# --------------------------------- AD.1.5.9.11 ---------------------------------
+#
+- name: AD.1.5.9.11 | PATCH_RHEL | NETWORK SETTINGS | SPRAYD service must have no processes or ports used
+  service:
+    name: sprayd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_11
+  register: __ad_1_5_9_11
+  tags:
+    - AD.1.5.9.11
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.11 | AUDIT_RHEL | NETWORK SETTINGS | SPRAYD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_11 }}"
+  when: 
+    - ad_1_5_9_11
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.11
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.12 ---------------------------------
+#
+- name: AD.1.5.9.12 | PATCH_RHEL | NETWORK SETTINGS | PCNFSD service must have no processes or ports used
+  service:
+    name: pcnfsd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_12
+  register: __ad_1_5_9_12
+  tags:
+    - AD.1.5.9.12
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.12 | AUDIT_RHEL | NETWORK SETTINGS | PCNFSD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_12 }}"
+  when: 
+    - ad_1_5_9_12
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.12
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.13 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.8
+
+#
+# --------------------------------- AD.1.5.9.14 ---------------------------------
+#                             DUPLICATE of AD.1.5.8.7
+
+#
+# --------------------------------- AD.1.5.9.15 ---------------------------------
+#
+- name: AD.1.5.9.15 | PATCH_RHEL | NETWORK SETTINGS | CMSD service must have no processes or ports used
+  service:
+    name: cmsd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_15
+  register: __ad_1_5_9_15
+  tags:
+    - AD.1.5.9.15
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.15 | AUDIT_RHEL | NETWORK SETTINGS | CMSD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_15 }}"
+  when: 
+    - ad_1_5_9_15
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9_15
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.16 ---------------------------------
+#
+- name: AD.1.5.9.16 | PATCH_RHEL | NETWORK SETTINGS | DTSPCD service must have no processes or ports used
+  service:
+    name: dtspcd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_16
+  register: __ad_1_5_9_16
+  tags:
+    - AD.1.5.9_16
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.16 | AUDIT_RHEL | NETWORK SETTINGS | DTSPCD service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_16 }}"
+  when: 
+    - ad_1_5_9_16
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.16
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.17 ---------------------------------
+#
+- name: AD.1.5.9.17 | PATCH_RHEL | NETWORK SETTINGS | TTDBSERVER service must have no processes or ports used
+  service:
+    name: ttdbserver
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_9_17
+  register: __ad_1_5_9_17
+  tags:
+    - AD.1.5.9.17
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.17 | AUDIT_RHEL | NETWORK SETTINGS | TTDBSERVER service must have no processes or ports used
+  debug:
+    msg: "{{ __ad_1_5_9_17 }}"
+  when: 
+    - ad_1_5_9_17
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.17
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.18 ---------------------------------
+#
+- name: AD.1.5.9.18 | GATHER_INFO_RHEL | NETWORK SETTINGS | SNMP install check
+  yum:
+    name: net-snmp
+    state: present
+  when: ad_1_5_9_18
+  register: __ad_1_5_9_18_installed
+  tags:
+    - AD.1.5.9.18
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.18 | GATHER_INFO_RHEL | NETWORK SETTINGS | SNMP service running check
+  service:
+    name: net-snmp
+    state: started
+  when: ad_1_5_9_18
+  register: __ad_1_5_9_18_service
+  ignore_errors: yes
+  tags:
+    - AD.1.5.9.18
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.18 | PATCH_RHEL | NETWORK SETTINGS | NO REMEDIATION | SNMP community string set to private
+  lineinfile:
+    path: /etc/snmp/snmpd.conf
+    state: absent
+    regexp: 'private$'
+    backrefs: yes
+  when: 
+    - ad_1_5_9_18
+    - __ad_1_5_9_18_installed
+    - __ad_1_5_9_18_service
+  register: __ad_1_5_9_18_privatestring
+  tags:
+    - AD.1.5.9.18
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.18 | PATCH_RHEL | NETWORK SETTINGS | NO REMEDIATION | SNMP community string set to public
+  lineinfile:
+    path: /etc/snmp/snmpd.conf
+    state: absent
+    regexp: 'public$'
+    backrefs: yes
+  when: 
+    - ad_1_5_9_18
+    - __ad_1_5_9_18_installed
+    - __ad_1_5_9_18_service
+  register: __ad_1_5_9_18_publicstring
+  tags:
+    - AD.1.5.9.18
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.18 | AUDIT_RHEL | NETWORK SETTINGS | NO REMEDIATION | SNMP community string set to private
+  debug:
+    msg: "{{ __ad_1_5_9_18_privatestring }}"
+  when: 
+    - ad_1_5_9_18
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.18
+    - audit
+    - network_settings
+    - S
+
+- name: AD.1.5.9.18 | AUDIT_RHEL | NETWORK SETTINGS | NO REMEDIATION | SNMP community string set to public
+  debug:
+    msg: "{{ __ad_1_5_9_18_publicstring }}"
+  when: 
+    - ad_1_5_9_18
+    - ansible_check_mode
+  tags:
+    - AD.1.5.9.18
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.19 ---------------------------------
+#                             DUPLICATE of AD.1.5.9.18
+
+#
+# --------------------------------- AD.1.5.9.20 ---------------------------------
+#
+- name: AD.1.5.9.20 | PATCH_RHEL | NETWORK SETTINGS | Enable tcp syncookies to prevent syn flooding (sysctl.conf)
+  sysctl:
+    name: net.ipv4.tcp_syncookies
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_1_5_9_20
+  register: __ad_1_5_9_20
+  tags:
+    - AD.1.5.9.20
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.20 | AUDIT_RHEL | NETWORK SETTINGS | Enable tcp syncookies to prevent syn flooding (sysctl.conf)
+  debug:
+    msg: "{{ __ad_1_5_9_20 }}"
+  when: 
+    - ad_1_5_9_20
+    - ansible_check_mode
+    - __ad_1_5_9_20 | changed
+  tags:
+    - AD.1.5.9.20
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.21 ---------------------------------
+#
+- name: AD.1.5.9.21 | PATCH_RHEL | NETWORK SETTINGS | Turn off ICMP broadcasts (sysctl.conf)
+  sysctl:
+    name: net.ipv4.icmp_echo_ignore_broadcasts
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_1_5_9_21
+  register: __ad_1_5_9_21
+  tags:
+    - AD.1.5.9.21
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.21 | AUDIT_RHEL | NETWORK SETTINGS | Enable tcp syncookies to prevent syn flooding (sysctl.conf)
+  debug:
+    msg: "{{ __ad_1_5_9_21 }}"
+  when: 
+    - ad_1_5_9_21
+    - ansible_check_mode
+    - __ad_1_5_9_21 | changed
+  tags:
+    - AD.1.5.9.21
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.22 ---------------------------------
+#
+- name: AD.1.5.9.22 | PATCH_RHEL | NETWORK SETTINGS | Disable ICMP Redirect Acceptance (sysctl.conf)
+  sysctl:
+    name: net.ipv4.conf.all.accept_redirects
+    value: 0
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: ad_1_5_9_22
+  register: __ad_1_5_9_22
+  tags:
+    - AD.1.5.9.22
+    - patch
+    - network_settings
+    - S
+
+- name: AD.1.5.9.22 | AUDIT_RHEL | NETWORK SETTINGS | Disable ICMP Redirect Acceptance (sysctl.conf)
+  debug:
+    msg: "{{ __ad_1_5_9_22 }}"
+  when: 
+    - ad_1_5_9_22
+    - ansible_check_mode
+    - __ad_1_5_9_22 | changed
+  tags:
+    - AD.1.5.9.22
+    - audit
+    - network_settings
+    - S
+
+#
+# --------------------------------- AD.1.5.9.23 ---------------------------------
+#                             DUPLICATE of AD.99.1.19
+
+#
+# --------------------------------- AD.1.5.9.24 ---------------------------------
+#                             DUPLICATE of AD.99.1.22
+
+#
+# --------------------------------- AD.1.5.10.1 ---------------------------------
+#
+- name: AD.1.5.10.1 | PATCH_RHEL | NETWORK SETTINGS | YPPASSWD daemon must be disabled
+  service:
+    name: yppasswd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_10_1
+  register: __ad_1_5_10_1
+  tags:
+    - AD.1.5.10.1
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.10.1 | AUDIT_RHEL | NETWORK SETTINGS | YPPASSWD daemon must be disabled
+  debug:
+    msg: "{{ __ad_1_5_10_1 }}"
+  when: 
+    - ad_1_5_10_1
+    - ansible_check_mode
+  tags:
+    - AD.1.5.10.1
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.12.2 ---------------------------------
+#
+- name: AD.1.5.12.2 | PATCH_RHEL | NETWORK SETTINGS | Services on secure internal networks (rlogin)
+  service:
+    name: rlogin
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_12_2
+  register: __ad_1_5_12_2_enabled
+  tags:
+    - AD.1.5.12.2
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.12.2 | AUDIT_RHEL | NETWORK SETTINGS | Services on secure internal networks (rlogin)
+  debug:
+    msg: "{{ __ad_1_5_12_2_enabled }}"
+  when: 
+    - ad_1_5_12_2
+    - ansible_check_mode
+    - __ad_1_5_12_2_enabled | changed
+  tags:
+    - AD.1.5.12.2
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.12.3 ---------------------------------
+#
+- name: AD.1.5.12.3 | PATCH_RHEL | NETWORK SETTINGS | Services on secure internal networks (rsh)
+  service:
+    name: rsh
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_12_3
+  register: __ad_1_5_12_3_enabled
+  tags:
+    - AD.1.5.12.3
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.12.3 | AUDIT_RHEL | NETWORK SETTINGS | Services on secure internal networks (rsh)
+  debug:
+    msg: "{{ __ad_1_5_12_3_enabled }}"
+  when: 
+    - ad_1_5_12_3
+    - ansible_check_mode
+    - __ad_1_5_12_3_enabled | changed
+  tags:
+    - AD.1.5.12.3
+    - audit
+    - network_settings
+    - B
+
+#
+# --------------------------------- AD.1.5.12.4 ---------------------------------
+#
+- name: AD.1.5.12.4 | PATCH_RHEL | NETWORK SETTINGS | Services on secure internal networks (sendmail)
+  service:
+    name: sendmail
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+  when: ad_1_5_12_4
+  register: __ad_1_5_12_4_enabled
+  tags:
+    - AD.1.5.12.4
+    - patch
+    - network_settings
+    - B
+
+- name: AD.1.5.12.4 | AUDIT_RHEL | NETWORK SETTINGS | Services on secure internal networks (sendmail)
+  debug:
+    msg: "{{ __ad_1_5_12_4_enabled }}"
+  when: 
+    - ad_1_5_12_4
+    - ansible_check_mode
+    - __ad_1_5_12_4_enabled | changed
+  tags:
+    - AD.1.5.12.4
+    - audit
+    - network_settings
+    - B
+

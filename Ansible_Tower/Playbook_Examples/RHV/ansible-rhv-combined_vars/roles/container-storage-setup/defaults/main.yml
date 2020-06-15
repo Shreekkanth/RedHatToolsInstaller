@@ -1,0 +1,9 @@
+---
+# defaults file for container-storage-setup
+docker_service_name: "docker.service"
+container_storage_setup_name: "container-storage-setup"
+docker_storage_file_path: "/etc/sysconfig/docker-storage"
+docker_var_storage_path: "/var/lib/docker"
+docker_containers_mount: "var-lib-docker-containers.mount"
+docker_default_vg: "dockervg"
+docker_default_lv: "docker-pool"

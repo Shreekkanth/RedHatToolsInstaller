@@ -1,0 +1,1 @@
+yum install goversioninfo bsdtar golang krb5-devel

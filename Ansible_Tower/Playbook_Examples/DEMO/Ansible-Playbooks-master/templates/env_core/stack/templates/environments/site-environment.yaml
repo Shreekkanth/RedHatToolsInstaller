@@ -1,0 +1,45 @@
+resource_registry:
+  # Overcloud node NIC configuration
+  OS::TripleO::ComputeSriov::Net::SoftwareConfig: /home/stack/templates/nic-configs/compute.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: /home/stack/templates/nic-configs/controller-v6.yaml
+
+  OS::TripleO::Network::External: /usr/share/openstack-tripleo-heat-templates/network/external_v6.yaml
+  OS::TripleO::Network::Ports::ExternalVipPort: /usr/share/openstack-tripleo-heat-templates/network/ports/external_v6.yaml
+
+parameter_defaults:
+  OvercloudControllerFlavor: control
+  OvercloudComputeSriovFlavor: compute
+  ControllerCount: 1
+  ComputeSriovCount: 6
+
+  DockerInsecureRegistryAddress:
+    - satellite-01.rich.sea.com:5000
+    - {{ undercloud.gateway }}:8787
+
+  NtpServer:
+    - 10.59.0.160
+
+  # CIDR subnet mask length for provisioning network
+  ControlPlaneSubnetCidr: '24'
+  # Gateway router for the provisioning network (or Undercloud IP)
+  ControlPlaneDefaultRoute: {{ undercloud.gateway }}
+  # Gateway router for the internal API network
+  #InternalApiDefaultRoute: 'fd00:4888:2000:fc02:524:23::'
+  # Generally the IP of the Undercloud
+  EC2MetadataIp: {{ undercloud.gateway }}
+
+  DnsServers: ["10.59.0.160"]
+
+  InternalApiVirtualFixedIPs: [{'ip_address': '10.59.50.110'}]
+  ControlFixedIPs: [{'ip_address': '10.56.60.110'}]
+  RedisVirtualFixedIPs: [{'ip_address': '10.59.50.111'}]
+  StorageVirtualFixedIPs: [{'ip_address': '10.58.50.110'}]
+  PublicVirtualFixedIPs: [{'ip_address': '2404:180:2250:1::D112'}]
+  StorageMgmtVirtualFixedIPs: [{'ip_address': '10.60.50.110'}]
+
+  CorosyncIPv6: false
+  NovaIPv6: false
+  RabbitIPv6: false
+  MemcachedIPv6: false
+
+  NetworkDeploymentActions: ['CREATE','UPDATE']

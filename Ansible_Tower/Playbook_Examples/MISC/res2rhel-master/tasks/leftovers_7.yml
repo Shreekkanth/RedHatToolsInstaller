@@ -1,0 +1,10 @@
+---
+- name: Create list of leftover packages
+  shell: "rpm -qa --qf '%{name}-%{version}-%{release}.%{arch}\t%{packager}\n'|grep -i 'suse'|awk '{ print $1; }'"
+  register: output
+  args:
+    warn: no
+
+- name: Set res2rhel.leftovers fact
+  set_fact:
+    res2rhel_leftovers: "{{ output.stdout_lines }}"
