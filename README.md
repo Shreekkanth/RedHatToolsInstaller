@@ -34,6 +34,7 @@ Working in tandem, this is what the optimal Management system would look like fr
  * Ansible_PPT
  * Ansible_Use_Cases
  * Ansible_Video_Demos
+
  * [Playbook_Examples] (./Ansible_Tower/Playbook_Examples)
 #### Simple Scripts for installing Ansible Tower P.O.C on a single node/vm on RHEL7/8:
 
