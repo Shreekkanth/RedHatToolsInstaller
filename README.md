@@ -7,7 +7,7 @@ My work is focused on:
 * Ansible Tower
 * Satellite
 * InSights
-![Red Hat Management](./Red_Hat_Management.png)
+![Red Hat Management](./PNG/Red_Hat_Management.png)
 
 The key to success is always in the planning! The venn diagram below depicts the primary functions between tools and the overlap between to help you decide where you would like to situate the functions, and assist in integrating the tools within your IT environment(s) 
 ## Satellite: 
@@ -17,10 +17,10 @@ Simple, agentless automation platform that can improve your current processes, m
 ## InSights: 
 A predictive analytics tool with real-time, in-depth analysis of your Red Hat infrastructure, letting you predict and prevent problems before they occur.
 
-![Portfolio Overlap](./RedHat_Management_Portfolio.png)
+![Portfolio Overlap](./PNG/RedHat_Management_Portfolio.png)
 
 Working in tandem, this is what the optimal Management system would look like from a Red Hat perspective.
-![E2E Management Portfolio](./E2E_RedHat_Management_Portfolio.png)
+![E2E Management Portfolio](./PNG/E2E_RedHat_Management_Portfolio.png)
 
 ## Table of Contents
 
@@ -53,6 +53,7 @@ Working in tandem, this is what the optimal Management system would look like fr
  * Satellite_PDF
  * Satellite_DOC
  * Satellite-Ansible_Playbooks
+ * [Satellite-Ansible PlaybookExamples](./Satellite/Satellite-Ansible_Playbooks)
 #### RPM for an X enabled server (not required) 
  * xdialog-2.3.1-13.el7.centos.x86_64.rpm
 #### Simple script checking the health of your Satellite once it is set up on your RHEL7 sys:
