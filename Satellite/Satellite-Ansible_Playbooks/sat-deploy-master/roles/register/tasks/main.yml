@@ -1,7 +1,0 @@
----
-- name: 'Install boostrap RPM'
-  shell: yum -y localinstall http://sat-r220-02.lab.eng.rdu2.redhat.com/pub/katello-ca-consumer-latest.noarch.rpm
-  ignore_errors: True
-
-- name: 'Register to Dogfood'
-  shell: subscription-manager register --org Sat6-CI --activationkey "{{ activation_key }}" --force

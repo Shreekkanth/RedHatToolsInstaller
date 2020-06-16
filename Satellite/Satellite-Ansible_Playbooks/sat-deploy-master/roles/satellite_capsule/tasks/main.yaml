@@ -1,6 +1,0 @@
----
-- include: capsule_62.yml
-  when: satellite_version == 6.2
-
-- include: capsule_61.yml
-  when: satellite_version == 6.1

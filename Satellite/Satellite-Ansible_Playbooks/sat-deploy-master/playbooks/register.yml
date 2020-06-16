@@ -1,6 +1,0 @@
----
-- hosts: all
-  become: true
-  roles:
-    - dogfood_register
-    - update_os_packages

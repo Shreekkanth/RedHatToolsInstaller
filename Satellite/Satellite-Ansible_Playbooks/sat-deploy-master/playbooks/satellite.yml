@@ -1,5 +1,0 @@
----
-- hosts: server
-  become: true
-  roles:
-    - satellite

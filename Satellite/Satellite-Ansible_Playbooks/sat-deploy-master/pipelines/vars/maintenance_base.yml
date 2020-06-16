@@ -1,7 +1,0 @@
----
-forklift_name: "pipeline-{{ pipeline_version }}-{{ pipeline_os }}"
-maint_box:
-  box: "{{ pipeline_os }}"
-  memory: 3072
-forklift_boxes:
-  "{{ {forklift_name: maint_box} }}"

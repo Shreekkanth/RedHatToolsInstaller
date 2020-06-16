@@ -1,5 +1,0 @@
----
-- name: install libselinux-python module
-  command: dnf module enable libselinux-python pki-core -y
-  when:
-    - ansible_distribution_major_version == '8'
